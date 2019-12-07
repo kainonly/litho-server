@@ -18,15 +18,15 @@ repositories {
 
 dependencies {
     implementation("com.alibaba:fastjson:1.2.61")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.mariadb.jdbc:mariadb-java-client")
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
-    }
+//    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+//        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+//    }
 }
 
 tasks.withType<Test> {
