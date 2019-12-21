@@ -13,7 +13,5 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return [
-        'version' => app()->version()
-    ];
+    dump("Test");
 });
