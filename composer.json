@@ -6,6 +6,8 @@
         "ext-swoole": ">=4.4",
         "ext-redis": "*",
         "ext-json": "*",
+        "ext-grpc": "*",
+        "ext-protobuf": "*",
         "hyperf/cache": "~1.1.0",
         "hyperf/command": "~1.1.0",
         "hyperf/config": "~1.1.0",
@@ -29,7 +31,8 @@
         "hyperf/redis": "~1.1.0",
         "kain/hyperf-curd": "^1.0",
         "kain/hyperf-extra": "^1.0",
-        "kain/hyperf-support": "^1.0"
+        "kain/hyperf-support": "^1.0",
+        "grpc/grpc": "^1.27"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -40,11 +43,16 @@
         "doctrine/common": "^2.9",
         "phpstan/phpstan": "^0.11.2",
         "hyperf/devtool": "~1.1.0",
-        "hyperf/testing": "~1.1.0"
+        "hyperf/testing": "~1.1.0",
+        "google/protobuf": "^3.11"
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "GPBMetadata\\": "microservice/GPBMetadata",
+            "AMQPSubscriber\\": "microservice/AMQPSubscriber",
+            "ScheduleMicroservice\\": "microservice/ScheduleMicroservice",
+            "SSHMicroservice\\": "microservice/SSHMicroservice"
         },
         "files": []
     },
