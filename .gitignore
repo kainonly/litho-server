@@ -11,4 +11,4 @@ vendor/
 .DS_Store
 *.lock
 .phpunit*
-/test/config
+/test/Config
