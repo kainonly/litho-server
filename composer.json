@@ -35,6 +35,7 @@
         "grpc/grpc": "^1.27"
     },
     "require-dev": {
+        "ext-yaml": "*",
         "roave/security-advisories": "dev-master",
         "swoft/swoole-ide-helper": "^4.2",
         "phpmd/phpmd": "^2.6",
