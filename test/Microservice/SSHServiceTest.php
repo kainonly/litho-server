@@ -36,11 +36,11 @@ class SSHServiceTest extends TestCase
                 'credentials' => ChannelCredentials::createInsecure(),
             ]);
             $filesystem = new Filesystem();
-            $context = $filesystem->get('../config/debug.yml');
+            $context = $filesystem->get('../config/ssh/config.yml');
             $this->config = yaml_parse($context);
-            $key = $filesystem->get('../config/key-1.pem');
+            $key = $filesystem->get('../config/ssh/key-1.pem');
             $this->config[0]['private_key'] = base64_encode($key);
-            $key = $filesystem->get('../config/key-2.pem');
+            $key = $filesystem->get('../config/ssh/key-2.pem');
             $this->config[1]['private_key'] = base64_encode($key);
         } catch (Exception $e) {
             $this->expectException($e->getMessage());
