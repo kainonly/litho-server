@@ -32,15 +32,15 @@ class SSHServiceTest extends TestCase
     {
         parent::__construct($name, $data, $dataName);
         try {
-            $this->client = new RouterClient('127.0.0.1:6000', [
+            $this->client = new RouterClient('127.0.0.1:6001', [
                 'credentials' => ChannelCredentials::createInsecure(),
             ]);
             $filesystem = new Filesystem();
-            $context = $filesystem->get('../config/ssh/config.yml');
+            $context = $filesystem->get('../Config/ssh/config.yml');
             $this->config = yaml_parse($context);
-            $key = $filesystem->get('../config/ssh/key-1.pem');
+            $key = $filesystem->get('../Config/ssh/key-1.pem');
             $this->config[0]['private_key'] = base64_encode($key);
-            $key = $filesystem->get('../config/ssh/key-2.pem');
+            $key = $filesystem->get('../Config/ssh/key-2.pem');
             $this->config[1]['private_key'] = base64_encode($key);
         } catch (Exception $e) {
             $this->expectException($e->getMessage());
