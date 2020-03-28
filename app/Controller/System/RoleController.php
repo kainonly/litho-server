@@ -136,8 +136,8 @@ class RoleController extends BaseController
      */
     private function clearRedis(): void
     {
-        RoleRedis::create($this->container)->clear();
-        AdminRedis::create($this->container)->clear();
+        $this->roleRedis->clear();
+        $this->adminRedis->clear();
     }
 
     /**

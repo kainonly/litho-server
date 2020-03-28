@@ -51,6 +51,6 @@ class PolicyController extends BaseController implements AddAfterHooks, DeleteAf
      */
     private function clearRedis(): void
     {
-        RoleRedis::create($this->container)->clear();
+        $this->roleRedis->clear();
     }
 }

@@ -188,7 +188,7 @@ class AdminController extends BaseController
      */
     private function clearRedis(): void
     {
-        AdminRedis::create($this->container)->clear();
+        $this->adminRedis->clear();
     }
 
     /**

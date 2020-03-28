@@ -60,8 +60,8 @@ class AclController extends BaseController implements AddAfterHooks, EditAfterHo
 
     private function clearRedis(): void
     {
-        AclRedis::create($this->container)->clear();
-        RoleRedis::create($this->container)->clear();
+        $this->aclRedis->clear();;
+        $this->roleRedis->clear();
     }
 
     /**

@@ -162,8 +162,8 @@ class ResourceController extends BaseController
 
     private function clearRedis(): void
     {
-        ResourceRedis::create($this->container)->clear();
-        RoleRedis::create($this->container)->clear();
+        $this->resourceRedis->clear();
+        $this->roleRedis->clear();
     }
 
     /**
