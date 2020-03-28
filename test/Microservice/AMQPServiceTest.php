@@ -27,11 +27,11 @@ class AMQPServiceTest extends TestCase
     {
         parent::__construct($name, $data, $dataName);
         try {
-            $this->client = new RouterClient('127.0.0.1:6000', [
+            $this->client = new RouterClient('127.0.0.1:6002', [
                 'credentials' => ChannelCredentials::createInsecure(),
             ]);
             $filesystem = new Filesystem();
-            $context = $filesystem->get('../config/amqp/config.yml');
+            $context = $filesystem->get('../Config/amqp/config.yml');
             $this->config = yaml_parse($context);
         } catch (Exception $e) {
             $this->expectException($e->getMessage());

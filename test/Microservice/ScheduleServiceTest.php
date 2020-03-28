@@ -33,7 +33,7 @@ class ScheduleServiceTest extends TestCase
                 'credentials' => ChannelCredentials::createInsecure(),
             ]);
             $filesystem = new Filesystem();
-            $context = $filesystem->get('../config/schedule/config.yml');
+            $context = $filesystem->get('../Config/schedule/config.yml');
             $this->config = yaml_parse($context);
         } catch (Exception $e) {
             $this->expectException($e->getMessage());
