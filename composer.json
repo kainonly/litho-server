@@ -33,7 +33,8 @@
         "hyperf/grpc-client": "~1.1.0",
         "kain/hyperf-curd": "^1.0",
         "kain/hyperf-extra": "^1.0",
-        "kain/hyperf-support": "^1.0"
+        "kain/hyperf-support": "^1.0",
+        "kain/docker-php-api": "^1.0"
     },
     "require-dev": {
         "ext-yaml": "*",
