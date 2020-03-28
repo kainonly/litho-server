@@ -6,8 +6,8 @@
         "ext-swoole": ">=4.4",
         "ext-redis": "*",
         "ext-json": "*",
-        "ext-grpc": "*",
         "ext-protobuf": "*",
+        "ext-sockets": "*",
         "hyperf/cache": "~1.1.0",
         "hyperf/command": "~1.1.0",
         "hyperf/config": "~1.1.0",
@@ -29,10 +29,11 @@
         "hyperf/memory": "~1.1.0",
         "hyperf/process": "~1.1.0",
         "hyperf/redis": "~1.1.0",
+        "hyperf/grpc": "~1.1.0",
+        "hyperf/grpc-client": "~1.1.0",
         "kain/hyperf-curd": "^1.0",
         "kain/hyperf-extra": "^1.0",
-        "kain/hyperf-support": "^1.0",
-        "grpc/grpc": "^1.27"
+        "kain/hyperf-support": "^1.0"
     },
     "require-dev": {
         "ext-yaml": "*",
@@ -44,8 +45,7 @@
         "doctrine/common": "^2.9",
         "phpstan/phpstan": "^0.11.2",
         "hyperf/devtool": "~1.1.0",
-        "hyperf/testing": "~1.1.0",
-        "google/protobuf": "^3.11"
+        "hyperf/testing": "~1.1.0"
     },
     "autoload": {
         "psr-4": {
@@ -55,7 +55,9 @@
             "ScheduleMicroservice\\": "microservice/ScheduleMicroservice",
             "SSHMicroservice\\": "microservice/SSHMicroservice"
         },
-        "files": []
+        "files": [
+            "app/helper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
