@@ -34,7 +34,8 @@
         "kain/hyperf-curd": "^1.0",
         "kain/hyperf-extra": "^1.0",
         "kain/hyperf-support": "^1.0",
-        "kain/docker-php-api": "^1.0"
+        "kain/docker-php-api": "^1.0",
+        "qcloud/cos-sdk-v5": ">=2.0"
     },
     "require-dev": {
         "ext-yaml": "*",
