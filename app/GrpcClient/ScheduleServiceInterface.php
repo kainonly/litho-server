@@ -8,6 +8,11 @@ use ScheduleMicroservice\GetResponse;
 use ScheduleMicroservice\ListsResponse;
 use ScheduleMicroservice\Response;
 
+/**
+ * Interface ScheduleServiceInterface
+ * @package App\GrpcClient
+ * @method bool close($yield = false)
+ */
 interface ScheduleServiceInterface
 {
     /**
