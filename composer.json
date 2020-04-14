@@ -1,91 +1,92 @@
 {
-    "name": "super-service",
-    "type": "project",
-    "require": {
-        "php": ">=7.4",
-        "ext-swoole": ">=4.4",
-        "ext-redis": "*",
-        "ext-json": "*",
-        "ext-protobuf": "*",
-        "ext-sockets": "*",
-        "hyperf/cache": "~1.1.0",
-        "hyperf/command": "~1.1.0",
-        "hyperf/config": "~1.1.0",
-        "hyperf/contract": "~1.1.0",
-        "hyperf/database": "~1.1.0",
-        "hyperf/db-connection": "~1.1.0",
-        "hyperf/paginator": "~1.1.0",
-        "hyperf/di": "~1.1.0",
-        "hyperf/dispatcher": "~1.1.0",
-        "hyperf/event": "~1.1.0",
-        "hyperf/exception-handler": "~1.1.0",
-        "hyperf/framework": "~1.1.0",
-        "hyperf/pool": "~1.1.0",
-        "hyperf/utils": "~1.1.0",
-        "hyperf/validation": "~1.1.0",
-        "hyperf/guzzle": "~1.1.0",
-        "hyperf/http-server": "~1.1.0",
-        "hyperf/logger": "~1.1.0",
-        "hyperf/memory": "~1.1.0",
-        "hyperf/process": "~1.1.0",
-        "hyperf/redis": "~1.1.0",
-        "hyperf/grpc": "~1.1.0",
-        "hyperf/grpc-client": "~1.1.0",
-        "kain/hyperf-curd": "^1.0",
-        "kain/hyperf-extra": "^1.0",
-        "kain/hyperf-support": "^1.0",
-        "kain/docker-php-api": "^1.0",
-        "qcloud/cos-sdk-v5": ">=2.0"
+  "name": "van-api",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "ext-swoole": ">=4.4",
+    "ext-redis": "*",
+    "ext-json": "*",
+    "ext-protobuf": "*",
+    "ext-sockets": "*",
+    "hyperf/cache": "~1.1.0",
+    "hyperf/command": "~1.1.0",
+    "hyperf/config": "~1.1.0",
+    "hyperf/contract": "~1.1.0",
+    "hyperf/database": "~1.1.0",
+    "hyperf/db-connection": "~1.1.0",
+    "hyperf/paginator": "~1.1.0",
+    "hyperf/di": "~1.1.0",
+    "hyperf/dispatcher": "~1.1.0",
+    "hyperf/event": "~1.1.0",
+    "hyperf/exception-handler": "~1.1.0",
+    "hyperf/framework": "~1.1.0",
+    "hyperf/pool": "~1.1.0",
+    "hyperf/utils": "~1.1.0",
+    "hyperf/validation": "~1.1.0",
+    "hyperf/guzzle": "~1.1.0",
+    "hyperf/http-server": "~1.1.0",
+    "hyperf/logger": "~1.1.0",
+    "hyperf/memory": "~1.1.0",
+    "hyperf/process": "~1.1.0",
+    "hyperf/redis": "~1.1.0",
+    "hyperf/amqp": "^1.1",
+    "hyperf/grpc": "~1.1.0",
+    "hyperf/grpc-client": "~1.1.0",
+    "kain/hyperf-curd": "^1.0",
+    "kain/hyperf-extra": "^1.0",
+    "kain/hyperf-support": "^1.0",
+    "kain/docker-php-api": "^1.0",
+    "qcloud/cos-sdk-v5": ">=2.0"
+  },
+  "require-dev": {
+    "ext-yaml": "*",
+    "roave/security-advisories": "dev-master",
+    "swoft/swoole-ide-helper": "^4.2",
+    "phpmd/phpmd": "^2.6",
+    "friendsofphp/php-cs-fixer": "^2.14",
+    "mockery/mockery": "^1.0",
+    "doctrine/common": "^2.9",
+    "phpstan/phpstan": "^0.11.2",
+    "hyperf/devtool": "~1.1.0",
+    "hyperf/testing": "~1.1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "GPBMetadata\\": "microservice/GPBMetadata",
+      "AMQPSubscriber\\": "microservice/AMQPSubscriber",
+      "ScheduleMicroservice\\": "microservice/ScheduleMicroservice",
+      "SSHMicroservice\\": "microservice/SSHMicroservice"
     },
-    "require-dev": {
-        "ext-yaml": "*",
-        "roave/security-advisories": "dev-master",
-        "swoft/swoole-ide-helper": "^4.2",
-        "phpmd/phpmd": "^2.6",
-        "friendsofphp/php-cs-fixer": "^2.14",
-        "mockery/mockery": "^1.0",
-        "doctrine/common": "^2.9",
-        "phpstan/phpstan": "^0.11.2",
-        "hyperf/devtool": "~1.1.0",
-        "hyperf/testing": "~1.1.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/",
-            "GPBMetadata\\": "microservice/GPBMetadata",
-            "AMQPSubscriber\\": "microservice/AMQPSubscriber",
-            "ScheduleMicroservice\\": "microservice/ScheduleMicroservice",
-            "SSHMicroservice\\": "microservice/SSHMicroservice"
-        },
-        "files": [
-            "app/helper.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "HyperfTest\\": "./test/"
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "extra": [],
-    "scripts": {
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-autoload-dump": [
-            "init-proxy.sh"
-        ],
-        "test": "co-phpunit -c phpunit.xml --colors=always",
-        "cs-fix": "php-cs-fixer fix $1",
-        "analyse": "phpstan analyse --memory-limit 300M -l 0 -c phpstan.neon ./app ./config",
-        "start": "php ./bin/hyperf.php start",
-        "init-proxy": "init-proxy.sh"
-    },
-    "repositories": {
-        "packagist": {
-            "type": "composer",
-            "url": "https://mirrors.aliyun.com/composer/"
-        }
+    "files": [
+      "app/helper.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "HyperfTest\\": "./test/"
     }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "extra": [],
+  "scripts": {
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-autoload-dump": [
+      "init-proxy.sh"
+    ],
+    "test": "co-phpunit -c phpunit.xml --colors=always",
+    "cs-fix": "php-cs-fixer fix $1",
+    "analyse": "phpstan analyse --memory-limit 300M -l 0 -c phpstan.neon ./app ./config",
+    "start": "php ./bin/hyperf.php start",
+    "init-proxy": "init-proxy.sh"
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://mirrors.aliyun.com/composer/"
+    }
+  }
 }
