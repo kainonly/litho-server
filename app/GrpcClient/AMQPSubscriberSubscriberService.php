@@ -14,7 +14,7 @@ use AMQPSubscriber\PutParameter;
 use AMQPSubscriber\Response;
 use Hyperf\GrpcClient\BaseClient;
 
-class AMQPService extends BaseClient implements AMQPServiceInterface
+class AMQPSubscriberSubscriberService extends BaseClient implements AMQPSubscriberServiceInterface
 {
     /**
      * @param string $identity

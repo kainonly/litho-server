@@ -20,5 +20,5 @@ return [
     // App Service
     App\GrpcClient\ScheduleServiceInterface::class => App\GrpcClient\ScheduleServiceFactory::class,
     App\GrpcClient\SSHServiceInterface::class => App\GrpcClient\SSHServiceFactory::class,
-    App\GrpcClient\AMQPServiceInterface::class => App\GrpcClient\AMQPServiceFactory::class
+    App\GrpcClient\AMQPSubscriberServiceInterface::class => App\GrpcClient\AMQPSubscriberServiceFactory::class
 ];

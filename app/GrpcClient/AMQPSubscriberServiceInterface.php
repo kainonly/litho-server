@@ -8,7 +8,12 @@ use AMQPSubscriber\GetResponse;
 use AMQPSubscriber\ListsResponse;
 use AMQPSubscriber\Response;
 
-interface AMQPServiceInterface
+/**
+ * Interface AMQPSubscriberServiceInterface
+ * @package App\GrpcClient
+ * @method bool close($yield = false)
+ */
+interface AMQPSubscriberServiceInterface
 {
     /**
      * @param string $identity

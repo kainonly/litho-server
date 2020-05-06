@@ -9,6 +9,11 @@ use SSHMicroservice\GetResponse;
 use SSHMicroservice\ListsResponse;
 use SSHMicroservice\Response;
 
+/**
+ * Interface SSHServiceInterface
+ * @package App\GrpcClient
+ * @method bool close($yield = false)
+ */
 interface SSHServiceInterface
 {
     public function testing(
@@ -49,25 +54,25 @@ interface SSHServiceInterface
 
     /**
      * ssh远程执行命令
-     * @param int $identity
+     * @param string $identity
      * @param string $bash
      * @return ExecResponse
      */
-    public function exec(int $identity, string $bash): ExecResponse;
+    public function exec(string $identity, string $bash): ExecResponse;
 
     /**
      * 删除ssh连接
-     * @param int $identity
+     * @param string $identity
      * @return Response
      */
-    public function delete(int $identity): Response;
+    public function delete(string $identity): Response;
 
     /**
      * 获取ssh连接
-     * @param int $identity
+     * @param string $identity
      * @return GetResponse
      */
-    public function get(int $identity): GetResponse;
+    public function get(string $identity): GetResponse;
 
     /**
      * 指定获取ssh连接

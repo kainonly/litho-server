@@ -52,7 +52,6 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [Response::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
@@ -68,7 +67,6 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [AllResponse::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
@@ -106,17 +104,16 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [Response::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
     /**
-     * @param int $identity
+     * @param string $identity
      * @param string $bash
      * @return ExecResponse
      * @inheritDoc
      */
-    public function exec(int $identity, string $bash): ExecResponse
+    public function exec(string $identity, string $bash): ExecResponse
     {
         $param = new ExecParameter();
         $param->setIdentity($identity);
@@ -126,16 +123,15 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [ExecResponse::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
     /**
-     * @param int $identity
+     * @param string $identity
      * @return Response
      * @inheritDoc
      */
-    public function delete(int $identity): Response
+    public function delete(string $identity): Response
     {
         $param = new DeleteParameter();
         $param->setIdentity($identity);
@@ -144,16 +140,15 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [Response::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
     /**
-     * @param int $identity
+     * @param string $identity
      * @return GetResponse
      * @inheritDoc
      */
-    public function get(int $identity): GetResponse
+    public function get(string $identity): GetResponse
     {
         $param = new GetParameter();
         $param->setIdentity($identity);
@@ -162,7 +157,6 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [GetResponse::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
@@ -180,7 +174,6 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [ListsResponse::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 
@@ -228,7 +221,6 @@ class SSHService extends BaseClient implements SSHServiceInterface
             $param,
             [Response::class, 'decode']
         );
-        $this->close();
         return $response;
     }
 }
