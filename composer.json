@@ -31,14 +31,18 @@
         "hyperf/redis": "~1.1.0",
         "hyperf/grpc": "~1.1.0",
         "hyperf/grpc-client": "~1.1.0",
+        "hyperf/elasticsearch": "~1.1.0",
         "kain/hyperf-curd": "^1.0",
         "kain/hyperf-extra": "^1.0",
         "kain/hyperf-support": "^1.0",
+        "kain/hyperf-amqp": "^1.0",
         "kain/docker-php-api": "^1.0",
+        "kain/rabbitmq-management-api": "^1.0",
         "qcloud/cos-sdk-v5": ">=2.0"
     },
     "require-dev": {
         "ext-yaml": "*",
+        "ext-grpc": "*",
         "roave/security-advisories": "dev-master",
         "swoft/swoole-ide-helper": "^4.2",
         "phpmd/phpmd": "^2.6",
