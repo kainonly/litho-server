@@ -49,72 +49,59 @@ class MainController extends BaseController
 
     /**
      * User login
+     * @throws Exception
      */
     public function login(): ResponseInterface
     {
-        try {
-            $body = $this->request->post();
-            $validator = $this->validation->make($body, [
-                'username' => 'required|between:4,20',
-                'password' => 'required|between:8,18',
-            ]);
+        $body = $this->request->post();
+        $validator = $this->validation->make($body, [
+            'username' => 'required|between:4,20',
+            'password' => 'required|between:8,18',
+        ]);
 
-            if ($validator->fails()) {
-                return $this->response->json([
-                    'error' => 1,
-                    'msg' => $validator->errors()
-                ]);
-            }
-
-            $data = $this->adminRedis->get($body['username']);
-
-            if (empty($data)) {
-                throw new RuntimeException('username not exists');
-            }
-
-            if (!$this->hash->check($body['password'], $data['password'])) {
-                throw new RuntimeException('password incorrect');
-            }
-            $symbol = new stdClass();
-            $symbol->user = $data['username'];
-            $symbol->role = explode(',', $data['role']);
-            return $this->create('system', $symbol);
-        } catch (Exception $e) {
+        if ($validator->fails()) {
             return $this->response->json([
                 'error' => 1,
-                'msg' => $e->getMessage()
+                'msg' => $validator->errors()
             ]);
         }
+
+        $data = $this->adminRedis->get($body['username']);
+        if (empty($data)) {
+            return $this->response->json([
+                'error' => 1,
+                'msg' => 'username not exists'
+            ]);
+        }
+
+        if (!$this->hash->check($body['password'], $data['password'])) {
+            return $this->response->json([
+                'error' => 1,
+                'msg' => 'password incorrect'
+            ]);
+        }
+        $symbol = new stdClass();
+        $symbol->user = $data['username'];
+        $symbol->role = explode(',', $data['role']);
+        return $this->create('system', $symbol);
     }
 
     /**
      * User verify
+     * @throws Exception
      */
     public function verify(): ResponseInterface
     {
-        try {
-            return $this->authVerify('system');
-        } catch (Exception $e) {
-            return $this->response->json([
-                'error' => 1,
-                'msg' => $e->getMessage()
-            ]);
-        }
+        return $this->authVerify('system');
     }
 
     /**
      * User logout
+     * @throws Exception
      */
     public function logout(): ResponseInterface
     {
-        try {
-            return $this->destory('system');
-        } catch (Exception $e) {
-            return $this->response->json([
-                'error' => 1,
-                'msg' => $e->getMessage()
-            ]);
-        }
+        return $this->destory('system');
     }
 
     /**
