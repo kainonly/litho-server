@@ -42,7 +42,6 @@ class PolicyController extends BaseController
                 'msg' => $validate->errors()
             ];
         }
-
         return $this->curd
             ->addModel('policy')
             ->setAutoTimestamp(false)
@@ -62,7 +61,6 @@ class PolicyController extends BaseController
                 'msg' => $validate->errors()
             ];
         }
-
         return $this->curd
             ->deleteModel('policy')
             ->afterHook(function () {

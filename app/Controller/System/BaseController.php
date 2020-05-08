@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\System;
 
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Curd\CurdInterface;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Extra\Hash\HashInterface;
@@ -55,4 +56,9 @@ class BaseController
      * @var UtilsInterface
      */
     protected UtilsInterface $utils;
+    /**
+     * @Inject()
+     * @var ConfigInterface
+     */
+    protected ConfigInterface $config;
 }
