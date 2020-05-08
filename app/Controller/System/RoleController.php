@@ -77,7 +77,7 @@ class RoleController extends BaseController
     {
         $body = $this->request->post();
         $validate = $this->curd->addValidation([
-            'name' => 'required',
+            'name' => 'required|array',
             'key' => 'required',
             'resource' => 'required|array'
         ]);
@@ -88,6 +88,7 @@ class RoleController extends BaseController
             ];
         }
 
+        $body['name'] = json_encode($body['name'], JSON_UNESCAPED_UNICODE);
         $resource = $body['resource'];
         unset($body['resource']);
         return $this->curd
@@ -119,9 +120,9 @@ class RoleController extends BaseController
     {
         $body = $this->request->post();
         $validate = $this->curd->editValidation([
-            'name' => 'required',
-            'key' => 'required',
-            'resource' => 'required|array'
+            'name' => 'required_if:switch,false|array',
+            'key' => 'required_if:switch,false',
+            'resource' => 'required_if:switch,false|array'
         ]);
         if ($validate->fails()) {
             return [
@@ -129,7 +130,7 @@ class RoleController extends BaseController
                 'msg' => $validate->errors()
             ];
         }
-
+        $body['name'] = json_encode($body['name'], JSON_UNESCAPED_UNICODE);
         $resource = null;
         if (!$body['switch']) {
             $resource = $body['resource'];
@@ -137,7 +138,7 @@ class RoleController extends BaseController
         }
         return $this->curd
             ->editModel('role_basic', $body)
-            ->afterHook(static function () use ($body, $resource) {
+            ->afterHook(function () use ($body, $resource) {
                 $resourceLists = [];
                 foreach ($resource as $key => $value) {
                     $resourceLists[] = [
@@ -157,6 +158,7 @@ class RoleController extends BaseController
                     ]);
                     return false;
                 }
+                $this->clearRedis();
                 return true;
             })
             ->result();
