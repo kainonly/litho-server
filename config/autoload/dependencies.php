@@ -17,8 +17,4 @@ return [
     Hyperf\Extra\Token\TokenInterface::class => Hyperf\Extra\Token\TokenService::class,
     Hyperf\Extra\Utils\UtilsInterface::class => Hyperf\Extra\Utils\UtilsService::class,
     Hyperf\Extra\Cors\CorsInterface::class => Hyperf\Extra\Cors\CorsService::class,
-    // App Service
-    App\GrpcClient\ScheduleServiceInterface::class => App\GrpcClient\ScheduleServiceFactory::class,
-    App\GrpcClient\SSHServiceInterface::class => App\GrpcClient\SSHServiceFactory::class,
-    App\GrpcClient\AMQPSubscriberServiceInterface::class => App\GrpcClient\AMQPSubscriberServiceFactory::class
 ];

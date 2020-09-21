@@ -1,5 +1,5 @@
 {
-    "name": "super-service",
+    "name": "van-api",
     "type": "project",
     "require": {
         "php": ">=7.4",
@@ -54,11 +54,7 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "GPBMetadata\\": "microservice/GPBMetadata",
-            "AMQPSubscriber\\": "microservice/AMQPSubscriber",
-            "ScheduleMicroservice\\": "microservice/ScheduleMicroservice",
-            "SSHMicroservice\\": "microservice/SSHMicroservice"
+            "App\\": "app/"
         },
         "files": [
             "app/helper.php"
