@@ -22,3 +22,4 @@
 !.vscode/extensions.json
 
 /go.sum
+/access.log
