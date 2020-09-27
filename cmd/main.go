@@ -22,6 +22,5 @@ func main() {
 	if err != nil {
 		log.Fatalln("service configuration file parsing failed", err)
 	}
-	log.Println(config)
 	app.Application(&config)
 }
