@@ -1,0 +1,13 @@
+listen: ':8000'
+cors:
+  origin:
+    - '*'
+  method:
+    - 'POST'
+    - 'OPTION'
+  allow_header:
+    - 'CONTENT-TYPE'
+    - 'X-REQUESTED-WITH'
+  exposed_headers:
+  max_age: 86400
+  credentials: true

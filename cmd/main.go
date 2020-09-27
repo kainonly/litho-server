@@ -1,24 +1,27 @@
 package main
 
 import (
-	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/middleware/logger"
-	"github.com/kataras/iris/v12/middleware/recover"
-	"van-api/controller"
-	"van-api/middleware/cors"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+	"log"
+	"os"
+	"van-api/app"
+	"van-api/app/types"
 )
 
 func main() {
-	app := iris.Default()
-	app.Use(recover.New())
-	app.Use(logger.New())
-	app.Use(cors.Cors(cors.Option{}))
-	control := controller.New()
-	app.Get("/", control.Default)
-	app.Options("*", control.Option)
-	main := app.Party("/main")
-	{
-		main.Post("/verify", control.MainVerify)
+	if _, err := os.Stat("./config/config.yml"); os.IsNotExist(err) {
+		log.Fatalln("the configuration file does not exist")
 	}
-	app.Listen(":8080")
+	buf, err := ioutil.ReadFile("./config/config.yml")
+	if err != nil {
+		log.Fatalln("failed to read service configuration file", err)
+	}
+	config := types.Config{}
+	err = yaml.Unmarshal(buf, &config)
+	if err != nil {
+		log.Fatalln("service configuration file parsing failed", err)
+	}
+	log.Println(config)
+	app.Application(&config)
 }

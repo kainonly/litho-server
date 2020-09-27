@@ -4,18 +4,10 @@ import (
 	"github.com/kataras/iris/v12"
 	"strconv"
 	"strings"
+	"van-api/app/types"
 )
 
-type Option struct {
-	Origin        []string
-	Method        []string
-	AllowHeader   []string
-	ExposedHeader []string
-	MaxAge        int64
-	Credentials   bool
-}
-
-func Cors(option Option) iris.Handler {
+func Cors(option types.CorsOption) iris.Handler {
 	origin := strings.Join(option.Origin, ",")
 	method := strings.Join(option.Method, ",")
 	allowHeader := strings.Join(option.AllowHeader, ",")
