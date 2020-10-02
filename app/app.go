@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"gorm.io/driver/mysql"
@@ -35,7 +36,15 @@ func Application(option *types.Config) {
 	if option.Mysql.ConnMaxLifetime != 0 {
 		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(option.Mysql.ConnMaxLifetime))
 	}
-	control := controller.New()
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     option.Redis.Address,
+		Password: option.Redis.Password,
+		DB:       option.Redis.DB,
+	})
+	control := controller.New(
+		db,
+		rdb,
+	)
 	app.Get("/", control.Default)
 	app.Options("*", control.Option)
 	main := app.Party("/main")
