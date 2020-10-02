@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"van-api/app/controller"
 	"van-api/app/middleware/cors"
 	"van-api/app/types"
@@ -10,6 +11,9 @@ import (
 func Application(option *types.Config) {
 	app := iris.Default()
 	app.Use(cors.Cors(types.CorsOption{}))
+	context.DefaultJSONOptions = context.JSON{
+		StreamingJSON: true,
+	}
 	control := controller.New()
 	app.Get("/", control.Default)
 	app.Options("*", control.Option)
