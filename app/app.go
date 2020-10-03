@@ -6,6 +6,7 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"log"
 	"time"
 	"van-api/app/controller"
@@ -19,7 +20,12 @@ func Application(option *types.Config) {
 	context.DefaultJSONOptions = context.JSON{
 		StreamingJSON: true,
 	}
-	db, err := gorm.Open(mysql.Open(option.Mysql.Dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(option.Mysql.Dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   option.Mysql.TablePrefix,
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		log.Fatalln(err)
 	}

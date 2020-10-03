@@ -16,6 +16,7 @@ mysql:
   max_idle_conns: 10
   max_open_conns: 100
   conn_max_lifetime: 3600
+  table_prefix:
 redis:
   address: localhost:6379
   password:
