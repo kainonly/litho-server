@@ -2,8 +2,8 @@ package model
 
 type Resource struct {
 	ID         uint64
-	AccessKey  string `gorm:"size:200;unique;not null;comment:resource access control key"`
-	ParentKey  string `gorm:"size:200;not null;default:origin;comment:parent node"`
+	Key        string `gorm:"size:200;unique;not null;comment:resource access control key"`
+	Parent     string `gorm:"size:200;not null;default:origin;comment:parent node"`
 	Name       I18n   `gorm:"type:json;not null;comment:access control name"`
 	Nav        bool   `gorm:"type:tinyint(1) unsigned;not null;default:0;comment:show as navigation"`
 	Router     bool   `gorm:"type:tinyint(1) unsigned;not null;default:0;comment:set as front-end routing"`

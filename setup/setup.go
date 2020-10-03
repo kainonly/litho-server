@@ -48,4 +48,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	err = db.Set(
+		"gorm:table_options",
+		"comment='Policy Table'",
+	).AutoMigrate(&model.Policy{})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
