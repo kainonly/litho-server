@@ -55,4 +55,18 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	err = db.Set(
+		"gorm:table_options",
+		"comment='Role Table'",
+	).AutoMigrate(&model.RoleBasic{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = db.Set(
+		"gorm:table_options",
+		"comment='Role Associated Resource Table'",
+	).AutoMigrate(&model.RoleResource{})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
