@@ -13,6 +13,6 @@ type Resource struct {
 	Icon       string     `gorm:"size:200;comment:iconfont"`
 	Sort       uint8      `gorm:"comment:sort"`
 	Status     bool       `gorm:"type:tinyint(1) unsigned;not null;default:1"`
-	CreateTime uint64     `gorm:"not null;default:0;autoCreateTime"`
-	UpdateTime uint64     `gorm:"not null;default:0;autoUpdateTime"`
+	CreateTime uint64     `gorm:"not null;autoCreateTime"`
+	UpdateTime uint64     `gorm:"not null;autoUpdateTime"`
 }

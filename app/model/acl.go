@@ -9,6 +9,6 @@ type Acl struct {
 	Read       string     `gorm:"comment:list of readable api"`
 	Write      string     `gorm:"comment:list of writable api"`
 	Status     bool       `gorm:"type:tinyint(1) unsigned;not null;default:1"`
-	CreateTime uint64     `gorm:"not null;default:0;autoCreateTime"`
-	UpdateTime uint64     `gorm:"not null;default:0;autoUpdateTime"`
+	CreateTime uint64     `gorm:"not null;autoCreateTime"`
+	UpdateTime uint64     `gorm:"not null;autoUpdateTime"`
 }
