@@ -9,6 +9,6 @@ type AdminBasic struct {
 	Call       string `gorm:"size:20"`
 	Avatar     string `gorm:"type:text"`
 	Status     bool   `gorm:"type:tinyint(1) unsigned;not null;default:1"`
-	CreateTime uint64 `gorm:"not null;default:0;autoCreateTime"`
-	UpdateTime uint64 `gorm:"not null;default:0;autoUpdateTime"`
+	CreateTime uint64 `gorm:"not null;autoCreateTime"`
+	UpdateTime uint64 `gorm:"not null;autoUpdateTime"`
 }
