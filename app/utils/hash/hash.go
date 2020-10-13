@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"golang.org/x/crypto/argon2"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -20,7 +21,7 @@ type Option struct {
 	Threads uint8
 }
 
-func Make(password []byte, option Option) (hash string, err error) {
+func Make(password string, option Option) (hash string, err error) {
 	salt := make([]byte, 16)
 	_, err = rand.Read(salt)
 	if err != nil {
@@ -35,7 +36,7 @@ func Make(password []byte, option Option) (hash string, err error) {
 	if option.Threads == 0 {
 		option.Threads = DefaultThreads
 	}
-	key := argon2.IDKey(password, salt, option.Time, option.Memory, option.Threads, 32)
+	key := argon2.IDKey([]byte(password), salt, option.Time, option.Memory, option.Threads, 32)
 	var build strings.Builder
 	build.WriteString("$argon2id$v=" + strconv.Itoa(argon2.Version))
 	build.WriteString("$m=" + strconv.Itoa(int(option.Memory)))
@@ -45,4 +46,12 @@ func Make(password []byte, option Option) (hash string, err error) {
 	build.WriteString("$" + base64.RawStdEncoding.EncodeToString(key))
 	hash = build.String()
 	return
+}
+
+func Check(password string, hash string) bool {
+	println(password)
+	println(hash)
+	r := regexp.MustCompile(hash)
+	r.FindString(`$`)
+	return true
 }
