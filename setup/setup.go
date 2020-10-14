@@ -10,6 +10,7 @@ import (
 	"os"
 	"van-api/app/model"
 	"van-api/app/types"
+	"van-api/app/utils/hash"
 )
 
 var db *gorm.DB
@@ -139,10 +140,15 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	//adminData := model.AdminBasic{
-	//	Username: "kain",
-	//	Password: "",
-	//}
+	pass, err := hash.Make("pass@VAN1234", hash.Option{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	adminData := model.AdminBasic{
+		Username: "kain",
+		Password: pass,
+	}
+	db.Create(&adminData)
 	err = db.Set(
 		"gorm:table_options",
 		"comment='Admin Associated Role Table'",
@@ -150,4 +156,9 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	adminRoleAssoc := model.AdminRoleAssoc{
+		Username: "kain",
+		RoleKey:  "*",
+	}
+	db.Create(&adminRoleAssoc)
 }
