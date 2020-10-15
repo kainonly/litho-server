@@ -41,6 +41,7 @@ func main() {
 		MaxAge:           cfg.Cors.MaxAge,
 		AllowCredentials: cfg.Cors.Credentials,
 	}))
+
 	db, err := gorm.Open(mysql.Open(cfg.Mysql.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   cfg.Mysql.TablePrefix,
