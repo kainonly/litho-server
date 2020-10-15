@@ -1,6 +1,0 @@
-GET {{url}}
-Accept: application/json
-
-###
-OPTIONS {{url}}
-Accept: application/json

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/go-redis/redis/v8"
+	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/core/router"
 	"github.com/kataras/iris/v12/mvc"
 	"gopkg.in/yaml.v3"
@@ -15,7 +15,6 @@ import (
 	"os"
 	"time"
 	"van-api/app"
-	"van-api/app/middleware/cors"
 	"van-api/app/types"
 	"van-api/route"
 )
@@ -34,10 +33,14 @@ func main() {
 		log.Fatalln("service configuration file parsing failed", err)
 	}
 	serve := iris.Default()
-	serve.Use(cors.Cors(types.CorsOption{}))
-	context.DefaultJSONOptions = context.JSON{
-		StreamingJSON: true,
-	}
+	serve.Use(cors.New(cors.Options{
+		AllowedOrigins:   cfg.Cors.Origin,
+		AllowedMethods:   cfg.Cors.Method,
+		AllowedHeaders:   cfg.Cors.AllowHeader,
+		ExposedHeaders:   cfg.Cors.ExposedHeader,
+		MaxAge:           cfg.Cors.MaxAge,
+		AllowCredentials: cfg.Cors.Credentials,
+	}))
 	db, err := gorm.Open(mysql.Open(cfg.Mysql.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   cfg.Mysql.TablePrefix,
