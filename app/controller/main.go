@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"log"
+	"time"
 	"van-api/app/utils/res"
 )
 
@@ -16,7 +18,12 @@ func (c *MainController) PostVerify(ctx iris.Context) interface{} {
 		return res.Error(err.Error())
 	}
 	log.Println(data)
+	ctx.SetCookieKV("xxx", "sdsd")
+	token := jwt.NewTokenWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"time": time.Now(),
+	})
+	tokenString, _ := token.SignedString([]byte("My Secret"))
 	return res.Result(iris.Map{
-		"name": "kain",
+		"token": tokenString,
 	})
 }

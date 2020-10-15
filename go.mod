@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/go-redis/redis/v8 v8.2.3
 	github.com/iris-contrib/middleware/cors v0.0.0-20201012144513-9d3d1026d313
+	github.com/iris-contrib/middleware/jwt v0.0.0-20201012144513-9d3d1026d313
 	github.com/iris-contrib/pongo2 v0.0.1 // indirect
 	github.com/json-iterator/go v1.1.10
 	github.com/kataras/iris/v12 v12.2.0-alpha.0.20201012125253-8e51a296b968
