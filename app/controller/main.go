@@ -4,9 +4,11 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
-func MainVerify(ctx iris.Context) {
-	ctx.JSON(iris.Map{
-		"error": 1,
-		"msg":   "fail",
-	})
+type MainController struct {
+}
+
+func (c *MainController) Get() interface{} {
+	return iris.Map{
+		"name": "kain",
+	}
 }

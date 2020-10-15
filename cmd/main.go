@@ -5,6 +5,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/core/router"
+	"github.com/kataras/iris/v12/mvc"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -13,9 +14,10 @@ import (
 	"log"
 	"os"
 	"time"
-	"van-api/app/controller"
+	"van-api/app"
 	"van-api/app/middleware/cors"
 	"van-api/app/types"
+	"van-api/route"
 )
 
 func main() {
@@ -26,13 +28,13 @@ func main() {
 	if err != nil {
 		log.Fatalln("failed to read service configuration file", err)
 	}
-	cfg := types.Config{}
+	var cfg types.Config
 	err = yaml.Unmarshal(buf, &cfg)
 	if err != nil {
 		log.Fatalln("service configuration file parsing failed", err)
 	}
-	app := iris.Default()
-	app.Use(cors.Cors(types.CorsOption{}))
+	serve := iris.Default()
+	serve.Use(cors.Cors(types.CorsOption{}))
 	context.DefaultJSONOptions = context.JSON{
 		StreamingJSON: true,
 	}
@@ -63,15 +65,12 @@ func main() {
 		Password: cfg.Redis.Password,
 		DB:       cfg.Redis.DB,
 	})
-	app.ConfigureContainer(func(container *router.APIContainer) {
+	serve.ConfigureContainer(func(container *router.APIContainer) {
 		container.RegisterDependency(db)
 		container.RegisterDependency(rdb)
-		container.Get("/", controller.Default)
-		container.Options("*", controller.Default)
-		main := container.Party("/main")
-		{
-			main.Post("/verify", controller.MainVerify)
-		}
+		container.Get("/", route.Default)
+		container.Options("*", route.Default)
+		mvc.Configure(container.Party("/").Self, app.Bootstrap)
 	})
-	app.Listen(cfg.Listen, iris.WithOptimizations)
+	serve.Listen(cfg.Listen, iris.WithOptimizations)
 }
