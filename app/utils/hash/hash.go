@@ -55,7 +55,7 @@ func Make(password string, option Option) (hashedPassword string, err error) {
 	return
 }
 
-func Check(password string, hashedPassword string) (result bool, err error) {
+func Verify(password string, hashedPassword string) (result bool, err error) {
 	args := regexp.
 		MustCompile(`^\$(\w+)\$v=(\d+)\$m=(\d+),t=(\d+),p=(\d+)\$(\S+)\$(\S+)`).
 		FindStringSubmatch(hashedPassword)
