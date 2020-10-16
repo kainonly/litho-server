@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Key    string
+	Key    []byte
 	Method jwt.SigningMethod = jwt.SigningMethodHS256
 	Exp    time.Duration     = time.Hour
 )
@@ -18,7 +18,7 @@ func Make(claims jwt.MapClaims) (tokenString string, err error) {
 	claims["iat"] = time.Now().Unix()
 	claims["exp"] = time.Now().Add(Exp).Unix()
 	token := jwt.NewWithClaims(Method, claims)
-	tokenString, err = token.SignedString([]byte(Key))
+	tokenString, err = token.SignedString(Key)
 	if err != nil {
 		return
 	}

@@ -3,7 +3,9 @@ module van-api
 go 1.15
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.2.3
+	github.com/google/uuid v1.1.2
 	github.com/iris-contrib/middleware/cors v0.0.0-20201012144513-9d3d1026d313
 	github.com/iris-contrib/middleware/jwt v0.0.0-20201012144513-9d3d1026d313
 	github.com/iris-contrib/pongo2 v0.0.1 // indirect
