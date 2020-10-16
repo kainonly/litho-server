@@ -17,7 +17,7 @@ func TestMake(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	result, err := Check(
+	result, err := Verify(
 		`pass`,
 		checkHash,
 	)
@@ -34,7 +34,7 @@ func BenchmarkMakeAndCheck(b *testing.B) {
 		if err != nil {
 			b.Error(err)
 		}
-		result, err := Check(pass, hash)
+		result, err := Verify(pass, hash)
 		if err != nil {
 			b.Error(err)
 		}
