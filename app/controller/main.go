@@ -5,7 +5,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"log"
 	"time"
-	"van-api/app/utils/res"
+	"van-api/helper/res"
 )
 
 type MainController struct {

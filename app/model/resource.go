@@ -1,6 +1,6 @@
 package model
 
-import "van-api/app/types"
+import "van-api/types"
 
 type Resource struct {
 	ID         uint64

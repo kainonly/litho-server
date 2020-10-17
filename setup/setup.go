@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"van-api/app/types"
+	"van-api/types"
 )
 
 var db *gorm.DB
