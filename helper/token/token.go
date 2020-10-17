@@ -5,18 +5,25 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"time"
+	"van-api/helper"
+	"van-api/types"
 )
 
 var (
 	Key    []byte
 	Method jwt.SigningMethod = jwt.SigningMethodHS256
-	Exp    time.Duration     = time.Hour
 )
 
-func Make(claims jwt.MapClaims) (tokenString string, err error) {
+func Make(scene string, claims jwt.MapClaims) (tokenString string, err error) {
+	option := helper.Config.Token[scene]
+	if option == (types.TokenOption{}) {
+		return "", fmt.Errorf("the [%v] scene does not exist", scene)
+	}
 	claims["jti"] = uuid.New()
 	claims["iat"] = time.Now().Unix()
-	claims["exp"] = time.Now().Add(Exp).Unix()
+	claims["iss"] = option.Issuer
+	claims["aud"] = option.Audience
+	claims["exp"] = time.Now().Add(time.Second * time.Duration(option.Expires)).Unix()
 	token := jwt.NewWithClaims(Method, claims)
 	tokenString, err = token.SignedString(Key)
 	if err != nil {

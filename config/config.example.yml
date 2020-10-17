@@ -1,4 +1,6 @@
 listen: ':8000'
+app:
+  key:
 cors:
   origin:
     - '*'
@@ -21,3 +23,8 @@ redis:
   address: localhost:6379
   password:
   db: 0
+token:
+  system:
+    issuer:
+    audience:
+    expires:
