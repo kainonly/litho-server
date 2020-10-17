@@ -15,8 +15,9 @@ import (
 	"os"
 	"time"
 	"van-api/app"
-	"van-api/app/types"
+	"van-api/helper"
 	"van-api/route"
+	"van-api/types"
 )
 
 func main() {
@@ -51,6 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	helper.DB = db
 	sqlDB, err := db.DB()
 	if err != nil {
 		log.Fatalln(err)
@@ -69,6 +71,7 @@ func main() {
 		Password: cfg.Redis.Password,
 		DB:       cfg.Redis.DB,
 	})
+	helper.RDB = rdb
 	serve.ConfigureContainer(func(container *router.APIContainer) {
 		container.RegisterDependency(db)
 		container.RegisterDependency(rdb)
