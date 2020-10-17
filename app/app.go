@@ -5,6 +5,6 @@ import (
 	"van-api/app/controller"
 )
 
-func Bootstrap(app *mvc.Application) {
+func Application(app *mvc.Application) {
 	app.Party("/main").Handle(new(controller.MainController))
 }
