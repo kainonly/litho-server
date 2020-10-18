@@ -17,7 +17,8 @@ var (
 func Make(scene string, claims jwt.MapClaims) (tokenString string, err error) {
 	option := helper.Config.Token[scene]
 	if option == (types.TokenOption{}) {
-		return "", fmt.Errorf("the [%v] scene does not exist", scene)
+		err = fmt.Errorf("the [%v] scene does not exist", scene)
+		return
 	}
 	claims["jti"] = uuid.New()
 	claims["iat"] = time.Now().Unix()
@@ -32,7 +33,12 @@ func Make(scene string, claims jwt.MapClaims) (tokenString string, err error) {
 	return
 }
 
-func Verify(tokenString string) (result bool, claims jwt.MapClaims, err error) {
+func Verify(scene string, tokenString string) (result bool, claims jwt.MapClaims, err error) {
+	option := helper.Config.Token[scene]
+	if option == (types.TokenOption{}) {
+		err = fmt.Errorf("the [%v] scene does not exist", scene)
+		return
+	}
 	var token *jwt.Token
 	token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

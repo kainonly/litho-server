@@ -34,7 +34,7 @@ func TestMake(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
-	result, claims, err := Verify(tokenString)
+	result, claims, err := Verify("system", tokenString)
 	if err != nil {
 		t.Fatal(err)
 	}
