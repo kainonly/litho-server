@@ -1,29 +1,41 @@
 package controller
 
 import (
-	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
-	"log"
-	"time"
 	"van-api/helper/res"
+	"van-api/helper/validate"
 )
 
 type MainController struct {
+}
+
+type LoginBody struct {
+	Username string `validate:"required,min=4,max=20"`
+	Password string `validate:"required,min=12,max=20"`
+}
+
+func (c *MainController) PostLogin(ctx iris.Context) interface{} {
+	var body LoginBody
+	err := ctx.ReadJSON(&body)
+	if err != nil {
+		return res.Error(err)
+	}
+	errs := validate.Make(body, validate.Message{
+		"Username": map[string]string{
+			"required": "Submit missing [username] field",
+		},
+	})
+	if errs != nil {
+		return res.Error(errs)
+	}
+	return res.Ok()
 }
 
 func (c *MainController) PostVerify(ctx iris.Context) interface{} {
 	var data map[string]interface{}
 	err := ctx.ReadJSON(&data)
 	if err != nil {
-		return res.Error(err.Error())
+		return res.Error(err)
 	}
-	log.Println(data)
-	ctx.SetCookieKV("xxx", "sdsd")
-	token := jwt.NewTokenWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"time": time.Now(),
-	})
-	tokenString, _ := token.SignedString([]byte("My Secret"))
-	return res.Result(iris.Map{
-		"token": tokenString,
-	})
+	return res.Ok()
 }
