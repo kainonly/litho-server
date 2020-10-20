@@ -5,17 +5,17 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"time"
-	"van-api/helper"
 	"van-api/types"
 )
 
 var (
-	Key    []byte
-	Method jwt.SigningMethod = jwt.SigningMethodHS256
+	Key     []byte
+	Options map[string]types.TokenOption
+	Method  jwt.SigningMethod = jwt.SigningMethodHS256
 )
 
 func Make(scene string, claims jwt.MapClaims) (tokenString string, err error) {
-	option := helper.Config.Token[scene]
+	option := Options[scene]
 	if option == (types.TokenOption{}) {
 		err = fmt.Errorf("the [%v] scene does not exist", scene)
 		return
@@ -34,7 +34,7 @@ func Make(scene string, claims jwt.MapClaims) (tokenString string, err error) {
 }
 
 func Verify(scene string, tokenString string) (result bool, claims jwt.MapClaims, err error) {
-	option := helper.Config.Token[scene]
+	option := Options[scene]
 	if option == (types.TokenOption{}) {
 		err = fmt.Errorf("the [%v] scene does not exist", scene)
 		return

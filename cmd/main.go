@@ -7,8 +7,8 @@ import (
 	"github.com/kataras/iris/v12/mvc"
 	"log"
 	"van-api/app"
+	"van-api/app/redis_model"
 	"van-api/bootstrap"
-	"van-api/helper"
 	"van-api/helper/token"
 	"van-api/route"
 )
@@ -32,15 +32,15 @@ func main() {
 		log.Fatalln(err)
 	}
 	rdb := bootstrap.InitializeRedis(&cfg.Redis)
+	rm := redis_model.NewRedisModel(db, rdb)
 	// Define shared variables
-	helper.Config = &cfg
 	token.Key = []byte(cfg.App.Key)
-	helper.Db = db
-	helper.Redis = rdb
+	token.Options = cfg.Token
 	// Configure containers
 	serve.ConfigureContainer(func(container *router.APIContainer) {
 		container.RegisterDependency(db)
 		container.RegisterDependency(rdb)
+		container.RegisterDependency(rm)
 		container.Get("/", route.Default)
 		container.Options("*", route.Default)
 		mvc.Configure(container.Party("/").Self, app.Application)
