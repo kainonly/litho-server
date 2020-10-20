@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/kataras/iris/v12"
-	"gorm.io/gorm"
 	"van-api/helper/res"
 	"van-api/helper/validate"
 )
@@ -32,6 +31,6 @@ func (c *MainController) PostLogin(ctx iris.Context) interface{} {
 	return res.Ok()
 }
 
-func (c *MainController) PostVerify(ctx iris.Context, db *gorm.DB) interface{} {
+func (c *MainController) PostVerify(ctx iris.Context) interface{} {
 	return res.Ok()
 }
