@@ -19,8 +19,8 @@ func (c *Model) AdminGet(username string) (result map[string]interface{}, err er
 	}
 	if exists == 0 {
 		var adminLists []model.Admin
-		c.db.Where("status = ?", 1).
-			Find(&adminLists)
+		c.db.Find(&adminLists).
+			Where("status = ?", 1)
 
 		lists := make(map[string]interface{})
 		for _, data := range adminLists {
