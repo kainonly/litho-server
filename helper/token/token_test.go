@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 	"van-api/bootstrap"
-	"van-api/helper"
 )
 
 var tokenString string
@@ -18,8 +17,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	helper.Config = &cfg
 	Key = []byte(cfg.App.Key)
+	Options = cfg.Token
 	os.Exit(m.Run())
 }
 
