@@ -16,7 +16,10 @@ func Initialize(db *gorm.DB, rdb *redis.Client) *Model {
 	c.db = db
 	c.rdb = rdb
 	c.keys = map[string]string{
-		"admin": "system:admin",
+		"acl":      "system:acl",
+		"resource": "system:resource",
+		"role":     "system:role",
+		"admin":    "system:admin",
 	}
 	return c
 }
