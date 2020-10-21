@@ -40,8 +40,8 @@ func main() {
 	serve.ConfigureContainer(func(container *router.APIContainer) {
 		container.RegisterDependency(db)
 		container.RegisterDependency(rdb)
-		container.RegisterDependency(cache.Initialize(db, rdb))
-		container.RegisterDependency(curd.Initialize(db))
+		container.RegisterDependency(cache.Initialize)
+		container.RegisterDependency(curd.Initialize)
 		container.Get("/", route.Default)
 		container.Options("*", route.Default)
 		mvc.Configure(container.Party("/").Self, app.Application)

@@ -6,14 +6,14 @@ import (
 
 func Ok() interface{} {
 	return iris.Map{
-		"error": 0,
+		"error": false,
 		"msg":   "ok",
 	}
 }
 
 func Data(value interface{}) interface{} {
 	return iris.Map{
-		"error": 0,
+		"error": false,
 		"data":  value,
 	}
 }
@@ -23,7 +23,7 @@ func Error(msg interface{}) interface{} {
 		msg = val.Error()
 	}
 	return iris.Map{
-		"error": 1,
+		"error": true,
 		"msg":   msg,
 	}
 }
