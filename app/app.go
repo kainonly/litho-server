@@ -7,4 +7,5 @@ import (
 
 func Application(app *mvc.Application) {
 	app.Party("/main").Handle(new(controller.MainController))
+	app.Party("/acl").Handle(new(controller.AclController))
 }
