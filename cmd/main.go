@@ -9,6 +9,7 @@ import (
 	"van-api/app"
 	"van-api/app/cache"
 	"van-api/bootstrap"
+	"van-api/curd"
 	"van-api/helper/token"
 	"van-api/route"
 )
@@ -40,6 +41,7 @@ func main() {
 		container.RegisterDependency(db)
 		container.RegisterDependency(rdb)
 		container.RegisterDependency(cache.Initialize(db, rdb))
+		container.RegisterDependency(curd.Initialize(db))
 		container.Get("/", route.Default)
 		container.Options("*", route.Default)
 		mvc.Configure(container.Party("/").Self, app.Application)
