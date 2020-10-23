@@ -1,0 +1,3 @@
+LogLevel: info
+EnableOptimizations: true
+Charset: UTF-8

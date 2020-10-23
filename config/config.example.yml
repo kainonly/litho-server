@@ -1,4 +1,5 @@
 listen: ':8000'
+debug: true
 app:
   key:
 cors:

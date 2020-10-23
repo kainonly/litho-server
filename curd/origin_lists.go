@@ -1,10 +1,16 @@
 package curd
 
 import (
+	"log"
 	"van-api/helper/res"
 )
 
 type ArrayCondition [][]interface{}
+
+type OriginListsBody struct {
+	Where [][3]string
+	Order []string
+}
 
 type OriginLists struct {
 	common
@@ -29,9 +35,7 @@ func (c *OriginLists) Field(field []string) *OriginLists {
 }
 
 func (c *OriginLists) Result() interface{} {
-	//rType := reflect.SliceOf(reflect.TypeOf(c.model))
-	//rSlice := reflect.MakeSlice(rType, 0, 0)
-	//rLists := reflect.New(rSlice.Type())
+	log.Println(c.body)
 	var lists []map[string]interface{}
 	query := c.db.Model(c.model)
 	for _, condition := range c.conditions {
