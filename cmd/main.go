@@ -4,6 +4,7 @@ import (
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/core/router"
+	"github.com/kataras/iris/v12/middleware/recover"
 	"github.com/kataras/iris/v12/mvc"
 	"log"
 	"van-api/app"
@@ -19,7 +20,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	serve := iris.Default()
+	serve := iris.New()
+	serve.Use(recover.New())
 	serve.Use(cors.New(cors.Options{
 		AllowedOrigins:   cfg.Cors.Origin,
 		AllowedMethods:   cfg.Cors.Method,
@@ -46,5 +48,8 @@ func main() {
 		container.Options("*", route.Default)
 		mvc.Configure(container.Party("/").Self, app.Application)
 	})
-	serve.Listen(cfg.Listen, iris.WithOptimizations)
+	serve.Listen(
+		cfg.Listen,
+		iris.WithConfiguration(iris.YAML("./config/iris.yml")),
+	)
 }
