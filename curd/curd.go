@@ -2,8 +2,6 @@ package curd
 
 import (
 	"gorm.io/gorm"
-	"reflect"
-	"van-api/helper/res"
 )
 
 type Curd struct {
@@ -16,9 +14,14 @@ func Initialize(db *gorm.DB) *Curd {
 	return c
 }
 
-func (c *Curd) Originlists(model interface{}) interface{} {
-	slice := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(model)), 0, 0)
-	lists := reflect.New(slice.Type())
-	c.db.Find(lists.Interface())
-	return res.Data(lists.Interface())
+type common struct {
+	db    *gorm.DB
+	model interface{}
+}
+
+func (c *Curd) Originlists(model interface{}) *OriginLists {
+	m := new(OriginLists)
+	m.db = c.db
+	m.model = model
+	return m
 }
