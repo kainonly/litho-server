@@ -12,8 +12,12 @@ type AclController struct {
 func (c *AclController) BeforeActivation(b mvc.BeforeActivation) {
 }
 
-func (c *AclController) PostOriginlists(body *curd.OriginListsBody, schema *curd.Curd) interface{} {
-	return schema.Originlists(model.Acl{}, body).
+type TestBody struct {
+	curd.Body
+}
+
+func (c *AclController) PostOriginlists(body *TestBody, mode *curd.Curd) interface{} {
+	return mode.Originlists(model.Acl{}, body).
 		Where(curd.ArrayCondition{
 			[]interface{}{"id=?", "1"},
 		}).
