@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/kataras/iris/v12"
 	"log"
 	"van-api/app/cache"
 	"van-api/helper/res"
@@ -33,6 +32,6 @@ func (c *MainController) PostLogin(body LoginBody, cache *cache.Model) interface
 	return res.Ok()
 }
 
-func (c *MainController) PostVerify(ctx iris.Context) interface{} {
+func (c *MainController) PostVerify() interface{} {
 	return res.Ok()
 }
