@@ -32,7 +32,7 @@ func (c *OriginLists) Result() interface{} {
 	var lists []map[string]interface{}
 	query := c.db.Model(c.model)
 	for _, condition := range c.conditions {
-		query.Where(condition[0], condition[1])
+		query.Where(condition[0].(string)+condition[1].(string)+"?", condition[2])
 	}
 	for _, order := range c.orders {
 		query.Order(order)
