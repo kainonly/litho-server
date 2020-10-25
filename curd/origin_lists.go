@@ -1,7 +1,6 @@
 package curd
 
 import (
-	"log"
 	"van-api/helper/res"
 )
 
@@ -28,7 +27,6 @@ func (c *OriginLists) Field(field []string) *OriginLists {
 }
 
 func (c *OriginLists) Result() interface{} {
-	log.Println(c.body.(BodyAPI).GetWhere())
 	var lists []map[string]interface{}
 	query := c.db.Model(c.model)
 	for _, condition := range c.conditions {
