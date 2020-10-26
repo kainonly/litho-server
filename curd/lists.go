@@ -4,7 +4,7 @@ import (
 	"van-api/helper/res"
 )
 
-type OriginLists struct {
+type Lists struct {
 	common
 	conditions Conditions
 	query      Query
@@ -12,27 +12,27 @@ type OriginLists struct {
 	field      []string
 }
 
-func (c *OriginLists) Where(conditions Conditions) *OriginLists {
+func (c *Lists) Where(conditions Conditions) *Lists {
 	c.conditions = conditions
 	return c
 }
 
-func (c *OriginLists) Query(query Query) *OriginLists {
+func (c *Lists) Query(query Query) *Lists {
 	c.query = query
 	return c
 }
 
-func (c *OriginLists) OrderBy(orders []string) *OriginLists {
+func (c *Lists) OrderBy(orders []string) *Lists {
 	c.orders = orders
 	return c
 }
 
-func (c *OriginLists) Field(field []string) *OriginLists {
+func (c *Lists) Field(field []string) *Lists {
 	c.field = field
 	return c
 }
 
-func (c *OriginLists) Result() interface{} {
+func (c *Lists) Result() interface{} {
 	body := c.body.(BodyAPI)
 	var lists []map[string]interface{}
 	tx := c.db.Model(c.model)
@@ -50,6 +50,16 @@ func (c *OriginLists) Result() interface{} {
 	if len(c.field) != 0 {
 		tx.Select(c.field)
 	}
+	page := body.GetPagination()
+	if page != (Pagination{}) {
+		tx.Limit(int(page.Limit))
+		tx.Offset(int((page.Index - 1) * page.Limit))
+	}
+	var total int64
+	tx.Count(&total)
 	tx.Find(&lists)
-	return res.Data(lists)
+	return res.Data(map[string]interface{}{
+		"lists": lists,
+		"total": total,
+	})
 }

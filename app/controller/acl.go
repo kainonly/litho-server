@@ -27,7 +27,13 @@ func (c *AclController) PostOriginlists(body *TestBody, mode *curd.Curd) interfa
 		Result()
 }
 
-func (c *AclController) PostTest(body *TestBody, mode *curd.Curd) interface{} {
+func (c *AclController) PostLists(body *TestBody, mode *curd.Curd) interface{} {
+	return mode.
+		Lists(model.Acl{}, body).
+		Result()
+}
+
+func (c *AclController) PostGet(body *TestBody, mode *curd.Curd) interface{} {
 	return mode.
 		Get(model.Acl{}, body).
 		Query(func(tx *gorm.DB) {

@@ -16,16 +16,18 @@ func Initialize(db *gorm.DB) *Curd {
 
 func (c *Curd) Originlists(model interface{}, body interface{}) *OriginLists {
 	m := new(OriginLists)
-	m.db = c.db
-	m.model = model
-	m.body = body
+	m.initialize(c.db, model, body)
+	return m
+}
+
+func (c *Curd) Lists(model interface{}, body interface{}) *Lists {
+	m := new(Lists)
+	m.initialize(c.db, model, body)
 	return m
 }
 
 func (c *Curd) Get(model interface{}, body interface{}) *Get {
 	m := new(Get)
-	m.db = c.db
-	m.model = model
-	m.body = body
+	m.initialize(c.db, model, body)
 	return m
 }

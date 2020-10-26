@@ -31,16 +31,17 @@ func (c *Get) Field(field []string) *Get {
 }
 
 func (c *Get) Result() interface{} {
+	body := c.body.(BodyAPI)
 	data := make(map[string]interface{})
 	tx := c.db.Model(c.model)
-	conditions := append(c.conditions, c.body.(BodyAPI).GetWhere()...)
+	conditions := append(c.conditions, body.GetWhere()...)
 	for _, condition := range conditions {
 		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 	}
 	if c.query != nil {
 		c.query(tx)
 	}
-	orders := append(c.orders, c.body.(BodyAPI).GetOrder()...)
+	orders := append(c.orders, body.GetOrder()...)
 	for _, order := range orders {
 		tx.Order(order)
 	}
