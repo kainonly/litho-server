@@ -1,6 +1,7 @@
 package curd
 
 import (
+	"gorm.io/gorm"
 	"van-api/helper/res"
 )
 
@@ -9,6 +10,7 @@ type OriginLists struct {
 	conditions ArrayCondition
 	orders     []string
 	field      []string
+	subQuery   func(tx *gorm.DB)
 }
 
 func (c *OriginLists) Where(conditions ArrayCondition) *OriginLists {
@@ -26,20 +28,28 @@ func (c *OriginLists) Field(field []string) *OriginLists {
 	return c
 }
 
+func (c *OriginLists) Query(query func(tx *gorm.DB)) *OriginLists {
+	c.subQuery = query
+	return c
+}
+
 func (c *OriginLists) Result() interface{} {
 	var lists []map[string]interface{}
-	query := c.db.Model(c.model)
+	tx := c.db.Model(c.model)
 	conditions := append(c.conditions, c.body.(BodyAPI).GetWhere()...)
 	for _, condition := range conditions {
-		query.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+	}
+	if c.subQuery != nil {
+		c.subQuery(tx)
 	}
 	orders := append(c.orders, c.body.(BodyAPI).GetOrder()...)
 	for _, order := range orders {
-		query.Order(order)
+		tx.Order(order)
 	}
 	if len(c.field) != 0 {
-		query.Select(c.field)
+		tx.Select(c.field)
 	}
-	query.Find(&lists)
+	tx.Find(&lists)
 	return res.Data(lists)
 }
