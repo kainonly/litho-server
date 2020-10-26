@@ -29,10 +29,12 @@ func (c *OriginLists) Field(field []string) *OriginLists {
 func (c *OriginLists) Result() interface{} {
 	var lists []map[string]interface{}
 	query := c.db.Model(c.model)
-	for _, condition := range c.conditions {
-		query.Where(condition[0].(string)+condition[1].(string)+"?", condition[2])
+	conditions := append(c.conditions, c.body.(BodyAPI).GetWhere()...)
+	for _, condition := range conditions {
+		query.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 	}
-	for _, order := range c.orders {
+	orders := append(c.orders, c.body.(BodyAPI).GetOrder()...)
+	for _, order := range orders {
 		query.Order(order)
 	}
 	if len(c.field) != 0 {

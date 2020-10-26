@@ -8,23 +8,23 @@ type common struct {
 	body  interface{}
 }
 
+type ArrayCondition [][]interface{}
+
 type BodyAPI interface {
-	GetWhere() [][3]string
+	GetWhere() ArrayCondition
 	GetOrder() []string
 }
 
 type Body struct {
-	Where [][3]string
+	Where ArrayCondition
 	Order []string
 	BodyAPI
 }
 
-func (c *Body) GetWhere() [][3]string {
+func (c *Body) GetWhere() ArrayCondition {
 	return c.Where
 }
 
 func (c *Body) GetOrder() []string {
 	return c.Order
 }
-
-type ArrayCondition [][]interface{}
