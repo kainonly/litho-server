@@ -31,7 +31,7 @@ func (c *Get) Field(field []string) *Get {
 }
 
 func (c *Get) Result() interface{} {
-	var data map[string]interface{}
+	data := make(map[string]interface{})
 	tx := c.db.Model(c.model)
 	conditions := append(c.conditions, c.body.(BodyAPI).GetWhere()...)
 	for _, condition := range conditions {
@@ -47,6 +47,6 @@ func (c *Get) Result() interface{} {
 	if len(c.field) != 0 {
 		tx.Select(c.field)
 	}
-	tx.Find(&data)
+	tx.First(&data)
 	return res.Data(data)
 }
