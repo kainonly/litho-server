@@ -1,10 +1,8 @@
 package curd
 
-import (
-	"van-api/helper/res"
-)
+import "van-api/helper/res"
 
-type OriginLists struct {
+type Get struct {
 	common
 	conditions Conditions
 	query      Query
@@ -12,28 +10,28 @@ type OriginLists struct {
 	field      []string
 }
 
-func (c *OriginLists) Where(conditions Conditions) *OriginLists {
+func (c *Get) Where(conditions Conditions) *Get {
 	c.conditions = conditions
 	return c
 }
 
-func (c *OriginLists) Query(query Query) *OriginLists {
+func (c *Get) Query(query Query) *Get {
 	c.query = query
 	return c
 }
 
-func (c *OriginLists) OrderBy(orders []string) *OriginLists {
+func (c *Get) OrderBy(orders []string) *Get {
 	c.orders = orders
 	return c
 }
 
-func (c *OriginLists) Field(field []string) *OriginLists {
+func (c *Get) Field(field []string) *Get {
 	c.field = field
 	return c
 }
 
-func (c *OriginLists) Result() interface{} {
-	var lists []map[string]interface{}
+func (c *Get) Result() interface{} {
+	var data map[string]interface{}
 	tx := c.db.Model(c.model)
 	conditions := append(c.conditions, c.body.(BodyAPI).GetWhere()...)
 	for _, condition := range conditions {
@@ -49,6 +47,6 @@ func (c *OriginLists) Result() interface{} {
 	if len(c.field) != 0 {
 		tx.Select(c.field)
 	}
-	tx.Find(&lists)
-	return res.Data(lists)
+	tx.Find(&data)
+	return res.Data(data)
 }
