@@ -21,3 +21,11 @@ func (c *Curd) Originlists(model interface{}, body interface{}) *OriginLists {
 	m.body = body
 	return m
 }
+
+func (c *Curd) Get(model interface{}, body interface{}) *Get {
+	m := new(Get)
+	m.db = c.db
+	m.model = model
+	m.body = body
+	return m
+}

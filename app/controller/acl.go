@@ -17,8 +17,9 @@ type TestBody struct {
 }
 
 func (c *AclController) PostOriginlists(body *TestBody, mode *curd.Curd) interface{} {
-	return mode.Originlists(model.Acl{}, body).
-		Where(curd.ArrayCondition{
+	return mode.
+		Originlists(model.Acl{}, body).
+		Where(curd.Conditions{
 			[]interface{}{"status", "=", "1"},
 		}).
 		Field([]string{"id", "name", "read", "write"}).

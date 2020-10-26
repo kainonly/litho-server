@@ -8,20 +8,21 @@ type common struct {
 	body  interface{}
 }
 
-type ArrayCondition [][]interface{}
+type Conditions [][]interface{}
+type Query func(tx *gorm.DB)
 
 type BodyAPI interface {
-	GetWhere() ArrayCondition
+	GetWhere() Conditions
 	GetOrder() []string
 }
 
 type Body struct {
-	Where ArrayCondition
+	Where Conditions
 	Order []string
 	BodyAPI
 }
 
-func (c *Body) GetWhere() ArrayCondition {
+func (c *Body) GetWhere() Conditions {
 	return c.Where
 }
 
