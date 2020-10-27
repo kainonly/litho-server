@@ -5,6 +5,10 @@ import (
 )
 
 type Curd struct {
+	common
+}
+
+type common struct {
 	db *gorm.DB
 }
 
@@ -14,26 +18,36 @@ func Initialize(db *gorm.DB) *Curd {
 	return c
 }
 
-func (c *Curd) Originlists(model interface{}, body interface{}) *OriginLists {
-	m := new(OriginLists)
-	m.initialize(c.db, model, body)
+func (c *Curd) Originlists(model interface{}, body OriginListsBody) *originLists {
+	m := new(originLists)
+	m.common = c.common
+	m.model = model
+	m.body = body
 	return m
 }
 
-func (c *Curd) Lists(model interface{}, body interface{}) *Lists {
-	m := new(Lists)
-	m.initialize(c.db, model, body)
+func (c *Curd) Lists(model interface{}, body ListsBody) *lists {
+	m := new(lists)
+	m.common = c.common
+	m.model = model
+	m.body = body
 	return m
 }
 
-func (c *Curd) Get(model interface{}, body interface{}) *Get {
-	m := new(Get)
-	m.initialize(c.db, model, body)
+func (c *Curd) Get(model interface{}, body GetBody) *get {
+	m := new(get)
+	m.common = c.common
+	m.model = model
+	m.body = body
 	return m
 }
 
-func (c *Curd) Add(model interface{}, body interface{}) *Add {
-	m := new(Add)
-	m.initialize(c.db, model, nil)
+func (c *Curd) Add(model interface{}) *add {
+	m := new(add)
+	m.common = c.common
+	m.model = model
 	return m
 }
+
+type Conditions [][]interface{}
+type Query func(tx *gorm.DB)
