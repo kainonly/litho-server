@@ -17,13 +17,13 @@ type AclController struct {
 func (c *AclController) BeforeActivation(b mvc.BeforeActivation) {
 }
 
-type TestRead struct {
-	curd.Body
+type OriginListsBody struct {
+	curd.OriginListsBody
 }
 
-func (c *AclController) PostOriginlists(body *TestRead, mode *curd.Curd) interface{} {
+func (c *AclController) PostOriginlists(body *OriginListsBody, mode *curd.Curd) interface{} {
 	return mode.
-		Originlists(model.Acl{}, body).
+		Originlists(model.Acl{}, body.OriginListsBody).
 		Where(curd.Conditions{
 			[]interface{}{"status", "=", "1"},
 		}).
@@ -31,18 +31,23 @@ func (c *AclController) PostOriginlists(body *TestRead, mode *curd.Curd) interfa
 		Result()
 }
 
-func (c *AclController) PostLists(body *TestRead, mode *curd.Curd) interface{} {
+type ListsBody struct {
+	curd.ListsBody
+}
+
+func (c *AclController) PostLists(body *ListsBody, mode *curd.Curd) interface{} {
 	return mode.
-		Lists(model.Acl{}, body).
+		Lists(model.Acl{}, body.ListsBody).
 		Result()
 }
 
-func (c *AclController) PostGet(body *TestRead, mode *curd.Curd) interface{} {
+type GetBody struct {
+	curd.GetBody
+}
+
+func (c *AclController) PostGet(body *GetBody, mode *curd.Curd) interface{} {
 	return mode.
-		Get(model.Acl{}, body).
-		Query(func(tx *gorm.DB) {
-			tx.Where("id = ?", "2")
-		}).
+		Get(model.Acl{}, body.GetBody).
 		Field([]string{"id", "name", "read", "write"}).
 		Result()
 }
@@ -70,7 +75,7 @@ func (c *AclController) PostAdd(body *TestAdd, mode *curd.Curd) interface{} {
 		Write: body.Write,
 	}
 	return mode.
-		Add(&data, body).
+		Add(&data).
 		After(func(tx *gorm.DB) error {
 			return errors.New("test error")
 		}).

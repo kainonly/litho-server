@@ -5,17 +5,18 @@ import (
 	"van-api/helper/res"
 )
 
-type Add struct {
+type add struct {
 	common
+	model interface{}
 	after func(tx *gorm.DB) error
 }
 
-func (c *Add) After(hook func(tx *gorm.DB) error) *Add {
+func (c *add) After(hook func(tx *gorm.DB) error) *add {
 	c.after = hook
 	return c
 }
 
-func (c *Add) Result() interface{} {
+func (c *add) Result() interface{} {
 	if c.after == nil {
 		if err := c.db.Create(c.model).Error; err != nil {
 			return err

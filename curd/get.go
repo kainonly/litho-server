@@ -2,46 +2,57 @@ package curd
 
 import "van-api/helper/res"
 
-type Get struct {
+type GetBody struct {
+	Id    interface{}
+	Where Conditions
+	Order []string
+}
+
+type get struct {
 	common
+	model      interface{}
+	body       GetBody
 	conditions Conditions
 	query      Query
 	orders     []string
 	field      []string
 }
 
-func (c *Get) Where(conditions Conditions) *Get {
+func (c *get) Where(conditions Conditions) *get {
 	c.conditions = conditions
 	return c
 }
 
-func (c *Get) Query(query Query) *Get {
+func (c *get) Query(query Query) *get {
 	c.query = query
 	return c
 }
 
-func (c *Get) OrderBy(orders []string) *Get {
+func (c *get) OrderBy(orders []string) *get {
 	c.orders = orders
 	return c
 }
 
-func (c *Get) Field(field []string) *Get {
+func (c *get) Field(field []string) *get {
 	c.field = field
 	return c
 }
 
-func (c *Get) Result() interface{} {
-	body := c.body.(BodyAPI)
+func (c *get) Result() interface{} {
 	data := make(map[string]interface{})
 	tx := c.db.Model(c.model)
-	conditions := append(c.conditions, body.GetWhere()...)
-	for _, condition := range conditions {
-		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+	if c.body.Id != nil {
+		tx.Where("`id` = ?", c.body.Id)
+	} else {
+		conditions := append(c.conditions, c.body.Where...)
+		for _, condition := range conditions {
+			tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+		}
 	}
 	if c.query != nil {
 		c.query(tx)
 	}
-	orders := append(c.orders, body.GetOrder()...)
+	orders := append(c.orders, c.body.Order...)
 	for _, order := range orders {
 		tx.Order(order)
 	}

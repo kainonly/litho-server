@@ -4,53 +4,65 @@ import (
 	"van-api/helper/res"
 )
 
-type Lists struct {
+type ListsBody struct {
+	Where Conditions
+	Order []string
+	Page  Pagination
+}
+
+type Pagination struct {
+	Index int64
+	Limit int64
+}
+
+type lists struct {
 	common
+	model      interface{}
+	body       ListsBody
 	conditions Conditions
 	query      Query
 	orders     []string
 	field      []string
 }
 
-func (c *Lists) Where(conditions Conditions) *Lists {
+func (c *lists) Where(conditions Conditions) *lists {
 	c.conditions = conditions
 	return c
 }
 
-func (c *Lists) Query(query Query) *Lists {
+func (c *lists) Query(query Query) *lists {
 	c.query = query
 	return c
 }
 
-func (c *Lists) OrderBy(orders []string) *Lists {
+func (c *lists) OrderBy(orders []string) *lists {
 	c.orders = orders
 	return c
 }
 
-func (c *Lists) Field(field []string) *Lists {
+func (c *lists) Field(field []string) *lists {
 	c.field = field
 	return c
 }
 
-func (c *Lists) Result() interface{} {
-	body := c.body.(BodyAPI)
+func (c *lists) Result() interface{} {
 	var lists []map[string]interface{}
 	tx := c.db.Model(c.model)
-	conditions := append(c.conditions, body.GetWhere()...)
+	conditions := append(c.conditions, c.body.Where...)
 	for _, condition := range conditions {
 		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 	}
 	if c.query != nil {
 		c.query(tx)
 	}
-	orders := append(c.orders, body.GetOrder()...)
+	orders := append(c.orders, c.body.Order...)
 	for _, order := range orders {
 		tx.Order(order)
 	}
 	if len(c.field) != 0 {
 		tx.Select(c.field)
 	}
-	page := body.GetPagination()
+	page := c.body.Page
 	if page != (Pagination{}) {
 		tx.Limit(int(page.Limit))
 		tx.Offset(int((page.Index - 1) * page.Limit))
