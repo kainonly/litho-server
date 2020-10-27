@@ -49,5 +49,13 @@ func (c *Curd) Add(model interface{}) *add {
 	return m
 }
 
+func (c *Curd) Edit(model interface{}, body EditBody) *edit {
+	m := new(edit)
+	m.common = c.common
+	m.model = model
+	m.body = body
+	return m
+}
+
 type Conditions [][]interface{}
 type Query func(tx *gorm.DB)
