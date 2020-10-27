@@ -31,3 +31,9 @@ func (c *Curd) Get(model interface{}, body interface{}) *Get {
 	m.initialize(c.db, model, body)
 	return m
 }
+
+func (c *Curd) Add(model interface{}, body interface{}) *Add {
+	m := new(Add)
+	m.initialize(c.db, model, nil)
+	return m
+}
