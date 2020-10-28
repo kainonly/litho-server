@@ -1,9 +1,8 @@
 package controller
 
 import (
-	"errors"
 	"github.com/kataras/iris/v12/mvc"
-	"gorm.io/gorm"
+	"log"
 	"van-api/app/model"
 	"van-api/curd"
 	"van-api/helper/res"
@@ -28,7 +27,7 @@ func (c *AclController) PostOriginlists(body *OriginListsBody, mode *curd.Curd) 
 			[]interface{}{"status", "=", "1"},
 		}).
 		Field([]string{"id", "name", "read", "write"}).
-		Result()
+		Exec()
 }
 
 type ListsBody struct {
@@ -38,7 +37,7 @@ type ListsBody struct {
 func (c *AclController) PostLists(body *ListsBody, mode *curd.Curd) interface{} {
 	return mode.
 		Lists(model.Acl{}, body.ListsBody).
-		Result()
+		Exec()
 }
 
 type GetBody struct {
@@ -49,7 +48,7 @@ func (c *AclController) PostGet(body *GetBody, mode *curd.Curd) interface{} {
 	return mode.
 		Get(model.Acl{}, body.GetBody).
 		Field([]string{"id", "name", "read", "write"}).
-		Result()
+		Exec()
 }
 
 type TestAdd struct {
@@ -60,11 +59,7 @@ type TestAdd struct {
 }
 
 func (c *AclController) PostAdd(body *TestAdd, mode *curd.Curd) interface{} {
-	errs := validate.Make(body, validate.Message{
-		"Username": map[string]string{
-			"required": "Submit missing [username] field",
-		},
-	})
+	errs := validate.Make(body, nil)
 	if errs != nil {
 		return res.Error(errs)
 	}
@@ -74,10 +69,40 @@ func (c *AclController) PostAdd(body *TestAdd, mode *curd.Curd) interface{} {
 		Read:  body.Read,
 		Write: body.Write,
 	}
+	return mode.Add().Exec(data)
+}
+
+type TestEdit struct {
+	curd.EditBody
+	Key   string
+	Name  types.JSON
+	Read  string
+	Write string
+}
+
+func (c *AclController) PostEdit(body *TestEdit, mode *curd.Curd) interface{} {
+	errs := validate.Make(body, nil)
+	if errs != nil {
+		return res.Error(errs)
+	}
+	log.Println(body.Switch)
+	data := model.Acl{
+		Key:   body.Key,
+		Name:  body.Name,
+		Read:  body.Read,
+		Write: body.Write,
+	}
 	return mode.
-		Add(&data).
-		After(func(tx *gorm.DB) error {
-			return errors.New("test error")
-		}).
-		Result()
+		Edit(model.Acl{}, body.EditBody).
+		Exec(data)
+}
+
+type TestDelete struct {
+	curd.DeleteBody
+}
+
+func (c *AclController) PostDelete(body *TestDelete, mode *curd.Curd) interface{} {
+	return mode.
+		Delete(model.Acl{}, body.DeleteBody).
+		Exec()
 }

@@ -9,7 +9,7 @@ type OriginListsBody struct {
 	Order []string
 }
 
-type originLists struct {
+type originListsModel struct {
 	common
 	model      interface{}
 	body       OriginListsBody
@@ -19,43 +19,43 @@ type originLists struct {
 	field      []string
 }
 
-func (c *originLists) Where(conditions Conditions) *originLists {
+func (c *originListsModel) Where(conditions Conditions) *originListsModel {
 	c.conditions = conditions
 	return c
 }
 
-func (c *originLists) Query(query Query) *originLists {
+func (c *originListsModel) Query(query Query) *originListsModel {
 	c.query = query
 	return c
 }
 
-func (c *originLists) OrderBy(orders []string) *originLists {
+func (c *originListsModel) OrderBy(orders []string) *originListsModel {
 	c.orders = orders
 	return c
 }
 
-func (c *originLists) Field(field []string) *originLists {
+func (c *originListsModel) Field(field []string) *originListsModel {
 	c.field = field
 	return c
 }
 
-func (c *originLists) Result() interface{} {
+func (c *originListsModel) Exec() interface{} {
 	var lists []map[string]interface{}
-	tx := c.db.Model(c.model)
+	query := c.db.Model(c.model)
 	conditions := append(c.conditions, c.body.Where...)
 	for _, condition := range conditions {
-		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+		query = query.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 	}
 	if c.query != nil {
-		c.query(tx)
+		query = c.query(query)
 	}
 	orders := append(c.orders, c.body.Order...)
 	for _, order := range orders {
-		tx.Order(order)
+		query = query.Order(order)
 	}
 	if len(c.field) != 0 {
-		tx.Select(c.field)
+		query = query.Select(c.field)
 	}
-	tx.Find(&lists)
+	query.Find(&lists)
 	return res.Data(lists)
 }

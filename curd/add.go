@@ -5,25 +5,25 @@ import (
 	"van-api/helper/res"
 )
 
-type add struct {
+type addModel struct {
 	common
-	model interface{}
 	after func(tx *gorm.DB) error
 }
 
-func (c *add) After(hook func(tx *gorm.DB) error) *add {
+func (c *addModel) After(hook func(tx *gorm.DB) error) *addModel {
 	c.after = hook
 	return c
 }
 
-func (c *add) Result() interface{} {
+func (c *addModel) Exec(value interface{}) interface{} {
+	query := c.db
 	if c.after == nil {
-		if err := c.db.Create(c.model).Error; err != nil {
+		if err := query.Create(&value).Error; err != nil {
 			return err
 		}
 	} else {
-		err := c.db.Transaction(func(tx *gorm.DB) error {
-			if err := tx.Create(c.model).Error; err != nil {
+		err := query.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&value).Error; err != nil {
 				return err
 			}
 			if err := c.after(tx); err != nil {

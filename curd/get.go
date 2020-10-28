@@ -8,7 +8,7 @@ type GetBody struct {
 	Order []string
 }
 
-type get struct {
+type getModel struct {
 	common
 	model      interface{}
 	body       GetBody
@@ -18,47 +18,47 @@ type get struct {
 	field      []string
 }
 
-func (c *get) Where(conditions Conditions) *get {
+func (c *getModel) Where(conditions Conditions) *getModel {
 	c.conditions = conditions
 	return c
 }
 
-func (c *get) Query(query Query) *get {
+func (c *getModel) Query(query Query) *getModel {
 	c.query = query
 	return c
 }
 
-func (c *get) OrderBy(orders []string) *get {
+func (c *getModel) OrderBy(orders []string) *getModel {
 	c.orders = orders
 	return c
 }
 
-func (c *get) Field(field []string) *get {
+func (c *getModel) Field(field []string) *getModel {
 	c.field = field
 	return c
 }
 
-func (c *get) Result() interface{} {
+func (c *getModel) Exec() interface{} {
 	data := make(map[string]interface{})
-	tx := c.db.Model(c.model)
+	query := c.db.Model(c.model)
 	if c.body.Id != nil {
-		tx.Where("`id` = ?", c.body.Id)
+		query = query.Where("`id` = ?", c.body.Id)
 	} else {
 		conditions := append(c.conditions, c.body.Where...)
 		for _, condition := range conditions {
-			tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+			query = query.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 		}
 	}
 	if c.query != nil {
-		c.query(tx)
+		query = c.query(query)
 	}
 	orders := append(c.orders, c.body.Order...)
 	for _, order := range orders {
-		tx.Order(order)
+		query = query.Order(order)
 	}
 	if len(c.field) != 0 {
-		tx.Select(c.field)
+		query = query.Select(c.field)
 	}
-	tx.First(&data)
+	query.First(&data)
 	return res.Data(data)
 }

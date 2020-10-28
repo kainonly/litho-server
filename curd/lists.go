@@ -15,7 +15,7 @@ type Pagination struct {
 	Limit int64
 }
 
-type lists struct {
+type listsModel struct {
 	common
 	model      interface{}
 	body       ListsBody
@@ -25,51 +25,51 @@ type lists struct {
 	field      []string
 }
 
-func (c *lists) Where(conditions Conditions) *lists {
+func (c *listsModel) Where(conditions Conditions) *listsModel {
 	c.conditions = conditions
 	return c
 }
 
-func (c *lists) Query(query Query) *lists {
+func (c *listsModel) Query(query Query) *listsModel {
 	c.query = query
 	return c
 }
 
-func (c *lists) OrderBy(orders []string) *lists {
+func (c *listsModel) OrderBy(orders []string) *listsModel {
 	c.orders = orders
 	return c
 }
 
-func (c *lists) Field(field []string) *lists {
+func (c *listsModel) Field(field []string) *listsModel {
 	c.field = field
 	return c
 }
 
-func (c *lists) Result() interface{} {
+func (c *listsModel) Exec() interface{} {
 	var lists []map[string]interface{}
-	tx := c.db.Model(c.model)
+	query := c.db.Model(c.model)
 	conditions := append(c.conditions, c.body.Where...)
 	for _, condition := range conditions {
-		tx.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
+		query = query.Where("`"+condition[0].(string)+"` "+condition[1].(string)+" ?", condition[2])
 	}
 	if c.query != nil {
-		c.query(tx)
+		query = c.query(query)
 	}
 	orders := append(c.orders, c.body.Order...)
 	for _, order := range orders {
-		tx.Order(order)
+		query = query.Order(order)
 	}
 	if len(c.field) != 0 {
-		tx.Select(c.field)
+		query = query.Select(c.field)
 	}
 	page := c.body.Page
 	if page != (Pagination{}) {
-		tx.Limit(int(page.Limit))
-		tx.Offset(int((page.Index - 1) * page.Limit))
+		query = query.
+			Limit(int(page.Limit)).
+			Offset(int((page.Index - 1) * page.Limit))
 	}
 	var total int64
-	tx.Count(&total)
-	tx.Find(&lists)
+	query.Count(&total).Find(&lists)
 	return res.Data(map[string]interface{}{
 		"lists": lists,
 		"total": total,
