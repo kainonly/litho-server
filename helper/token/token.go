@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/kataras/jwt"
+	"log"
 	"time"
 	"van-api/types"
 )
@@ -39,6 +40,10 @@ func Verify(scene string, token []byte) (result bool, claims map[string]interfac
 	var verifiedToken *jwt.VerifiedToken
 	verifiedToken, err = jwt.Verify(Method, Key, token)
 	if err != nil {
+		if err == jwt.ErrExpired {
+			// refresh check
+			log.Println("do refresh")
+		}
 		return
 	}
 	err = verifiedToken.Claims(&claims)
