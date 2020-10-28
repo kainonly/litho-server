@@ -5,38 +5,43 @@ import (
 	"van-api/helper/res"
 )
 
-type EditBody struct {
-	Id     interface{}
-	Where  Conditions
-	Switch bool
+type DeleteBody struct {
+	Id    interface{}
+	Where Conditions
 }
 
-type editModel struct {
+type deleteModel struct {
 	common
 	model      interface{}
-	body       EditBody
+	body       DeleteBody
 	conditions Conditions
 	query      Query
+	prep       func(tx *gorm.DB) error
 	after      func(tx *gorm.DB) error
 }
 
-func (c *editModel) Where(conditions Conditions) *editModel {
+func (c *deleteModel) Where(conditions Conditions) *deleteModel {
 	c.conditions = conditions
 	return c
 }
 
-func (c *editModel) Query(query Query) *editModel {
+func (c *deleteModel) Query(query Query) *deleteModel {
 	c.query = query
 	return c
 }
 
-func (c *editModel) After(hook func(tx *gorm.DB) error) *editModel {
+func (c *deleteModel) Prep(hook func(tx *gorm.DB) error) *deleteModel {
+	c.prep = hook
+	return c
+}
+
+func (c *deleteModel) After(hook func(tx *gorm.DB) error) *deleteModel {
 	c.after = hook
 	return c
 }
 
-func (c *editModel) Exec(value interface{}) interface{} {
-	query := c.db.Model(c.model)
+func (c *deleteModel) Exec() interface{} {
+	query := c.db
 	if c.body.Id != nil {
 		query = query.Where("`id` = ?", c.body.Id)
 	} else {
@@ -48,13 +53,16 @@ func (c *editModel) Exec(value interface{}) interface{} {
 	if c.query != nil {
 		query = c.query(query)
 	}
-	if c.after == nil {
-		if err := query.Updates(value).Error; err != nil {
+	if c.after == nil && c.prep == nil {
+		if err := query.Delete(c.model).Error; err != nil {
 			return err
 		}
 	} else {
 		err := query.Transaction(func(tx *gorm.DB) error {
-			if err := tx.Updates(value).Error; err != nil {
+			if err := c.prep(tx); err != nil {
+				return err
+			}
+			if err := tx.Delete(c.model).Error; err != nil {
 				return err
 			}
 			if err := c.after(tx); err != nil {

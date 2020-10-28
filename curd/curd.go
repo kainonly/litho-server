@@ -18,39 +18,46 @@ func Initialize(db *gorm.DB) *Curd {
 	return c
 }
 
-func (c *Curd) Originlists(model interface{}, body OriginListsBody) *originLists {
-	m := new(originLists)
+func (c *Curd) Originlists(model interface{}, body OriginListsBody) *originListsModel {
+	m := new(originListsModel)
 	m.common = c.common
 	m.model = model
 	m.body = body
 	return m
 }
 
-func (c *Curd) Lists(model interface{}, body ListsBody) *lists {
-	m := new(lists)
+func (c *Curd) Lists(model interface{}, body ListsBody) *listsModel {
+	m := new(listsModel)
 	m.common = c.common
 	m.model = model
 	m.body = body
 	return m
 }
 
-func (c *Curd) Get(model interface{}, body GetBody) *get {
-	m := new(get)
+func (c *Curd) Get(model interface{}, body GetBody) *getModel {
+	m := new(getModel)
 	m.common = c.common
 	m.model = model
 	m.body = body
 	return m
 }
 
-func (c *Curd) Add(model interface{}) *add {
-	m := new(add)
+func (c *Curd) Add() *addModel {
+	m := new(addModel)
 	m.common = c.common
-	m.model = model
 	return m
 }
 
-func (c *Curd) Edit(model interface{}, body EditBody) *edit {
-	m := new(edit)
+func (c *Curd) Edit(model interface{}, body EditBody) *editModel {
+	m := new(editModel)
+	m.common = c.common
+	m.model = model
+	m.body = body
+	return m
+}
+
+func (c *Curd) Delete(model interface{}, body DeleteBody) *deleteModel {
+	m := new(deleteModel)
 	m.common = c.common
 	m.model = model
 	m.body = body
@@ -58,4 +65,4 @@ func (c *Curd) Edit(model interface{}, body EditBody) *edit {
 }
 
 type Conditions [][]interface{}
-type Query func(tx *gorm.DB)
+type Query func(tx *gorm.DB) *gorm.DB

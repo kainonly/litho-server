@@ -32,17 +32,17 @@ func Make(scene string, claims map[string]interface{}) (token []byte, err error)
 }
 
 func Verify(scene string, token []byte) (result bool, claims map[string]interface{}, err error) {
-	//option, exists := Options[scene]
-	//if !exists {
-	//	err = fmt.Errorf("the [%v] scene does not exist", scene)
-	//	return
-	//}
+	option, exists := Options[scene]
+	if !exists {
+		err = fmt.Errorf("the [%v] scene does not exist", scene)
+		return
+	}
 	var verifiedToken *jwt.VerifiedToken
 	verifiedToken, err = jwt.Verify(Method, Key, token)
 	if err != nil {
 		if err == jwt.ErrExpired {
 			// refresh check
-			log.Println("do refresh")
+			log.Println("do refresh:", option)
 		}
 		return
 	}
