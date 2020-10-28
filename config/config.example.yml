@@ -26,6 +26,7 @@ redis:
   db: 0
 token:
   system:
-    issuer:
+    issuer: van-api
     audience:
-    expires:
+      - van-console
+    expires: 3600

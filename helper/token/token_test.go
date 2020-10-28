@@ -1,14 +1,13 @@
 package token
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"log"
 	"os"
 	"testing"
 	"van-api/bootstrap"
 )
 
-var tokenString string
+var token []byte
 var err error
 
 func TestMain(m *testing.M) {
@@ -23,17 +22,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestMake(t *testing.T) {
-	tokenString, err = Make("system", jwt.MapClaims{
+	token, err = Make("system", map[string]interface{}{
 		"username": "kain",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(tokenString)
+	t.Log(string(token))
 }
 
 func TestVerify(t *testing.T) {
-	result, claims, err := Verify("system", tokenString)
+	result, claims, err := Verify("system", token)
 	if err != nil {
 		t.Fatal(err)
 	}
