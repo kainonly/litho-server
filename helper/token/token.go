@@ -4,14 +4,19 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/kataras/jwt"
-	"log"
 	"time"
-	"van-api/types"
 )
+
+type Option struct {
+	Issuer   string   `yaml:"issuer"`
+	Audience []string `yaml:"audience"`
+	Expires  uint     `yaml:"expires"`
+}
+type Handle func(option Option) (claims map[string]interface{}, err error)
 
 var (
 	Key     []byte
-	Options map[string]types.TokenOption
+	Options map[string]Option
 	Method  jwt.Alg = jwt.HS256
 )
 
@@ -31,7 +36,7 @@ func Make(scene string, claims map[string]interface{}) (token []byte, err error)
 	return
 }
 
-func Verify(scene string, token []byte) (result bool, claims map[string]interface{}, err error) {
+func Verify(scene string, token []byte, refresh Handle) (claims map[string]interface{}, err error) {
 	option, exists := Options[scene]
 	if !exists {
 		err = fmt.Errorf("the [%v] scene does not exist", scene)
@@ -40,9 +45,8 @@ func Verify(scene string, token []byte) (result bool, claims map[string]interfac
 	var verifiedToken *jwt.VerifiedToken
 	verifiedToken, err = jwt.Verify(Method, Key, token)
 	if err != nil {
-		if err == jwt.ErrExpired {
-			// refresh check
-			log.Println("do refresh:", option)
+		if err == jwt.ErrExpired && refresh != nil {
+			return refresh(option)
 		}
 		return
 	}

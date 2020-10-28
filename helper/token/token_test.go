@@ -32,10 +32,9 @@ func TestMake(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
-	result, claims, err := Verify("system", token)
+	claims, err := Verify("system", token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(result)
 	t.Log(claims)
 }
