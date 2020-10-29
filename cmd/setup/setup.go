@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/kainonly/iris-helper/hash"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -10,7 +11,6 @@ import (
 	"log"
 	"os"
 	"van-api/app/model"
-	"van-api/helper/hash"
 	"van-api/types"
 )
 

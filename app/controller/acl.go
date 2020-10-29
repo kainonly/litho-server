@@ -1,11 +1,11 @@
 package controller
 
 import (
+	curd "github.com/kainonly/iris-curd"
+	"github.com/kainonly/iris-helper/res"
+	"github.com/kainonly/iris-helper/validate"
 	"log"
 	"van-api/app/model"
-	"van-api/curd"
-	"van-api/helper/res"
-	"van-api/helper/validate"
 	"van-api/types"
 )
 
