@@ -4,7 +4,7 @@ import "van-api/types"
 
 type Role struct {
 	ID         uint64
-	Key        string
+	Keyid      string
 	Name       types.JSON
 	Resource   string
 	Acl        string
