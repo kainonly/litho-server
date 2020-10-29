@@ -1,6 +1,6 @@
 package types
 
-import "van-api/helper/token"
+import "github.com/kainonly/iris-helper/token"
 
 type Config struct {
 	Listen string                  `yaml:"listen"`
