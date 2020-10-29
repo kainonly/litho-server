@@ -17,7 +17,7 @@ type Handle func(option Option) (claims map[string]interface{}, err error)
 var (
 	Key     []byte
 	Options map[string]Option
-	Method  jwt.Alg = jwt.HS256
+	Method  = jwt.HS256
 )
 
 func Make(scene string, claims map[string]interface{}) (token []byte, err error) {

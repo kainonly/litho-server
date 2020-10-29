@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/kataras/iris/v12/mvc"
 	"log"
 	"van-api/app/model"
 	"van-api/curd"
@@ -11,9 +10,6 @@ import (
 )
 
 type AclController struct {
-}
-
-func (c *AclController) BeforeActivation(b mvc.BeforeActivation) {
 }
 
 type OriginListsBody struct {
@@ -52,7 +48,7 @@ func (c *AclController) PostGet(body *GetBody, mode *curd.Curd) interface{} {
 }
 
 type TestAdd struct {
-	Key   string     `validate:"required"`
+	Keyid string     `validate:"required"`
 	Name  types.JSON `validate:"required"`
 	Read  string     `validate:"required"`
 	Write string     `validate:"required"`
@@ -64,7 +60,7 @@ func (c *AclController) PostAdd(body *TestAdd, mode *curd.Curd) interface{} {
 		return res.Error(errs)
 	}
 	data := model.Acl{
-		Key:   body.Key,
+		Keyid: body.Keyid,
 		Name:  body.Name,
 		Read:  body.Read,
 		Write: body.Write,
@@ -74,7 +70,7 @@ func (c *AclController) PostAdd(body *TestAdd, mode *curd.Curd) interface{} {
 
 type TestEdit struct {
 	curd.EditBody
-	Key   string
+	Keyid string
 	Name  types.JSON
 	Read  string
 	Write string
@@ -87,7 +83,7 @@ func (c *AclController) PostEdit(body *TestEdit, mode *curd.Curd) interface{} {
 	}
 	log.Println(body.Switch)
 	data := model.Acl{
-		Key:   body.Key,
+		Keyid: body.Keyid,
 		Name:  body.Name,
 		Read:  body.Read,
 		Write: body.Write,
