@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"github.com/kainonly/iris-helper/res"
+	"github.com/kainonly/iris-helper/validate"
 	"log"
 	"van-api/app/cache"
-	"van-api/helper/res"
-	"van-api/helper/validate"
 )
 
 type MainController struct {

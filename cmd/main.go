@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/iris-contrib/middleware/cors"
+	curd "github.com/kainonly/iris-curd"
+	"github.com/kainonly/iris-helper/token"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/core/router"
 	"github.com/kataras/iris/v12/middleware/recover"
@@ -10,8 +12,6 @@ import (
 	"van-api/app"
 	"van-api/app/cache"
 	"van-api/bootstrap"
-	"van-api/curd"
-	"van-api/helper/token"
 	"van-api/route"
 )
 
