@@ -35,3 +35,11 @@ func (c *MainController) PostLogin(body LoginBody, cache *cache.Model) interface
 func (c *MainController) PostVerify() interface{} {
 	return res.Ok()
 }
+
+func (c *MainController) PostTest(cache *cache.Model) interface{} {
+	data, err := cache.RoleGet([]string{"*"}, "resource")
+	if err != nil {
+		return res.Error(err)
+	}
+	return res.Data(data)
+}
