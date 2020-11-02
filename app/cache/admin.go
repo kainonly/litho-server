@@ -19,41 +19,36 @@ func (c *Model) AdminGet(username string) (result map[string]interface{}, err er
 	}
 	if exists == 0 {
 		var adminLists []model.Admin
-		c.db.Find(&adminLists).
-			Where("status = ?", 1)
+		c.db.Where("status = ?", 1).
+			Find(&adminLists)
 
 		lists := make(map[string]interface{})
-		for _, data := range adminLists {
+		for _, admin := range adminLists {
 			var buf []byte
-			value := map[string]interface{}{
-				"id":       data.ID,
-				"role":     data.Role,
-				"username": data.Username,
-				"password": data.Password,
-			}
-			buf, err = jsoniter.Marshal(value)
+			buf, err = jsoniter.Marshal(map[string]interface{}{
+				"id":       admin.ID,
+				"role":     admin.Role,
+				"username": admin.Username,
+				"password": admin.Password,
+			})
 			if err != nil {
 				return
 			}
-			if data.Username == username {
-				result = value
-			}
-			lists[data.Username] = string(buf)
+			lists[admin.Username] = string(buf)
 		}
 		err = c.rdb.HMSet(ctx, c.keys["admin"], lists).Err()
 		if err != nil {
 			return
 		}
-	} else {
-		var raw []byte
-		err = c.rdb.HGet(ctx, c.keys["admin"], username).Scan(&raw)
-		if err != nil {
-			return
-		}
-		err = jsoniter.Unmarshal(raw, &result)
-		if err != nil {
-			return
-		}
+	}
+	var raw []byte
+	raw, err = c.rdb.HGet(ctx, c.keys["admin"], username).Bytes()
+	if err != nil {
+		return
+	}
+	err = jsoniter.Unmarshal(raw, &result)
+	if err != nil {
+		return
 	}
 	return
 }
