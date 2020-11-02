@@ -7,7 +7,7 @@ import (
 	"van-api/app/cache"
 )
 
-type MainController struct {
+type Controller struct {
 }
 
 type LoginBody struct {
@@ -15,7 +15,7 @@ type LoginBody struct {
 	Password string `validate:"required,min=12,max=20"`
 }
 
-func (c *MainController) PostLogin(body LoginBody, cache *cache.Model) interface{} {
+func (c *Controller) PostLogin(body LoginBody, cache *cache.Model) interface{} {
 	errs := validate.Make(body, validate.Message{
 		"Username": map[string]string{
 			"required": "Submit missing [username] field",
@@ -32,14 +32,6 @@ func (c *MainController) PostLogin(body LoginBody, cache *cache.Model) interface
 	return res.Ok()
 }
 
-func (c *MainController) PostVerify() interface{} {
+func (c *Controller) PostVerify() interface{} {
 	return res.Ok()
-}
-
-func (c *MainController) PostTest(cache *cache.Model) interface{} {
-	data, err := cache.RoleGet([]string{"*"}, "resource")
-	if err != nil {
-		return res.Error(err)
-	}
-	return res.Data(data)
 }
