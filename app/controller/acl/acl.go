@@ -65,11 +65,7 @@ func (c *Controller) PostAdd(body *addBody, mode *curd.Curd, cache *cache.Model)
 	}
 	return mode.
 		Add().
-		After(func(tx *gorm.DB) error {
-			clearcache(cache)
-			return nil
-		}).
-		Exec(data)
+		Exec(&data)
 }
 
 type editBody struct {
