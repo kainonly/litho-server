@@ -1,4 +1,4 @@
-package acl
+package role
 
 import (
 	curd "github.com/kainonly/iris-curd"
@@ -19,7 +19,7 @@ type originListsBody struct {
 
 func (c *Controller) PostOriginlists(body *originListsBody, mode *curd.Curd) interface{} {
 	return mode.
-		Originlists(model.Acl{}, body.OriginListsBody).
+		Originlists(model.Role{}, body.OriginListsBody).
 		OrderBy([]string{"create_time desc"}).
 		Exec()
 }
@@ -30,7 +30,7 @@ type listsBody struct {
 
 func (c *Controller) PostLists(body *listsBody, mode *curd.Curd) interface{} {
 	return mode.
-		Lists(model.Acl{}, body.ListsBody).
+		Lists(model.Role{}, body.ListsBody).
 		OrderBy([]string{"create_time desc"}).
 		Exec()
 }
@@ -41,16 +41,16 @@ type getBody struct {
 
 func (c *Controller) PostGet(body *getBody, mode *curd.Curd) interface{} {
 	return mode.
-		Get(model.Acl{}, body.GetBody).
+		Get(model.Role{}, body.GetBody).
 		Exec()
 }
 
 type addBody struct {
-	Keyid  string     `validate:"required"`
-	Name   types.JSON `validate:"required"`
-	Read   string
-	Write  string
-	Status bool
+	Keyid    string     `validate:"required"`
+	Name     types.JSON `validate:"required"`
+	Resource []string   `validate:"required"`
+	Note     string
+	Status   bool
 }
 
 func (c *Controller) PostAdd(body *addBody, mode *curd.Curd, cache *cache.Model) interface{} {
@@ -58,25 +58,40 @@ func (c *Controller) PostAdd(body *addBody, mode *curd.Curd, cache *cache.Model)
 	if errs != nil {
 		return res.Error(errs)
 	}
-	data := model.Acl{
+	var err error
+	data := model.RoleBasic{
 		Keyid:  body.Keyid,
 		Name:   body.Name,
-		Read:   body.Read,
-		Write:  body.Write,
+		Note:   body.Note,
 		Status: body.Status,
 	}
 	return mode.
 		Add().
+		After(func(tx *gorm.DB) error {
+			var assoc []model.RoleResourceAssoc
+			for _, resourceKey := range body.Resource {
+				assoc = append(assoc, model.RoleResourceAssoc{
+					RoleKey:     body.Keyid,
+					ResourceKey: resourceKey,
+				})
+			}
+			err = tx.Create(&assoc).Error
+			if err != nil {
+				return err
+			}
+			clearcache(cache)
+			return nil
+		}).
 		Exec(&data)
 }
 
 type editBody struct {
 	curd.EditBody
-	Keyid  string     `validate:"required_if=switch false"`
-	Name   types.JSON `validate:"required_if=switch false"`
-	Read   string
-	Write  string
-	Status bool
+	Keyid    string     `validate:"required_if=switch false"`
+	Name     types.JSON `validate:"required_if=switch false"`
+	Resource []string   `validate:"required_if=switch false"`
+	Note     string
+	Status   bool
 }
 
 func (c *Controller) PostEdit(body *editBody, mode *curd.Curd, cache *cache.Model) interface{} {
@@ -84,16 +99,35 @@ func (c *Controller) PostEdit(body *editBody, mode *curd.Curd, cache *cache.Mode
 	if errs != nil {
 		return res.Error(errs)
 	}
-	data := model.Acl{
+	var err error
+	data := model.RoleBasic{
 		Keyid:  body.Keyid,
 		Name:   body.Name,
-		Read:   body.Read,
-		Write:  body.Write,
+		Note:   body.Note,
 		Status: body.Status,
 	}
 	return mode.
-		Edit(model.Acl{}, body.EditBody).
+		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
+			if !body.Switch {
+				err = tx.Where("role_key = ?", body.Keyid).
+					Delete(model.RoleResourceAssoc{}).
+					Error
+				if err != nil {
+					return err
+				}
+				var assoc []model.RoleResourceAssoc
+				for _, resourceKey := range body.Resource {
+					assoc = append(assoc, model.RoleResourceAssoc{
+						RoleKey:     body.Keyid,
+						ResourceKey: resourceKey,
+					})
+				}
+				err = tx.Create(&assoc).Error
+				if err != nil {
+					return err
+				}
+			}
 			clearcache(cache)
 			return nil
 		}).
@@ -106,7 +140,7 @@ type deleteBody struct {
 
 func (c *Controller) PostDelete(body *deleteBody, mode *curd.Curd, cache *cache.Model) interface{} {
 	return mode.
-		Delete(model.Acl{}, body.DeleteBody).
+		Delete(model.RoleBasic{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
 			clearcache(cache)
 			return nil
@@ -124,7 +158,7 @@ func (c *Controller) PostValidedkey(body *validedkeyBody, db *gorm.DB) interface
 		return res.Error(errs)
 	}
 	var count int64
-	db.Model(&model.Acl{}).
+	db.Model(&model.RoleBasic{}).
 		Where("keyid = ?", body.Keyid).
 		Count(&count)
 
@@ -132,6 +166,6 @@ func (c *Controller) PostValidedkey(body *validedkeyBody, db *gorm.DB) interface
 }
 
 func clearcache(cache *cache.Model) {
-	cache.AclClear()
 	cache.RoleClear()
+	cache.AdminClear()
 }
