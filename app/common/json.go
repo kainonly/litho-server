@@ -1,4 +1,4 @@
-package types
+package common
 
 import (
 	"database/sql/driver"

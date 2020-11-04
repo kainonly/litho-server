@@ -1,4 +1,4 @@
-package types
+package options
 
 type RedisOption struct {
 	Address  string `yaml:"address"`
