@@ -1,4 +1,4 @@
-package types
+package options
 
 type CorsOption struct {
 	Origin        []string `yaml:"origin"`

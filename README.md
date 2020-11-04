@@ -1,3 +1,3 @@
-# Van Api
+# Taste Api
 
-Open source management infrastructure platform api
+Simple trial for multiple popular frameworks

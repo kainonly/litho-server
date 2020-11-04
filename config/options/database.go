@@ -1,4 +1,4 @@
-package types
+package options
 
 type MysqlOption struct {
 	Dsn             string `yaml:"dsn"`
