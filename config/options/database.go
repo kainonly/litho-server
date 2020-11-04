@@ -1,6 +1,6 @@
 package options
 
-type MysqlOption struct {
+type DatabaseOption struct {
 	Dsn             string `yaml:"dsn"`
 	MaxIdleConns    int    `yaml:"max_idle_conns"`
 	MaxOpenConns    int    `yaml:"max_open_conns"`
