@@ -2,6 +2,7 @@ package main
 
 import (
 	"go.uber.org/fx"
+	"taste-api/application"
 	"taste-api/bootstrap"
 )
 
@@ -11,7 +12,8 @@ func main() {
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
 			bootstrap.InitializeRedis,
+			bootstrap.HttpServer,
 		),
-		fx.Invoke(bootstrap.HttpServer),
+		fx.Invoke(application.Application),
 	).Run()
 }
