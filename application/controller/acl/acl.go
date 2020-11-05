@@ -1,13 +1,13 @@
-package admin
+package acl
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-helper/hash"
 	"github.com/kainonly/gin-helper/res"
 	"gorm.io/gorm"
 	"taste-api/application/cache"
 	"taste-api/application/common"
+	"taste-api/application/common/types"
 	"taste-api/application/model"
 )
 
@@ -26,9 +26,8 @@ func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	return app.Curd.
-		Originlists(model.Admin{}, body.OriginListsBody).
+		Originlists(model.Acl{}, body.OriginListsBody).
 		OrderBy([]string{"create_time desc"}).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
 		Exec()
 }
 
@@ -44,9 +43,8 @@ func (c *Controller) Lists(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	return app.Curd.
-		Lists(model.Admin{}, body.ListsBody).
+		Lists(model.Acl{}, body.ListsBody).
 		OrderBy([]string{"create_time desc"}).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
 		Exec()
 }
 
@@ -62,20 +60,16 @@ func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	return app.Curd.
-		Get(model.Admin{}, body.GetBody).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
+		Get(model.Acl{}, body.GetBody).
 		Exec()
 }
 
 type addBody struct {
-	Username string `binding:"required,min=4,max=20"`
-	Password string `binding:"required,min=12,max=20"`
-	Role     string `binding:"required"`
-	Email    string
-	Phone    string
-	Call     string
-	Avatar   string
-	Status   bool
+	Keyid  string     `binding:"required"`
+	Name   types.JSON `binding:"required"`
+	Read   string
+	Write  string
+	Status bool
 }
 
 func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
@@ -85,47 +79,25 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	var password string
-	password, err = hash.Make(body.Password, hash.Option{})
-	if err != nil {
-		return res.Error(err)
-	}
-	data := model.AdminBasic{
-		Username: body.Username,
-		Password: password,
-		Email:    body.Email,
-		Phone:    body.Phone,
-		Call:     body.Call,
-		Avatar:   body.Avatar,
-		Status:   body.Status,
+	data := model.Acl{
+		Keyid:  body.Keyid,
+		Name:   body.Name,
+		Read:   body.Read,
+		Write:  body.Write,
+		Status: body.Status,
 	}
 	return app.Curd.
 		Add().
-		After(func(tx *gorm.DB) error {
-			roleData := model.AdminRoleAssoc{
-				Username: body.Username,
-				RoleKey:  body.Role,
-			}
-			err = tx.Create(&roleData).Error
-			if err != nil {
-				return err
-			}
-			clearcache(app.Cache)
-			return nil
-		}).
 		Exec(&data)
 }
 
 type editBody struct {
 	operates.EditBody
-	Username string
-	Password string `binding:"min=12,max=20"`
-	Role     string `binding:"required_if=switch false"`
-	Email    string
-	Phone    string
-	Call     string
-	Avatar   string
-	Status   bool
+	Keyid  string     `binding:"required_if=switch false"`
+	Name   types.JSON `binding:"required_if=switch false"`
+	Read   string
+	Write  string
+	Status bool
 }
 
 func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
@@ -135,37 +107,16 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	var password string
-	if !body.Switch {
-		if body.Password != "" {
-			password, err = hash.Make(body.Password, hash.Option{})
-			if err != nil {
-				return res.Error(err)
-			}
-		}
-	}
-	data := model.AdminBasic{
-		Username: body.Username,
-		Password: password,
-		Email:    body.Email,
-		Phone:    body.Phone,
-		Call:     body.Call,
-		Avatar:   body.Avatar,
-		Status:   body.Status,
+	data := model.Acl{
+		Keyid:  body.Keyid,
+		Name:   body.Name,
+		Read:   body.Read,
+		Write:  body.Write,
+		Status: body.Status,
 	}
 	return app.Curd.
-		Edit(model.AdminBasic{}, body.EditBody).
+		Edit(model.Acl{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
-			if !body.Switch {
-				roleData := model.AdminRoleAssoc{
-					Username: body.Username,
-					RoleKey:  body.Role,
-				}
-				err = tx.Create(&roleData).Error
-				if err != nil {
-					return err
-				}
-			}
 			clearcache(app.Cache)
 			return nil
 		}).
@@ -184,7 +135,7 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	return app.Curd.
-		Delete(model.AdminBasic{}, body.DeleteBody).
+		Delete(model.Acl{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
 			clearcache(app.Cache)
 			return nil
@@ -192,6 +143,26 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 		Exec()
 }
 
+type validedkeyBody struct {
+	Keyid string `binding:"required"`
+}
+
+func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
+	app := common.Inject(i)
+	var body validedkeyBody
+	var err error
+	if err = ctx.ShouldBindJSON(&body); err != nil {
+		return res.Error(err)
+	}
+	var count int64
+	app.Db.Model(&model.Acl{}).
+		Where("keyid = ?", body.Keyid).
+		Count(&count)
+
+	return res.Data(count != 0)
+}
+
 func clearcache(cache *cache.Model) {
-	cache.AdminClear()
+	cache.AclClear()
+	cache.RoleClear()
 }

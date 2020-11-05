@@ -1,6 +1,7 @@
 package common
 
 import (
+	curd "github.com/kainonly/gin-curd"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 	"taste-api/application/cache"
@@ -13,6 +14,7 @@ type Dependency struct {
 	Config *config.Config
 	Db     *gorm.DB
 	Cache  *cache.Model
+	Curd   *curd.Curd
 }
 
 func Inject(i interface{}) *Dependency {
