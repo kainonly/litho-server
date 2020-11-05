@@ -1,9 +1,12 @@
 package bootstrap
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/kainonly/gin-helper/mvc"
+	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -20,7 +23,7 @@ var (
 
 // Load application configuration
 // reference config.example.yml
-func LoadConfiguration() (config *config.Config, err error) {
+func LoadConfiguration() (cfg *config.Config, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = LoadConfigurationNotExists
 		return
@@ -30,7 +33,7 @@ func LoadConfiguration() (config *config.Config, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(buf, &config)
+	err = yaml.Unmarshal(buf, &cfg)
 	if err != nil {
 		return
 	}
@@ -41,8 +44,8 @@ func LoadConfiguration() (config *config.Config, err error) {
 // If it is another database, replace the driver here
 // gorm.Open(mysql.Open(option.Dsn),...)
 // reference https://gorm.io/docs/connecting_to_the_database.html
-func InitializeDatabase(config *config.Config) (db *gorm.DB, err error) {
-	option := config.Database
+func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
+	option := cfg.Database
 	db, err = gorm.Open(mysql.Open(option.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   option.TablePrefix,
@@ -70,8 +73,8 @@ func InitializeDatabase(config *config.Config) (db *gorm.DB, err error) {
 
 // Initialize the redis library configuration
 // reference https://github.com/go-redis/redis
-func InitializeRedis(config *config.Config) *redis.Client {
-	option := config.Redis
+func InitializeRedis(cfg *config.Config) *redis.Client {
+	option := cfg.Redis
 	return redis.NewClient(&redis.Options{
 		Addr:     option.Address,
 		Password: option.Password,
@@ -79,7 +82,15 @@ func InitializeRedis(config *config.Config) *redis.Client {
 	})
 }
 
-func HttpServer(config *config.Config) {
+func HttpServer(lc fx.Lifecycle, cfg *config.Config) *mvc.Mvc {
 	serve := gin.Default()
-	serve.Run(config.Listen)
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go serve.Run(cfg.Listen)
+			return nil
+		},
+	})
+	return &mvc.Mvc{
+		Engine: serve,
+	}
 }
