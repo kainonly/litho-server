@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/gin-helper/mvc"
+	"github.com/kainonly/gin-extra/mvc"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"

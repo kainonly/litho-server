@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-helper/res"
+	"github.com/kainonly/gin-extra/helper/res"
 	"log"
 	"taste-api/application/common"
 )
