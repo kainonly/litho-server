@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/kainonly/gin-extra/middleware/cors"
 	"github.com/kainonly/gin-extra/mvc"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
@@ -83,7 +84,18 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 }
 
 func HttpServer(lc fx.Lifecycle, cfg *config.Config) *mvc.Mvc {
-	serve := gin.Default()
+	serve := gin.New()
+	serve.Use(gin.Logger())
+	serve.Use(gin.Recovery())
+	corsOption := cfg.Cors
+	serve.Use(cors.Cors(cors.Option{
+		Origin:        corsOption.Origin,
+		Method:        corsOption.Method,
+		AllowHeader:   corsOption.AllowHeader,
+		ExposedHeader: corsOption.ExposedHeader,
+		MaxAge:        corsOption.MaxAge,
+		Credentials:   corsOption.Credentials,
+	}))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(cfg.Listen)

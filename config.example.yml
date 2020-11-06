@@ -15,13 +15,13 @@ redis:
   db: 0
 cors:
   origin:
-    - '*'
+    - *
   method:
-    - 'POST'
-    - 'OPTION'
+    - POST
+    - OPTIONS
   allow_header:
-    - 'CONTENT-TYPE'
-    - 'X-REQUESTED-WITH'
+    - CONTENT-TYPE
+    - X-REQUESTED-WITH
   exposed_headers:
   max_age: 86400
   credentials: true
