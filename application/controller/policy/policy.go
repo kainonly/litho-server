@@ -3,7 +3,7 @@ package policy
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-helper/res"
+	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
 	"taste-api/application/cache"
 	"taste-api/application/common"

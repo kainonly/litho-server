@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/kainonly/gin-helper/mvc"
+	"github.com/kainonly/gin-extra/mvc"
 	"taste-api/application/common"
 	"taste-api/application/controller"
 	"taste-api/application/controller/acl"

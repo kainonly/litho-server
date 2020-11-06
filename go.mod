@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/json-iterator/go v1.1.10
 	github.com/kainonly/gin-curd v0.0.0-20201104073226-f975793ac46d
-	github.com/kainonly/gin-helper v0.0.1-beta
+	github.com/kainonly/gin-extra v0.0.0-20201106142436-122606ab7729
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/ugorji/go v1.1.13 // indirect
@@ -23,5 +23,5 @@ require (
 
 replace (
 	github.com/kainonly/gin-curd v0.0.0-20201104073226-f975793ac46d => ../gin-curd
-	github.com/kainonly/gin-helper v0.0.1-beta => ../gin-helper
+	github.com/kainonly/gin-extra v0.0.0-20201106142436-122606ab7729 => ../gin-extra
 )
