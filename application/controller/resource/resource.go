@@ -3,6 +3,7 @@ package resource
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
+	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
 	"taste-api/application/cache"
@@ -27,7 +28,7 @@ func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
 	}
 	return app.Curd.
 		Originlists(model.Resource{}, body.OriginListsBody).
-		OrderBy([]string{"sort asc"}).
+		OrderBy(typ.Orders{"sort": "asc"}).
 		Exec()
 }
 

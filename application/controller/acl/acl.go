@@ -3,6 +3,7 @@ package acl
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
+	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
 	"taste-api/application/cache"
@@ -27,7 +28,7 @@ func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
 	}
 	return app.Curd.
 		Originlists(model.Acl{}, body.OriginListsBody).
-		OrderBy([]string{"create_time desc"}).
+		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
@@ -44,7 +45,7 @@ func (c *Controller) Lists(ctx *gin.Context, i interface{}) interface{} {
 	}
 	return app.Curd.
 		Lists(model.Acl{}, body.ListsBody).
-		OrderBy([]string{"create_time desc"}).
+		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
