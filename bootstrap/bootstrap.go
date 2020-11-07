@@ -88,15 +88,7 @@ func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
-	corsOption := cfg.Cors
-	serve.Use(cors.Cors(cors.Option{
-		Origin:        corsOption.Origin,
-		Method:        corsOption.Method,
-		AllowHeader:   corsOption.AllowHeader,
-		ExposedHeader: corsOption.ExposedHeader,
-		MaxAge:        corsOption.MaxAge,
-		Credentials:   corsOption.Credentials,
-	}))
+	serve.Use(cors.Cors(cfg.Cors))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(cfg.Listen)

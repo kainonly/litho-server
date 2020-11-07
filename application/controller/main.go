@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/gin-extra/helper/hash"
 	"github.com/kainonly/gin-extra/helper/res"
-	"log"
+	"github.com/kainonly/gin-extra/helper/token"
+	"strings"
 	"taste-api/application/common"
 )
 
@@ -25,10 +28,24 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	if err != nil {
 		return res.Error(err)
 	}
-	log.Println(result)
+	ok, err := hash.Verify(body.Password, result["password"].(string))
+	if err != nil {
+		return res.Error(err)
+	}
+	if !ok {
+		return res.Error("user login password is incorrect")
+	}
+	tokenString, err := token.Make("system", jwt.MapClaims{
+		"username": result["username"],
+		"role":     strings.Split(result["role"].(string), ","),
+	})
+	if err != nil {
+		return res.Error(err)
+	}
+	ctx.SetCookie("system_token", tokenString, 0, "", "", true, true)
 	return res.Ok()
 }
 
 func (c *Controller) Verify() interface{} {
-	return res.Ok()
+	return res.Error(nil)
 }
