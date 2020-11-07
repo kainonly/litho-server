@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/gin-extra/middleware/cors"
-	"github.com/kainonly/gin-extra/mvc"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
@@ -83,8 +82,10 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 	})
 }
 
-func HttpServer(lc fx.Lifecycle, cfg *config.Config) *mvc.Mvc {
-	serve := gin.New()
+// Start http service
+// https://gin-gonic.com/docs/examples/custom-http-config/
+func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
+	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
 	corsOption := cfg.Cors
@@ -102,7 +103,5 @@ func HttpServer(lc fx.Lifecycle, cfg *config.Config) *mvc.Mvc {
 			return nil
 		},
 	})
-	return &mvc.Mvc{
-		Engine: serve,
-	}
+	return
 }
