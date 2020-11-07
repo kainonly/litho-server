@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/gin-extra/helper/token"
 	"github.com/kainonly/gin-extra/mvc"
 	"taste-api/application/common"
 	"taste-api/application/controller"
@@ -14,6 +15,9 @@ import (
 )
 
 func Application(router *gin.Engine, dependency common.Dependency) {
+	cfg := dependency.Config
+	token.Key = []byte(cfg.App.Key)
+	token.Options = cfg.Token
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
