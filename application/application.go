@@ -17,7 +17,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
-		m := mvc.Factory(system, dependency)
+		m := mvc.Factory(system, &dependency)
 		m.AutoController("/main", new(controller.Controller))
 		m.AutoController("/acl", new(acl.Controller))
 		m.AutoController("/resource", new(resource.Controller))
