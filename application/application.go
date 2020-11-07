@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/mvc"
 	"taste-api/application/common"
 	"taste-api/application/controller"
@@ -12,13 +13,16 @@ import (
 	"taste-api/routes"
 )
 
-func Application(mvc *mvc.Mvc, dependency common.Dependency) {
-	mvc.Dependency(&dependency)
-	mvc.GET("/", mvc.Handle(routes.Default))
-	mvc.AutoController("/main", new(controller.Controller))
-	mvc.AutoController("/acl", new(acl.Controller))
-	mvc.AutoController("/resource", new(resource.Controller))
-	mvc.AutoController("/policy", new(policy.Controller))
-	mvc.AutoController("/role", new(role.Controller))
-	mvc.AutoController("/admin", new(admin.Controller))
+func Application(router *gin.Engine, dependency common.Dependency) {
+	router.GET("/", routes.Default)
+	system := router.Group("/system")
+	{
+		m := mvc.Factory(system, dependency)
+		m.AutoController("/main", new(controller.Controller))
+		m.AutoController("/acl", new(acl.Controller))
+		m.AutoController("/resource", new(resource.Controller))
+		m.AutoController("/policy", new(policy.Controller))
+		m.AutoController("/role", new(role.Controller))
+		m.AutoController("/admin", new(admin.Controller))
+	}
 }
