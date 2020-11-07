@@ -46,6 +46,16 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	return res.Ok()
 }
 
-func (c *Controller) Verify() interface{} {
-	return res.Error(nil)
+func (c *Controller) Verify(ctx *gin.Context) interface{} {
+	tokenString, err := ctx.Cookie("system_token")
+	if err != nil {
+		return res.Error(err)
+	}
+	_, err = token.Verify("system", tokenString, func(option token.Option) (claims jwt.MapClaims, err error) {
+		return
+	})
+	if err != nil {
+		return res.Error(err)
+	}
+	return res.Ok()
 }
