@@ -59,3 +59,17 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 	}
 	return res.Ok()
 }
+
+func (c *Controller) Resource(ctx *gin.Context, i interface{}) interface{} {
+	app := common.Inject(i)
+	resource, err := app.Cache.ResourceGet()
+	if err != nil {
+		return res.Error(err)
+	}
+	//roleKeyids := []string{"*"}
+	//role, err := app.Cache.RoleGet(roleKeyids, "resource")
+	//if err != nil {
+	//	return res.Error(err)
+	//}
+	return res.Data(resource)
+}
