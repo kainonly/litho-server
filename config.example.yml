@@ -22,9 +22,9 @@ cors:
   allow_header:
     - CONTENT-TYPE
     - X-REQUESTED-WITH
-  exposed_headers:
+  exposed_header:
   max_age: 86400
-  credentials: true
+  credentials: false
 token:
   system:
     issuer: taste-api
