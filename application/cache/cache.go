@@ -1,25 +1,21 @@
 package cache
 
 import (
-	"github.com/go-redis/redis/v8"
-	"gorm.io/gorm"
+	"taste-api/application/cache/schema"
 )
 
-type Model struct {
-	db   *gorm.DB
-	rdb  *redis.Client
-	keys map[string]string
+type Cache struct {
+	*schema.Acl
+	*schema.Resource
+	*schema.Role
+	*schema.Admin
 }
 
-func Initialize(db *gorm.DB, rdb *redis.Client) *Model {
-	c := new(Model)
-	c.db = db
-	c.rdb = rdb
-	c.keys = map[string]string{
-		"acl":      "system:acl",
-		"resource": "system:resource",
-		"role":     "system:role",
-		"admin":    "system:admin",
-	}
+func Initialize(dep schema.Dependency) *Cache {
+	c := new(Cache)
+	c.Acl = schema.NewAcl(dep)
+	c.Resource = schema.NewResource(dep)
+	c.Role = schema.NewRole(dep)
+	c.Admin = schema.NewAdmin(dep)
 	return c
 }

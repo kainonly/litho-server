@@ -1,4 +1,4 @@
-package cache
+package schema
 
 import (
 	"context"
@@ -6,20 +6,30 @@ import (
 	"taste-api/application/model"
 )
 
-func (c *Model) ResourceClear() {
-	c.rdb.Del(context.Background(), c.keys["resource"])
+type Resource struct {
+	schema
 }
 
-func (c *Model) ResourceGet() (result []map[string]interface{}, err error) {
+func NewResource(dep Dependency) *Resource {
+	c := new(Resource)
+	c.set("system:admin", dep)
+	return c
+}
+
+func (c *Resource) ResourceClear() {
+	c.dep.Redis.Del(context.Background(), c.key)
+}
+
+func (c *Resource) ResourceGet() (result []map[string]interface{}, err error) {
 	ctx := context.Background()
 	var exists int64
-	exists, err = c.rdb.Exists(ctx, c.keys["resource"]).Result()
+	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
 	if err != nil {
 		return
 	}
 	if exists == 0 {
 		var resourceLists []map[string]interface{}
-		c.db.Model(&model.Resource{}).
+		c.dep.Db.Model(&model.Resource{}).
 			Select([]string{"keyid", "parent", "name", "nav", "router", "policy", "icon"}).
 			Where("status = ?", 1).
 			Order("sort").
@@ -29,13 +39,13 @@ func (c *Model) ResourceGet() (result []map[string]interface{}, err error) {
 		if err != nil {
 			return
 		}
-		err = c.rdb.Set(ctx, c.keys["resource"], string(buf), 0).Err()
+		err = c.dep.Redis.Set(ctx, c.key, string(buf), 0).Err()
 		if err != nil {
 			return
 		}
 	}
 	var raw []byte
-	raw, err = c.rdb.Get(ctx, c.keys["resource"]).Bytes()
+	raw, err = c.dep.Redis.Get(ctx, c.key).Bytes()
 	if err != nil {
 		return
 	}

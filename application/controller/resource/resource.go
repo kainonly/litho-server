@@ -218,7 +218,7 @@ func (c *Controller) Bindingkey(ctx *gin.Context, i interface{}) interface{} {
 	return res.Data(count != 0)
 }
 
-func clearcache(cache *cache.Model) {
+func clearcache(cache *cache.Cache) {
 	cache.ResourceClear()
 	cache.RoleClear()
 }

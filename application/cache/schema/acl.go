@@ -1,4 +1,4 @@
-package cache
+package schema
 
 import (
 	"context"
@@ -7,20 +7,30 @@ import (
 	"taste-api/application/model"
 )
 
-func (c *Model) AclClear() {
-	c.rdb.Del(context.Background(), c.keys["acl"])
+type Acl struct {
+	schema
 }
 
-func (c *Model) AclGet(key string, policy uint8) (result []string, err error) {
+func NewAcl(dep Dependency) *Acl {
+	c := new(Acl)
+	c.set("system:acl", dep)
+	return c
+}
+
+func (c *Acl) AclClear() {
+	c.dep.Redis.Del(context.Background(), c.key)
+}
+
+func (c *Acl) AclGet(key string, policy uint8) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
-	exists, err = c.rdb.Exists(ctx, c.keys["acl"]).Result()
+	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
 	if err != nil {
 		return
 	}
 	if exists == 0 {
 		var aclLists []model.Acl
-		c.db.Where("status = ?", 1).
+		c.dep.Db.Where("status = ?", 1).
 			Find(&aclLists)
 
 		lists := make(map[string]interface{})
@@ -35,13 +45,13 @@ func (c *Model) AclGet(key string, policy uint8) (result []string, err error) {
 			}
 			lists[acl.Key] = string(buf)
 		}
-		err = c.rdb.HMSet(ctx, c.keys["acl"], lists).Err()
+		err = c.dep.Redis.HMSet(ctx, c.key, lists).Err()
 		if err != nil {
 			return
 		}
 	}
 	var raw []byte
-	raw, err = c.rdb.HGet(ctx, c.keys["acl"], key).Bytes()
+	raw, err = c.dep.Redis.HGet(ctx, c.key, key).Bytes()
 	if err != nil {
 		return
 	}

@@ -163,7 +163,7 @@ func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
 	return res.Data(count != 0)
 }
 
-func clearcache(cache *cache.Model) {
+func clearcache(cache *cache.Cache) {
 	cache.AclClear()
 	cache.RoleClear()
 }
