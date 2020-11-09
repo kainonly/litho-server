@@ -1,4 +1,4 @@
-package cache
+package schema
 
 import (
 	"context"
@@ -6,20 +6,30 @@ import (
 	"taste-api/application/model"
 )
 
-func (c *Model) AdminClear() {
-	c.rdb.Del(context.Background(), c.keys["admin"])
+type Admin struct {
+	schema
 }
 
-func (c *Model) AdminGet(username string) (result map[string]interface{}, err error) {
+func NewAdmin(dep Dependency) *Admin {
+	c := new(Admin)
+	c.set("system:admin", dep)
+	return c
+}
+
+func (c *Admin) AdminClear() {
+	c.dep.Redis.Del(context.Background(), c.key)
+}
+
+func (c *Admin) AdminGet(username string) (result map[string]interface{}, err error) {
 	ctx := context.Background()
 	var exists int64
-	exists, err = c.rdb.Exists(ctx, c.keys["admin"]).Result()
+	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
 	if err != nil {
 		return
 	}
 	if exists == 0 {
 		var adminLists []model.Admin
-		c.db.Where("status = ?", 1).
+		c.dep.Db.Where("status = ?", 1).
 			Find(&adminLists)
 
 		lists := make(map[string]interface{})
@@ -36,13 +46,13 @@ func (c *Model) AdminGet(username string) (result map[string]interface{}, err er
 			}
 			lists[admin.Username] = string(buf)
 		}
-		err = c.rdb.HMSet(ctx, c.keys["admin"], lists).Err()
+		err = c.dep.Redis.HMSet(ctx, c.key, lists).Err()
 		if err != nil {
 			return
 		}
 	}
 	var raw []byte
-	raw, err = c.rdb.HGet(ctx, c.keys["admin"], username).Bytes()
+	raw, err = c.dep.Redis.HGet(ctx, c.key, username).Bytes()
 	if err != nil {
 		return
 	}

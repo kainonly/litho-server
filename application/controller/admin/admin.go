@@ -193,6 +193,6 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 		Exec()
 }
 
-func clearcache(cache *cache.Model) {
+func clearcache(cache *cache.Cache) {
 	cache.AdminClear()
 }

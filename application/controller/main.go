@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/helper/hash"
 	"github.com/kainonly/gin-extra/helper/res"
+	"github.com/kainonly/gin-extra/helper/str"
 	"github.com/kainonly/gin-extra/helper/token"
 	"strings"
 	"taste-api/application/common"
@@ -35,9 +36,11 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	if !ok {
 		return res.Error("user login password is incorrect")
 	}
-	//jti := uuid.New()
+	jti := str.Uuid()
+	//ack := str.Random(8)
 
 	tokenString, err := token.Make("system", jwt.MapClaims{
+		"jti":      jti,
 		"username": result["username"],
 		"role":     strings.Split(result["role"].(string), ","),
 	})

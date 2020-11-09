@@ -1,4 +1,4 @@
-package cache
+package schema
 
 import (
 	"context"
@@ -7,20 +7,30 @@ import (
 	"taste-api/application/model"
 )
 
-func (c *Model) RoleClear() {
-	c.rdb.Del(context.Background(), c.keys["role"])
+type Role struct {
+	schema
 }
 
-func (c *Model) RoleGet(keys []string, mode string) (result []string, err error) {
+func NewRole(dep Dependency) *Role {
+	c := new(Role)
+	c.set("system:role", dep)
+	return c
+}
+
+func (c *Role) RoleClear() {
+	c.dep.Redis.Del(context.Background(), c.key)
+}
+
+func (c *Role) RoleGet(keys []string, mode string) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
-	exists, err = c.rdb.Exists(ctx, c.keys["role"]).Result()
+	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
 	if err != nil {
 		return
 	}
 	if exists == 0 {
 		var roleLists []model.Role
-		c.db.Where("status = ?", 1).
+		c.dep.Db.Where("status = ?", 1).
 			Find(&roleLists)
 
 		lists := make(map[string]interface{})
@@ -35,13 +45,13 @@ func (c *Model) RoleGet(keys []string, mode string) (result []string, err error)
 			}
 			lists[role.Key] = string(buf)
 		}
-		err = c.rdb.HMSet(ctx, c.keys["role"], lists).Err()
+		err = c.dep.Redis.HMSet(ctx, c.key, lists).Err()
 		if err != nil {
 			return
 		}
 	}
 	var raws []interface{}
-	raws, err = c.rdb.HMGet(ctx, c.keys["role"], keys...).Result()
+	raws, err = c.dep.Redis.HMGet(ctx, c.key, keys...).Result()
 	result = make([]string, 0)
 	for _, raw := range raws {
 		var value map[string]interface{}

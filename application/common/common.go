@@ -13,7 +13,7 @@ type Dependency struct {
 
 	Config *config.Config
 	Db     *gorm.DB
-	Cache  *cache.Model
+	Cache  *cache.Cache
 	Curd   *curd.Curd
 }
 
