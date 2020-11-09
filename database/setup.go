@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/kainonly/gin-helper/hash"
+	"github.com/kainonly/gin-extra/helper/hash"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -47,12 +47,12 @@ func main() {
 		log.Fatalln(err)
 	}
 	aclData := []model.Acl{
-		{Keyid: "main", Name: types.JSON{"zh_cn": "公共模块", "en_us": "Common Module"}, Write: "uploads", Read: ""},
-		{Keyid: "resource", Name: types.JSON{"zh_cn": "资源控制模块", "en_us": "Resource Module"}, Write: "add,edit,delete,sort", Read: "originLists,lists,get"},
-		{Keyid: "acl", Name: types.JSON{"zh_cn": "访问控制模块", "en_us": "Acl Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
-		{Keyid: "policy", Name: types.JSON{"zh_cn": "策略模块", "en_us": "Policy Module"}, Write: "add,delete", Read: "originLists"},
-		{Keyid: "admin", Name: types.JSON{"zh_cn": "管理员模块", "en_us": "Admin Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
-		{Keyid: "role", Name: types.JSON{"zh_cn": "权限组模块", "en_us": "Role Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
+		{Key: "main", Name: types.JSON{"zh_cn": "公共模块", "en_us": "Common Module"}, Write: "uploads", Read: ""},
+		{Key: "resource", Name: types.JSON{"zh_cn": "资源控制模块", "en_us": "Resource Module"}, Write: "add,edit,delete,sort", Read: "originLists,lists,get"},
+		{Key: "acl", Name: types.JSON{"zh_cn": "访问控制模块", "en_us": "Acl Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
+		{Key: "policy", Name: types.JSON{"zh_cn": "策略模块", "en_us": "Policy Module"}, Write: "add,delete", Read: "originLists"},
+		{Key: "admin", Name: types.JSON{"zh_cn": "管理员模块", "en_us": "Admin Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
+		{Key: "role", Name: types.JSON{"zh_cn": "权限组模块", "en_us": "Role Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
 	}
 	db.Create(&aclData)
 	err = db.Set(
@@ -63,21 +63,21 @@ func main() {
 		log.Fatalln(err)
 	}
 	resourceData := []model.Resource{
-		{Keyid: "center", Parent: "origin", Name: types.JSON{"zh_cn": "个人中心", "en_us": "Center"}},
-		{Keyid: "profile", Parent: "center", Name: types.JSON{"zh_cn": "信息修改", "en_us": "Profile"}, Router: true},
-		{Keyid: "system", Parent: "origin", Name: types.JSON{"zh_cn": "系统设置", "en_us": "System"}, Nav: true, Icon: "setting"},
-		{Keyid: "resource-index", Parent: "system", Name: types.JSON{"zh_cn": "资源控制管理", "en_us": "Resource"}, Nav: true, Router: true, Policy: true},
-		{Keyid: "resource-add", Parent: "resource-index", Name: types.JSON{"zh_cn": "资源控制新增", "en_us": "Resource Add"}, Router: true},
-		{Keyid: "resource-edit", Parent: "resource-index", Name: types.JSON{"zh_cn": "资源控制修改", "en_us": "Resource Edit"}, Router: true},
-		{Keyid: "acl-index", Parent: "system", Name: types.JSON{"zh_cn": "访问控制管理", "en_us": "Acl"}, Nav: true, Router: true, Policy: true},
-		{Keyid: "acl-add", Parent: "acl-index", Name: types.JSON{"zh_cn": "访问控制新增", "en_us": "Acl Add"}, Router: true},
-		{Keyid: "acl-edit", Parent: "acl-index", Name: types.JSON{"zh_cn": "访问控制修改", "en_us": "Acl Edit"}, Router: true},
-		{Keyid: "role-index", Parent: "system", Name: types.JSON{"zh_cn": "权限组", "en_us": "Role"}, Nav: true, Router: true, Policy: true},
-		{Keyid: "role-add", Parent: "role-index", Name: types.JSON{"zh_cn": "权限组新增", "en_us": "Role Add"}, Router: true},
-		{Keyid: "role-edit", Parent: "role-index", Name: types.JSON{"zh_cn": "权限组修改", "en_us": "Role Edit"}, Router: true},
-		{Keyid: "admin-index", Parent: "system", Name: types.JSON{"zh_cn": "管理员", "en_us": "Admin"}, Nav: true, Router: true, Policy: true},
-		{Keyid: "admin-add", Parent: "admin-index", Name: types.JSON{"zh_cn": "管理员新增", "en_us": "Admin Add"}, Router: true},
-		{Keyid: "admin-edit", Parent: "admin-index", Name: types.JSON{"zh_cn": "管理员修改", "en_us": "Admin Edit"}, Router: true},
+		{Key: "center", Parent: "origin", Name: types.JSON{"zh_cn": "个人中心", "en_us": "Center"}},
+		{Key: "profile", Parent: "center", Name: types.JSON{"zh_cn": "信息修改", "en_us": "Profile"}, Router: true},
+		{Key: "system", Parent: "origin", Name: types.JSON{"zh_cn": "系统设置", "en_us": "System"}, Nav: true, Icon: "setting"},
+		{Key: "resource-index", Parent: "system", Name: types.JSON{"zh_cn": "资源控制管理", "en_us": "Resource"}, Nav: true, Router: true, Policy: true},
+		{Key: "resource-add", Parent: "resource-index", Name: types.JSON{"zh_cn": "资源控制新增", "en_us": "Resource Add"}, Router: true},
+		{Key: "resource-edit", Parent: "resource-index", Name: types.JSON{"zh_cn": "资源控制修改", "en_us": "Resource Edit"}, Router: true},
+		{Key: "acl-index", Parent: "system", Name: types.JSON{"zh_cn": "访问控制管理", "en_us": "Acl"}, Nav: true, Router: true, Policy: true},
+		{Key: "acl-add", Parent: "acl-index", Name: types.JSON{"zh_cn": "访问控制新增", "en_us": "Acl Add"}, Router: true},
+		{Key: "acl-edit", Parent: "acl-index", Name: types.JSON{"zh_cn": "访问控制修改", "en_us": "Acl Edit"}, Router: true},
+		{Key: "role-index", Parent: "system", Name: types.JSON{"zh_cn": "权限组", "en_us": "Role"}, Nav: true, Router: true, Policy: true},
+		{Key: "role-add", Parent: "role-index", Name: types.JSON{"zh_cn": "权限组新增", "en_us": "Role Add"}, Router: true},
+		{Key: "role-edit", Parent: "role-index", Name: types.JSON{"zh_cn": "权限组修改", "en_us": "Role Edit"}, Router: true},
+		{Key: "admin-index", Parent: "system", Name: types.JSON{"zh_cn": "管理员", "en_us": "Admin"}, Nav: true, Router: true, Policy: true},
+		{Key: "admin-add", Parent: "admin-index", Name: types.JSON{"zh_cn": "管理员新增", "en_us": "Admin Add"}, Router: true},
+		{Key: "admin-edit", Parent: "admin-index", Name: types.JSON{"zh_cn": "管理员修改", "en_us": "Admin Edit"}, Router: true},
 	}
 	db.Create(&resourceData)
 	err = db.Set(
@@ -106,8 +106,8 @@ func main() {
 		log.Fatalln(err)
 	}
 	roleData := model.RoleBasic{
-		Keyid: "*",
-		Name:  types.JSON{"zh_cn": "超级管理员", "en_us": "super"},
+		Key:  "*",
+		Name: types.JSON{"zh_cn": "超级管理员", "en_us": "super"},
 	}
 	db.Create(&roleData)
 	err = db.Set(
@@ -186,7 +186,7 @@ func main() {
 		"CREATE VIEW IF NOT EXISTS `", prefix, "role` AS ",
 		"SELECT ",
 		"`", prefix, "role_basic`.`id`,",
-		"`", prefix, "role_basic`.`keyid`,",
+		"`", prefix, "role_basic`.`key`,",
 		"`", prefix, "role_basic`.`name`,",
 		"group_concat(distinct `", prefix, "role_resource_assoc`.`resource_key` separator ',') AS `resource`,",
 		"group_concat(distinct concat(`", prefix, "role_policy`.`acl_key`, ':', `", prefix, "role_policy`.`policy`) separator ',') AS `acl`,",
@@ -195,11 +195,11 @@ func main() {
 		"`", prefix, "role_basic`.`create_time`,",
 		"`", prefix, "role_basic`.`update_time` ",
 		"FROM `", prefix, "role_basic` ",
-		"LEFT JOIN `", prefix, "role_resource_assoc` ON `", prefix, "role_resource_assoc`.`role_key` = `", prefix, "role_basic`.`keyid` ",
-		"LEFT JOIN `", prefix, "role_policy` ON `", prefix, "role_policy`.`role_key` = `", prefix, "role_basic`.`keyid` ",
+		"LEFT JOIN `", prefix, "role_resource_assoc` ON `", prefix, "role_resource_assoc`.`role_key` = `", prefix, "role_basic`.`key` ",
+		"LEFT JOIN `", prefix, "role_policy` ON `", prefix, "role_policy`.`role_key` = `", prefix, "role_basic`.`key` ",
 		"GROUP BY ",
 		"`", prefix, "role_basic`.`id`,",
-		"`", prefix, "role_basic`.`keyid`,",
+		"`", prefix, "role_basic`.`key`,",
 		"`", prefix, "role_basic`.`name`,",
 		"`", prefix, "role_basic`.`note`,",
 		"`", prefix, "role_basic`.`status`,",

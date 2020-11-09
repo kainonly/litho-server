@@ -35,6 +35,8 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	if !ok {
 		return res.Error("user login password is incorrect")
 	}
+	//jti := uuid.New()
+
 	tokenString, err := token.Make("system", jwt.MapClaims{
 		"username": result["username"],
 		"role":     strings.Split(result["role"].(string), ","),

@@ -49,7 +49,7 @@ func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type addBody struct {
-	Keyid  string `binding:"required"`
+	Key    string `binding:"required"`
 	Parent string
 	Name   types.JSON `binding:"required"`
 	Nav    bool
@@ -68,7 +68,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	data := model.Resource{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Parent: body.Parent,
 		Name:   body.Name,
 		Nav:    body.Nav,
@@ -89,7 +89,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 
 type editBody struct {
 	operates.EditBody
-	Keyid  string `binding:"required_if=switch false"`
+	Key    string `binding:"required_if=switch false"`
 	Parent string
 	Name   types.JSON `binding:"required_if=switch false"`
 	Nav    bool
@@ -113,7 +113,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 			Find(&prevData)
 	}
 	data := model.Resource{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Parent: body.Parent,
 		Name:   body.Name,
 		Nav:    body.Nav,
@@ -126,10 +126,10 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 	return app.Curd.
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
-			if !body.Switch && body.Keyid != prevData.Keyid {
+			if !body.Switch && body.Key != prevData.Key {
 				err = tx.Model(&model.Resource{}).
-					Where("parent = ?", body.Keyid).
-					Update("parent", body.Keyid).
+					Where("parent = ?", body.Key).
+					Update("parent", body.Key).
 					Error
 				if err != nil {
 					return err
@@ -155,7 +155,7 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 	var data model.Resource
 	app.Db.Where("id in ?", body.Id).First(&data)
 	var count int64
-	app.Db.Model(&model.Resource{}).Where("parent = ?", data.Keyid).Count(&count)
+	app.Db.Model(&model.Resource{}).Where("parent = ?", data.Key).Count(&count)
 	if count != 0 {
 		return res.Error("A subset of nodes cannot be deleted")
 	}
@@ -200,7 +200,7 @@ func (c *Controller) Sort(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type bindingkeyBody struct {
-	Keyid string `binding:"required"`
+	Key string `binding:"required"`
 }
 
 func (c *Controller) Bindingkey(ctx *gin.Context, i interface{}) interface{} {
@@ -212,7 +212,7 @@ func (c *Controller) Bindingkey(ctx *gin.Context, i interface{}) interface{} {
 	}
 	var count int64
 	app.Db.Model(&model.Resource{}).
-		Where("keyid = ?", body.Keyid).
+		Where("keyid = ?", body.Key).
 		Count(&count)
 
 	return res.Data(count != 0)
