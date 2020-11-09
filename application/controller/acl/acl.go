@@ -66,7 +66,7 @@ func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type addBody struct {
-	Keyid  string     `binding:"required"`
+	Key    string     `binding:"required"`
 	Name   types.JSON `binding:"required"`
 	Read   string
 	Write  string
@@ -81,7 +81,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	data := model.Acl{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Name:   body.Name,
 		Read:   body.Read,
 		Write:  body.Write,
@@ -94,7 +94,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 
 type editBody struct {
 	operates.EditBody
-	Keyid  string     `binding:"required_if=switch false"`
+	Key    string     `binding:"required_if=switch false"`
 	Name   types.JSON `binding:"required_if=switch false"`
 	Read   string
 	Write  string
@@ -109,7 +109,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	data := model.Acl{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Name:   body.Name,
 		Read:   body.Read,
 		Write:  body.Write,
@@ -145,7 +145,7 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type validedkeyBody struct {
-	Keyid string `binding:"required"`
+	Key string `binding:"required"`
 }
 
 func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
@@ -157,7 +157,7 @@ func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
 	}
 	var count int64
 	app.Db.Model(&model.Acl{}).
-		Where("keyid = ?", body.Keyid).
+		Where("keyid = ?", body.Key).
 		Count(&count)
 
 	return res.Data(count != 0)

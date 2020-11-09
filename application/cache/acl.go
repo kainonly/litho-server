@@ -11,7 +11,7 @@ func (c *Model) AclClear() {
 	c.rdb.Del(context.Background(), c.keys["acl"])
 }
 
-func (c *Model) AclGet(keyid string, policy uint8) (result []string, err error) {
+func (c *Model) AclGet(key string, policy uint8) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.rdb.Exists(ctx, c.keys["acl"]).Result()
@@ -33,7 +33,7 @@ func (c *Model) AclGet(keyid string, policy uint8) (result []string, err error) 
 			if err != nil {
 				return
 			}
-			lists[acl.Keyid] = string(buf)
+			lists[acl.Key] = string(buf)
 		}
 		err = c.rdb.HMSet(ctx, c.keys["acl"], lists).Err()
 		if err != nil {
@@ -41,7 +41,7 @@ func (c *Model) AclGet(keyid string, policy uint8) (result []string, err error) 
 		}
 	}
 	var raw []byte
-	raw, err = c.rdb.HGet(ctx, c.keys["acl"], keyid).Bytes()
+	raw, err = c.rdb.HGet(ctx, c.keys["acl"], key).Bytes()
 	if err != nil {
 		return
 	}

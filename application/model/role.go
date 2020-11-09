@@ -4,7 +4,7 @@ import "taste-api/application/common/types"
 
 type Role struct {
 	ID         uint64
-	Keyid      string
+	Key        string
 	Name       types.JSON
 	Resource   string
 	Acl        string

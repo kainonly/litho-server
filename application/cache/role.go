@@ -11,7 +11,7 @@ func (c *Model) RoleClear() {
 	c.rdb.Del(context.Background(), c.keys["role"])
 }
 
-func (c *Model) RoleGet(keyids []string, mode string) (result []string, err error) {
+func (c *Model) RoleGet(keys []string, mode string) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.rdb.Exists(ctx, c.keys["role"]).Result()
@@ -33,7 +33,7 @@ func (c *Model) RoleGet(keyids []string, mode string) (result []string, err erro
 			if err != nil {
 				return
 			}
-			lists[role.Keyid] = string(buf)
+			lists[role.Key] = string(buf)
 		}
 		err = c.rdb.HMSet(ctx, c.keys["role"], lists).Err()
 		if err != nil {
@@ -41,7 +41,7 @@ func (c *Model) RoleGet(keyids []string, mode string) (result []string, err erro
 		}
 	}
 	var raws []interface{}
-	raws, err = c.rdb.HMGet(ctx, c.keys["role"], keyids...).Result()
+	raws, err = c.rdb.HMGet(ctx, c.keys["role"], keys...).Result()
 	result = make([]string, 0)
 	for _, raw := range raws {
 		var value map[string]interface{}

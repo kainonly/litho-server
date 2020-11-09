@@ -63,7 +63,7 @@ func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type addBody struct {
-	Keyid    string     `binding:"required"`
+	Key      string     `binding:"required"`
 	Name     types.JSON `binding:"required"`
 	Resource []string   `binding:"required"`
 	Note     string
@@ -78,7 +78,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	data := model.RoleBasic{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Name:   body.Name,
 		Note:   body.Note,
 		Status: body.Status,
@@ -89,7 +89,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 			var assoc []model.RoleResourceAssoc
 			for _, resourceKey := range body.Resource {
 				assoc = append(assoc, model.RoleResourceAssoc{
-					RoleKey:     body.Keyid,
+					RoleKey:     body.Key,
 					ResourceKey: resourceKey,
 				})
 			}
@@ -105,7 +105,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 
 type editBody struct {
 	operates.EditBody
-	Keyid    string     `binding:"required_if=switch false"`
+	Key      string     `binding:"required_if=switch false"`
 	Name     types.JSON `binding:"required_if=switch false"`
 	Resource []string   `binding:"required_if=switch false"`
 	Note     string
@@ -120,7 +120,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error(err)
 	}
 	data := model.RoleBasic{
-		Keyid:  body.Keyid,
+		Key:    body.Key,
 		Name:   body.Name,
 		Note:   body.Note,
 		Status: body.Status,
@@ -129,7 +129,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch {
-				err = tx.Where("role_key = ?", body.Keyid).
+				err = tx.Where("role_key = ?", body.Key).
 					Delete(model.RoleResourceAssoc{}).
 					Error
 				if err != nil {
@@ -138,7 +138,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 				var assoc []model.RoleResourceAssoc
 				for _, resourceKey := range body.Resource {
 					assoc = append(assoc, model.RoleResourceAssoc{
-						RoleKey:     body.Keyid,
+						RoleKey:     body.Key,
 						ResourceKey: resourceKey,
 					})
 				}
@@ -174,7 +174,7 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 }
 
 type validedkeyBody struct {
-	Keyid string `binding:"required"`
+	Key string `binding:"required"`
 }
 
 func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
@@ -185,7 +185,7 @@ func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
 	}
 	var count int64
 	app.Db.Model(&model.RoleBasic{}).
-		Where("keyid = ?", body.Keyid).
+		Where("keyid = ?", body.Key).
 		Count(&count)
 	return res.Data(count != 0)
 }
