@@ -85,6 +85,7 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 // Start http service
 // https://gin-gonic.com/docs/examples/custom-http-config/
 func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
+	//gin.SetMode(gin.TestMode)
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())

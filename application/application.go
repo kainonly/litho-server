@@ -25,6 +25,13 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		m.AutoController(mvc.Auto{
 			Path:       "/main",
 			Controller: new(controller.Controller),
+			Middlewares: []mvc.Middleware{
+				{
+					Handle: func(ctx *gin.Context) {
+						ctx.Next()
+					},
+				},
+			},
 		})
 		m.AutoController(mvc.Auto{
 			Path:       "/acl",
