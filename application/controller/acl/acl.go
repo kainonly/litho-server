@@ -164,6 +164,6 @@ func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
 }
 
 func clearcache(cache *cache.Cache) {
-	cache.AclClear()
-	cache.RoleClear()
+	cache.Acl.Clear()
+	cache.Role.Clear()
 }

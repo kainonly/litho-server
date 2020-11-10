@@ -8,20 +8,22 @@ import (
 )
 
 type Role struct {
-	schema
+	key string
+	dep Dependency
 }
 
 func NewRole(dep Dependency) *Role {
 	c := new(Role)
-	c.set("system:role", dep)
+	c.key = "system:role"
+	c.dep = dep
 	return c
 }
 
-func (c *Role) RoleClear() {
+func (c *Role) Clear() {
 	c.dep.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Role) RoleGet(keys []string, mode string) (result []string, err error) {
+func (c *Role) Get(keys []string, mode string) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()

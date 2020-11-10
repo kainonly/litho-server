@@ -219,6 +219,6 @@ func (c *Controller) Bindingkey(ctx *gin.Context, i interface{}) interface{} {
 }
 
 func clearcache(cache *cache.Cache) {
-	cache.ResourceClear()
-	cache.RoleClear()
+	cache.Resource.Clear()
+	cache.Role.Clear()
 }

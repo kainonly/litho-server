@@ -8,20 +8,22 @@ import (
 )
 
 type Acl struct {
-	schema
+	key string
+	dep Dependency
 }
 
 func NewAcl(dep Dependency) *Acl {
 	c := new(Acl)
-	c.set("system:acl", dep)
+	c.key = "system:acl"
+	c.dep = dep
 	return c
 }
 
-func (c *Acl) AclClear() {
+func (c *Acl) Clear() {
 	c.dep.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Acl) AclGet(key string, policy uint8) (result []string, err error) {
+func (c *Acl) Get(key string, policy uint8) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()

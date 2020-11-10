@@ -12,13 +12,3 @@ type Dependency struct {
 	Db    *gorm.DB
 	Redis *redis.Client
 }
-
-type schema struct {
-	key string
-	dep Dependency
-}
-
-func (c *schema) set(key string, dep Dependency) {
-	c.key = key
-	c.dep = dep
-}
