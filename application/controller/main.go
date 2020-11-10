@@ -41,7 +41,7 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	jti := str.Uuid()
 	ack := str.Random(8)
 	app.Cache.RefreshToken.TokenFactory(jti.String(), ack, time.Hour*24*7)
-	tokenString, err := token.Make("system", jwt.MapClaims{
+	myToken, err := token.Make("system", jwt.MapClaims{
 		"jti":      jti,
 		"ack":      ack,
 		"username": result["username"],
@@ -50,7 +50,7 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	if err != nil {
 		return res.Error(err)
 	}
-	ctx.SetCookie("system_token", tokenString, 0, "", "", true, true)
+	ctx.SetCookie("system_token", myToken.String(), 0, "", "", true, true)
 	return res.Ok()
 }
 
@@ -70,14 +70,18 @@ func (c *Controller) Verify(ctx *gin.Context, i interface{}) interface{} {
 				err = errors.New("refresh token verification expired")
 				return
 			}
-			var newTokenString string
-			newTokenString, err = token.Make("system", jwt.MapClaims{
+			var myToken *token.Token
+			myToken, err = token.Make("system", jwt.MapClaims{
 				"jti":      jti,
 				"ack":      ack,
 				"username": claims["username"],
 				"role":     claims["role"],
 			})
-			ctx.SetCookie("system_token", newTokenString, 0, "", "", true, true)
+			if err != nil {
+				return
+			}
+			newClaims = myToken.Claims()
+			ctx.SetCookie("system_token", myToken.String(), 0, "", "", true, true)
 			return
 		},
 	)
