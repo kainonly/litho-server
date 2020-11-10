@@ -22,11 +22,29 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 	system := router.Group("/system")
 	{
 		m := mvc.Factory(system, &dependency)
-		m.AutoController("/main", new(controller.Controller))
-		m.AutoController("/acl", new(acl.Controller))
-		m.AutoController("/resource", new(resource.Controller))
-		m.AutoController("/policy", new(policy.Controller))
-		m.AutoController("/role", new(role.Controller))
-		m.AutoController("/admin", new(admin.Controller))
+		m.AutoController(mvc.Auto{
+			Path:       "/main",
+			Controller: new(controller.Controller),
+		})
+		m.AutoController(mvc.Auto{
+			Path:       "/acl",
+			Controller: new(acl.Controller),
+		})
+		m.AutoController(mvc.Auto{
+			Path:       "/resource",
+			Controller: new(resource.Controller),
+		})
+		m.AutoController(mvc.Auto{
+			Path:       "/policy",
+			Controller: new(policy.Controller),
+		})
+		m.AutoController(mvc.Auto{
+			Path:       "/role",
+			Controller: new(role.Controller),
+		})
+		m.AutoController(mvc.Auto{
+			Path:       "/admin",
+			Controller: new(admin.Controller),
+		})
 	}
 }
