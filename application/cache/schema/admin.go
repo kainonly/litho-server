@@ -7,20 +7,22 @@ import (
 )
 
 type Admin struct {
-	schema
+	key string
+	dep Dependency
 }
 
 func NewAdmin(dep Dependency) *Admin {
 	c := new(Admin)
-	c.set("system:admin", dep)
+	c.key = "system:admin"
+	c.dep = dep
 	return c
 }
 
-func (c *Admin) AdminClear() {
+func (c *Admin) Clear() {
 	c.dep.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Admin) AdminGet(username string) (result map[string]interface{}, err error) {
+func (c *Admin) Get(username string) (result map[string]interface{}, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()

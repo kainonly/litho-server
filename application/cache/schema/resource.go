@@ -7,20 +7,22 @@ import (
 )
 
 type Resource struct {
-	schema
+	key string
+	dep Dependency
 }
 
 func NewResource(dep Dependency) *Resource {
 	c := new(Resource)
-	c.set("system:admin", dep)
+	c.key = "system:resource"
+	c.dep = dep
 	return c
 }
 
-func (c *Resource) ResourceClear() {
+func (c *Resource) Clear() {
 	c.dep.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Resource) ResourceGet() (result []map[string]interface{}, err error) {
+func (c *Resource) Get() (result []map[string]interface{}, err error) {
 	ctx := context.Background()
 	var exists int64
 	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
@@ -30,9 +32,9 @@ func (c *Resource) ResourceGet() (result []map[string]interface{}, err error) {
 	if exists == 0 {
 		var resourceLists []map[string]interface{}
 		c.dep.Db.Model(&model.Resource{}).
-			Select([]string{"keyid", "parent", "name", "nav", "router", "policy", "icon"}).
+			Select([]string{"`key`", "parent", "name", "nav", "router", "policy", "icon"}).
 			Where("status = ?", 1).
-			Order("sort").
+			Order("sort desc").
 			Scan(&resourceLists)
 		var buf []byte
 		buf, err = jsoniter.Marshal(resourceLists)

@@ -194,5 +194,5 @@ func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
 }
 
 func clearcache(cache *cache.Cache) {
-	cache.AdminClear()
+	cache.Admin.Clear()
 }

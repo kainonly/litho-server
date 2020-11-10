@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/helper/hash"
@@ -9,6 +10,7 @@ import (
 	"github.com/kainonly/gin-extra/helper/token"
 	"strings"
 	"taste-api/application/common"
+	"time"
 )
 
 type Controller struct {
@@ -25,7 +27,7 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	result, err := app.Cache.AdminGet(body.Username)
+	result, err := app.Cache.Admin.Get(body.Username)
 	if err != nil {
 		return res.Error(err)
 	}
@@ -37,10 +39,11 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 		return res.Error("user login password is incorrect")
 	}
 	jti := str.Uuid()
-	//ack := str.Random(8)
-
+	ack := str.Random(8)
+	app.Cache.RefreshToken.TokenFactory(jti.String(), ack, time.Hour*24*7)
 	tokenString, err := token.Make("system", jwt.MapClaims{
 		"jti":      jti,
+		"ack":      ack,
 		"username": result["username"],
 		"role":     strings.Split(result["role"].(string), ","),
 	})
@@ -51,14 +54,33 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	return res.Ok()
 }
 
-func (c *Controller) Verify(ctx *gin.Context) interface{} {
+func (c *Controller) Verify(ctx *gin.Context, i interface{}) interface{} {
+	app := common.Inject(i)
 	tokenString, err := ctx.Cookie("system_token")
 	if err != nil {
 		return res.Error(err)
 	}
-	_, err = token.Verify("system", tokenString, func(option token.Option) (claims jwt.MapClaims, err error) {
-		return
-	})
+	var claims jwt.MapClaims
+	claims, err = token.Verify("system", tokenString,
+		func(option token.Option) (newClaims jwt.MapClaims, err error) {
+			jti := claims["jti"].(string)
+			ack := claims["ack"].(string)
+			result := app.Cache.RefreshToken.TokenVerify(jti, ack)
+			if !result {
+				err = errors.New("refresh token verification expired")
+				return
+			}
+			var newTokenString string
+			newTokenString, err = token.Make("system", jwt.MapClaims{
+				"jti":      jti,
+				"ack":      ack,
+				"username": claims["username"],
+				"role":     claims["role"],
+			})
+			ctx.SetCookie("system_token", newTokenString, 0, "", "", true, true)
+			return
+		},
+	)
 	if err != nil {
 		return res.Error(err)
 	}
@@ -67,7 +89,7 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 
 func (c *Controller) Resource(ctx *gin.Context, i interface{}) interface{} {
 	app := common.Inject(i)
-	resource, err := app.Cache.ResourceGet()
+	resource, err := app.Cache.Resource.Get()
 	if err != nil {
 		return res.Error(err)
 	}
