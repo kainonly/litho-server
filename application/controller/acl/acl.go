@@ -13,20 +13,20 @@ import (
 )
 
 type Controller struct {
+	*common.Dependency
 }
 
 type originListsBody struct {
 	operates.OriginListsBody
 }
 
-func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Originlists(model.Acl{}, body.OriginListsBody).
 		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
@@ -36,14 +36,13 @@ type listsBody struct {
 	operates.ListsBody
 }
 
-func (c *Controller) Lists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	var body listsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Lists(model.Acl{}, body.ListsBody).
 		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
@@ -53,14 +52,13 @@ type getBody struct {
 	operates.GetBody
 }
 
-func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Get(model.Acl{}, body.GetBody).
 		Exec()
 }
@@ -73,8 +71,7 @@ type addBody struct {
 	Status bool
 }
 
-func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -87,7 +84,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		Write:  body.Write,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Add().
 		Exec(&data)
 }
@@ -101,8 +98,7 @@ type editBody struct {
 	Status bool
 }
 
-func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -115,10 +111,10 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		Write:  body.Write,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Edit(model.Acl{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(data)
@@ -128,17 +124,16 @@ type deleteBody struct {
 	operates.DeleteBody
 }
 
-func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Delete(model.Acl{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec()
@@ -148,15 +143,14 @@ type validedkeyBody struct {
 	Key string `binding:"required"`
 }
 
-func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 	var body validedkeyBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
 	var count int64
-	app.Db.Model(&model.Acl{}).
+	c.Db.Model(&model.Acl{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
 
