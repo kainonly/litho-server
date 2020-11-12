@@ -16,7 +16,3 @@ type Dependency struct {
 	Cache  *cache.Cache
 	Curd   *curd.Curd
 }
-
-func Inject(i interface{}) *Dependency {
-	return i.(*Dependency)
-}

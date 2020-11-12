@@ -13,19 +13,19 @@ import (
 )
 
 type Controller struct {
+	*common.Dependency
 }
 
 type originListsBody struct {
 	operates.OriginListsBody
 }
 
-func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Originlists(model.Role{}, body.OriginListsBody).
 		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
@@ -35,13 +35,12 @@ type listsBody struct {
 	operates.ListsBody
 }
 
-func (c *Controller) Lists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	var body listsBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Lists(model.Role{}, body.ListsBody).
 		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
@@ -51,13 +50,12 @@ type getBody struct {
 	operates.GetBody
 }
 
-func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Get(model.Role{}, body.GetBody).
 		Exec()
 }
@@ -70,8 +68,7 @@ type addBody struct {
 	Status   bool
 }
 
-func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -83,7 +80,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		Note:   body.Note,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Add().
 		After(func(tx *gorm.DB) error {
 			var assoc []model.RoleResourceAssoc
@@ -97,7 +94,7 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 			if err != nil {
 				return err
 			}
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(&data)
@@ -112,8 +109,7 @@ type editBody struct {
 	Status   bool
 }
 
-func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -125,7 +121,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		Note:   body.Note,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch {
@@ -147,7 +143,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 					return err
 				}
 			}
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(data)
@@ -157,17 +153,16 @@ type deleteBody struct {
 	operates.DeleteBody
 }
 
-func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Delete(model.RoleBasic{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec()
@@ -177,14 +172,13 @@ type validedkeyBody struct {
 	Key string `binding:"required"`
 }
 
-func (c *Controller) Validedkey(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 	var body validedkeyBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
 	var count int64
-	app.Db.Model(&model.RoleBasic{}).
+	c.Db.Model(&model.RoleBasic{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
 	return res.Data(count != 0)

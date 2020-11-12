@@ -14,6 +14,7 @@ import (
 )
 
 type Controller struct {
+	*common.Dependency
 }
 
 type LoginBody struct {
@@ -21,13 +22,12 @@ type LoginBody struct {
 	Password string `binding:"required,min=12,max=20"`
 }
 
-func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Login(ctx *gin.Context) interface{} {
 	var body LoginBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	result, err := app.Cache.Admin.Get(body.Username)
+	result, err := c.Cache.Admin.Get(body.Username)
 	if err != nil {
 		return res.Error(err)
 	}
@@ -40,7 +40,7 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	}
 	jti := str.Uuid()
 	ack := str.Random(8)
-	app.Cache.RefreshToken.TokenFactory(jti.String(), ack, time.Hour*24*7)
+	c.Cache.RefreshToken.TokenFactory(jti.String(), ack, time.Hour*24*7)
 	myToken, err := token.Make("system", jwt.MapClaims{
 		"jti":      jti,
 		"ack":      ack,
@@ -54,8 +54,7 @@ func (c *Controller) Login(ctx *gin.Context, i interface{}) interface{} {
 	return res.Ok()
 }
 
-func (c *Controller) Verify(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Verify(ctx *gin.Context) interface{} {
 	tokenString, err := ctx.Cookie("system_token")
 	if err != nil {
 		return res.Error(err)
@@ -65,7 +64,7 @@ func (c *Controller) Verify(ctx *gin.Context, i interface{}) interface{} {
 		func(option token.Option) (newClaims jwt.MapClaims, err error) {
 			jti := claims["jti"].(string)
 			ack := claims["ack"].(string)
-			result := app.Cache.RefreshToken.TokenVerify(jti, ack)
+			result := c.Cache.RefreshToken.TokenVerify(jti, ack)
 			if !result {
 				err = errors.New("refresh token verification expired")
 				return
@@ -91,14 +90,13 @@ func (c *Controller) Verify(ctx *gin.Context, i interface{}) interface{} {
 	return res.Ok()
 }
 
-func (c *Controller) Resource(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
-	resource, err := app.Cache.Resource.Get()
+func (c *Controller) Resource(ctx *gin.Context) interface{} {
+	resource, err := c.Cache.Resource.Get()
 	if err != nil {
 		return res.Error(err)
 	}
 	//roleKeyids := []string{"*"}
-	//role, err := app.Cache.RoleGet(roleKeyids, "resource")
+	//role, err := c.Cache.RoleGet(roleKeyids, "resource")
 	//if err != nil {
 	//	return res.Error(err)
 	//}

@@ -11,20 +11,20 @@ import (
 )
 
 type Controller struct {
+	*common.Dependency
 }
 
 type originListsBody struct {
 	operates.OriginListsBody
 }
 
-func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Originlists(model.Policy{}, body.OriginListsBody).
 		Exec()
 }
@@ -35,8 +35,7 @@ type addBody struct {
 	Policy      uint8  `binding:"required"`
 }
 
-func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -47,10 +46,10 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		AclKey:      body.AclKey,
 		Policy:      body.Policy,
 	}
-	return app.Curd.
+	return c.Curd.
 		Add().
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(&data)
@@ -60,17 +59,16 @@ type deleteBody struct {
 	operates.DeleteBody
 }
 
-func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Delete(model.Policy{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec()

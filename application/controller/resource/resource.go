@@ -13,20 +13,20 @@ import (
 )
 
 type Controller struct {
+	*common.Dependency
 }
 
 type originListsBody struct {
 	operates.OriginListsBody
 }
 
-func (c *Controller) OriginLists(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Originlists(model.Resource{}, body.OriginListsBody).
 		OrderBy(typ.Orders{"sort": "asc"}).
 		Exec()
@@ -36,14 +36,13 @@ type getBody struct {
 	operates.GetBody
 }
 
-func (c *Controller) Get(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	return app.Curd.
+	return c.Curd.
 		Get(model.Resource{}, body.GetBody).
 		Exec()
 }
@@ -60,8 +59,7 @@ type addBody struct {
 	Status bool
 }
 
-func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -78,10 +76,10 @@ func (c *Controller) Add(ctx *gin.Context, i interface{}) interface{} {
 		Sort:   body.Sort,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Add().
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(&data)
@@ -100,8 +98,7 @@ type editBody struct {
 	Status bool
 }
 
-func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
@@ -109,7 +106,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 	}
 	var prevData model.Resource
 	if !body.Switch {
-		app.Db.Where("id = ?", body.Id).
+		c.Db.Where("id = ?", body.Id).
 			Find(&prevData)
 	}
 	data := model.Resource{
@@ -123,7 +120,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 		Sort:   body.Sort,
 		Status: body.Status,
 	}
-	return app.Curd.
+	return c.Curd.
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch && body.Key != prevData.Key {
@@ -135,7 +132,7 @@ func (c *Controller) Edit(ctx *gin.Context, i interface{}) interface{} {
 					return err
 				}
 			}
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec(data)
@@ -145,25 +142,24 @@ type deleteBody struct {
 	operates.DeleteBody
 }
 
-func (c *Controller) Delete(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
 	var data model.Resource
-	app.Db.Where("id in ?", body.Id).First(&data)
+	c.Db.Where("id in ?", body.Id).First(&data)
 	var count int64
-	app.Db.Model(&model.Resource{}).Where("parent = ?", data.Key).Count(&count)
+	c.Db.Model(&model.Resource{}).Where("parent = ?", data.Key).Count(&count)
 	if count != 0 {
 		return res.Error("A subset of nodes cannot be deleted")
 	}
 
-	return app.Curd.
+	return c.Curd.
 		Delete(model.Resource{}, body.DeleteBody).
 		After(func(tx *gorm.DB) error {
-			clearcache(app.Cache)
+			clearcache(c.Cache)
 			return nil
 		}).
 		Exec()
@@ -173,14 +169,13 @@ type sortBody struct {
 	Data []map[string]interface{} `binding:"required"`
 }
 
-func (c *Controller) Sort(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Sort(ctx *gin.Context) interface{} {
 	var body sortBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
-	err = app.Db.Transaction(func(tx *gorm.DB) error {
+	err = c.Db.Transaction(func(tx *gorm.DB) error {
 		for _, value := range body.Data {
 			err = tx.Model(&model.Resource{}).
 				Where("id = ?", value["id"]).
@@ -203,15 +198,14 @@ type bindingkeyBody struct {
 	Key string `binding:"required"`
 }
 
-func (c *Controller) Bindingkey(ctx *gin.Context, i interface{}) interface{} {
-	app := common.Inject(i)
+func (c *Controller) Bindingkey(ctx *gin.Context) interface{} {
 	var body bindingkeyBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return res.Error(err)
 	}
 	var count int64
-	app.Db.Model(&model.Resource{}).
+	c.Db.Model(&model.Resource{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
 
