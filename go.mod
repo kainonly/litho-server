@@ -17,8 +17,8 @@ require (
 	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	gorm.io/driver/mysql v1.0.3
-	gorm.io/gorm v1.20.5
+	gorm.io/driver/postgres v1.0.6-0.20201120082907-566aa2e6ed74
+	gorm.io/gorm v1.20.8-0.20201120085652-6186a4daa7ad
 )
 
 replace (
