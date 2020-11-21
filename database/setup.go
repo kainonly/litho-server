@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/kainonly/gin-extra/helper/hash"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"io/ioutil"
@@ -30,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("service configuration file parsing failed", err)
 	}
-	db, err = gorm.Open(mysql.Open(cfg.Database.Dsn), &gorm.Config{
+	db, err = gorm.Open(postgres.Open(cfg.Database.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   cfg.Database.TablePrefix,
 			SingularTable: true,
@@ -39,10 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Api Access Control Table'",
-	).AutoMigrate(&model.Acl{})
+	err = db.AutoMigrate(&model.Acl{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -55,10 +51,7 @@ func main() {
 		{Key: "role", Name: types.JSON{"zh_cn": "权限组模块", "en_us": "Role Module"}, Write: "add,edit,delete", Read: "originLists,lists,get"},
 	}
 	db.Create(&aclData)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Resource Access Control Table'",
-	).AutoMigrate(&model.Resource{})
+	err = db.AutoMigrate(&model.Resource{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -80,10 +73,7 @@ func main() {
 		{Key: "admin-edit", Parent: "admin-index", Name: types.JSON{"zh_cn": "管理员修改", "en_us": "Admin Edit"}, Router: true},
 	}
 	db.Create(&resourceData)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Policy Table'",
-	).AutoMigrate(&model.Policy{})
+	err = db.AutoMigrate(&model.Policy{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -98,10 +88,7 @@ func main() {
 		{ResourceKey: "admin-index", AclKey: "role", Policy: 0},
 	}
 	db.Create(&policyData)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Role Table'",
-	).AutoMigrate(&model.RoleBasic{})
+	err = db.AutoMigrate(&model.RoleBasic{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -110,10 +97,7 @@ func main() {
 		Name: types.JSON{"zh_cn": "超级管理员", "en_us": "super"},
 	}
 	db.Create(&roleData)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Role Associated Resource Table'",
-	).AutoMigrate(&model.RoleResourceAssoc{})
+	err = db.AutoMigrate(&model.RoleResourceAssoc{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -135,10 +119,7 @@ func main() {
 		{RoleKey: "*", ResourceKey: "role-edit"},
 	}
 	db.Create(&roleResourceAssoc)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Admin Table'",
-	).AutoMigrate(&model.AdminBasic{})
+	err = db.AutoMigrate(&model.AdminBasic{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -151,10 +132,7 @@ func main() {
 		Password: pass,
 	}
 	db.Create(&adminData)
-	err = db.Set(
-		"gorm:table_options",
-		"comment='Admin Associated Role Table'",
-	).AutoMigrate(&model.AdminRoleAssoc{})
+	err = db.AutoMigrate(&model.AdminRoleAssoc{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -169,69 +147,69 @@ func main() {
 		Joins("join policy on policy.resource_key = role_resource_assoc.resource_key").
 		Group("role_resource_assoc.role_key,policy.acl_key").
 		Scan(&data)
-	prefix := cfg.Database.TablePrefix
-	db.Exec(fmt.Sprint(
-		"CREATE VIEW IF NOT EXISTS `", prefix, "role_policy` AS ",
-		"SELECT ",
-		"`", prefix, "role_resource_assoc`.`role_key`,",
-		"`", prefix, "policy`.`acl_key`,",
-		"max(`", prefix, "policy`.`policy`) AS `policy` ",
-		"FROM `", prefix, "role_resource_assoc` ",
-		"JOIN `", prefix, "policy` ON `", prefix, "role_resource_assoc`.`resource_key` = `", prefix, "policy`.`resource_key` ",
-		"GROUP BY ",
-		"`", prefix, "role_resource_assoc`.`role_key`,",
-		"`", prefix, "policy`.`acl_key`;",
-	))
-	db.Exec(fmt.Sprint(
-		"CREATE VIEW IF NOT EXISTS `", prefix, "role` AS ",
-		"SELECT ",
-		"`", prefix, "role_basic`.`id`,",
-		"`", prefix, "role_basic`.`key`,",
-		"`", prefix, "role_basic`.`name`,",
-		"group_concat(distinct `", prefix, "role_resource_assoc`.`resource_key` separator ',') AS `resource`,",
-		"group_concat(distinct concat(`", prefix, "role_policy`.`acl_key`, ':', `", prefix, "role_policy`.`policy`) separator ',') AS `acl`,",
-		"`", prefix, "role_basic`.`note`,",
-		"`", prefix, "role_basic`.`status`,",
-		"`", prefix, "role_basic`.`create_time`,",
-		"`", prefix, "role_basic`.`update_time` ",
-		"FROM `", prefix, "role_basic` ",
-		"LEFT JOIN `", prefix, "role_resource_assoc` ON `", prefix, "role_resource_assoc`.`role_key` = `", prefix, "role_basic`.`key` ",
-		"LEFT JOIN `", prefix, "role_policy` ON `", prefix, "role_policy`.`role_key` = `", prefix, "role_basic`.`key` ",
-		"GROUP BY ",
-		"`", prefix, "role_basic`.`id`,",
-		"`", prefix, "role_basic`.`key`,",
-		"`", prefix, "role_basic`.`name`,",
-		"`", prefix, "role_basic`.`note`,",
-		"`", prefix, "role_basic`.`status`,",
-		"`", prefix, "role_basic`.`create_time`,",
-		"`", prefix, "role_basic`.`update_time`;",
-	))
-	db.Exec(fmt.Sprint(
-		"CREATE VIEW IF NOT EXISTS `", prefix, "admin` AS ",
-		"SELECT ",
-		"`", prefix, "admin_basic`.`id`,",
-		"`", prefix, "admin_basic`.`username`,",
-		"`", prefix, "admin_basic`.`password`,",
-		"group_concat(distinct `", prefix, "admin_role_assoc`.`role_key` separator ',') AS `role`,",
-		"`", prefix, "admin_basic`.`call`,",
-		"`", prefix, "admin_basic`.`email`,",
-		"`", prefix, "admin_basic`.`phone`,",
-		"`", prefix, "admin_basic`.`avatar`,",
-		"`", prefix, "admin_basic`.`status`,",
-		"`", prefix, "admin_basic`.`create_time`,",
-		"`", prefix, "admin_basic`.`update_time` ",
-		"FROM `", prefix, "admin_basic` ",
-		"JOIN `", prefix, "admin_role_assoc` ON `", prefix, "admin_role_assoc`.`username` = `", prefix, "admin_basic`.`username` ",
-		"GROUP BY ",
-		"`", prefix, "admin_basic`.`id`,",
-		"`", prefix, "admin_basic`.`username`,",
-		"`", prefix, "admin_basic`.`password`,",
-		"`", prefix, "admin_basic`.`call`,",
-		"`", prefix, "admin_basic`.`email`,",
-		"`", prefix, "admin_basic`.`phone`,",
-		"`", prefix, "admin_basic`.`avatar`,",
-		"`", prefix, "admin_basic`.`status`,",
-		"`", prefix, "admin_basic`.`create_time`,",
-		"`", prefix, "admin_basic`.`update_time`;",
-	))
+	//prefix := cfg.Database.TablePrefix
+	//db.Exec(fmt.Sprint(
+	//	"CREATE VIEW IF NOT EXISTS `", prefix, "role_policy` AS ",
+	//	"SELECT ",
+	//	"`", prefix, "role_resource_assoc`.`role_key`,",
+	//	"`", prefix, "policy`.`acl_key`,",
+	//	"max(`", prefix, "policy`.`policy`) AS `policy` ",
+	//	"FROM `", prefix, "role_resource_assoc` ",
+	//	"JOIN `", prefix, "policy` ON `", prefix, "role_resource_assoc`.`resource_key` = `", prefix, "policy`.`resource_key` ",
+	//	"GROUP BY ",
+	//	"`", prefix, "role_resource_assoc`.`role_key`,",
+	//	"`", prefix, "policy`.`acl_key`;",
+	//))
+	//db.Exec(fmt.Sprint(
+	//	"CREATE VIEW IF NOT EXISTS `", prefix, "role` AS ",
+	//	"SELECT ",
+	//	"`", prefix, "role_basic`.`id`,",
+	//	"`", prefix, "role_basic`.`key`,",
+	//	"`", prefix, "role_basic`.`name`,",
+	//	"group_concat(distinct `", prefix, "role_resource_assoc`.`resource_key` separator ',') AS `resource`,",
+	//	"group_concat(distinct concat(`", prefix, "role_policy`.`acl_key`, ':', `", prefix, "role_policy`.`policy`) separator ',') AS `acl`,",
+	//	"`", prefix, "role_basic`.`note`,",
+	//	"`", prefix, "role_basic`.`status`,",
+	//	"`", prefix, "role_basic`.`create_time`,",
+	//	"`", prefix, "role_basic`.`update_time` ",
+	//	"FROM `", prefix, "role_basic` ",
+	//	"LEFT JOIN `", prefix, "role_resource_assoc` ON `", prefix, "role_resource_assoc`.`role_key` = `", prefix, "role_basic`.`key` ",
+	//	"LEFT JOIN `", prefix, "role_policy` ON `", prefix, "role_policy`.`role_key` = `", prefix, "role_basic`.`key` ",
+	//	"GROUP BY ",
+	//	"`", prefix, "role_basic`.`id`,",
+	//	"`", prefix, "role_basic`.`key`,",
+	//	"`", prefix, "role_basic`.`name`,",
+	//	"`", prefix, "role_basic`.`note`,",
+	//	"`", prefix, "role_basic`.`status`,",
+	//	"`", prefix, "role_basic`.`create_time`,",
+	//	"`", prefix, "role_basic`.`update_time`;",
+	//))
+	//db.Exec(fmt.Sprint(
+	//	"CREATE VIEW IF NOT EXISTS `", prefix, "admin` AS ",
+	//	"SELECT ",
+	//	"`", prefix, "admin_basic`.`id`,",
+	//	"`", prefix, "admin_basic`.`username`,",
+	//	"`", prefix, "admin_basic`.`password`,",
+	//	"group_concat(distinct `", prefix, "admin_role_assoc`.`role_key` separator ',') AS `role`,",
+	//	"`", prefix, "admin_basic`.`call`,",
+	//	"`", prefix, "admin_basic`.`email`,",
+	//	"`", prefix, "admin_basic`.`phone`,",
+	//	"`", prefix, "admin_basic`.`avatar`,",
+	//	"`", prefix, "admin_basic`.`status`,",
+	//	"`", prefix, "admin_basic`.`create_time`,",
+	//	"`", prefix, "admin_basic`.`update_time` ",
+	//	"FROM `", prefix, "admin_basic` ",
+	//	"JOIN `", prefix, "admin_role_assoc` ON `", prefix, "admin_role_assoc`.`username` = `", prefix, "admin_basic`.`username` ",
+	//	"GROUP BY ",
+	//	"`", prefix, "admin_basic`.`id`,",
+	//	"`", prefix, "admin_basic`.`username`,",
+	//	"`", prefix, "admin_basic`.`password`,",
+	//	"`", prefix, "admin_basic`.`call`,",
+	//	"`", prefix, "admin_basic`.`email`,",
+	//	"`", prefix, "admin_basic`.`phone`,",
+	//	"`", prefix, "admin_basic`.`avatar`,",
+	//	"`", prefix, "admin_basic`.`status`,",
+	//	"`", prefix, "admin_basic`.`create_time`,",
+	//	"`", prefix, "admin_basic`.`update_time`;",
+	//))
 }
