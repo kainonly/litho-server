@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	app := fx.New(
+	fx.New(
 		fx.Provide(
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
@@ -27,8 +27,7 @@ func main() {
 			admin_basic.Setup,
 			admin_role_rel.Setup,
 		),
-	)
-	app.Run()
+	).Done()
 	//prefix := cfg.Database.TablePrefix
 	//db.Exec(fmt.Sprint(
 	//	"CREATE VIEW IF NOT EXISTS `", prefix, "role_policy` AS ",
