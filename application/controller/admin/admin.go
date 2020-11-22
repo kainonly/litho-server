@@ -100,7 +100,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	return c.Curd.
 		Add().
 		After(func(tx *gorm.DB) error {
-			roleData := model.AdminRoleAssoc{
+			roleData := model.AdminRoleRel{
 				Username: body.Username,
 				RoleKey:  body.Role,
 			}
@@ -154,7 +154,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Edit(model.AdminBasic{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch {
-				roleData := model.AdminRoleAssoc{
+				roleData := model.AdminRoleRel{
 					Username: body.Username,
 					RoleKey:  body.Role,
 				}

@@ -2,8 +2,8 @@ package model
 
 type AdminBasic struct {
 	ID         uint64
-	Username   string `gorm:"size:30;not null;unique"`
-	Password   string `gorm:"not null;"`
+	Username   string `gorm:"size:50;not null;unique"`
+	Password   string `gorm:"not null"`
 	Email      string `gorm:"size:200"`
 	Phone      string `gorm:"size:20"`
 	Call       string `gorm:"size:20"`
