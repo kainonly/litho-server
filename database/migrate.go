@@ -3,13 +3,7 @@ package main
 import (
 	"go.uber.org/fx"
 	"taste-api/bootstrap"
-	"taste-api/database/acl"
-	"taste-api/database/admin_basic"
-	"taste-api/database/admin_role_rel"
-	"taste-api/database/policy"
-	"taste-api/database/resource"
-	"taste-api/database/role_basic"
-	"taste-api/database/role_resource_rel"
+	"taste-api/database/role_policy"
 )
 
 func main() {
@@ -19,28 +13,16 @@ func main() {
 			bootstrap.InitializeDatabase,
 		),
 		fx.Invoke(
-			acl.Setup,
-			resource.Setup,
-			policy.Setup,
-			role_basic.Setup,
-			role_resource_rel.Setup,
-			admin_basic.Setup,
-			admin_role_rel.Setup,
+			//acl.Setup,
+			//resource.Setup,
+			//policy.Setup,
+			//role_basic.Setup,
+			//role_resource_rel.Setup,
+			//admin_basic.Setup,
+			//admin_role_rel.Setup,
+			role_policy.Setup,
 		),
 	).Done()
-	//prefix := cfg.Database.TablePrefix
-	//db.Exec(fmt.Sprint(
-	//	"CREATE VIEW IF NOT EXISTS `", prefix, "role_policy` AS ",
-	//	"SELECT ",
-	//	"`", prefix, "role_resource_assoc`.`role_key`,",
-	//	"`", prefix, "policy`.`acl_key`,",
-	//	"max(`", prefix, "policy`.`policy`) AS `policy` ",
-	//	"FROM `", prefix, "role_resource_assoc` ",
-	//	"JOIN `", prefix, "policy` ON `", prefix, "role_resource_assoc`.`resource_key` = `", prefix, "policy`.`resource_key` ",
-	//	"GROUP BY ",
-	//	"`", prefix, "role_resource_assoc`.`role_key`,",
-	//	"`", prefix, "policy`.`acl_key`;",
-	//))
 	//db.Exec(fmt.Sprint(
 	//	"CREATE VIEW IF NOT EXISTS `", prefix, "role` AS ",
 	//	"SELECT ",
