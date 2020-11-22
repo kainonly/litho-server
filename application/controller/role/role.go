@@ -83,9 +83,9 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	return c.Curd.
 		Add().
 		After(func(tx *gorm.DB) error {
-			var assoc []model.RoleResourceAssoc
+			var assoc []model.RoleResourceRel
 			for _, resourceKey := range body.Resource {
-				assoc = append(assoc, model.RoleResourceAssoc{
+				assoc = append(assoc, model.RoleResourceRel{
 					RoleKey:     body.Key,
 					ResourceKey: resourceKey,
 				})
@@ -126,14 +126,14 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		After(func(tx *gorm.DB) error {
 			if !body.Switch {
 				err = tx.Where("role_key = ?", body.Key).
-					Delete(model.RoleResourceAssoc{}).
+					Delete(model.RoleResourceRel{}).
 					Error
 				if err != nil {
 					return err
 				}
-				var assoc []model.RoleResourceAssoc
+				var assoc []model.RoleResourceRel
 				for _, resourceKey := range body.Resource {
-					assoc = append(assoc, model.RoleResourceAssoc{
+					assoc = append(assoc, model.RoleResourceRel{
 						RoleKey:     body.Key,
 						ResourceKey: resourceKey,
 					})
