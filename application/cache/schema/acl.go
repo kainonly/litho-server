@@ -9,56 +9,56 @@ import (
 
 type Acl struct {
 	key string
-	dep Dependency
+	Dependency
 }
 
 func NewAcl(dep Dependency) *Acl {
 	c := new(Acl)
 	c.key = "system:acl"
-	c.dep = dep
+	c.Dependency = dep
 	return c
 }
 
 func (c *Acl) Clear() {
-	c.dep.Redis.Del(context.Background(), c.key)
+	c.Redis.Del(context.Background(), c.key)
 }
 
 func (c *Acl) Get(key string, policy uint8) (result []string, err error) {
 	ctx := context.Background()
 	var exists int64
-	exists, err = c.dep.Redis.Exists(ctx, c.key).Result()
+	exists, err = c.Redis.Exists(ctx, c.key).Result()
 	if err != nil {
 		return
 	}
 	if exists == 0 {
 		var aclLists []model.Acl
-		c.dep.Db.Where("status = ?", 1).
+		c.Db.Where("status = ?", 1).
 			Find(&aclLists)
 
 		lists := make(map[string]interface{})
 		for _, acl := range aclLists {
-			var buf []byte
-			buf, err = jsoniter.Marshal(map[string]interface{}{
+			var bs []byte
+			bs, err = jsoniter.Marshal(map[string]interface{}{
 				"write": acl.Write,
 				"read":  acl.Read,
 			})
 			if err != nil {
 				return
 			}
-			lists[acl.Key] = string(buf)
+			lists[acl.Key] = string(bs)
 		}
-		err = c.dep.Redis.HMSet(ctx, c.key, lists).Err()
+		err = c.Redis.HMSet(ctx, c.key, lists).Err()
 		if err != nil {
 			return
 		}
 	}
-	var raw []byte
-	raw, err = c.dep.Redis.HGet(ctx, c.key, key).Bytes()
+	var bs []byte
+	bs, err = c.Redis.HGet(ctx, c.key, key).Bytes()
 	if err != nil {
 		return
 	}
 	var data map[string]interface{}
-	err = jsoniter.Unmarshal(raw, &data)
+	err = jsoniter.Unmarshal(bs, &data)
 	if err != nil {
 		return
 	}

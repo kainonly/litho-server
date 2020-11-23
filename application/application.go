@@ -18,7 +18,6 @@ import (
 func Application(router *gin.Engine, dep common.Dependency) {
 	cfg := dep.Config
 	token.Key = []byte(cfg.App.Key)
-	token.Options = cfg.Token
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
