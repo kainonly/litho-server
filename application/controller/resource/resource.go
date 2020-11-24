@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"taste-api/application/cache"
 	"taste-api/application/common"
-	"taste-api/application/common/types"
+	"taste-api/application/common/datatype"
 	"taste-api/application/model"
 )
 
@@ -50,7 +50,7 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 type addBody struct {
 	Key    string `binding:"required"`
 	Parent string
-	Name   types.JSON `binding:"required"`
+	Name   datatype.JSONObject `binding:"required"`
 	Nav    bool
 	Router bool
 	Policy bool
@@ -89,7 +89,7 @@ type editBody struct {
 	operates.EditBody
 	Key    string `binding:"required_if=switch false"`
 	Parent string
-	Name   types.JSON `binding:"required_if=switch false"`
+	Name   datatype.JSONObject `binding:"required_if=switch false"`
 	Nav    bool
 	Router bool
 	Policy bool
