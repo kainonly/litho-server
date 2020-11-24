@@ -2,8 +2,8 @@ package schema
 
 import (
 	"context"
+	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
-	"strings"
 	"taste-api/application/model"
 )
 
@@ -23,53 +23,31 @@ func (c *Acl) Clear() {
 	c.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Acl) Get(key string, policy uint8) (result []string, err error) {
+func (c *Acl) Get(key string, policy uint8) *hashset.Set {
 	ctx := context.Background()
-	var exists int64
-	exists, err = c.Redis.Exists(ctx, c.key).Result()
-	if err != nil {
-		return
-	}
+	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var aclLists []model.Acl
-		c.Db.Where("status = ?", 1).
-			Find(&aclLists)
+		c.Db.Where("status = ?", true).Find(&aclLists)
 
 		lists := make(map[string]interface{})
 		for _, acl := range aclLists {
-			var bs []byte
-			bs, err = jsoniter.Marshal(map[string]interface{}{
+			bs, _ := jsoniter.Marshal(map[string]interface{}{
 				"write": acl.Write,
 				"read":  acl.Read,
 			})
-			if err != nil {
-				return
-			}
 			lists[acl.Key] = string(bs)
 		}
-		err = c.Redis.HMSet(ctx, c.key, lists).Err()
-		if err != nil {
-			return
+		c.Redis.HMSet(ctx, c.key, lists)
+	}
+	set := hashset.New()
+	if bs, _ := c.Redis.HGet(ctx, c.key, key).Bytes(); bs != nil {
+		var data map[string][]interface{}
+		jsoniter.Unmarshal(bs, &data)
+		set.Add(data["read"]...)
+		if policy == 1 {
+			set.Add(data["write"]...)
 		}
 	}
-	var bs []byte
-	bs, err = c.Redis.HGet(ctx, c.key, key).Bytes()
-	if err != nil {
-		return
-	}
-	var data map[string]interface{}
-	err = jsoniter.Unmarshal(bs, &data)
-	if err != nil {
-		return
-	}
-	if policy == 0 {
-		result = strings.Split(data["read"].(string), ",")
-	}
-	if policy == 1 {
-		result = append(
-			strings.Split(data["read"].(string), ","),
-			strings.Split(data["write"].(string), ",")...,
-		)
-	}
-	return
+	return set
 }

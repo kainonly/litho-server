@@ -2,8 +2,8 @@ package schema
 
 import (
 	"context"
+	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
-	"strings"
 	"taste-api/application/model"
 )
 
@@ -23,45 +23,30 @@ func (c *Role) Clear() {
 	c.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Role) Get(keys []string, mode string) (result []string, err error) {
+func (c *Role) Get(keys []string, mode string) *hashset.Set {
 	ctx := context.Background()
-	var exists int64
-	exists, err = c.Redis.Exists(ctx, c.key).Result()
-	if err != nil {
-		return
-	}
+	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var roleLists []model.Role
-		c.Db.Where("status = ?", true).
-			Find(&roleLists)
-
+		c.Db.Where("status = ?", true).Find(&roleLists)
 		lists := make(map[string]interface{})
 		for _, role := range roleLists {
-			var buf []byte
-			buf, err = jsoniter.Marshal(map[string]interface{}{
+			bs, _ := jsoniter.Marshal(map[string]interface{}{
 				"acl":      role.Acl,
 				"resource": role.Resource,
 			})
-			if err != nil {
-				return
-			}
-			lists[role.Key] = string(buf)
+			lists[role.Key] = string(bs)
 		}
-		err = c.Redis.HMSet(ctx, c.key, lists).Err()
-		if err != nil {
-			return
+		c.Redis.HMSet(ctx, c.key, lists)
+	}
+	lists := c.Redis.HMGet(ctx, c.key, keys...).Val()
+	set := hashset.New()
+	for _, val := range lists {
+		if val != nil {
+			var data map[string]interface{}
+			jsoniter.Unmarshal([]byte(val.(string)), &data)
+			set.Add(data[mode].([]interface{})...)
 		}
 	}
-	var raws []interface{}
-	raws, err = c.Redis.HMGet(ctx, c.key, keys...).Result()
-	result = make([]string, 0)
-	for _, raw := range raws {
-		var value map[string]interface{}
-		err = jsoniter.Unmarshal([]byte(raw.(string)), &value)
-		if err != nil {
-			return
-		}
-		result = append(result, strings.Split(value[mode].(string), ",")...)
-	}
-	return
+	return set
 }
