@@ -3,7 +3,6 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/hash"
 	"gorm.io/gorm"
 	"lab-api/application/cache"
@@ -27,7 +26,6 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Originlists(model.Admin{}, body.OriginListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
 		Exec()
 }
@@ -44,7 +42,6 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Lists(model.Admin{}, body.ListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
 		Exec()
 }

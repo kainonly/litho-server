@@ -18,9 +18,6 @@ func (c *JSONArray) Scan(input interface{}) error {
 }
 
 func (c JSONArray) Value() (driver.Value, error) {
-	if len(c) == 0 {
-		return nil, nil
-	}
 	bs, err := jsoniter.Marshal(c)
 	return string(bs), err
 }

@@ -3,7 +3,6 @@ package acl
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
 	"lab-api/application/cache"
 	"lab-api/application/common"
@@ -27,7 +26,6 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Originlists(model.Acl{}, body.OriginListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
@@ -43,7 +41,6 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Lists(model.Acl{}, body.ListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
@@ -91,9 +88,9 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 type editBody struct {
 	operates.EditBody
 	Key    string
-	Name   datatype.JSONObject
-	Read   datatype.JSONArray
-	Write  datatype.JSONArray
+	Name   map[string]interface{} `json:"name"`
+	Read   datatype.JSONArray     `json:"read"`
+	Write  datatype.JSONArray     `json:"write"`
 	Status bool
 }
 
@@ -112,7 +109,6 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Edit(model.Acl{}, body.EditBody).
-		Update([]string{"status"}).
 		After(func(tx *gorm.DB) error {
 			clearcache(c.Cache)
 			return nil
