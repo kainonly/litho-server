@@ -1,4 +1,4 @@
-module taste-api
+module lab-api
 
 go 1.15
 

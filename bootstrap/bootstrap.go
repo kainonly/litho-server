@@ -12,8 +12,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"io/ioutil"
+	"lab-api/config"
 	"os"
-	"taste-api/config"
 	"time"
 )
 

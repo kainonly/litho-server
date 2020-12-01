@@ -3,7 +3,7 @@ package admin_basic
 import (
 	"github.com/kainonly/gin-extra/helper/hash"
 	"gorm.io/gorm"
-	"taste-api/application/model"
+	"lab-api/application/model"
 )
 
 func Setup(db *gorm.DB) (err error) {

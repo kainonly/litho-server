@@ -4,12 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
 	"github.com/kainonly/gin-curd/typ"
-	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/application/common"
-	"taste-api/application/common/datatype"
-	"taste-api/application/model"
+	"lab-api/application/cache"
+	"lab-api/application/common"
+	"lab-api/application/common/datatype"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -23,7 +22,7 @@ type originListsBody struct {
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Originlists(model.Role{}, body.OriginListsBody).
@@ -38,7 +37,7 @@ type listsBody struct {
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	var body listsBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Lists(model.Role{}, body.ListsBody).
@@ -53,7 +52,7 @@ type getBody struct {
 func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Get(model.Role{}, body.GetBody).
@@ -72,7 +71,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.RoleBasic{
 		Key:    body.Key,
@@ -90,8 +89,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 					ResourceKey: resourceKey,
 				})
 			}
-			err = tx.Create(&assoc).Error
-			if err != nil {
+			if err = tx.Create(&assoc).Error; err != nil {
 				return err
 			}
 			clearcache(c.Cache)
@@ -113,7 +111,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.RoleBasic{
 		Key:    body.Key,
@@ -125,10 +123,9 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch {
-				err = tx.Where("role_key = ?", body.Key).
+				if err = tx.Where("role_key = ?", body.Key).
 					Delete(model.RoleResourceRel{}).
-					Error
-				if err != nil {
+					Error; err != nil {
 					return err
 				}
 				var assoc []model.RoleResourceRel
@@ -138,8 +135,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 						ResourceKey: resourceKey,
 					})
 				}
-				err = tx.Create(&assoc).Error
-				if err != nil {
+				if err = tx.Create(&assoc).Error; err != nil {
 					return err
 				}
 			}
@@ -157,7 +153,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Delete(model.RoleBasic{}, body.DeleteBody).
@@ -175,13 +171,16 @@ type validedkeyBody struct {
 func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 	var body validedkeyBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var count int64
 	c.Db.Model(&model.RoleBasic{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
-	return res.Data(count != 0)
+
+	return gin.H{
+		"exists": count != 0,
+	}
 }
 
 func clearcache(cache *cache.Cache) {

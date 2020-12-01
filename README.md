@@ -1,3 +1,3 @@
-# Taste Api
+# Lab Api
 
 Simple trial for multiple popular frameworks

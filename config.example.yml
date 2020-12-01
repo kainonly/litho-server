@@ -1,6 +1,6 @@
 listen: ':8000'
 app:
-  name: taste
+  name: lab
   key:
   debug: true
 database:
@@ -27,7 +27,7 @@ cors:
   credentials: false
 token:
   system:
-    issuer: taste-api
+    issuer: lab-api
     audience:
       - van-console
     expires: 3600

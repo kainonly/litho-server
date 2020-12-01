@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/kainonly/gin-extra/middleware/cors"
-	"taste-api/config/options"
+	"lab-api/config/options"
 )
 
 type Config struct {

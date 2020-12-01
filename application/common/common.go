@@ -4,8 +4,8 @@ import (
 	curd "github.com/kainonly/gin-curd"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/config"
+	"lab-api/application/cache"
+	"lab-api/config"
 )
 
 type Dependency struct {

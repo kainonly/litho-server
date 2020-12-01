@@ -2,7 +2,7 @@ package admin
 
 import (
 	"gorm.io/gorm"
-	"taste-api/config"
+	"lab-api/config"
 )
 
 func Setup(db *gorm.DB, cfg *config.Config) error {

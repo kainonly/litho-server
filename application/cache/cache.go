@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"taste-api/application/cache/schema"
+	"lab-api/application/cache/schema"
 )
 
 type Cache struct {

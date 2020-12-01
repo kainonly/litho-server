@@ -3,7 +3,7 @@ package schema
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"taste-api/application/model"
+	"lab-api/application/model"
 )
 
 type Resource struct {
@@ -28,12 +28,15 @@ func (c *Resource) Get() (result []map[string]interface{}) {
 	if exists == 0 {
 		var resourceLists []map[string]interface{}
 		c.Db.Model(&model.Resource{}).
-			Select([]string{"`key`", "parent", "name", "nav", "router", "policy", "icon"}).
+			Select([]string{"key", "parent", "name", "nav", "router", "policy", "icon"}).
 			Where("status = ?", true).
 			Order("sort desc").
 			Scan(&resourceLists)
-		bs, _ := jsoniter.Marshal(resourceLists)
-		c.Redis.Set(ctx, c.key, string(bs), 0)
+		if len(resourceLists) != 0 {
+			bs, _ := jsoniter.Marshal(resourceLists)
+			c.Redis.Set(ctx, c.key, string(bs), 0)
+		}
+
 	}
 	if bs, _ := c.Redis.Get(ctx, c.key).Bytes(); bs != nil {
 		jsoniter.Unmarshal(bs, &result)

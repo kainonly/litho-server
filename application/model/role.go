@@ -1,7 +1,7 @@
 package model
 
 import (
-	"taste-api/application/common/datatype"
+	"lab-api/application/common/datatype"
 )
 
 type Role struct {
