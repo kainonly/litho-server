@@ -5,11 +5,10 @@ import (
 	"github.com/kainonly/gin-curd/operates"
 	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/hash"
-	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/application/common"
-	"taste-api/application/model"
+	"lab-api/application/cache"
+	"lab-api/application/common"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -24,7 +23,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Originlists(model.Admin{}, body.OriginListsBody).
@@ -41,7 +40,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	var body listsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Lists(model.Admin{}, body.ListsBody).
@@ -58,7 +57,7 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Get(model.Admin{}, body.GetBody).
@@ -81,13 +80,9 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
-	var password string
-	password, err = hash.Make(body.Password, hash.Option{})
-	if err != nil {
-		return res.Error(err)
-	}
+	password, _ := hash.Make(body.Password, hash.Option{})
 	data := model.AdminBasic{
 		Username: body.Username,
 		Password: password,
@@ -104,8 +99,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 				Username: body.Username,
 				RoleKey:  body.Role,
 			}
-			err = tx.Create(&roleData).Error
-			if err != nil {
+			if err = tx.Create(&roleData).Error; err != nil {
 				return err
 			}
 			clearcache(c.Cache)
@@ -130,15 +124,12 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var password string
 	if !body.Switch {
 		if body.Password != "" {
-			password, err = hash.Make(body.Password, hash.Option{})
-			if err != nil {
-				return res.Error(err)
-			}
+			password, _ = hash.Make(body.Password, hash.Option{})
 		}
 	}
 	data := model.AdminBasic{
@@ -158,8 +149,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 					Username: body.Username,
 					RoleKey:  body.Role,
 				}
-				err = tx.Create(&roleData).Error
-				if err != nil {
+				if err = tx.Create(&roleData).Error; err != nil {
 					return err
 				}
 			}
@@ -177,7 +167,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Delete(model.AdminBasic{}, body.DeleteBody).

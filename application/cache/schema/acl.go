@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
-	"taste-api/application/model"
+	"lab-api/application/model"
 )
 
 type Acl struct {

@@ -2,17 +2,17 @@ package main
 
 import (
 	"go.uber.org/fx"
-	"taste-api/bootstrap"
-	"taste-api/database/acl"
-	"taste-api/database/admin"
-	"taste-api/database/admin_basic"
-	"taste-api/database/admin_role_rel"
-	"taste-api/database/policy"
-	"taste-api/database/resource"
-	"taste-api/database/role"
-	"taste-api/database/role_basic"
-	"taste-api/database/role_policy"
-	"taste-api/database/role_resource_rel"
+	"lab-api/bootstrap"
+	"lab-api/database/acl"
+	"lab-api/database/admin"
+	"lab-api/database/admin_basic"
+	"lab-api/database/admin_role_rel"
+	"lab-api/database/policy"
+	"lab-api/database/resource"
+	"lab-api/database/role"
+	"lab-api/database/role_basic"
+	"lab-api/database/role_policy"
+	"lab-api/database/role_resource_rel"
 )
 
 func main() {

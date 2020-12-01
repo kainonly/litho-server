@@ -3,9 +3,9 @@ package main
 import (
 	curd "github.com/kainonly/gin-curd"
 	"go.uber.org/fx"
-	"taste-api/application"
-	"taste-api/application/cache"
-	"taste-api/bootstrap"
+	"lab-api/application"
+	"lab-api/application/cache"
+	"lab-api/bootstrap"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package schema
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"taste-api/application/model"
+	"lab-api/application/model"
 )
 
 type Admin struct {

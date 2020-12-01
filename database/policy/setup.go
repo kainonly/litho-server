@@ -2,7 +2,7 @@ package policy
 
 import (
 	"gorm.io/gorm"
-	"taste-api/application/model"
+	"lab-api/application/model"
 )
 
 func Setup(db *gorm.DB) error {

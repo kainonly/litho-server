@@ -1,15 +1,15 @@
 package resource
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
 	"github.com/kainonly/gin-curd/typ"
-	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/application/common"
-	"taste-api/application/common/datatype"
-	"taste-api/application/model"
+	"lab-api/application/cache"
+	"lab-api/application/common"
+	"lab-api/application/common/datatype"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -24,7 +24,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Originlists(model.Resource{}, body.OriginListsBody).
@@ -40,7 +40,7 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Get(model.Resource{}, body.GetBody).
@@ -63,7 +63,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.Resource{
 		Key:    body.Key,
@@ -87,9 +87,9 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	operates.EditBody
-	Key    string `binding:"required_if=switch false"`
+	Key    string
 	Parent string
-	Name   datatype.JSONObject `binding:"required_if=switch false"`
+	Name   datatype.JSONObject
 	Nav    bool
 	Router bool
 	Policy bool
@@ -102,7 +102,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var prevData model.Resource
 	if !body.Switch {
@@ -124,11 +124,10 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Edit(model.Resource{}, body.EditBody).
 		After(func(tx *gorm.DB) error {
 			if !body.Switch && body.Key != prevData.Key {
-				err = tx.Model(&model.Resource{}).
+				if err = tx.Model(&model.Resource{}).
 					Where("parent = ?", body.Key).
 					Update("parent", body.Key).
-					Error
-				if err != nil {
+					Error; err != nil {
 					return err
 				}
 			}
@@ -146,14 +145,14 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var data model.Resource
 	c.Db.Where("id in ?", body.Id).First(&data)
 	var count int64
 	c.Db.Model(&model.Resource{}).Where("parent = ?", data.Key).Count(&count)
 	if count != 0 {
-		return res.Error("A subset of nodes cannot be deleted")
+		return errors.New("A subset of nodes cannot be deleted")
 	}
 
 	return c.Curd.
@@ -173,25 +172,23 @@ func (c *Controller) Sort(ctx *gin.Context) interface{} {
 	var body sortBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
-	err = c.Db.Transaction(func(tx *gorm.DB) error {
+	if err = c.Db.Transaction(func(tx *gorm.DB) error {
 		for _, value := range body.Data {
-			err = tx.Model(&model.Resource{}).
+			if err = tx.Model(&model.Resource{}).
 				Where("id = ?", value["id"]).
 				Update("sort", value["sort"]).
-				Error
-			if err != nil {
+				Error; err != nil {
 				return err
 			}
 		}
 		return nil
-	})
-	if err != nil {
-		return res.Ok()
-	} else {
-		return res.Error(err)
+	}); err != nil {
+		return err
 	}
+	return true
+
 }
 
 type bindingkeyBody struct {
@@ -202,14 +199,16 @@ func (c *Controller) Bindingkey(ctx *gin.Context) interface{} {
 	var body bindingkeyBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var count int64
 	c.Db.Model(&model.Resource{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
 
-	return res.Data(count != 0)
+	return gin.H{
+		"exists": count != 0,
+	}
 }
 
 func clearcache(cache *cache.Cache) {

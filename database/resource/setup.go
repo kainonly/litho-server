@@ -2,8 +2,8 @@ package resource
 
 import (
 	"gorm.io/gorm"
-	"taste-api/application/common/datatype"
-	"taste-api/application/model"
+	"lab-api/application/common/datatype"
+	"lab-api/application/model"
 )
 
 func Setup(db *gorm.DB) error {

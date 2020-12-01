@@ -5,11 +5,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/helper/hash"
-	"github.com/kainonly/gin-extra/helper/res"
 	"github.com/kainonly/gin-extra/helper/str"
 	"github.com/kainonly/gin-extra/helper/token"
-	"log"
-	"taste-api/application/common"
+	"lab-api/application/common"
 	"time"
 )
 
@@ -25,14 +23,14 @@ type LoginBody struct {
 func (c *Controller) Login(ctx *gin.Context) interface{} {
 	var body LoginBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	admin := c.Cache.Admin.Get(body.Username)
 	if admin == nil {
-		return res.Error("user does not exist or has been frozen")
+		return errors.New("user does not exist or has been frozen")
 	}
 	if ok, _ := hash.Verify(body.Password, admin["password"].(string)); !ok {
-		return res.Error("user login password is incorrect")
+		return errors.New("user login password is incorrect")
 	}
 	jti := str.Uuid()
 	ack := str.Random(8)
@@ -46,7 +44,7 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 		"role":     admin["role"],
 	}, time.Hour*2)
 	ctx.SetCookie("system_token", stoken.String(), 0, "", "", true, true)
-	return res.Ok()
+	return true
 }
 
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
@@ -70,18 +68,15 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 		ctx.SetCookie("system_token", myToken.String(), 0, "", "", true, true)
 		return myToken.Claims(), nil
 	})
-	return res.Ok()
+	return true
 }
 
 func (c *Controller) Resource(ctx *gin.Context) interface{} {
 	resource := c.Cache.Resource.Get()
-	set := c.Cache.Acl.Get("resource", 0)
-	log.Println(set.Values())
-
 	//roleKeyids := []string{"*"}
 	//role, err := c.Cache.RoleGet(roleKeyids, "resource")
 	//if err != nil {
 	//	return res.Error(err)
 	//}
-	return res.Data(resource)
+	return resource
 }

@@ -3,11 +3,10 @@ package policy
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/application/common"
-	"taste-api/application/model"
+	"lab-api/application/cache"
+	"lab-api/application/common"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -22,7 +21,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Originlists(model.Policy{}, body.OriginListsBody).
@@ -39,7 +38,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.Policy{
 		ResourceKey: body.ResourceKey,
@@ -63,7 +62,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Delete(model.Policy{}, body.DeleteBody).

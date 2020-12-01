@@ -4,12 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
 	"github.com/kainonly/gin-curd/typ"
-	"github.com/kainonly/gin-extra/helper/res"
 	"gorm.io/gorm"
-	"taste-api/application/cache"
-	"taste-api/application/common"
-	"taste-api/application/common/datatype"
-	"taste-api/application/model"
+	"lab-api/application/cache"
+	"lab-api/application/common"
+	"lab-api/application/common/datatype"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -24,7 +23,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	var body originListsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Originlists(model.Acl{}, body.OriginListsBody).
@@ -40,7 +39,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	var body listsBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Lists(model.Acl{}, body.ListsBody).
@@ -56,7 +55,7 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	var body getBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Get(model.Acl{}, body.GetBody).
@@ -75,7 +74,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	var body addBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.Acl{
 		Key:    body.Key,
@@ -91,8 +90,8 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	operates.EditBody
-	Key    string              `binding:"required_if=switch false"`
-	Name   datatype.JSONObject `binding:"required_if=switch false"`
+	Key    string
+	Name   datatype.JSONObject
 	Read   datatype.JSONArray
 	Write  datatype.JSONArray
 	Status bool
@@ -102,7 +101,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var body editBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	data := model.Acl{
 		Key:    body.Key,
@@ -113,6 +112,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Edit(model.Acl{}, body.EditBody).
+		Update([]string{"status"}).
 		After(func(tx *gorm.DB) error {
 			clearcache(c.Cache)
 			return nil
@@ -128,7 +128,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	var body deleteBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	return c.Curd.
 		Delete(model.Acl{}, body.DeleteBody).
@@ -143,18 +143,20 @@ type validedkeyBody struct {
 	Key string `binding:"required"`
 }
 
-func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
+func (c *Controller) ValidedKey(ctx *gin.Context) interface{} {
 	var body validedkeyBody
 	var err error
 	if err = ctx.ShouldBindJSON(&body); err != nil {
-		return res.Error(err)
+		return err
 	}
 	var count int64
 	c.Db.Model(&model.Acl{}).
-		Where("keyid = ?", body.Key).
+		Where("key = ?", body.Key).
 		Count(&count)
 
-	return res.Data(count != 0)
+	return gin.H{
+		"exists": count != 0,
+	}
 }
 
 func clearcache(cache *cache.Cache) {

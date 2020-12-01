@@ -1,6 +1,6 @@
 package model
 
-import "taste-api/application/common/datatype"
+import "lab-api/application/common/datatype"
 
 type Admin struct {
 	ID         uint64
