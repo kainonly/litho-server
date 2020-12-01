@@ -3,7 +3,6 @@ package role
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-curd/operates"
-	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
 	"lab-api/application/cache"
 	"lab-api/application/common"
@@ -26,7 +25,6 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Originlists(model.Role{}, body.OriginListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
@@ -41,7 +39,6 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.
 		Lists(model.Role{}, body.ListsBody).
-		OrderBy(typ.Orders{"create_time": "desc"}).
 		Exec()
 }
 
