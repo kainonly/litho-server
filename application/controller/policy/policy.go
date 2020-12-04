@@ -2,9 +2,9 @@ package policy
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-curd/operates"
+	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
-	"lab-api/application/cache"
 	"lab-api/application/common"
 	"lab-api/application/model"
 )
@@ -14,7 +14,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	operates.OriginListsBody
+	typ.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -23,9 +23,9 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Originlists(model.Policy{}, body.OriginListsBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Policy{}, body),
+	).Originlists()
 }
 
 type addBody struct {
@@ -45,17 +45,16 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		AclKey:      body.AclKey,
 		Policy:      body.Policy,
 	}
-	return c.Curd.
-		Add().
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec(&data)
+		}),
+	).Add(&data)
 }
 
 type deleteBody struct {
-	operates.DeleteBody
+	typ.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
@@ -64,15 +63,15 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Delete(model.Policy{}, body.DeleteBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.Policy{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec()
+		}),
+	).Delete()
 }
 
-func clearcache(cache *cache.Cache) {
-	cache.Role.Clear()
+func (c *Controller) clearcache() {
+	c.Cache.Role.Clear()
 }

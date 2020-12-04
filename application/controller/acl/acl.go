@@ -2,9 +2,9 @@ package acl
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-curd/operates"
+	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
-	"lab-api/application/cache"
 	"lab-api/application/common"
 	"lab-api/application/common/datatype"
 	"lab-api/application/model"
@@ -15,7 +15,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	operates.OriginListsBody
+	typ.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -24,13 +24,13 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Originlists(model.Acl{}, body.OriginListsBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Acl{}, body),
+	).Originlists()
 }
 
 type listsBody struct {
-	operates.ListsBody
+	typ.Lists
 }
 
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
@@ -39,13 +39,13 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Lists(model.Acl{}, body.ListsBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Acl{}, body),
+	).Lists()
 }
 
 type getBody struct {
-	operates.GetBody
+	typ.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -54,9 +54,9 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Get(model.Acl{}, body.GetBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Acl{}, body),
+	).Get()
 }
 
 type addBody struct {
@@ -80,13 +80,16 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		Write:  body.Write,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Add().
-		Exec(&data)
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
+			return nil
+		}),
+	).Add(&data)
 }
 
 type editBody struct {
-	operates.EditBody
+	typ.Edit
 	Key    string
 	Name   map[string]interface{} `json:"name"`
 	Read   datatype.JSONArray     `json:"read"`
@@ -107,17 +110,17 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Write:  body.Write,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Edit(model.Acl{}, body.EditBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.Acl{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec(data)
+		}),
+	).Edit(data)
 }
 
 type deleteBody struct {
-	operates.DeleteBody
+	typ.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
@@ -126,13 +129,13 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Delete(model.Acl{}, body.DeleteBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.Acl{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec()
+		}),
+	).Delete()
 }
 
 type validedkeyBody struct {
@@ -155,7 +158,7 @@ func (c *Controller) ValidedKey(ctx *gin.Context) interface{} {
 	}
 }
 
-func clearcache(cache *cache.Cache) {
-	cache.Acl.Clear()
-	cache.Role.Clear()
+func (c *Controller) clearcache() {
+	c.Cache.Acl.Clear()
+	c.Cache.Role.Clear()
 }
