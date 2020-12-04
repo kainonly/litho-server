@@ -2,9 +2,9 @@ package role
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-curd/operates"
+	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
-	"lab-api/application/cache"
 	"lab-api/application/common"
 	"lab-api/application/common/datatype"
 	"lab-api/application/model"
@@ -15,7 +15,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	operates.OriginListsBody
+	typ.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -23,13 +23,13 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Originlists(model.Role{}, body.OriginListsBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Role{}, body),
+	).Originlists()
 }
 
 type listsBody struct {
-	operates.ListsBody
+	typ.Lists
 }
 
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
@@ -37,13 +37,13 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Lists(model.Role{}, body.ListsBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Role{}, body),
+	).Lists()
 }
 
 type getBody struct {
-	operates.GetBody
+	typ.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -51,9 +51,9 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Get(model.Role{}, body.GetBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Role{}, body),
+	).Get()
 }
 
 type addBody struct {
@@ -76,9 +76,8 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		Note:   body.Note,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Add().
-		After(func(tx *gorm.DB) error {
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
 			var assoc []model.RoleResourceRel
 			for _, resourceKey := range body.Resource {
 				assoc = append(assoc, model.RoleResourceRel{
@@ -89,14 +88,14 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 			if err = tx.Create(&assoc).Error; err != nil {
 				return err
 			}
-			clearcache(c.Cache)
+			c.clearcache()
 			return nil
-		}).
-		Exec(&data)
+		}),
+	).Add(&data)
 }
 
 type editBody struct {
-	operates.EditBody
+	typ.Edit
 	Key      string              `binding:"required_if=switch false"`
 	Name     datatype.JSONObject `binding:"required_if=switch false"`
 	Resource []string            `binding:"required_if=switch false"`
@@ -116,9 +115,9 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Note:   body.Note,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Edit(model.Resource{}, body.EditBody).
-		After(func(tx *gorm.DB) error {
+	return c.Curd.Operates(
+		curd.Plan(model.Resource{}, body),
+		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch {
 				if err = tx.Where("role_key = ?", body.Key).
 					Delete(model.RoleResourceRel{}).
@@ -136,14 +135,14 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 					return err
 				}
 			}
-			clearcache(c.Cache)
+			c.clearcache()
 			return nil
-		}).
-		Exec(data)
+		}),
+	).Edit(data)
 }
 
 type deleteBody struct {
-	operates.DeleteBody
+	typ.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
@@ -152,13 +151,13 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Delete(model.RoleBasic{}, body.DeleteBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.RoleBasic{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec()
+		}),
+	)
 }
 
 type validedkeyBody struct {
@@ -180,7 +179,7 @@ func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 	}
 }
 
-func clearcache(cache *cache.Cache) {
-	cache.Role.Clear()
-	cache.Admin.Clear()
+func (c *Controller) clearcache() {
+	c.Cache.Role.Clear()
+	c.Cache.Admin.Clear()
 }

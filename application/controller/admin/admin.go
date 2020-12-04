@@ -2,10 +2,10 @@ package admin
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-curd/operates"
+	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/hash"
 	"gorm.io/gorm"
-	"lab-api/application/cache"
 	"lab-api/application/common"
 	"lab-api/application/model"
 )
@@ -15,7 +15,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	operates.OriginListsBody
+	typ.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -24,14 +24,14 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Originlists(model.Admin{}, body.OriginListsBody).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Admin{}, body),
+		curd.Field([]string{"password"}, true),
+	).Originlists()
 }
 
 type listsBody struct {
-	operates.ListsBody
+	typ.Lists
 }
 
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
@@ -40,14 +40,14 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Lists(model.Admin{}, body.ListsBody).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Admin{}, body),
+		curd.Field([]string{"password"}, true),
+	).Lists()
 }
 
 type getBody struct {
-	operates.GetBody
+	typ.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -56,10 +56,10 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Get(model.Admin{}, body.GetBody).
-		Field([]string{"id", "username", "role", "call", "email", "phone", "avatar", "status"}).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Admin{}, body),
+		curd.Field([]string{"password"}, true),
+	).Get()
 }
 
 type addBody struct {
@@ -89,9 +89,8 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		Avatar:   body.Avatar,
 		Status:   body.Status,
 	}
-	return c.Curd.
-		Add().
-		After(func(tx *gorm.DB) error {
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
 			roleData := model.AdminRoleRel{
 				Username: body.Username,
 				RoleKey:  body.Role,
@@ -99,14 +98,14 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 			if err = tx.Create(&roleData).Error; err != nil {
 				return err
 			}
-			clearcache(c.Cache)
+			c.clearcache()
 			return nil
-		}).
-		Exec(&data)
+		}),
+	).Add(&data)
 }
 
 type editBody struct {
-	operates.EditBody
+	typ.Edit
 	Username string
 	Password string `binding:"min=12,max=20"`
 	Role     string `binding:"required_if=switch false"`
@@ -138,9 +137,8 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Avatar:   body.Avatar,
 		Status:   body.Status,
 	}
-	return c.Curd.
-		Edit(model.AdminBasic{}, body.EditBody).
-		After(func(tx *gorm.DB) error {
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch {
 				roleData := model.AdminRoleRel{
 					Username: body.Username,
@@ -150,14 +148,14 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 					return err
 				}
 			}
-			clearcache(c.Cache)
+			c.clearcache()
 			return nil
-		}).
-		Exec(data)
+		}),
+	).Edit(data)
 }
 
 type deleteBody struct {
-	operates.DeleteBody
+	typ.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
@@ -166,15 +164,15 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Delete(model.AdminBasic{}, body.DeleteBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.AdminBasic{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec()
+		}),
+	).Delete()
 }
 
-func clearcache(cache *cache.Cache) {
-	cache.Admin.Clear()
+func (c *Controller) clearcache() {
+	c.Cache.Admin.Clear()
 }

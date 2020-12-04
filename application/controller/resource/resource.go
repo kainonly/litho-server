@@ -3,10 +3,9 @@ package resource
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-curd/operates"
+	curd "github.com/kainonly/gin-curd"
 	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
-	"lab-api/application/cache"
 	"lab-api/application/common"
 	"lab-api/application/common/datatype"
 	"lab-api/application/model"
@@ -17,7 +16,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	operates.OriginListsBody
+	typ.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -26,14 +25,14 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Originlists(model.Resource{}, body.OriginListsBody).
-		OrderBy(typ.Orders{"sort": "asc"}).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Resource{}, body),
+		curd.OrderBy(typ.Orders{"sort": "asc"}),
+	).Originlists()
 }
 
 type getBody struct {
-	operates.GetBody
+	typ.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -42,9 +41,9 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.
-		Get(model.Resource{}, body.GetBody).
-		Exec()
+	return c.Curd.Operates(
+		curd.Plan(model.Resource{}, body),
+	).Get()
 }
 
 type addBody struct {
@@ -76,17 +75,16 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		Sort:   body.Sort,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Add().
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec(&data)
+		}),
+	).Add(&data)
 }
 
 type editBody struct {
-	operates.EditBody
+	typ.Edit
 	Key    string
 	Parent string
 	Name   datatype.JSONObject
@@ -120,9 +118,9 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		Sort:   body.Sort,
 		Status: body.Status,
 	}
-	return c.Curd.
-		Edit(model.Resource{}, body.EditBody).
-		After(func(tx *gorm.DB) error {
+	return c.Curd.Operates(
+		curd.Plan(model.Resource{}, body),
+		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch && body.Key != prevData.Key {
 				if err = tx.Model(&model.Resource{}).
 					Where("parent = ?", body.Key).
@@ -131,14 +129,14 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 					return err
 				}
 			}
-			clearcache(c.Cache)
+			c.clearcache()
 			return nil
-		}).
-		Exec(data)
+		}),
+	).Edit(data)
 }
 
 type deleteBody struct {
-	operates.DeleteBody
+	typ.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
@@ -154,14 +152,13 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if count != 0 {
 		return errors.New("A subset of nodes cannot be deleted")
 	}
-
-	return c.Curd.
-		Delete(model.Resource{}, body.DeleteBody).
-		After(func(tx *gorm.DB) error {
-			clearcache(c.Cache)
+	return c.Curd.Operates(
+		curd.Plan(model.Resource{}, body),
+		curd.After(func(tx *gorm.DB) error {
+			c.clearcache()
 			return nil
-		}).
-		Exec()
+		}),
+	).Delete()
 }
 
 type sortBody struct {
@@ -211,7 +208,7 @@ func (c *Controller) Bindingkey(ctx *gin.Context) interface{} {
 	}
 }
 
-func clearcache(cache *cache.Cache) {
-	cache.Resource.Clear()
-	cache.Role.Clear()
+func (c *Controller) clearcache() {
+	c.Cache.Resource.Clear()
+	c.Cache.Role.Clear()
 }
