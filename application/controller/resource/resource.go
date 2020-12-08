@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
-	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/common/datatype"
@@ -16,7 +15,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	typ.OriginLists
+	curd.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -27,12 +26,12 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 	}
 	return c.Curd.Operates(
 		curd.Plan(model.Resource{}, body),
-		curd.OrderBy(typ.Orders{"sort": "asc"}),
+		curd.OrderBy(curd.Orders{"sort": "asc"}),
 	).Originlists()
 }
 
 type getBody struct {
-	typ.Get
+	curd.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -84,7 +83,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 }
 
 type editBody struct {
-	typ.Edit
+	curd.Edit
 	Key    string
 	Parent string
 	Name   datatype.JSONObject
@@ -136,7 +135,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 }
 
 type deleteBody struct {
-	typ.Delete
+	curd.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
