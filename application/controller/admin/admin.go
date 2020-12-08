@@ -3,7 +3,6 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
-	"github.com/kainonly/gin-curd/typ"
 	"github.com/kainonly/gin-extra/helper/hash"
 	"gorm.io/gorm"
 	"lab-api/application/common"
@@ -15,7 +14,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	typ.OriginLists
+	curd.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -31,7 +30,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 }
 
 type listsBody struct {
-	typ.Lists
+	curd.Lists
 }
 
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
@@ -47,7 +46,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 }
 
 type getBody struct {
-	typ.Get
+	curd.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -105,7 +104,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 }
 
 type editBody struct {
-	typ.Edit
+	curd.Edit
 	Username string
 	Password string `binding:"min=12,max=20"`
 	Role     string `binding:"required_if=switch false"`
@@ -155,7 +154,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 }
 
 type deleteBody struct {
-	typ.Delete
+	curd.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {

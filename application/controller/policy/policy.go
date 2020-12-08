@@ -3,7 +3,6 @@ package policy
 import (
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
-	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/model"
@@ -14,7 +13,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	typ.OriginLists
+	curd.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -54,7 +53,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 }
 
 type deleteBody struct {
-	typ.Delete
+	curd.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {

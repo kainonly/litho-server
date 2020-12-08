@@ -3,7 +3,6 @@ package acl
 import (
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
-	"github.com/kainonly/gin-curd/typ"
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/common/datatype"
@@ -15,7 +14,7 @@ type Controller struct {
 }
 
 type originListsBody struct {
-	typ.OriginLists
+	curd.OriginLists
 }
 
 func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
@@ -30,7 +29,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 }
 
 type listsBody struct {
-	typ.Lists
+	curd.Lists
 }
 
 func (c *Controller) Lists(ctx *gin.Context) interface{} {
@@ -45,7 +44,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 }
 
 type getBody struct {
-	typ.Get
+	curd.Get
 }
 
 func (c *Controller) Get(ctx *gin.Context) interface{} {
@@ -89,7 +88,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 }
 
 type editBody struct {
-	typ.Edit
+	curd.Edit
 	Key    string
 	Name   map[string]interface{} `json:"name"`
 	Read   datatype.JSONArray     `json:"read"`
@@ -120,7 +119,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 }
 
 type deleteBody struct {
-	typ.Delete
+	curd.Delete
 }
 
 func (c *Controller) Delete(ctx *gin.Context) interface{} {
