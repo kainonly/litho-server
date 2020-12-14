@@ -10,7 +10,7 @@ import (
 )
 
 type Controller struct {
-	*common.Dependency
+	common.Dependency
 }
 
 type originListsBody struct {
