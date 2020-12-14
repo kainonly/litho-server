@@ -3,7 +3,7 @@ package application
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/helper/token"
-	"github.com/kainonly/gin-extra/mvc"
+	"github.com/kainonly/gin-extra/mvcx"
 	"lab-api/application/common"
 	"lab-api/application/controller"
 	"lab-api/application/controller/acl"
@@ -15,42 +15,21 @@ import (
 	"lab-api/routes"
 )
 
-func Application(router *gin.Engine, dep common.Dependency) {
-	cfg := dep.Config
+func Application(router *gin.Engine, dependency common.Dependency) {
+	cfg := dependency.Config
 	token.Key = []byte(cfg.App.Key)
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
-		m := mvc.Factory(system)
-		m.AutoController(mvc.Auto{
-			Path:       "/main",
-			Controller: &controller.Controller{Dependency: &dep},
-			Middlewares: []mvc.Middleware{
-				{
-					Handle: auth.Auth(),
-					Only:   []string{"Resource"},
-				},
-			},
+		mvc := mvcx.Initialize(system, dependency)
+		mvc.AutoController("/main", &controller.Controller{}, mvcx.Middleware{
+			Handle: auth.Auth(),
+			Only:   []string{"Resource"},
 		})
-		m.AutoController(mvc.Auto{
-			Path:       "/acl",
-			Controller: &acl.Controller{Dependency: &dep},
-		})
-		m.AutoController(mvc.Auto{
-			Path:       "/resource",
-			Controller: &resource.Controller{Dependency: &dep},
-		})
-		m.AutoController(mvc.Auto{
-			Path:       "/policy",
-			Controller: &policy.Controller{Dependency: &dep},
-		})
-		m.AutoController(mvc.Auto{
-			Path:       "/role",
-			Controller: &role.Controller{Dependency: &dep},
-		})
-		m.AutoController(mvc.Auto{
-			Path:       "/admin",
-			Controller: &admin.Controller{Dependency: &dep},
-		})
+		mvc.AutoController("/acl", &acl.Controller{})
+		mvc.AutoController("/resource", &resource.Controller{})
+		mvc.AutoController("/policy", &policy.Controller{})
+		mvc.AutoController("/role", &role.Controller{})
+		mvc.AutoController("/admin", &admin.Controller{})
 	}
 }
