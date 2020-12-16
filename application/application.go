@@ -2,8 +2,8 @@ package application
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-extra/helper/token"
 	"github.com/kainonly/gin-extra/mvcx"
+	"github.com/kainonly/gin-extra/token"
 	"lab-api/application/common"
 	"lab-api/application/controller"
 	"lab-api/application/controller/acl"

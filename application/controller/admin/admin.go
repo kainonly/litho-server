@@ -3,7 +3,7 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
-	"github.com/kainonly/gin-extra/helper/hash"
+	"github.com/kainonly/gin-extra/hash"
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/model"
@@ -78,7 +78,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	password, _ := hash.Make(body.Password, hash.Option{})
+	password, _ := hash.Make(body.Password)
 	data := model.AdminBasic{
 		Username: body.Username,
 		Password: password,
@@ -124,7 +124,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	var password string
 	if !body.Switch {
 		if body.Password != "" {
-			password, _ = hash.Make(body.Password, hash.Option{})
+			password, _ = hash.Make(body.Password)
 		}
 	}
 	data := model.AdminBasic{

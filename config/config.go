@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/kainonly/gin-extra/middleware/cors"
+	"github.com/kainonly/gin-extra/cors"
 	"lab-api/config/options"
 )
 
