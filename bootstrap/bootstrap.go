@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/gin-extra/middleware/cors"
+	"github.com/kainonly/gin-extra/cors"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"

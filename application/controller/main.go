@@ -4,9 +4,9 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-extra/helper/hash"
-	"github.com/kainonly/gin-extra/helper/str"
-	"github.com/kainonly/gin-extra/helper/token"
+	"github.com/kainonly/gin-extra/hash"
+	"github.com/kainonly/gin-extra/str"
+	"github.com/kainonly/gin-extra/token"
 	"lab-api/application/common"
 	"time"
 )
