@@ -4,9 +4,9 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-extra/datatype"
 	"gorm.io/gorm"
 	"lab-api/application/common"
-	"lab-api/application/common/datatype"
 	"lab-api/application/model"
 )
 

@@ -1,6 +1,6 @@
 package model
 
-import "lab-api/application/common/datatype"
+import "github.com/kainonly/gin-extra/datatype"
 
 type Admin struct {
 	ID         uint64
