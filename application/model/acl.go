@@ -1,7 +1,7 @@
 package model
 
 import (
-	"lab-api/application/common/datatype"
+	"github.com/kainonly/gin-extra/datatype"
 )
 
 type Acl struct {

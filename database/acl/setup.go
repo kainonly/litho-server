@@ -1,8 +1,8 @@
 package acl
 
 import (
+	"github.com/kainonly/gin-extra/datatype"
 	"gorm.io/gorm"
-	"lab-api/application/common/datatype"
 	"lab-api/application/model"
 )
 
