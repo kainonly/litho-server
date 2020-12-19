@@ -4,10 +4,12 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/gin-extra/authx"
 	"github.com/kainonly/gin-extra/hash"
-	"github.com/kainonly/gin-extra/str"
-	"github.com/kainonly/gin-extra/token"
+	"github.com/kainonly/gin-extra/tokenx"
+	"github.com/kainonly/gin-extra/typ"
 	"lab-api/application/common"
+	"net/http"
 	"time"
 )
 
@@ -32,32 +34,32 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	if ok, _ := hash.Verify(body.Password, admin["password"].(string)); !ok {
 		return errors.New("user login password is incorrect")
 	}
-	jti := str.Uuid()
-	ack := str.Random(8)
-	c.Cache.RefreshToken.TokenFactory(jti.String(), ack, time.Hour*24*7)
-	stoken, _ := token.Make(jwt.MapClaims{
-		"jti":      jti,
-		"iss":      "api",
-		"aud":      []string{"system"},
-		"ack":      ack,
+	authx.Create(ctx, typ.Cookie{
+		Name:     "system",
+		MaxAge:   0,
+		Path:     "",
+		Domain:   "",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}, jwt.MapClaims{
 		"username": admin["username"],
 		"role":     admin["role"],
-	}, time.Hour*2)
-	ctx.SetCookie("system_token", stoken.String(), 0, "", "", true, true)
+	}, c.Cache.RefreshToken)
 	return true
 }
 
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
 	tokenString, _ := ctx.Cookie("system_token")
-	token.Verify(tokenString, func(claims jwt.MapClaims) (jwt.MapClaims, error) {
+	tokenx.Verify(tokenString, func(claims jwt.MapClaims) (jwt.MapClaims, error) {
 		var err error
 		jti := claims["jti"].(string)
 		ack := claims["ack"].(string)
-		if result := c.Cache.RefreshToken.TokenVerify(jti, ack); !result {
+		if result := c.Cache.RefreshToken.Verify(jti, ack); !result {
 			return nil, errors.New("refresh token verification expired")
 		}
-		var myToken *token.Token
-		if myToken, err = token.Make(jwt.MapClaims{
+		var myToken *tokenx.Token
+		if myToken, err = tokenx.Make(jwt.MapClaims{
 			"jti":      jti,
 			"ack":      ack,
 			"username": claims["username"],
@@ -65,8 +67,8 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 		}, time.Hour*2); err != nil {
 			return nil, err
 		}
-		ctx.SetCookie("system_token", myToken.String(), 0, "", "", true, true)
-		return myToken.Claims(), nil
+		ctx.SetCookie("system_token", myToken.Value, 0, "", "", true, true)
+		return myToken.Claims, nil
 	})
 	return true
 }
