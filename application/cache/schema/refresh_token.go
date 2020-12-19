@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"errors"
+	"github.com/kainonly/gin-extra/authx"
 	"time"
 )
 
@@ -11,6 +12,8 @@ var (
 )
 
 type RefreshToken struct {
+	authx.RefreshTokenAPI
+
 	key string
 	Dependency
 }
@@ -22,23 +25,28 @@ func NewRefreshToken(dep Dependency) *RefreshToken {
 	return c
 }
 
-func (c *RefreshToken) TokenFactory(jti string, ack string, expires time.Duration) {
-	c.Redis.SetEX(context.Background(), c.key+jti, ack, expires)
+func (c *RefreshToken) Factory(value ...interface{}) {
+	c.Redis.SetEX(
+		context.Background(),
+		c.key+value[0].(string),
+		value[1].(string),
+		value[2].(time.Duration),
+	)
 	return
 }
 
-func (c *RefreshToken) verify(ctx context.Context, jti string, ack string) (result bool) {
+func (c *RefreshToken) Verify(value ...interface{}) (result bool) {
+	return c.tokenVerify(context.Background(), value[0].(string), value[1].(string))
+}
+
+func (c *RefreshToken) tokenVerify(ctx context.Context, jti string, ack string) (result bool) {
 	plain := c.Redis.Get(ctx, c.key+jti).String()
 	return plain != ack
 }
 
-func (c *RefreshToken) TokenVerify(jti string, ack string) (result bool) {
-	return c.verify(context.Background(), jti, ack)
-}
-
-func (c *RefreshToken) TokenClear(jti string, ack string) (err error) {
+func (c *RefreshToken) Clear(jti string, ack string) (err error) {
 	ctx := context.Background()
-	if result := c.verify(ctx, jti, ack); !result {
+	if result := c.tokenVerify(ctx, jti, ack); !result {
 		return RefreshTokenVerifyError
 	}
 	c.Redis.Del(ctx, c.key+jti)
