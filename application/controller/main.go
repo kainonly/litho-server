@@ -6,11 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/gin-extra/authx"
 	"github.com/kainonly/gin-extra/hash"
-	"github.com/kainonly/gin-extra/tokenx"
 	"github.com/kainonly/gin-extra/typ"
 	"lab-api/application/common"
 	"net/http"
-	"time"
 )
 
 type Controller struct {
@@ -34,7 +32,7 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	if ok, _ := hash.Verify(body.Password, admin["password"].(string)); !ok {
 		return errors.New("user login password is incorrect")
 	}
-	authx.Create(ctx, typ.Cookie{
+	if err := authx.Create(ctx, typ.Cookie{
 		Name:     "system",
 		MaxAge:   0,
 		Path:     "",
@@ -45,31 +43,23 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	}, jwt.MapClaims{
 		"username": admin["username"],
 		"role":     admin["role"],
-	}, c.Cache.RefreshToken)
+	}, c.Cache.RefreshToken); err != nil {
+		return err
+	}
 	return true
 }
 
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
-	tokenString, _ := ctx.Cookie("system_token")
-	tokenx.Verify(tokenString, func(claims jwt.MapClaims) (jwt.MapClaims, error) {
-		var err error
-		jti := claims["jti"].(string)
-		ack := claims["ack"].(string)
-		if result := c.Cache.RefreshToken.Verify(jti, ack); !result {
-			return nil, errors.New("refresh token verification expired")
-		}
-		var myToken *tokenx.Token
-		if myToken, err = tokenx.Make(jwt.MapClaims{
-			"jti":      jti,
-			"ack":      ack,
-			"username": claims["username"],
-			"role":     claims["role"],
-		}, time.Hour*2); err != nil {
-			return nil, err
-		}
-		ctx.SetCookie("system_token", myToken.Value, 0, "", "", true, true)
-		return myToken.Claims, nil
-	})
+	if err := authx.Verify(ctx, typ.Cookie{Name: "system",
+		MaxAge:   0,
+		Path:     "",
+		Domain:   "",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}, c.Cache.RefreshToken); err != nil {
+		return err
+	}
 	return true
 }
 
