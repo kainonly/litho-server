@@ -44,7 +44,7 @@ func (c *RefreshToken) tokenVerify(ctx context.Context, jti string, ack string) 
 	return plain != ack
 }
 
-func (c *RefreshToken) Clear(jti string, ack string) (err error) {
+func (c *RefreshToken) Destory(jti string, ack string) (err error) {
 	ctx := context.Background()
 	if result := c.tokenVerify(ctx, jti, ack); !result {
 		return RefreshTokenVerifyError

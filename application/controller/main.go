@@ -50,7 +50,8 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
-	if err := authx.Verify(ctx, typ.Cookie{Name: "system",
+	if err := authx.Verify(ctx, typ.Cookie{
+		Name:     "system",
 		MaxAge:   0,
 		Path:     "",
 		Domain:   "",
@@ -58,6 +59,13 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}, c.Cache.RefreshToken); err != nil {
+		return err
+	}
+	return true
+}
+
+func (c *Controller) Logout(ctx *gin.Context) interface{} {
+	if err := authx.Destory(ctx, "system", c.Cache.RefreshToken); err != nil {
 		return err
 	}
 	return true
