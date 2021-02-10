@@ -9,7 +9,6 @@ import (
 	"lab-api/application/common"
 	"lab-api/application/controller"
 	"lab-api/application/controller/acl"
-	"lab-api/application/controller/admin"
 	"lab-api/application/controller/policy"
 	"lab-api/application/controller/resource"
 	"lab-api/application/controller/role"
@@ -41,6 +40,6 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		mvc.AutoController("/resource", &resource.Controller{})
 		mvc.AutoController("/policy", &policy.Controller{})
 		mvc.AutoController("/role", &role.Controller{})
-		mvc.AutoController("/admin", &admin.Controller{})
+		mvc.AutoController("/admin", &controller.Controller{})
 	}
 }

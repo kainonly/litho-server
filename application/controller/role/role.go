@@ -170,7 +170,7 @@ func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 	}
 	var count int64
 	c.Db.Model(&model.Role{}).
-		Where("keyid = ?", body.Key).
+		Where("`key` = ?", body.Key).
 		Count(&count)
 
 	return gin.H{
