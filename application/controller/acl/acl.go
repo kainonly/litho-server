@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Controller struct {
@@ -61,8 +62,8 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 type addBody struct {
 	Key    string              `binding:"required"`
 	Name   datatype.JSONObject `binding:"required"`
-	Read   string
-	Write  string
+	Read   []string
+	Write  []string
 	Status bool
 }
 
@@ -75,8 +76,8 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	data := model.Acl{
 		Key:    body.Key,
 		Name:   body.Name,
-		Read:   body.Read,
-		Write:  body.Write,
+		Read:   strings.Join(body.Read, ","),
+		Write:  strings.Join(body.Write, ","),
 		Status: body.Status,
 	}
 	return c.Curd.Operates(
@@ -91,8 +92,8 @@ type editBody struct {
 	curd.Edit
 	Key    string
 	Name   datatype.JSONObject
-	Read   string
-	Write  string
+	Read   []string
+	Write  []string
 	Status bool
 }
 
@@ -105,8 +106,8 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	data := model.Acl{
 		Key:    body.Key,
 		Name:   body.Name,
-		Read:   body.Read,
-		Write:  body.Write,
+		Read:   strings.Join(body.Read, ","),
+		Write:  strings.Join(body.Write, ","),
 		Status: body.Status,
 	}
 	return c.Curd.Operates(
@@ -149,7 +150,7 @@ func (c *Controller) ValidedKey(ctx *gin.Context) interface{} {
 	}
 	var count int64
 	c.Db.Model(&model.Acl{}).
-		Where("key = ?", body.Key).
+		Where("`key` = ?", body.Key).
 		Count(&count)
 
 	return gin.H{

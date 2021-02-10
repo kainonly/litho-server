@@ -12,8 +12,8 @@ require (
 	github.com/kainonly/gin-extra v0.0.0-20201106142436-122606ab7729
 	go.uber.org/fx v1.13.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	gorm.io/driver/postgres v1.0.6-0.20201120082907-566aa2e6ed74
-	gorm.io/gorm v1.20.9-0.20201207023106-e1952924e2a8
+	gorm.io/driver/mysql v1.0.4
+	gorm.io/gorm v1.20.12
 )
 
 replace (
