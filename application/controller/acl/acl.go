@@ -61,8 +61,8 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 type addBody struct {
 	Key    string              `binding:"required"`
 	Name   datatype.JSONObject `binding:"required"`
-	Read   datatype.JSONArray
-	Write  datatype.JSONArray
+	Read   string
+	Write  string
 	Status bool
 }
 
@@ -90,9 +90,9 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 type editBody struct {
 	curd.Edit
 	Key    string
-	Name   map[string]interface{} `json:"name"`
-	Read   datatype.JSONArray     `json:"read"`
-	Write  datatype.JSONArray     `json:"write"`
+	Name   datatype.JSONObject
+	Read   string
+	Write  string
 	Status bool
 }
 

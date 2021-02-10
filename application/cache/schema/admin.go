@@ -26,7 +26,7 @@ func (c *Admin) Get(username string) (result map[string]interface{}) {
 	ctx := context.Background()
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
-		var adminLists []model.Admin
+		var adminLists []model.AdminMix
 		c.Db.Where("status = ?", true).Find(&adminLists)
 
 		lists := make(map[string]interface{})

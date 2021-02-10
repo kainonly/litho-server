@@ -1,7 +1,7 @@
 package model
 
-type RoleResourceRel struct {
+type AdminResourceRel struct {
 	ID          uint64
-	RoleKey     string
+	AdminId     uint64
 	ResourceKey string
 }
