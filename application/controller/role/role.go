@@ -69,7 +69,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	data := model.RoleBasic{
+	data := model.Role{
 		Key:    body.Key,
 		Name:   body.Name,
 		Note:   body.Note,
@@ -108,7 +108,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	data := model.RoleBasic{
+	data := model.Role{
 		Key:    body.Key,
 		Name:   body.Name,
 		Note:   body.Note,
@@ -151,7 +151,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.RoleBasic{}, body),
+		curd.Plan(model.Role{}, body),
 		curd.After(func(tx *gorm.DB) error {
 			c.clearcache()
 			return nil
@@ -169,7 +169,7 @@ func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 		return err
 	}
 	var count int64
-	c.Db.Model(&model.RoleBasic{}).
+	c.Db.Model(&model.Role{}).
 		Where("keyid = ?", body.Key).
 		Count(&count)
 

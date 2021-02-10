@@ -27,7 +27,7 @@ func (c *Role) Get(keys []string, mode string) *hashset.Set {
 	ctx := context.Background()
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
-		var roleLists []model.Role
+		var roleLists []model.RoleMix
 		c.Db.Where("status = ?", true).Find(&roleLists)
 		lists := make(map[string]interface{})
 		for _, role := range roleLists {

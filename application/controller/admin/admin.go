@@ -79,7 +79,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		return err
 	}
 	password, _ := hash.Make(body.Password)
-	data := model.AdminBasic{
+	data := model.Admin{
 		Username: body.Username,
 		Password: password,
 		Email:    body.Email,
@@ -91,8 +91,8 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	return c.Curd.Operates(
 		curd.After(func(tx *gorm.DB) error {
 			roleData := model.AdminRoleRel{
-				Username: body.Username,
-				RoleKey:  body.Role,
+				AdminId: data.ID,
+				RoleKey: body.Role,
 			}
 			if err = tx.Create(&roleData).Error; err != nil {
 				return err
@@ -127,7 +127,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 			password, _ = hash.Make(body.Password)
 		}
 	}
-	data := model.AdminBasic{
+	data := model.Admin{
 		Username: body.Username,
 		Password: password,
 		Email:    body.Email,
@@ -140,8 +140,8 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch {
 				roleData := model.AdminRoleRel{
-					Username: body.Username,
-					RoleKey:  body.Role,
+					AdminId: data.ID,
+					RoleKey: body.Role,
 				}
 				if err = tx.Create(&roleData).Error; err != nil {
 					return err
@@ -164,7 +164,7 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.AdminBasic{}, body),
+		curd.Plan(model.Admin{}, body),
 		curd.After(func(tx *gorm.DB) error {
 			c.clearcache()
 			return nil
