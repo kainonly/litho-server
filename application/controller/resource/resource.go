@@ -84,15 +84,15 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	curd.Edit
-	Key    string
-	Parent string
-	Name   datatype.JSONObject
-	Nav    bool
-	Router bool
-	Policy bool
+	Key    string              `binding:"switch"`
+	Parent string              `binding:"switch"`
+	Name   datatype.JSONObject `binding:"switch"`
+	Nav    bool                `binding:"switch"`
+	Router bool                `binding:"switch"`
+	Policy bool                `binding:"switch"`
 	Icon   string
 	Sort   uint8
-	Status bool
+	Status bool `binding:"switch"`
 }
 
 func (c *Controller) Edit(ctx *gin.Context) interface{} {

@@ -94,7 +94,7 @@ type editBody struct {
 	Name   datatype.JSONObject `binding:"switch"`
 	Read   []string
 	Write  []string
-	Status bool
+	Status bool `binding:"switch"`
 }
 
 func (c *Controller) Edit(ctx *gin.Context) interface{} {
