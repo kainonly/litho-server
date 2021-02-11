@@ -119,14 +119,13 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	curd.Edit
-	Username string
 	Password string `binding:"min=12,max=20"`
-	Role     string `binding:"required_if=switch false"`
+	Role     string `binding:"switch"`
 	Email    string
 	Phone    string
 	Call     string
 	Avatar   string
-	Status   bool
+	Status   bool `binding:"switch"`
 }
 
 func (c *Controller) Edit(ctx *gin.Context) interface{} {
@@ -142,7 +141,6 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		}
 	}
 	data := model.Admin{
-		Username: body.Username,
 		Password: password,
 		Email:    body.Email,
 		Phone:    body.Phone,
