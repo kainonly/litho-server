@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
 	"github.com/kainonly/gin-extra/hash"
@@ -24,7 +25,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Admin{}, body),
+		curd.Plan(model.AdminMix{}, body),
 		curd.Field([]string{"password"}, true),
 	).Originlists()
 }
@@ -40,7 +41,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Admin{}, body),
+		curd.Plan(model.AdminMix{}, body),
 		curd.Field([]string{"password"}, true),
 	).Lists()
 }
@@ -55,10 +56,23 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	return c.Curd.Operates(
-		curd.Plan(model.Admin{}, body),
+	auth, exists := ctx.Get("auth")
+	if !exists {
+		return false
+	}
+	result := c.Curd.Operates(
+		curd.Plan(model.AdminMix{}, body),
 		curd.Field([]string{"password"}, true),
 	).Get()
+	var count int64
+	c.Db.Model(&model.Admin{}).
+		Where("username = ?", auth.(jwt.MapClaims)["username"]).
+		Where("status = ?", 1).
+		Count(&count)
+	if count != 0 {
+		result.(map[string]interface{})["self"] = true
+	}
+	return result
 }
 
 type addBody struct {

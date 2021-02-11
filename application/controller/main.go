@@ -8,7 +8,6 @@ import (
 	"github.com/kainonly/gin-extra/hash"
 	"github.com/kainonly/gin-extra/typ"
 	"lab-api/application/common"
-	"log"
 	"net/http"
 )
 
@@ -35,9 +34,6 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	}
 	if err := authx.Create(ctx, typ.Cookie{
 		Name:     "system",
-		MaxAge:   0,
-		Path:     "",
-		Domain:   "",
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
@@ -53,9 +49,6 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
 	if err := authx.Verify(ctx, typ.Cookie{
 		Name:     "system",
-		MaxAge:   0,
-		Path:     "",
-		Domain:   "",
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
@@ -74,11 +67,5 @@ func (c *Controller) Logout(ctx *gin.Context) interface{} {
 
 func (c *Controller) Resource(ctx *gin.Context) interface{} {
 	resource := c.Cache.Resource.Get()
-	log.Print(resource)
-	//roleKeyids := []string{"*"}
-	//role, err := c.Cache.RoleGet(roleKeyids, "resource")
-	//if err != nil {
-	//	return res.Error(err)
-	//}
 	return resource
 }

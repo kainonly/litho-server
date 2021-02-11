@@ -9,6 +9,7 @@ import (
 	"lab-api/application/common"
 	"lab-api/application/controller"
 	"lab-api/application/controller/acl"
+	"lab-api/application/controller/admin"
 	"lab-api/application/controller/permission"
 	"lab-api/application/controller/policy"
 	"lab-api/application/controller/resource"
@@ -26,22 +27,24 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		auth := authx.AuthVerify(typ.Cookie{
 			Name:     "system",
 			MaxAge:   0,
-			Path:     "",
-			Domain:   "",
 			Secure:   true,
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
 		}, dependency.Cache.RefreshToken)
+		unifyMiddleware := mvcx.Middleware{
+			Handle: auth,
+			Only:   nil,
+		}
 		mvc := mvcx.Initialize(system, dependency)
 		mvc.AutoController("/main", &controller.Controller{}, mvcx.Middleware{
 			Handle: auth,
 			Only:   []string{"Resource"},
 		})
-		mvc.AutoController("/acl", &acl.Controller{})
-		mvc.AutoController("/resource", &resource.Controller{})
-		mvc.AutoController("/policy", &policy.Controller{})
-		mvc.AutoController("/permission", &permission.Controller{})
-		mvc.AutoController("/role", &role.Controller{})
-		mvc.AutoController("/admin", &controller.Controller{})
+		mvc.AutoController("/acl", &acl.Controller{}, unifyMiddleware)
+		mvc.AutoController("/resource", &resource.Controller{}, unifyMiddleware)
+		mvc.AutoController("/policy", &policy.Controller{}, unifyMiddleware)
+		mvc.AutoController("/permission", &permission.Controller{}, unifyMiddleware)
+		mvc.AutoController("/role", &role.Controller{}, unifyMiddleware)
+		mvc.AutoController("/admin", &admin.Controller{}, unifyMiddleware)
 	}
 }
