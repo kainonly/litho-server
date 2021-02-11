@@ -90,7 +90,7 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	curd.Edit
-	Key    string
+	Key    string `binding:"required_if=switch false"`
 	Name   datatype.JSONObject
 	Read   []string
 	Write  []string
