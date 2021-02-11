@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/gin-extra/cors"
+	"github.com/kainonly/gin-extra/validate"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/mysql"
@@ -89,6 +90,7 @@ func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
 	serve.Use(cors.Cors(cfg.Cors))
+	validate.RegisterCustomValidate()
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(cfg.Listen)
