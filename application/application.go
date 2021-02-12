@@ -29,7 +29,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 			Secure:   true,
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
-		}, dependency.Cache.RefreshToken)
+		}, dependency.Redis.RefreshToken)
 		unifyMiddleware := mvcx.Middleware{
 			Handle: auth,
 			Only:   nil,

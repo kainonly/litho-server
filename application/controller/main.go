@@ -25,7 +25,7 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	admin := c.Cache.Admin.Get(body.Username)
+	admin := c.Redis.Admin.Get(body.Username)
 	if admin == nil {
 		return errors.New("user does not exist or has been frozen")
 	}
@@ -40,7 +40,7 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	}, jwt.MapClaims{
 		"username": admin["username"],
 		"role":     admin["role"],
-	}, c.Cache.RefreshToken); err != nil {
+	}, c.Redis.RefreshToken); err != nil {
 		return err
 	}
 	return true
@@ -52,20 +52,20 @@ func (c *Controller) Verify(ctx *gin.Context) interface{} {
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
-	}, c.Cache.RefreshToken); err != nil {
+	}, c.Redis.RefreshToken); err != nil {
 		return err
 	}
 	return true
 }
 
 func (c *Controller) Logout(ctx *gin.Context) interface{} {
-	if err := authx.Destory(ctx, "system", c.Cache.RefreshToken); err != nil {
+	if err := authx.Destory(ctx, "system", c.Redis.RefreshToken); err != nil {
 		return err
 	}
 	return true
 }
 
 func (c *Controller) Resource(ctx *gin.Context) interface{} {
-	resource := c.Cache.Resource.Get()
+	resource := c.Redis.Resource.Get()
 	return resource
 }

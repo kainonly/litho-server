@@ -72,5 +72,5 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Cache.Role.Clear()
+	c.Redis.Role.Clear()
 }
