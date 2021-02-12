@@ -179,6 +179,6 @@ func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Cache.Role.Clear()
-	c.Cache.Admin.Clear()
+	c.Redis.Role.Clear()
+	c.Redis.Admin.Clear()
 }

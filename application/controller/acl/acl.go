@@ -159,6 +159,6 @@ func (c *Controller) ValidedKey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Cache.Acl.Clear()
-	c.Cache.Role.Clear()
+	c.Redis.Acl.Clear()
+	c.Redis.Role.Clear()
 }

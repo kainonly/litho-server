@@ -208,6 +208,6 @@ func (c *Controller) Bindingkey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Cache.Resource.Clear()
-	c.Cache.Role.Clear()
+	c.Redis.Resource.Clear()
+	c.Redis.Role.Clear()
 }

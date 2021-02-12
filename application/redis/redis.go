@@ -1,10 +1,10 @@
-package cache
+package redis
 
 import (
-	"lab-api/application/cache/schema"
+	"lab-api/application/redis/schema"
 )
 
-type Cache struct {
+type Model struct {
 	Acl          *schema.Acl
 	Resource     *schema.Resource
 	Role         *schema.Role
@@ -13,8 +13,8 @@ type Cache struct {
 	UserLock     *schema.UserLock
 }
 
-func Initialize(dep schema.Dependency) *Cache {
-	c := new(Cache)
+func Initialize(dep schema.Dependency) *Model {
+	c := new(Model)
 	c.Acl = schema.NewAcl(dep)
 	c.Resource = schema.NewResource(dep)
 	c.Role = schema.NewRole(dep)

@@ -4,7 +4,7 @@ import (
 	curd "github.com/kainonly/gin-curd"
 	"go.uber.org/fx"
 	"lab-api/application"
-	"lab-api/application/cache"
+	"lab-api/application/redis"
 	"lab-api/bootstrap"
 )
 
@@ -16,7 +16,7 @@ func main() {
 			bootstrap.InitializeDatabase,
 			bootstrap.InitializeRedis,
 			bootstrap.HttpServer,
-			cache.Initialize,
+			redis.Initialize,
 			curd.Initialize,
 		),
 		fx.Invoke(application.Application),
