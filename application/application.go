@@ -26,7 +26,6 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 	{
 		auth := authx.AuthVerify(typ.Cookie{
 			Name:     "system",
-			MaxAge:   0,
 			Secure:   true,
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
