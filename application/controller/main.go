@@ -8,9 +8,7 @@ import (
 	"github.com/kainonly/gin-extra/authx"
 	"github.com/kainonly/gin-extra/hash"
 	"github.com/kainonly/gin-extra/mvcx"
-	"github.com/kainonly/gin-extra/typ"
 	"lab-api/application/common"
-	"net/http"
 )
 
 type Controller struct {
@@ -44,14 +42,8 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 		return errors.New("user login password is incorrect")
 	}
 	c.Redis.UserLock.Remove("admin:" + body.Username)
-	if err := authx.Create(ctx, typ.Cookie{
-		Name:     "system",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}, jwt.MapClaims{
-		"username": admin["username"],
-		"role":     admin["role"],
+	if err := authx.Create(ctx, common.SystemCookie, jwt.MapClaims{
+		"user": admin["username"],
 	}, c.Redis.RefreshToken); err != nil {
 		return err
 	}
@@ -59,12 +51,7 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) Verify(ctx *gin.Context) interface{} {
-	if err := authx.Verify(ctx, typ.Cookie{
-		Name:     "system",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}, c.Redis.RefreshToken); err != nil {
+	if err := authx.Verify(ctx, common.SystemCookie, c.Redis.RefreshToken); err != nil {
 		return err
 	}
 	return true

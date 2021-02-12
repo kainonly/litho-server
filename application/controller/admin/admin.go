@@ -5,9 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
 	"github.com/kainonly/gin-extra/hash"
+	"github.com/kainonly/gin-extra/mvcx"
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Controller struct {
@@ -66,7 +68,7 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 	).Get()
 	var count int64
 	c.Db.Model(&model.Admin{}).
-		Where("username = ?", auth.(jwt.MapClaims)["username"]).
+		Where("username = ?", auth.(jwt.MapClaims)["user"]).
 		Where("status = ?", 1).
 		Count(&count)
 	if count != 0 {
@@ -76,14 +78,16 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 }
 
 type addBody struct {
-	Username string `binding:"required,min=4,max=20"`
-	Password string `binding:"required,min=12,max=20"`
-	Role     string `binding:"required"`
-	Email    string
-	Phone    string
-	Call     string
-	Avatar   string
-	Status   bool
+	Username   string   `binding:"required,min=4,max=20"`
+	Password   string   `binding:"required,min=12,max=20"`
+	Role       []string `binding:"required"`
+	Resource   []string
+	Permission []string
+	Email      string
+	Phone      string
+	Call       string
+	Avatar     string
+	Status     bool
 }
 
 func (c *Controller) Add(ctx *gin.Context) interface{} {
@@ -94,22 +98,38 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 	}
 	password, _ := hash.Make(body.Password)
 	data := model.Admin{
-		Username: body.Username,
-		Password: password,
-		Email:    body.Email,
-		Phone:    body.Phone,
-		Call:     body.Call,
-		Avatar:   body.Avatar,
-		Status:   body.Status,
+		Username:   body.Username,
+		Password:   password,
+		Permission: strings.Join(body.Permission, ","),
+		Email:      body.Email,
+		Phone:      body.Phone,
+		Call:       body.Call,
+		Avatar:     body.Avatar,
+		Status:     body.Status,
 	}
 	return c.Curd.Operates(
 		curd.After(func(tx *gorm.DB) error {
-			roleData := model.AdminRoleRel{
-				AdminId: data.ID,
-				RoleKey: body.Role,
+			adminRoleRels := make([]model.AdminRoleRel, len(body.Role))
+			for key, val := range body.Role {
+				adminRoleRels[key] = model.AdminRoleRel{
+					AdminId: data.ID,
+					RoleKey: val,
+				}
 			}
-			if err = tx.Create(&roleData).Error; err != nil {
+			if err = tx.Create(&adminRoleRels).Error; err != nil {
 				return err
+			}
+			if len(body.Resource) != 0 {
+				adminResourceRels := make([]model.AdminResourceRel, len(body.Resource))
+				for key, val := range body.Resource {
+					adminResourceRels[key] = model.AdminResourceRel{
+						AdminId:     data.ID,
+						ResourceKey: val,
+					}
+				}
+				if err = tx.Create(&adminResourceRels).Error; err != nil {
+					return err
+				}
 			}
 			c.clearcache()
 			return nil
@@ -119,13 +139,15 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	curd.Edit
-	Password string `binding:"min=12,max=20"`
-	Role     string `binding:"switch"`
-	Email    string
-	Phone    string
-	Call     string
-	Avatar   string
-	Status   bool `binding:"switch"`
+	Password   string   `binding:"min=12,max=20"`
+	Role       []string `binding:"switch"`
+	Resource   []string
+	Permission []string
+	Email      string
+	Phone      string
+	Call       string
+	Avatar     string
+	Status     bool `binding:"switch"`
 }
 
 func (c *Controller) Edit(ctx *gin.Context) interface{} {
@@ -134,6 +156,21 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	auth, exists := ctx.Get("auth")
+	if !exists {
+		return false
+	}
+	var count int64
+	c.Db.Model(&model.Admin{}).
+		Where("username = ?", auth.(jwt.MapClaims)["user"]).
+		Where("status = ?", 1).
+		Count(&count)
+	if count != 0 {
+		return mvcx.Response{
+			Code: 2,
+			Msg:  "Detected as currently logged in user",
+		}
+	}
 	var password string
 	if !body.Switch {
 		if body.Password != "" {
@@ -141,22 +178,40 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		}
 	}
 	data := model.Admin{
-		Password: password,
-		Email:    body.Email,
-		Phone:    body.Phone,
-		Call:     body.Call,
-		Avatar:   body.Avatar,
-		Status:   body.Status,
+		Password:   password,
+		Permission: strings.Join(body.Permission, ","),
+		Email:      body.Email,
+		Phone:      body.Phone,
+		Call:       body.Call,
+		Avatar:     body.Avatar,
+		Status:     body.Status,
 	}
 	return c.Curd.Operates(
 		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch {
-				roleData := model.AdminRoleRel{
-					AdminId: data.ID,
-					RoleKey: body.Role,
+				tx.Where("admin_id = ?", body.Id).Delete(&model.AdminRoleRel{})
+				adminRoleRels := make([]model.AdminRoleRel, len(body.Role))
+				for key, val := range body.Role {
+					adminRoleRels[key] = model.AdminRoleRel{
+						AdminId: body.Id.(uint64),
+						RoleKey: val,
+					}
 				}
-				if err = tx.Create(&roleData).Error; err != nil {
+				if err = tx.Create(&adminRoleRels).Error; err != nil {
 					return err
+				}
+				if len(body.Resource) != 0 {
+					tx.Where("admin_id = ?", body.Id).Delete(&model.AdminResourceRel{})
+					adminResourceRels := make([]model.AdminResourceRel, len(body.Resource))
+					for key, val := range body.Resource {
+						adminResourceRels[key] = model.AdminResourceRel{
+							AdminId:     body.Id.(uint64),
+							ResourceKey: val,
+						}
+					}
+					if err = tx.Create(&adminResourceRels).Error; err != nil {
+						return err
+					}
 				}
 			}
 			c.clearcache()
@@ -175,6 +230,22 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	auth, exists := ctx.Get("auth")
+	if !exists {
+		return false
+	}
+	var count int64
+	c.Db.Model(&model.Admin{}).
+		Where("id in ?", body.Id).
+		Where("username = ?", auth.(jwt.MapClaims)["user"]).
+		Where("status = ?", 1).
+		Count(&count)
+	if count != 0 {
+		return mvcx.Response{
+			Code: 2,
+			Msg:  "Detected as currently logged in user",
+		}
+	}
 	return c.Curd.Operates(
 		curd.Plan(model.Admin{}, body),
 		curd.After(func(tx *gorm.DB) error {
@@ -182,6 +253,26 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 			return nil
 		}),
 	).Delete()
+}
+
+type validedUsernameBody struct {
+	Username string `binding:"required"`
+}
+
+func (c *Controller) ValidedUsername(ctx *gin.Context) interface{} {
+	var body validedUsernameBody
+	var err error
+	if err = ctx.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	var count int64
+	c.Db.Model(&model.Admin{}).
+		Where("username = ?", body.Username).
+		Count(&count)
+
+	return gin.H{
+		"exists": count != 0,
+	}
 }
 
 func (c *Controller) clearcache() {
