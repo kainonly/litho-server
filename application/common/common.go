@@ -2,10 +2,12 @@ package common
 
 import (
 	curd "github.com/kainonly/gin-curd"
+	"github.com/kainonly/gin-extra/typ"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 	"lab-api/application/redis"
 	"lab-api/config"
+	"net/http"
 )
 
 type Dependency struct {
@@ -25,3 +27,12 @@ func (c *Dependency) Inject(dependency interface{}) {
 	c.Redis = dep.Redis
 	c.Curd = dep.Curd
 }
+
+var (
+	SystemCookie = typ.Cookie{
+		Name:     "system",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
+)
