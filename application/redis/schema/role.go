@@ -32,8 +32,9 @@ func (c *Role) Get(keys []string, mode string) *hashset.Set {
 		lists := make(map[string]interface{})
 		for _, role := range roleLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"acl":      role.Acl,
-				"resource": role.Resource,
+				"acl":        role.Acl,
+				"resource":   role.Resource,
+				"permission": role.Permission,
 			})
 			lists[role.Key] = string(bs)
 		}

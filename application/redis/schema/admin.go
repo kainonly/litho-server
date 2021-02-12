@@ -32,10 +32,13 @@ func (c *Admin) Get(username string) (result map[string]interface{}) {
 		lists := make(map[string]interface{})
 		for _, admin := range adminLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"id":       admin.ID,
-				"role":     admin.Role,
-				"username": admin.Username,
-				"password": admin.Password,
+				"id":         admin.ID,
+				"role":       admin.Role,
+				"username":   admin.Username,
+				"password":   admin.Password,
+				"resource":   admin.Resource,
+				"acl":        admin.Acl,
+				"permission": admin.Permission,
 			})
 			lists[admin.Username] = string(bs)
 		}
