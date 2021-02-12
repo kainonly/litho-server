@@ -21,8 +21,7 @@ func (c *UserLock) Remove(username string) {
 	c.Redis.Del(context.Background(), c.key+username)
 }
 
-func (c *UserLock) Check(username string) bool {
-	ctx := context.Background()
+func (c *UserLock) Check(ctx context.Context, username string) bool {
 	exists := c.Redis.Exists(ctx, c.key+username).Val()
 	if exists == 0 {
 		return true
