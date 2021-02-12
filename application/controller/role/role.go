@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"lab-api/application/common"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Controller struct {
@@ -56,11 +57,12 @@ func (c *Controller) Get(ctx *gin.Context) interface{} {
 }
 
 type addBody struct {
-	Key      string              `binding:"required"`
-	Name     datatype.JSONObject `binding:"required"`
-	Resource []string            `binding:"required"`
-	Note     string
-	Status   bool
+	Key        string              `binding:"required"`
+	Name       datatype.JSONObject `binding:"required"`
+	Resource   []string            `binding:"required"`
+	Permission []string
+	Note       string
+	Status     bool
 }
 
 func (c *Controller) Add(ctx *gin.Context) interface{} {
@@ -70,10 +72,11 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 		return err
 	}
 	data := model.Role{
-		Key:    body.Key,
-		Name:   body.Name,
-		Note:   body.Note,
-		Status: body.Status,
+		Key:        body.Key,
+		Name:       body.Name,
+		Permission: strings.Join(body.Permission, ","),
+		Note:       body.Note,
+		Status:     body.Status,
 	}
 	return c.Curd.Operates(
 		curd.After(func(tx *gorm.DB) error {
@@ -95,11 +98,12 @@ func (c *Controller) Add(ctx *gin.Context) interface{} {
 
 type editBody struct {
 	curd.Edit
-	Key      string              `binding:"switch"`
-	Name     datatype.JSONObject `binding:"switch"`
-	Resource []string            `binding:"switch"`
-	Note     string
-	Status   bool `binding:"switch"`
+	Key        string              `binding:"switch"`
+	Name       datatype.JSONObject `binding:"switch"`
+	Resource   []string            `binding:"switch"`
+	Permission []string
+	Note       string
+	Status     bool `binding:"switch"`
 }
 
 func (c *Controller) Edit(ctx *gin.Context) interface{} {
@@ -109,10 +113,11 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		return err
 	}
 	data := model.Role{
-		Key:    body.Key,
-		Name:   body.Name,
-		Note:   body.Note,
-		Status: body.Status,
+		Key:        body.Key,
+		Name:       body.Name,
+		Permission: strings.Join(body.Permission, ","),
+		Note:       body.Note,
+		Status:     body.Status,
 	}
 	return c.Curd.Operates(
 		curd.Plan(model.Resource{}, body),

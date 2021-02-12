@@ -189,7 +189,10 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 	return c.Curd.Operates(
 		curd.After(func(tx *gorm.DB) error {
 			if !body.Switch {
-				tx.Where("admin_id = ?", body.Id).Delete(&model.AdminRoleRel{})
+				if err = tx.Where("admin_id = ?", body.Id).
+					Delete(&model.AdminRoleRel{}).Error; err != nil {
+					return err
+				}
 				adminRoleRels := make([]model.AdminRoleRel, len(body.Role))
 				for key, val := range body.Role {
 					adminRoleRels[key] = model.AdminRoleRel{
@@ -201,7 +204,10 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 					return err
 				}
 				if len(body.Resource) != 0 {
-					tx.Where("admin_id = ?", body.Id).Delete(&model.AdminResourceRel{})
+					if err = tx.Where("admin_id = ?", body.Id).
+						Delete(&model.AdminResourceRel{}).Error; err != nil {
+						return err
+					}
 					adminResourceRels := make([]model.AdminResourceRel, len(body.Resource))
 					for key, val := range body.Resource {
 						adminResourceRels[key] = model.AdminResourceRel{
