@@ -10,6 +10,7 @@ type Cache struct {
 	Role         *schema.Role
 	Admin        *schema.Admin
 	RefreshToken *schema.RefreshToken
+	UserLock     *schema.UserLock
 }
 
 func Initialize(dep schema.Dependency) *Cache {
@@ -19,5 +20,6 @@ func Initialize(dep schema.Dependency) *Cache {
 	c.Role = schema.NewRole(dep)
 	c.Admin = schema.NewAdmin(dep)
 	c.RefreshToken = schema.NewRefreshToken(dep)
+	c.UserLock = schema.NewUserLock(dep)
 	return c
 }
