@@ -9,6 +9,7 @@ import (
 	"github.com/kainonly/gin-extra/hash"
 	"github.com/kainonly/gin-extra/mvcx"
 	"lab-api/application/common"
+	"lab-api/application/model"
 )
 
 type Controller struct {
@@ -67,4 +68,64 @@ func (c *Controller) Logout(ctx *gin.Context) interface{} {
 func (c *Controller) Resource(ctx *gin.Context) interface{} {
 	resource := c.Redis.Resource.Get()
 	return resource
+}
+
+func (c *Controller) Information(ctx *gin.Context) interface{} {
+	auth, exists := ctx.Get("auth")
+	if !exists {
+		return false
+	}
+	data := make(map[string]interface{})
+	c.Db.Model(&model.Admin{}).
+		Where("username = ?", auth.(jwt.MapClaims)["user"]).
+		First(&data)
+	return data
+}
+
+type updateBody struct {
+	OldPassword string
+	NewPassword string
+	Email       string
+	Phone       string
+	Call        string
+	Avatar      string
+}
+
+func (c *Controller) Update(ctx *gin.Context) interface{} {
+	var body updateBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	auth, exists := ctx.Get("auth")
+	if !exists {
+		return false
+	}
+	username := auth.(jwt.MapClaims)["user"]
+	data := model.Admin{
+		Email:  body.Email,
+		Phone:  body.Phone,
+		Call:   body.Call,
+		Avatar: body.Avatar,
+	}
+	if body.NewPassword != "" || body.OldPassword != "" {
+		if body.NewPassword != body.OldPassword {
+			return errors.New("the old and new password verification is inconsistent")
+		}
+		var adminData model.Admin
+		c.Db.Model(&model.Admin{}).
+			Where("username = ?", username).
+			First(&adminData)
+		if ok, _ := hash.Verify(body.OldPassword, adminData.Password); !ok {
+			return mvcx.Response{
+				Code: 2,
+				Msg:  "password verification failed",
+			}
+		}
+		data.Password, _ = hash.Make(body.NewPassword)
+	}
+	c.Db.Model(&model.Admin{}).
+		Where("username = ?", username).
+		Updates(data)
+	c.Redis.Admin.Clear()
+	return true
 }
