@@ -37,7 +37,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		mvc := mvcx.Initialize(system, dependency)
 		mvc.AutoController("/main", &controller.Controller{}, mvcx.Middleware{
 			Handle: auth,
-			Only:   []string{"Resource"},
+			Only:   []string{"Resource", "Information", "Update"},
 		})
 		mvc.AutoController("/acl", &acl.Controller{}, unifyMiddleware)
 		mvc.AutoController("/resource", &resource.Controller{}, unifyMiddleware)
