@@ -6,7 +6,6 @@ import (
 	"github.com/kainonly/gin-extra/mvcx"
 	"github.com/kainonly/gin-extra/rbacx"
 	"github.com/kainonly/gin-extra/tokenx"
-	"github.com/kainonly/gin-extra/typ"
 	"lab-api/application/common"
 	"lab-api/application/controller"
 	"lab-api/application/controller/acl"
@@ -16,7 +15,6 @@ import (
 	"lab-api/application/controller/resource"
 	"lab-api/application/controller/role"
 	"lab-api/routes"
-	"net/http"
 )
 
 func Application(router *gin.Engine, dependency common.Dependency) {
@@ -25,12 +23,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
-		auth := authx.Middleware(typ.Cookie{
-			Name:     "system",
-			Secure:   true,
-			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
-		}, dependency.Redis.RefreshToken)
+		auth := authx.Middleware(common.SystemCookie, dependency.Redis.RefreshToken)
 		rbac := rbacx.Middleware(
 			"/system/",
 			dependency.Redis.Admin,
