@@ -4,6 +4,7 @@ import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Admin struct {
@@ -36,9 +37,9 @@ func (c *Admin) Get(username string) (result map[string]interface{}) {
 				"role":       admin.Role,
 				"username":   admin.Username,
 				"password":   admin.Password,
-				"resource":   admin.Resource,
-				"acl":        admin.Acl,
-				"permission": admin.Permission,
+				"resource":   strings.Split(admin.Resource, ","),
+				"acl":        strings.Split(admin.Acl, ","),
+				"permission": strings.Split(admin.Permission, ","),
 			})
 			lists[admin.Username] = string(bs)
 		}

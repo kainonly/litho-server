@@ -5,6 +5,7 @@ import (
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Role struct {
@@ -32,22 +33,20 @@ func (c *Role) Get(keys []string, mode string) *hashset.Set {
 		lists := make(map[string]interface{})
 		for _, role := range roleLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"acl":        role.Acl,
-				"resource":   role.Resource,
-				"permission": role.Permission,
+				"acl":        strings.Split(role.Acl, ","),
+				"resource":   strings.Split(role.Resource, ","),
+				"permission": strings.Split(role.Permission, ","),
 			})
 			lists[role.Key] = string(bs)
 		}
 		c.Redis.HMSet(ctx, c.key, lists)
 	}
-	lists := c.Redis.HMGet(ctx, c.key, keys...).Val()
+	dataset := c.Redis.HMGet(ctx, c.key, keys...).Val()
 	set := hashset.New()
-	for _, val := range lists {
-		if val != nil {
-			var data map[string]interface{}
-			jsoniter.Unmarshal([]byte(val.(string)), &data)
-			set.Add(data[mode].([]interface{})...)
-		}
+	for _, val := range dataset {
+		var data map[string]interface{}
+		jsoniter.Unmarshal([]byte(val.(string)), &data)
+		set.Add(data[mode].([]interface{})...)
 	}
 	return set
 }
