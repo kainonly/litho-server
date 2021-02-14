@@ -3,11 +3,14 @@ package schema
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kainonly/gin-extra/rbacx"
 	"lab-api/application/model"
 	"strings"
 )
 
 type Admin struct {
+	rbacx.UserAPI
+
 	key string
 	Dependency
 }
