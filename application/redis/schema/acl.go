@@ -5,6 +5,7 @@ import (
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
 	"lab-api/application/model"
+	"strings"
 )
 
 type Acl struct {
@@ -23,7 +24,7 @@ func (c *Acl) Clear() {
 	c.Redis.Del(context.Background(), c.key)
 }
 
-func (c *Acl) Get(key string, policy uint8) *hashset.Set {
+func (c *Acl) Get(key string, policy string) *hashset.Set {
 	ctx := context.Background()
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
@@ -33,8 +34,8 @@ func (c *Acl) Get(key string, policy uint8) *hashset.Set {
 		lists := make(map[string]interface{})
 		for _, acl := range aclLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"write": acl.Write,
-				"read":  acl.Read,
+				"write": strings.Split(acl.Write, ","),
+				"read":  strings.Split(acl.Read, ","),
 			})
 			lists[acl.Key] = string(bs)
 		}
@@ -45,7 +46,7 @@ func (c *Acl) Get(key string, policy uint8) *hashset.Set {
 		var data map[string][]interface{}
 		jsoniter.Unmarshal(bs, &data)
 		set.Add(data["read"]...)
-		if policy == 1 {
+		if policy == "1" {
 			set.Add(data["write"]...)
 		}
 	}
