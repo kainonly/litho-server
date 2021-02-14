@@ -26,7 +26,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
-		auth := authx.AuthVerify(typ.Cookie{
+		auth := authx.Middleware(typ.Cookie{
 			Name:     "system",
 			Secure:   true,
 			HttpOnly: true,
