@@ -35,6 +35,10 @@ func (c *RefreshToken) Factory(value ...interface{}) {
 	return
 }
 
+func (c *RefreshToken) Renewal(value ...interface{}) {
+	c.Redis.Expire(context.Background(), value[0].(string), value[1].(time.Duration))
+}
+
 func (c *RefreshToken) Verify(value ...interface{}) (result bool) {
 	return c.tokenVerify(context.Background(), value[0].(string), value[1].(string))
 }
@@ -44,11 +48,11 @@ func (c *RefreshToken) tokenVerify(ctx context.Context, jti string, ack string) 
 	return plain != ack
 }
 
-func (c *RefreshToken) Destory(jti string, ack string) (err error) {
+func (c *RefreshToken) Destory(value ...interface{}) (err error) {
 	ctx := context.Background()
-	if result := c.tokenVerify(ctx, jti, ack); !result {
+	if result := c.tokenVerify(ctx, value[0].(string), value[1].(string)); !result {
 		return RefreshTokenVerifyError
 	}
-	c.Redis.Del(ctx, c.key+jti)
+	c.Redis.Del(ctx, c.key+value[0].(string))
 	return
 }
