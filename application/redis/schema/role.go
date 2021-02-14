@@ -4,11 +4,14 @@ import (
 	"context"
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kainonly/gin-extra/rbacx"
 	"lab-api/application/model"
 	"strings"
 )
 
 type Role struct {
+	rbacx.RoleAPI
+
 	key string
 	Dependency
 }
