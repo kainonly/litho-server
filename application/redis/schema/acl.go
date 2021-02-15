@@ -5,6 +5,7 @@ import (
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kainonly/gin-extra/rbacx"
+	"github.com/kainonly/gin-extra/str"
 	"lab-api/application/model"
 	"strings"
 )
@@ -37,8 +38,8 @@ func (c *Acl) Get(key string, policy string) *hashset.Set {
 		lists := make(map[string]interface{})
 		for _, acl := range aclLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"write": strings.Split(acl.Write, ","),
-				"read":  strings.Split(acl.Read, ","),
+				"write": str.FilterEmpty(strings.Split(acl.Write, ",")),
+				"read":  str.FilterEmpty(strings.Split(acl.Read, ",")),
 			})
 			lists[acl.Key] = string(bs)
 		}
