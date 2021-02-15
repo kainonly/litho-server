@@ -66,8 +66,29 @@ func (c *Controller) Logout(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) Resource(ctx *gin.Context) interface{} {
+	var err error
+	var auth jwt.MapClaims
+	if auth, err = authx.Get(ctx); err != nil {
+		return err
+	}
+	userData := c.Redis.Admin.Get(auth["user"].(string))
+	roleKeys := userData["role"].([]interface{})
+	keys := make([]string, len(roleKeys))
+	for index, value := range roleKeys {
+		keys[index] = value.(string)
+	}
+	roleResource := c.Redis.Role.Get(keys, "resource")
+	if userData["resource"] != nil {
+		roleResource.Add(userData["resource"].([]interface{})...)
+	}
 	resource := c.Redis.Resource.Get()
-	return resource
+	lists := make([]interface{}, 0)
+	for _, item := range resource {
+		if roleResource.Contains(item["key"].(string)) {
+			lists = append(lists, item)
+		}
+	}
+	return lists
 }
 
 func (c *Controller) Information(ctx *gin.Context) interface{} {
