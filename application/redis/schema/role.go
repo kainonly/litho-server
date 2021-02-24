@@ -5,9 +5,8 @@ import (
 	"github.com/emirpasic/gods/sets/hashset"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kainonly/gin-extra/rbacx"
-	"github.com/kainonly/gin-extra/str"
+	"lab-api/application/common"
 	"lab-api/application/model"
-	"strings"
 )
 
 type Role struct {
@@ -37,9 +36,9 @@ func (c *Role) Get(keys []string, mode string) *hashset.Set {
 		lists := make(map[string]interface{})
 		for _, role := range roleLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
-				"acl":        str.FilterEmpty(strings.Split(role.Acl, ",")),
-				"resource":   str.FilterEmpty(strings.Split(role.Resource, ",")),
-				"permission": str.FilterEmpty(strings.Split(role.Permission, ",")),
+				"acl":        common.StringToSlice(role.Acl, ","),
+				"resource":   common.StringToSlice(role.Resource, ","),
+				"permission": common.StringToSlice(role.Permission, ","),
 			})
 			lists[role.Key] = string(bs)
 		}
