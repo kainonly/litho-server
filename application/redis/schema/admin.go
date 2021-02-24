@@ -4,8 +4,8 @@ import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kainonly/gin-extra/rbacx"
-	"lab-api/application/common"
 	"lab-api/application/model"
+	"lab-api/helper"
 )
 
 type Admin struct {
@@ -37,12 +37,12 @@ func (c *Admin) Get(username string) (result map[string]interface{}) {
 		for _, admin := range adminLists {
 			bs, _ := jsoniter.Marshal(map[string]interface{}{
 				"id":         admin.ID,
-				"role":       common.StringToSlice(admin.Role, ","),
+				"role":       helper.StringToSlice(admin.Role, ","),
 				"username":   admin.Username,
 				"password":   admin.Password,
-				"resource":   common.StringToSlice(admin.Resource, ","),
-				"acl":        common.StringToSlice(admin.Acl, ","),
-				"permission": common.StringToSlice(admin.Permission, ","),
+				"resource":   helper.StringToSlice(admin.Resource, ","),
+				"acl":        helper.StringToSlice(admin.Acl, ","),
+				"permission": helper.StringToSlice(admin.Permission, ","),
 			})
 			lists[admin.Username] = string(bs)
 		}
