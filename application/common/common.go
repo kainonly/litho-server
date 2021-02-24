@@ -8,7 +8,6 @@ import (
 	"lab-api/application/redis"
 	"lab-api/config"
 	"net/http"
-	"strings"
 )
 
 type Dependency struct {
@@ -37,10 +36,3 @@ var (
 		SameSite: http.SameSiteStrictMode,
 	}
 )
-
-func StringToSlice(value string, sep string) []string {
-	if value == "" {
-		return []string{}
-	}
-	return strings.Split(value, sep)
-}
