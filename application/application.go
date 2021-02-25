@@ -11,6 +11,7 @@ import (
 	"lab-api/application/controller/acl"
 	"lab-api/application/controller/admin"
 	"lab-api/application/controller/permission"
+	"lab-api/application/controller/picture_type"
 	"lab-api/application/controller/policy"
 	"lab-api/application/controller/resource"
 	"lab-api/application/controller/role"
@@ -49,5 +50,6 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		mvc.AutoController("/permission", &permission.Controller{}, unifyMiddleware...)
 		mvc.AutoController("/role", &role.Controller{}, unifyMiddleware...)
 		mvc.AutoController("/admin", &admin.Controller{}, unifyMiddleware...)
+		mvc.AutoController("/picture_type", &picture_type.Controller{}, unifyMiddleware...)
 	}
 }
