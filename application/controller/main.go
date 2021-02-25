@@ -8,8 +8,10 @@ import (
 	"github.com/kainonly/gin-extra/authx"
 	"github.com/kainonly/gin-extra/hash"
 	"github.com/kainonly/gin-extra/mvcx"
+	"github.com/kainonly/gin-extra/storage/cos"
 	"lab-api/application/common"
 	"lab-api/application/model"
+	"mime/multipart"
 )
 
 type Controller struct {
@@ -149,4 +151,19 @@ func (c *Controller) Update(ctx *gin.Context) interface{} {
 		Updates(data)
 	c.Redis.Admin.Clear()
 	return true
+}
+
+func (c *Controller) Uploads(ctx *gin.Context) interface{} {
+	var err error
+	var fileHeader *multipart.FileHeader
+	if fileHeader, err = ctx.FormFile("image"); err != nil {
+		return err
+	}
+	var fileName string
+	if fileName, err = cos.Put(fileHeader); err != nil {
+		return err
+	}
+	return gin.H{
+		"savename": fileName,
+	}
 }

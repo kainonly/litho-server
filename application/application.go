@@ -33,12 +33,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 			dependency.Redis.Acl,
 		)
 		unifyMiddleware := []mvcx.Middleware{
-			{
-				Handle: auth,
-			},
-			{
-				Handle: rbac,
-			},
+			{Handle: auth}, {Handle: rbac},
 		}
 		mvc := mvcx.Initialize(system, dependency)
 		mvc.AutoController("/main", &controller.Controller{}, mvcx.Middleware{
