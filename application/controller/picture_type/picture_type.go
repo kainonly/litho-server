@@ -67,8 +67,8 @@ type sortBody struct {
 }
 
 type sortData struct {
-	Id   interface{} `binding:"required"`
-	Sort uint8       `binding:"required"`
+	Id   uint64 `binding:"required"`
+	Sort uint8  `binding:"required"`
 }
 
 func (c *Controller) Sort(ctx *gin.Context) interface{} {
