@@ -101,6 +101,7 @@ func (c *Controller) Information(ctx *gin.Context) interface{} {
 	data := make(map[string]interface{})
 	c.Db.Model(&model.Admin{}).
 		Where("username = ?", auth.(jwt.MapClaims)["user"]).
+		Omit("password", "permission", "status", "create_time", "update_time").
 		First(&data)
 	return data
 }
@@ -166,4 +167,14 @@ func (c *Controller) Uploads(ctx *gin.Context) interface{} {
 	return gin.H{
 		"savename": fileName,
 	}
+}
+
+func (c *Controller) CosPresigned(ctx *gin.Context) interface{} {
+	data, err := cos.GeneratePostPresigned(600, []interface{}{
+		"content-length-range", 0, 104857600,
+	})
+	if err != nil {
+		return err
+	}
+	return mvcx.Raw(data)
 }

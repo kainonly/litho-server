@@ -31,3 +31,10 @@ token:
     audience:
       - van-console
     expires: 3600
+storage:
+  type: cos
+  option:
+    secret_id:
+    secret_key:
+    region:
+    bucket:

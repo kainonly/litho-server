@@ -5,6 +5,7 @@ import (
 	"github.com/kainonly/gin-extra/authx"
 	"github.com/kainonly/gin-extra/mvcx"
 	"github.com/kainonly/gin-extra/rbacx"
+	"github.com/kainonly/gin-extra/storage/cos"
 	"github.com/kainonly/gin-extra/tokenx"
 	"lab-api/application/common"
 	"lab-api/application/controller"
@@ -22,12 +23,21 @@ import (
 func Application(router *gin.Engine, dependency common.Dependency) {
 	cfg := dependency.Config
 	tokenx.LoadKey([]byte(cfg.App.Key))
+	switch cfg.Storage.Type {
+	case "cos":
+		cos.DEF = cos.Option{
+			Bucket:    cfg.Storage.Option["bucket"].(string),
+			Region:    cfg.Storage.Option["region"].(string),
+			SecretID:  cfg.Storage.Option["secret_id"].(string),
+			SecretKey: cfg.Storage.Option["secret_key"].(string),
+		}
+		break
+	}
 	router.GET("/", routes.Default)
 	system := router.Group("/system")
 	{
 		auth := authx.Middleware(common.SystemCookie, dependency.Redis.RefreshToken)
-		rbac := rbacx.Middleware(
-			"/system/",
+		rbac := rbacx.Middleware("/system/",
 			dependency.Redis.Admin,
 			dependency.Redis.Role,
 			dependency.Redis.Acl,
