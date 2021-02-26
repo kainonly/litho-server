@@ -156,7 +156,7 @@ func (c *Controller) Update(ctx *gin.Context) interface{} {
 func (c *Controller) Uploads(ctx *gin.Context) interface{} {
 	var err error
 	var fileHeader *multipart.FileHeader
-	if fileHeader, err = ctx.FormFile("image"); err != nil {
+	if fileHeader, err = ctx.FormFile("file"); err != nil {
 		return err
 	}
 	var fileName string
