@@ -11,4 +11,5 @@ type Config struct {
 	Database options.DatabaseOption `yaml:"database"`
 	Redis    options.RedisOption    `yaml:"redis"`
 	Cors     cors.Option            `yaml:"cors"`
+	Storage  options.Storage        `yaml:"storage"`
 }
