@@ -17,6 +17,8 @@ import (
 	"lab-api/application/controller/policy"
 	"lab-api/application/controller/resource"
 	"lab-api/application/controller/role"
+	"lab-api/application/controller/video"
+	"lab-api/application/controller/video_type"
 	"lab-api/routes"
 )
 
@@ -58,5 +60,7 @@ func Application(router *gin.Engine, dependency common.Dependency) {
 		mvc.AutoController("/admin", &admin.Controller{}, unifyMiddleware...)
 		mvc.AutoController("/picture_type", &picture_type.Controller{}, unifyMiddleware...)
 		mvc.AutoController("/picture", &picture.Controller{}, unifyMiddleware...)
+		mvc.AutoController("/video_type", &video_type.Controller{}, unifyMiddleware...)
+		mvc.AutoController("/video", &video.Controller{}, unifyMiddleware...)
 	}
 }
