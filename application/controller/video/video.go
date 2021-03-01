@@ -1,4 +1,4 @@
-package picture
+package video
 
 import (
 	"github.com/gin-gonic/gin"
@@ -23,7 +23,7 @@ func (c *Controller) OriginLists(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Picture{}, body),
+		curd.Plan(model.Video{}, body),
 	).Originlists()
 }
 
@@ -38,7 +38,7 @@ func (c *Controller) Lists(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Picture{}, body),
+		curd.Plan(model.Video{}, body),
 	).Lists()
 }
 
@@ -58,9 +58,9 @@ func (c *Controller) BulkAdd(ctx *gin.Context) interface{} {
 	if err = ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	data := make([]model.Picture, len(body.Data))
+	data := make([]model.Video, len(body.Data))
 	for index, value := range body.Data {
-		data[index] = model.Picture{
+		data[index] = model.Video{
 			TypeId: body.TypeId,
 			Name:   value.Name,
 			Url:    value.Url,
@@ -92,7 +92,7 @@ func (c *Controller) Edit(ctx *gin.Context) interface{} {
 		data["url"] = body.Url
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Picture{}, body),
+		curd.Plan(model.Video{}, body),
 	).Edit(data)
 }
 
@@ -109,7 +109,7 @@ func (c *Controller) BulkEdit(ctx *gin.Context) interface{} {
 	}
 	if err = c.Db.Transaction(func(tx *gorm.DB) error {
 		for _, id := range body.Ids {
-			tx.Model(&model.Picture{}).
+			tx.Model(&model.Video{}).
 				Where("id = ?", id).
 				Update("type_id", body.TypeId)
 		}
@@ -131,13 +131,13 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 		return err
 	}
 	return c.Curd.Operates(
-		curd.Plan(model.Picture{}, body),
+		curd.Plan(model.Video{}, body),
 	).Delete()
 }
 
 func (c *Controller) Count(ctx *gin.Context) interface{} {
 	var total int64
-	tx := c.Db.Model(&model.Picture{})
+	tx := c.Db.Model(&model.Video{})
 	tx.Count(&total)
 	values := make([]map[string]interface{}, 0)
 	tx.Group("type_id").
