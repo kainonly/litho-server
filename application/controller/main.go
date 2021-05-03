@@ -28,25 +28,26 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	admin := c.Redis.Admin.Get(body.Username)
-	if admin == nil {
-		return errors.New("user does not exist or has been frozen")
+	data := c.Redis.Admin.Get(body.Username)
+	if data == nil {
+		return errors.New("当前用户不存在或已被冻结")
 	}
-	cb := context.Background()
-	if !c.Redis.UserLock.Check(cb, "admin:"+body.Username) {
-		c.Redis.UserLock.Lock(cb, "admin:"+body.Username)
+	redisCtx := context.Background()
+	userKey := "admin:"
+	if !c.Redis.Lock.Check(redisCtx, userKey+body.Username) {
+		c.Redis.Lock.Lock(redisCtx, userKey+body.Username)
 		return mvcx.Response{
 			Code: 2,
-			Msg:  "you have failed to log in too many times, please try again later",
+			Msg:  "当前用户登录失败次数已上限，请稍后再试",
 		}
 	}
-	if ok, _ := hash.Verify(body.Password, admin["password"].(string)); !ok {
-		c.Redis.UserLock.Inc(cb, "admin:"+body.Username)
-		return errors.New("user login password is incorrect")
+	if ok, _ := hash.Verify(body.Password, data["password"].(string)); !ok {
+		c.Redis.Lock.Inc(redisCtx, userKey+body.Username)
+		return errors.New("当前用户认证不成功")
 	}
-	c.Redis.UserLock.Remove("admin:" + body.Username)
+	c.Redis.Lock.Remove(redisCtx, userKey+body.Username)
 	if err := authx.Create(ctx, common.SystemCookie, jwt.MapClaims{
-		"user": admin["username"],
+		"user": data["username"],
 	}, c.Redis.RefreshToken); err != nil {
 		return err
 	}
