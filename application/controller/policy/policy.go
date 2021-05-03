@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
 	"gorm.io/gorm"
@@ -72,5 +73,5 @@ func (c *Controller) Delete(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Redis.Role.Clear()
+	c.Redis.Role.Clear(context.Background())
 }

@@ -1,6 +1,7 @@
 package role
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
 	"github.com/kainonly/gin-extra/datatype"
@@ -184,6 +185,7 @@ func (c *Controller) Validedkey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Redis.Role.Clear()
-	c.Redis.Admin.Clear()
+	ctx := context.Background()
+	c.Redis.Role.Clear(ctx)
+	c.Redis.Admin.Clear(ctx)
 }

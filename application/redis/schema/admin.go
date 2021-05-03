@@ -22,12 +22,11 @@ func NewAdmin(dep Dependency) *Admin {
 	return c
 }
 
-func (c *Admin) Clear() {
-	c.Redis.Del(context.Background(), c.key)
+func (c *Admin) Clear(ctx context.Context) {
+	c.Redis.Del(ctx, c.key)
 }
 
-func (c *Admin) Get(username string) (result map[string]interface{}) {
-	ctx := context.Background()
+func (c *Admin) Get(ctx context.Context, username string) (result map[string]interface{}) {
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var adminLists []model.AdminMix

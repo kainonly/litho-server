@@ -1,6 +1,7 @@
 package acl
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
 	"github.com/kainonly/gin-extra/datatype"
@@ -159,6 +160,7 @@ func (c *Controller) ValidedKey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Redis.Acl.Clear()
-	c.Redis.Role.Clear()
+	ctx := context.Background()
+	c.Redis.Acl.Clear(ctx)
+	c.Redis.Role.Clear(ctx)
 }
