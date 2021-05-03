@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
@@ -208,6 +209,7 @@ func (c *Controller) Bindingkey(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Redis.Resource.Clear()
-	c.Redis.Role.Clear()
+	ctx := context.Background()
+	c.Redis.Resource.Clear(ctx)
+	c.Redis.Role.Clear(ctx)
 }

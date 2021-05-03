@@ -23,12 +23,11 @@ func NewRole(dep Dependency) *Role {
 	return c
 }
 
-func (c *Role) Clear() {
-	c.Redis.Del(context.Background(), c.key)
+func (c *Role) Clear(ctx context.Context) {
+	c.Redis.Del(ctx, c.key)
 }
 
-func (c *Role) Get(keys []string, mode string) *hashset.Set {
-	ctx := context.Background()
+func (c *Role) Get(ctx context.Context, keys []string, mode string) *hashset.Set {
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var roleLists []model.RoleMix

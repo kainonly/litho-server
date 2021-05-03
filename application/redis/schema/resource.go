@@ -18,12 +18,11 @@ func NewResource(dep Dependency) *Resource {
 	return c
 }
 
-func (c *Resource) Clear() {
-	c.Redis.Del(context.Background(), c.key)
+func (c *Resource) Clear(ctx context.Context) {
+	c.Redis.Del(ctx, c.key)
 }
 
-func (c *Resource) Get() (result []map[string]interface{}) {
-	ctx := context.Background()
+func (c *Resource) Get(ctx context.Context) (result []map[string]interface{}) {
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var resourceLists []map[string]interface{}

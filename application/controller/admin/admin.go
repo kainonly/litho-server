@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"context"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	curd "github.com/kainonly/gin-curd"
@@ -282,5 +283,5 @@ func (c *Controller) ValidedUsername(ctx *gin.Context) interface{} {
 }
 
 func (c *Controller) clearcache() {
-	c.Redis.Admin.Clear()
+	c.Redis.Admin.Clear(context.Background())
 }

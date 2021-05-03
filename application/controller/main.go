@@ -28,11 +28,11 @@ func (c *Controller) Login(ctx *gin.Context) interface{} {
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	data := c.Redis.Admin.Get(body.Username)
+	redisCtx := context.Background()
+	data := c.Redis.Admin.Get(redisCtx, body.Username)
 	if data == nil {
 		return errors.New("当前用户不存在或已被冻结")
 	}
-	redisCtx := context.Background()
 	userKey := "admin:"
 	if !c.Redis.Lock.Check(redisCtx, userKey+body.Username) {
 		c.Redis.Lock.Lock(redisCtx, userKey+body.Username)
@@ -74,20 +74,22 @@ func (c *Controller) Resource(ctx *gin.Context) interface{} {
 	if auth, err = authx.Get(ctx); err != nil {
 		return err
 	}
-	userData := c.Redis.Admin.Get(auth["user"].(string))
-	roleKeys := userData["role"].([]interface{})
-	keys := make([]string, len(roleKeys))
-	for index, value := range roleKeys {
-		keys[index] = value.(string)
+	redisCtx := context.Background()
+	user := auth["user"].(string)
+	data := c.Redis.Admin.Get(redisCtx, user)
+	roles := data["role"].([]interface{})
+	roleKeys := make([]string, len(roles))
+	for index, value := range roles {
+		roleKeys[index] = value.(string)
 	}
-	roleResource := c.Redis.Role.Get(keys, "resource")
-	if userData["resource"] != nil {
-		roleResource.Add(userData["resource"].([]interface{})...)
+	roleSet := c.Redis.Role.Get(redisCtx, roleKeys, "resource")
+	if data["resource"] != nil {
+		roleSet.Add(data["resource"].([]interface{})...)
 	}
-	resource := c.Redis.Resource.Get()
 	lists := make([]interface{}, 0)
+	resource := c.Redis.Resource.Get(redisCtx)
 	for _, item := range resource {
-		if roleResource.Contains(item["key"].(string)) {
+		if roleSet.Contains(item["key"].(string)) {
 			lists = append(lists, item)
 		}
 	}
@@ -151,7 +153,7 @@ func (c *Controller) Update(ctx *gin.Context) interface{} {
 	c.Db.Model(&model.Admin{}).
 		Where("username = ?", username).
 		Updates(data)
-	c.Redis.Admin.Clear()
+	c.Redis.Admin.Clear(context.Background())
 	return true
 }
 

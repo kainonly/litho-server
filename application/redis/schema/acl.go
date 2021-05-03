@@ -23,12 +23,11 @@ func NewAcl(dep Dependency) *Acl {
 	return c
 }
 
-func (c *Acl) Clear() {
-	c.Redis.Del(context.Background(), c.key)
+func (c *Acl) Clear(ctx context.Context) {
+	c.Redis.Del(ctx, c.key)
 }
 
-func (c *Acl) Get(key string, policy string) *hashset.Set {
-	ctx := context.Background()
+func (c *Acl) Get(ctx context.Context, key string, policy string) *hashset.Set {
 	exists := c.Redis.Exists(ctx, c.key).Val()
 	if exists == 0 {
 		var aclLists []model.Acl
