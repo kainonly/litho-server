@@ -2,6 +2,7 @@ package redis
 
 import (
 	"lab-api/application/redis/schema"
+	"time"
 )
 
 type Model struct {
@@ -10,7 +11,7 @@ type Model struct {
 	Role         *schema.Role
 	Admin        *schema.Admin
 	RefreshToken *schema.RefreshToken
-	UserLock     *schema.UserLock
+	Lock         *schema.Lock
 }
 
 func Initialize(dep schema.Dependency) *Model {
@@ -20,6 +21,6 @@ func Initialize(dep schema.Dependency) *Model {
 	c.Role = schema.NewRole(dep)
 	c.Admin = schema.NewAdmin(dep)
 	c.RefreshToken = schema.NewRefreshToken(dep)
-	c.UserLock = schema.NewUserLock(dep)
+	c.Lock = schema.NewLock(dep, 5, time.Second*900)
 	return c
 }
