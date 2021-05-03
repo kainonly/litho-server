@@ -22,8 +22,7 @@ var (
 	LoadConfigurationNotExists = errors.New("the configuration file does not exist")
 )
 
-// LoadConfiguration
-// Load application configuration
+// LoadConfiguration application configuration
 // reference config.example.yml
 func LoadConfiguration() (cfg *config.Config, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
@@ -42,8 +41,7 @@ func LoadConfiguration() (cfg *config.Config, err error) {
 	return
 }
 
-// InitializeDatabase
-// Initialize database configuration
+// InitializeDatabase database configuration
 // If it is another database, replace the driver here
 // gorm.Open(mysql.Open(option.Dsn),...)
 // reference https://gorm.io/docs/connecting_to_the_database.html
@@ -74,8 +72,7 @@ func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 	return
 }
 
-// InitializeRedis
-// Initialize the redis library configuration
+// InitializeRedis the redis library configuration
 // reference https://github.com/go-redis/redis
 func InitializeRedis(cfg *config.Config) *redis.Client {
 	option := cfg.Redis
@@ -86,8 +83,7 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 	})
 }
 
-// HttpServer
-// Start http service
+// HttpServer Start http service
 // https://gin-gonic.com/docs/examples/custom-http-config
 func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve = gin.New()
