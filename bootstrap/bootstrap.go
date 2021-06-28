@@ -4,11 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/gin-extra/cors"
-	"github.com/kainonly/gin-extra/validate"
 	"go.uber.org/fx"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -72,25 +69,12 @@ func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 	return
 }
 
-// InitializeRedis the redis library configuration
-// reference https://github.com/go-redis/redis
-func InitializeRedis(cfg *config.Config) *redis.Client {
-	option := cfg.Redis
-	return redis.NewClient(&redis.Options{
-		Addr:     option.Address,
-		Password: option.Password,
-		DB:       option.DB,
-	})
-}
-
 // HttpServer Start http service
 // https://gin-gonic.com/docs/examples/custom-http-config
 func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
-	serve.Use(cors.Cors(cfg.Cors))
-	validate.RegisterCustomValidate()
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(cfg.Listen)
