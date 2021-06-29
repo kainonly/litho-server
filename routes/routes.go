@@ -7,14 +7,13 @@ import (
 )
 
 func Initialize(
-	route *gin.Engine,
+	r *gin.Engine,
 	main *controller.Main,
 	acl *controller.Acl,
 ) {
-	route.GET("/", bit.Bind(main.Index))
-	ACL := route.Group("/acl")
+	r.GET("/", bit.Bind(main.Index))
+	rAcl := r.Group("/acl")
 	{
-		ACL.POST("/get", bit.Bind(acl.Get))
-
+		rAcl.POST("/get", bit.Bind(acl.Get))
 	}
 }
