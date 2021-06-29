@@ -6,4 +6,5 @@ import (
 
 var Provides = fx.Provide(
 	NewMain,
+	NewAcl,
 )
