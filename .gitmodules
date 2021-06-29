@@ -1,0 +1,6 @@
+[submodule "library/gin-planx"]
+	path = library/gin-planx
+	url = git@github.com:kainonly/gin-planx.git
+[submodule "library/gin-helper"]
+	path = library/gin-helper
+	url = git@github.com:kainonly/gin-helper.git
