@@ -1,18 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-helper/mvc"
+	"github.com/kainonly/gin-planx"
 )
 
-type Acl struct{}
-
-func NewAcl() *Acl {
-	return &Acl{}
+type Acl struct {
+	*planx.Crud
 }
 
-func (x *Acl) Index(c *gin.Context) interface{} {
-	return mvc.Ok{
-		"msg": "hello",
-	}
+func NewAcl(planx *planx.Planx) *Acl {
+	return &Acl{Crud: planx.Make()}
 }
