@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-helper/mvc"
+	"github.com/kainonly/gin-planx/mvc"
 )
 
 type Main struct{}

@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kainonly/gin-helper v0.0.0-00010101000000-000000000000
+	github.com/kainonly/gin-planx v0.0.0-20210629081218-4978ca8748fc // indirect
 	github.com/stretchr/testify v1.5.1 // indirect
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.5.0 // indirect

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kainonly/gin-planx"
 	"go.uber.org/fx"
 	"lab-api/bootstrap"
 	"lab-api/controller"
@@ -10,10 +11,12 @@ import (
 
 func main() {
 	fx.New(
+		fx.NopLogger,
 		fx.Provide(
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
 			bootstrap.HttpServer,
+			planx.Initialize,
 		),
 		service.Provides,
 		controller.Provides,
