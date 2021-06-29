@@ -9,9 +9,12 @@ import (
 func Initialize(
 	route *gin.Engine,
 	main *controller.Main,
+	acl *controller.Acl,
 ) {
 	routes := [][]interface{}{
 		{"GET", "/", main.Index},
+
+		{"POST", "/acl/get", acl.Get},
 	}
 
 	for _, r := range routes {
