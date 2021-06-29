@@ -1,13 +1,16 @@
 package controller
 
 import (
-	"github.com/kainonly/gin-planx"
+	bit "github.com/kainonly/gin-bit"
+	"lab-api/model"
 )
 
 type Acl struct {
-	*planx.Crud
+	*bit.Crud
 }
 
-func NewAcl(planx *planx.Planx) *Acl {
-	return &Acl{Crud: planx.Make()}
+func NewAcl(b *bit.Bit) *Acl {
+	return &Acl{
+		Crud: b.Crud(model.Acl{}),
+	}
 }

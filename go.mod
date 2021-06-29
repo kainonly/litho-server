@@ -6,8 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-playground/validator/v10 v10.6.1 // indirect
 	github.com/json-iterator/go v1.1.10
+	github.com/kainonly/gin-bit v0.0.0-20210629134643-7ca5fabc5431 // indirect
 	github.com/kainonly/gin-helper v0.0.1-beta // indirect
-	github.com/kainonly/gin-planx v0.0.0-20210629081218-4978ca8748fc
 	github.com/stretchr/testify v1.5.1 // indirect
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.5.0 // indirect
@@ -21,6 +21,6 @@ require (
 )
 
 replace (
+	github.com/kainonly/gin-bit => ./library/gin-bit
 	github.com/kainonly/gin-helper => ./library/gin-helper
-	github.com/kainonly/gin-planx => ./library/gin-planx
 )

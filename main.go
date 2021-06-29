@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kainonly/gin-planx"
+	bit "github.com/kainonly/gin-bit"
 	"go.uber.org/fx"
 	"lab-api/bootstrap"
 	"lab-api/controller"
@@ -16,7 +16,7 @@ func main() {
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
 			bootstrap.HttpServer,
-			planx.Initialize,
+			bit.Initialize,
 		),
 		service.Provides,
 		controller.Provides,
