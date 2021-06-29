@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/gin-planx/mvc"
+	"github.com/kainonly/gin-bit"
 	"lab-api/controller"
 )
 
@@ -11,17 +11,10 @@ func Initialize(
 	main *controller.Main,
 	acl *controller.Acl,
 ) {
-	routes := [][]interface{}{
-		{"GET", "/", main.Index},
+	route.GET("/", bit.Bind(main.Index))
+	ACL := route.Group("/acl")
+	{
+		ACL.POST("/get", bit.Bind(acl.Get))
 
-		{"POST", "/acl/get", acl.Get},
-	}
-
-	for _, r := range routes {
-		handlers := []gin.HandlerFunc{mvc.Bind(r[2])}
-		for _, ext := range r[3:] {
-			handlers = append(handlers, ext.(gin.HandlerFunc))
-		}
-		route.Handle(r[0].(string), r[1].(string), handlers...)
 	}
 }
