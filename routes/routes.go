@@ -14,6 +14,8 @@ func Initialize(
 	r.GET("/", bit.Bind(main.Index))
 	rAcl := r.Group("/acl")
 	{
+		rAcl.POST("/originLists", bit.Bind(acl.OriginLists))
+		rAcl.POST("/lists", bit.Bind(acl.Lists))
 		rAcl.POST("/get", bit.Bind(acl.Get))
 	}
 }
