@@ -17,6 +17,11 @@ func NewAcl(b *bit.Bit) *Acl {
 }
 
 func (x *Acl) Get(c *gin.Context) interface{} {
-	bit.Complex(c)
+	var body struct {
+		bit.Conditions `json:"where" binding:"required_without=Id,gte=0,dive,len=3,dive,required"`
+	}
+	bit.Complex(c,
+		bit.SetBody(&body),
+	)
 	return x.Crud.Get(c)
 }

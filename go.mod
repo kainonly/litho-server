@@ -3,10 +3,10 @@ module lab-api
 go 1.13
 
 require (
-	github.com/gin-gonic/gin v1.7.2 // indirect
+	github.com/gin-gonic/gin v1.7.2
 	github.com/json-iterator/go v1.1.10
-	github.com/kainonly/gin-bit v0.0.0-20210629134643-7ca5fabc5431
-	github.com/kainonly/gin-helper v0.0.1-beta
+	github.com/kainonly/gin-bit v0.0.0-20210630045306-1050ca2c7fcd
+	github.com/kainonly/gin-helper v0.0.0-20210630045306-6e8210fedda9
 	github.com/stretchr/testify v1.5.1 // indirect
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.5.0 // indirect
@@ -18,6 +18,6 @@ require (
 )
 
 replace (
-	github.com/kainonly/gin-bit => ./library/gin-bit
-	github.com/kainonly/gin-helper => ./library/gin-helper
+	github.com/kainonly/gin-bit v0.0.0-20210630045306-1050ca2c7fcd => ./library/gin-bit
+	github.com/kainonly/gin-helper v0.0.0-20210630045306-6e8210fedda9 => ./library/gin-helper
 )
