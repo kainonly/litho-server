@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/gin-helper/hash"
 )
 
 type Main struct{}
@@ -11,5 +12,9 @@ func NewMain() *Main {
 }
 
 func (x *Main) Index(c *gin.Context) interface{} {
-	return "hello"
+	h, _ := hash.Make("hello")
+	return gin.H{
+		"val":  "hello",
+		"hash": h,
+	}
 }
