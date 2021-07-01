@@ -18,5 +18,6 @@ func Initialize(
 		rAcl.POST("/lists", bit.Bind(acl.Lists))
 		rAcl.POST("/get", bit.Bind(acl.Get))
 		rAcl.POST("/add", bit.Bind(acl.Add))
+		rAcl.POST("/edit", bit.Bind(acl.Edit))
 	}
 }
