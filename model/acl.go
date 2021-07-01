@@ -1,7 +1,7 @@
 package model
 
 type Acl struct {
-	ID         uint64 `json:"id"`
+	ID         uint64 `json:"_id"`
 	Key        string `gorm:"type:varchar(200);unique" json:"key"`
 	Name       Object `gorm:"type:json" json:"name"`
 	Read       string `gorm:"type:longtext" json:"read"`
