@@ -19,5 +19,6 @@ func Initialize(
 		rAcl.POST("/get", bit.Bind(acl.Get))
 		rAcl.POST("/add", bit.Bind(acl.Add))
 		rAcl.POST("/edit", bit.Bind(acl.Edit))
+		rAcl.POST("/delete", bit.Bind(acl.Delete))
 	}
 }
