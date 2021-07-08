@@ -12,7 +12,7 @@ type AdminMix struct {
 	Email      string `json:"email"`
 	Phone      string `json:"phone"`
 	Avatar     string `json:"avatar"`
-	Status     bool   `json:"status"`
+	Status     *bool  `json:"status"`
 	CreateTime int64  `json:"create_time"`
 	UpdateTime int64  `json:"update_time"`
 }

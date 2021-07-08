@@ -5,37 +5,53 @@ import (
 	"errors"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
+	"strings"
 )
 
-type Array []interface{}
+type Array []string
 
-func (c *Array) Scan(input interface{}) error {
+func (x *Array) Scan(input interface{}) error {
+	text, ok := input.(string)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to format String value:", input))
+	}
+	*x = strings.Split(text, ",")
+	return nil
+}
+
+func (x Array) Value() (driver.Value, error) {
+	return strings.Join(x, ","), nil
+}
+
+type JSONArray []interface{}
+
+func (x *JSONArray) Scan(input interface{}) error {
 	b, ok := input.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSON value:", input))
 	}
-	return jsoniter.Unmarshal(b, c)
+	return jsoniter.Unmarshal(b, x)
 }
 
-func (c Array) Value() (driver.Value, error) {
-	b, err := jsoniter.Marshal(c)
+func (x JSONArray) Value() (driver.Value, error) {
+	b, err := jsoniter.Marshal(x)
 	return string(b), err
 }
 
-type Object map[string]interface{}
+type JSONObject map[string]interface{}
 
-func (c *Object) Scan(input interface{}) error {
+func (x *JSONObject) Scan(input interface{}) error {
 	b, ok := input.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSON value:", input))
 	}
-	return jsoniter.Unmarshal(b, c)
+	return jsoniter.Unmarshal(b, x)
 }
 
-func (c Object) Value() (driver.Value, error) {
-	if len(c) == 0 {
+func (x JSONObject) Value() (driver.Value, error) {
+	if len(x) == 0 {
 		return nil, nil
 	}
-	b, err := jsoniter.Marshal(c)
+	b, err := jsoniter.Marshal(x)
 	return string(b), err
 }
