@@ -7,6 +7,6 @@ type Role struct {
 	Permission string `json:"permission"`
 	Note       string `json:"note"`
 	Status     bool   `json:"status"`
-	CreateTime uint64 `gorm:"autoCreateTime" json:"create_time"`
-	UpdateTime uint64 `gorm:"autoUpdateTime" json:"update_time"`
+	CreateTime int64  `gorm:"autoCreateTime" json:"create_time"`
+	UpdateTime int64  `gorm:"autoUpdateTime" json:"update_time"`
 }
