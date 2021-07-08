@@ -4,7 +4,7 @@ type Admin struct {
 	ID         uint64 `json:"_id"`
 	Username   string `json:"username"`
 	Password   string `json:"password"`
-	Permission string `json:"permission"`
+	Permission Array  `json:"permission"`
 	Name       string `json:"name"`
 	Email      string `json:"email"`
 	Phone      string `json:"phone"`

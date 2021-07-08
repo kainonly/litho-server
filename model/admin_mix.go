@@ -4,10 +4,10 @@ type AdminMix struct {
 	ID         uint64 `json:"_id"`
 	Username   string `json:"username"`
 	Password   string `json:"password"`
-	Role       string `json:"role"`
-	Resource   string `json:"resource"`
-	Acl        string `json:"acl"`
-	Permission string `json:"permission"`
+	Role       Array  `json:"role"`
+	Resource   Array  `json:"resource"`
+	Acl        Array  `json:"acl"`
+	Permission Array  `json:"permission"`
 	Name       string `json:"name"`
 	Email      string `json:"email"`
 	Phone      string `json:"phone"`
