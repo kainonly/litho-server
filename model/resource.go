@@ -11,6 +11,6 @@ type Resource struct {
 	Icon       string `json:"icon"`
 	Sort       uint   `json:"sort"`
 	Status     bool   `json:"status"`
-	CreateTime uint64 `gorm:"autoCreateTime" json:"create_time"`
-	UpdateTime uint64 `gorm:"autoUpdateTime" json:"update_time"`
+	CreateTime int64  `gorm:"autoCreateTime" json:"create_time"`
+	UpdateTime int64  `gorm:"autoUpdateTime" json:"update_time"`
 }
