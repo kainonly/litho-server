@@ -11,11 +11,11 @@ import (
 type Array []string
 
 func (x *Array) Scan(input interface{}) error {
-	text, ok := input.(string)
+	text, ok := input.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to format String value:", input))
 	}
-	*x = strings.Split(text, ",")
+	*x = strings.Split(string(text), ",")
 	return nil
 }
 
@@ -41,17 +41,17 @@ func (x JSONArray) Value() (driver.Value, error) {
 type JSONObject map[string]interface{}
 
 func (x *JSONObject) Scan(input interface{}) error {
-	b, ok := input.([]byte)
+	data, ok := input.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSON value:", input))
 	}
-	return jsoniter.Unmarshal(b, x)
+	return jsoniter.Unmarshal(data, x)
 }
 
 func (x JSONObject) Value() (driver.Value, error) {
 	if len(x) == 0 {
 		return nil, nil
 	}
-	b, err := jsoniter.Marshal(x)
-	return string(b), err
+	data, err := jsoniter.Marshal(x)
+	return string(data), err
 }
