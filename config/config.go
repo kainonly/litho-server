@@ -1,14 +1,20 @@
 package config
 
+import (
+	"github.com/kainonly/gin-helper/authx"
+	"github.com/kainonly/gin-helper/cookie"
+)
+
 type Config struct {
-	Listen   string   `yaml:"listen"`
-	App      App      `yaml:"app"`
-	Database Database `yaml:"database"`
+	Listen   string        `yaml:"listen"`
+	App      App           `yaml:"app"`
+	Database Database      `yaml:"database"`
+	Auth     authx.Option  `yaml:"auth"`
+	Cookie   cookie.Option `yaml:"cookie"`
 }
 
 type App struct {
 	Name  string `yaml:"name"`
-	Key   string `yaml:"key"`
 	Debug bool   `yaml:"debug"`
 }
 

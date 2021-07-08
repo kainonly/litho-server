@@ -3,7 +3,10 @@ package bootstrap
 import (
 	"context"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/gin-helper/authx"
+	"github.com/kainonly/gin-helper/cookie"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
@@ -11,6 +14,7 @@ import (
 	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"lab-api/config"
+	"net/http"
 	"os"
 	"time"
 )
@@ -67,6 +71,21 @@ func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(option.ConnMaxLifetime))
 	}
 	return
+}
+
+func InitializeCookie(cfg *config.Config) *cookie.Cookie {
+	return cookie.Make(cfg.Cookie, http.SameSiteStrictMode)
+}
+
+func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
+	return authx.Make(cfg.Auth, authx.Args{
+		Method: jwt.SigningMethodHS256,
+		UseCookie: &cookie.Cookie{
+			Name:   "access_token",
+			Option: c.Option,
+		},
+		RefreshFn: nil,
+	})
 }
 
 // HttpServer Start http service

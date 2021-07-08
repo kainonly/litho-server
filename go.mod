@@ -3,6 +3,7 @@ module lab-api
 go 1.13
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.7.2
 	github.com/json-iterator/go v1.1.10
 	github.com/kainonly/gin-bit v0.0.0-20210630045306-1050ca2c7fcd
