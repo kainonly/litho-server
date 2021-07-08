@@ -29,10 +29,11 @@ func (x *Acl) Add(c *gin.Context) interface{} {
 	bit.Mixed(c,
 		bit.SetBody(&body),
 		bit.SetData(&model.Acl{
-			Name:  body.Name,
-			Key:   body.Key,
-			Write: body.Write,
-			Read:  body.Read,
+			Name:   body.Name,
+			Key:    body.Key,
+			Write:  body.Write,
+			Read:   body.Read,
+			Status: model.True(),
 		}),
 	)
 	return x.Crud.Add(c)
