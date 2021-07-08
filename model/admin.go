@@ -9,7 +9,7 @@ type Admin struct {
 	Email      string `json:"email"`
 	Phone      string `json:"phone"`
 	Avatar     string `json:"avatar"`
-	Status     bool   `json:"status"`
+	Status     *bool  `json:"status"`
 	CreateTime int64  `gorm:"autoCreateTime" json:"create_time"`
 	UpdateTime int64  `gorm:"autoUpdateTime" json:"update_time"`
 }
