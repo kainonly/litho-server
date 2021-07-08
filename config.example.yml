@@ -1,8 +1,13 @@
 listen: ':8000'
 app:
   name: lab
-  key:
   debug: true
+auth:
+  key:
+  issuer: lab-api
+  audience: [ console ]
+  not_before: 0
+  expires: 3600
 database:
   dsn: user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
   max_idle_conns: 10
@@ -25,12 +30,6 @@ cors:
   exposed_header:
   max_age: 86400
   credentials: false
-token:
-  system:
-    issuer: lab-api
-    audience:
-      - van-console
-    expires: 3600
 storage:
   type: cos
   option:
