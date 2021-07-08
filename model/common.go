@@ -55,3 +55,12 @@ func (x JSONObject) Value() (driver.Value, error) {
 	data, err := jsoniter.Marshal(x)
 	return string(data), err
 }
+
+func True() *bool {
+	value := true
+	return &value
+}
+
+func False() *bool {
+	return new(bool)
+}
