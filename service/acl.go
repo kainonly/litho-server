@@ -3,35 +3,33 @@ package service
 import (
 	"context"
 	"github.com/emirpasic/gods/sets/hashset"
-	"github.com/go-redis/redis/v8"
 	jsoniter "github.com/json-iterator/go"
-	"gorm.io/gorm"
-	"lab-api/config"
+	"github.com/kainonly/gin-helper/rbac"
 	"lab-api/model"
 )
 
 type Acl struct {
-	key   string
-	db    *gorm.DB
-	redis *redis.Client
+	rbac.AclFn
+	*Dependent
+
+	key string
 }
 
-func NewAcl(cfg *config.Config, db *gorm.DB, redis *redis.Client) *Acl {
+func NewAcl(dep *Dependent) *Acl {
 	return &Acl{
-		key:   cfg.App.Key("system:acl"),
-		db:    db,
-		redis: redis,
+		key:       dep.Config.App.Key("system:acl"),
+		Dependent: dep,
 	}
 }
 
-func (x *Acl) Get(ctx context.Context, key string, mode string) (result *hashset.Set, err error) {
+func (x *Acl) Fetch(ctx context.Context, key string, mode string) (result *hashset.Set, err error) {
 	var exists int64
-	if exists, err = x.redis.Exists(ctx, x.key).Result(); err != nil {
+	if exists, err = x.Redis.Exists(ctx, x.key).Result(); err != nil {
 		return
 	}
 	if exists == 0 {
 		var acls []model.Acl
-		if err = x.db.Where("status = ?", true).Find(&acls).Error; err != nil {
+		if err = x.Db.Where("status = ?", true).Find(&acls).Error; err != nil {
 			return
 		}
 		lists := make(map[string]interface{})
@@ -42,11 +40,11 @@ func (x *Acl) Get(ctx context.Context, key string, mode string) (result *hashset
 			})
 			lists[acl.Key] = string(b)
 		}
-		x.redis.HMSet(ctx, x.key, lists)
+		x.Redis.HMSet(ctx, x.key, lists)
 	}
 	result = hashset.New()
 	var b []byte
-	if b, err = x.redis.HGet(ctx, x.key, key).Bytes(); err != nil {
+	if b, err = x.Redis.HGet(ctx, x.key, key).Bytes(); err != nil {
 		return
 	}
 	var data map[string][]interface{}
@@ -59,5 +57,5 @@ func (x *Acl) Get(ctx context.Context, key string, mode string) (result *hashset
 }
 
 func (x *Acl) Clear(ctx context.Context) error {
-	return x.redis.Del(ctx, x.key).Err()
+	return x.Redis.Del(ctx, x.key).Err()
 }

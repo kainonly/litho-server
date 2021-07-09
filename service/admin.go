@@ -2,22 +2,25 @@ package service
 
 import (
 	"github.com/kainonly/gin-helper/hash"
-	"gorm.io/gorm"
+	"github.com/kainonly/gin-helper/rbac"
 	"lab-api/model"
 )
 
 type Admin struct {
-	db *gorm.DB
+	rbac.UserFn
+	*Dependent
+
+	key string
 }
 
-func NewAdmin(db *gorm.DB) *Admin {
+func NewAdmin(dep *Dependent) *Admin {
 	return &Admin{
-		db: db,
+		Dependent: dep,
 	}
 }
 
 func (x *Admin) FindOne(query Query) (data model.Admin, err error) {
-	if err = query(x.db).First(&data).Error; err != nil {
+	if err = query(x.Db).First(&data).Error; err != nil {
 		return
 	}
 	return
