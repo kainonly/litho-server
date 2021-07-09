@@ -3,19 +3,32 @@ package config
 import (
 	"github.com/kainonly/gin-helper/authx"
 	"github.com/kainonly/gin-helper/cookie"
+	"github.com/kainonly/gin-helper/cors"
 )
 
 type Config struct {
 	Listen   string        `yaml:"listen"`
 	App      App           `yaml:"app"`
 	Database Database      `yaml:"database"`
+	Redis    Redis         `yaml:"redis"`
 	Auth     authx.Option  `yaml:"auth"`
 	Cookie   cookie.Option `yaml:"cookie"`
+	Cors     cors.Option   `yaml:"cors"`
 }
 
 type App struct {
 	Name  string `yaml:"name"`
 	Debug bool   `yaml:"debug"`
+	Lock  Lock   `yaml:"lock"`
+}
+
+func (x *App) Key(name string) string {
+	return x.Name + ":" + name
+}
+
+type Lock struct {
+	Limit        int64 `yaml:"limit"`
+	RecoveryTime int64 `yaml:"recovery_time"`
 }
 
 type Database struct {
@@ -24,4 +37,10 @@ type Database struct {
 	MaxOpenConns    int    `yaml:"max_open_conns"`
 	ConnMaxLifetime int    `yaml:"conn_max_lifetime"`
 	TablePrefix     string `yaml:"table_prefix"`
+}
+
+type Redis struct {
+	Address  string `yaml:"address"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
 }

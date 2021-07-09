@@ -8,5 +8,7 @@ import (
 type Query func(tx *gorm.DB) *gorm.DB
 
 var Provides = fx.Provide(
-	NewAdmins,
+	NewLock,
+	NewAdmin,
+	NewAcl,
 )

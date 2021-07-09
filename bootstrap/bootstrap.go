@@ -5,8 +5,10 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/gin-helper/authx"
 	"github.com/kainonly/gin-helper/cookie"
+	"github.com/kainonly/gin-helper/cors"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
@@ -77,6 +79,18 @@ func InitializeCookie(cfg *config.Config) *cookie.Cookie {
 	return cookie.Make(cfg.Cookie, http.SameSiteStrictMode)
 }
 
+// InitializeRedis the redis library configuration
+// reference https://github.com/go-redis/redis
+func InitializeRedis(cfg *config.Config) *redis.Client {
+	option := cfg.Redis
+	return redis.NewClient(&redis.Options{
+		Addr:     option.Address,
+		Password: option.Password,
+		DB:       option.DB,
+	})
+}
+
+// InitializeAuth create auth
 func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
 	return authx.Make(cfg.Auth, authx.Args{
 		Method: jwt.SigningMethodHS256,
@@ -94,6 +108,7 @@ func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
+	serve.Use(cors.Cors(cfg.Cors))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(cfg.Listen)

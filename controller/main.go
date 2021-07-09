@@ -10,11 +10,11 @@ import (
 )
 
 type Main struct {
-	admin *service.Admins
+	admin *service.Admin
 	auth  *authx.Auth
 }
 
-func NewMain(admins *service.Admins, auth *authx.Auth) *Main {
+func NewMain(admins *service.Admin, auth *authx.Auth) *Main {
 	return &Main{admins, auth}
 }
 

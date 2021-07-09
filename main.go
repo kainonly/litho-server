@@ -15,6 +15,7 @@ func main() {
 		fx.Provide(
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
+			bootstrap.InitializeRedis,
 			bootstrap.InitializeCookie,
 			bootstrap.InitializeAuth,
 			bootstrap.HttpServer,
