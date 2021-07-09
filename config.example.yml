@@ -2,6 +2,9 @@ listen: ':8000'
 app:
   name: lab
   debug: true
+  lock:
+    limit: 5
+    recovery_time: 900
 auth:
   key:
   issuer: lab-api

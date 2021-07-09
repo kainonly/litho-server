@@ -6,24 +6,24 @@ import (
 	"lab-api/model"
 )
 
-type Admins struct {
+type Admin struct {
 	db *gorm.DB
 }
 
-func NewAdmins(db *gorm.DB) *Admins {
-	return &Admins{
+func NewAdmin(db *gorm.DB) *Admin {
+	return &Admin{
 		db: db,
 	}
 }
 
-func (x *Admins) FindOne(query Query) (data model.Admin, err error) {
+func (x *Admin) FindOne(query Query) (data model.Admin, err error) {
 	if err = query(x.db).First(&data).Error; err != nil {
 		return
 	}
 	return
 }
 
-func (x *Admins) Data(admin model.Admin) model.Admin {
+func (x *Admin) Data(admin model.Admin) model.Admin {
 	var password string
 	if admin.Password != "" {
 		password, _ = hash.Make(admin.Password)
