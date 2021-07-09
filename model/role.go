@@ -3,7 +3,7 @@ package model
 type Role struct {
 	ID         uint64     `json:"_id"`
 	Key        string     `json:"key"`
-	Name       JSONObject `json:"name"`
+	Name       JSONObject `gorm:"type:json" json:"name"`
 	Permission Array      `json:"permission"`
 	Note       string     `json:"note"`
 	Status     *bool      `json:"status"`

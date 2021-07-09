@@ -3,7 +3,7 @@ package model
 type RoleMix struct {
 	ID         uint64     `json:"_id"`
 	Key        string     `json:"key"`
-	Name       JSONObject `json:"name"`
+	Name       JSONObject `gorm:"type:json" json:"name"`
 	Resource   Array      `json:"resource"`
 	Acl        Array      `json:"acl"`
 	Permission Array      `json:"permission"`

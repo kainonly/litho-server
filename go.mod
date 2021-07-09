@@ -10,6 +10,7 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/kainonly/gin-bit v0.0.0-20210630045306-1050ca2c7fcd
 	github.com/kainonly/gin-helper v0.0.0-20210630045306-6e8210fedda9
+	github.com/speps/go-hashids/v2 v2.0.1 // indirect
 	github.com/stretchr/testify v1.5.1 // indirect
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.5.0 // indirect

@@ -13,6 +13,8 @@ type MySuite struct {
 	lock     *Lock
 	acl      *Acl
 	resource *Resource
+	role     *Role
+	admin    *Admin
 }
 
 var _ = Suite(&MySuite{})
@@ -36,5 +38,6 @@ func (x *MySuite) SetUpTest(c *C) {
 	x.lock = NewLock(&dep)
 	x.acl = NewAcl(&dep)
 	x.resource = NewResource(&dep)
-
+	x.role = NewRole(&dep)
+	x.admin = NewAdmin(&dep)
 }

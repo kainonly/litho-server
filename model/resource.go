@@ -4,7 +4,7 @@ type Resource struct {
 	ID         uint64     `json:"_id"`
 	Key        string     `json:"key"`
 	Parent     string     `json:"parent"`
-	Name       JSONObject `json:"name"`
+	Name       JSONObject `gorm:"type:json" json:"name"`
 	Nav        *bool      `json:"nav"`
 	Router     *bool      `json:"router"`
 	Policy     *bool      `json:"policy"`
