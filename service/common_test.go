@@ -10,8 +10,9 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type MySuite struct {
-	lock *Lock
-	acl  *Acl
+	lock     *Lock
+	acl      *Acl
+	resource *Resource
 }
 
 var _ = Suite(&MySuite{})
@@ -27,6 +28,13 @@ func (x *MySuite) SetUpTest(c *C) {
 		c.Error(err)
 	}
 	redis := bootstrap.InitializeRedis(cfg)
-	x.lock = NewLock(cfg, redis)
-	x.acl = NewAcl(cfg, db, redis)
+	dep := Dependent{
+		Config: cfg,
+		Db:     db,
+		Redis:  redis,
+	}
+	x.lock = NewLock(&dep)
+	x.acl = NewAcl(&dep)
+	x.resource = NewResource(&dep)
+
 }
