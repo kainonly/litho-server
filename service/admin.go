@@ -43,7 +43,7 @@ func (x *Admin) Data(admin model.Admin) model.Admin {
 	}
 }
 
-func (x *Admin) Fetch(ctx context.Context, uid string) (result map[string]interface{}, err error) {
+func (x *Admin) Fetch(ctx context.Context, uid interface{}) (result map[string]interface{}, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.key).Result(); err != nil {
 		return
@@ -69,7 +69,7 @@ func (x *Admin) Fetch(ctx context.Context, uid string) (result map[string]interf
 		x.Redis.HMSet(ctx, x.key, lists)
 	}
 	var b []byte
-	if b, err = x.Redis.HGet(ctx, x.key, uid).Bytes(); err != nil {
+	if b, err = x.Redis.HGet(ctx, x.key, uid.(string)).Bytes(); err != nil {
 		return
 	}
 	if b != nil {
