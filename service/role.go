@@ -22,7 +22,7 @@ func NewRole(dep *Dependent) *Role {
 	}
 }
 
-func (x *Role) Fetch(ctx context.Context, keys []string, mode string) (result *hashset.Set, err error) {
+func (x *Role) Fetch(ctx context.Context, keys []string, mode rbac.RoleMode) (result *hashset.Set, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.key).Result(); err != nil {
 		return
@@ -35,9 +35,9 @@ func (x *Role) Fetch(ctx context.Context, keys []string, mode string) (result *h
 		lists := make(map[string]interface{})
 		for _, role := range roles {
 			b, _ := jsoniter.Marshal(map[string]interface{}{
-				"acl":        role.Acl,
-				"resource":   role.Resource,
-				"permission": role.Permission,
+				string(rbac.RoleAcl):        role.Acl,
+				string(rbac.RoleResource):   role.Resource,
+				string(rbac.RolePermission): role.Permission,
 			})
 			lists[role.Key] = string(b)
 		}
@@ -51,7 +51,7 @@ func (x *Role) Fetch(ctx context.Context, keys []string, mode string) (result *h
 	for _, val := range data {
 		var data map[string]interface{}
 		jsoniter.Unmarshal([]byte(val.(string)), &data)
-		result.Add(data[mode].([]interface{})...)
+		result.Add(data[string(mode)].([]interface{})...)
 	}
 	return
 }
