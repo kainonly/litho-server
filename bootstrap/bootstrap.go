@@ -11,7 +11,7 @@ import (
 	"github.com/kainonly/gin-helper/cors"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"io/ioutil"
@@ -50,7 +50,7 @@ func LoadConfiguration() (cfg *config.Config, err error) {
 // reference https://gorm.io/docs/connecting_to_the_database.html
 func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 	option := cfg.Database
-	db, err = gorm.Open(mysql.Open(option.Dsn), &gorm.Config{
+	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   option.TablePrefix,
 			SingularTable: true,
