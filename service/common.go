@@ -7,9 +7,7 @@ import (
 	"lab-api/config"
 )
 
-var Provides = fx.Provide(
-	NewAdmin,
-)
+var Provides = fx.Provide(NewAdmin)
 
 type Dependent struct {
 	fx.In
