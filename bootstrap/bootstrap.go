@@ -9,6 +9,7 @@ import (
 	"github.com/kainonly/gin-helper/authx"
 	"github.com/kainonly/gin-helper/cookie"
 	"github.com/kainonly/gin-helper/cors"
+	"github.com/kainonly/gin-helper/dex"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
@@ -25,8 +26,7 @@ var (
 	LoadConfigurationNotExists = errors.New("the configuration file does not exist")
 )
 
-// LoadConfiguration application configuration
-// reference config.example.yml
+// LoadConfiguration 初始化应用配置
 func LoadConfiguration() (cfg *config.Config, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = LoadConfigurationNotExists
@@ -44,10 +44,8 @@ func LoadConfiguration() (cfg *config.Config, err error) {
 	return
 }
 
-// InitializeDatabase database configuration
-// If it is another database, replace the driver here
-// gorm.Open(mysql.Open(option.Dsn),...)
-// reference https://gorm.io/docs/connecting_to_the_database.html
+// InitializeDatabase 初始化 Postgresql 数据库
+// 配置文档 https://gorm.io/docs/connecting_to_the_database.html
 func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 	option := cfg.Database
 	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
@@ -75,12 +73,8 @@ func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 	return
 }
 
-func InitializeCookie(cfg *config.Config) *cookie.Cookie {
-	return cookie.Make(cfg.Cookie, http.SameSiteStrictMode)
-}
-
-// InitializeRedis the redis library configuration
-// reference https://github.com/go-redis/redis
+// InitializeRedis 初始化Redis缓存
+// 配置文档 https://github.com/go-redis/redis
 func InitializeRedis(cfg *config.Config) *redis.Client {
 	option := cfg.Redis
 	return redis.NewClient(&redis.Options{
@@ -90,8 +84,20 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 	})
 }
 
-// InitializeAuth create auth
+// InitializeCookie 初始化 Cookie 设置
+func InitializeCookie(cfg *config.Config) *cookie.Cookie {
+	return cookie.Make(cfg.Cookie, http.SameSiteStrictMode)
+}
+
+// InitializeDex 初始化数据加密
+func InitializeDex(cfg *config.Config) (*dex.Dex, error) {
+	return dex.Make(dex.Option{Key: cfg.App.Key})
+}
+
+// InitializeAuth 初始化鉴权
 func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
+	option := cfg.Auth
+	option.Key = cfg.App.Key
 	return authx.Make(cfg.Auth, authx.Args{
 		Method: jwt.SigningMethodHS256,
 		UseCookie: &cookie.Cookie{
@@ -102,8 +108,8 @@ func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
 	})
 }
 
-// HttpServer Start http service
-// https://gin-gonic.com/docs/examples/custom-http-config
+// HttpServer 启动 Gin HTTP 服务
+// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
 func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
