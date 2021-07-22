@@ -18,7 +18,7 @@ func main() {
 	}
 	db = db.Debug()
 	db.AutoMigrate(&model.Admin{})
-	password, _ := hash.Make("pass@VAN1234")
+	password, _ := password.Make("pass@VAN1234")
 	db.Create(&model.Admin{
 		Username: "kain",
 		Password: password,
