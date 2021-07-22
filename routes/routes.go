@@ -8,7 +8,12 @@ import (
 
 func Initialize(
 	r *gin.Engine,
-	main *controller.Main,
+	index *controller.Index,
 ) {
-	r.GET("/", bit.Bind(main.Index))
+	r.GET("/", bit.Bind(index.Index))
+
+	sys := r.Group("/sys")
+	{
+		sys.GET("/verify", bit.Bind(index.Verify))
+	}
 }

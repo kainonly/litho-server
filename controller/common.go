@@ -5,5 +5,5 @@ import (
 )
 
 var Provides = fx.Provide(
-	NewMain,
+	NewIndex,
 )
