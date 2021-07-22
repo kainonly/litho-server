@@ -14,6 +14,7 @@ func Initialize(
 
 	sys := r.Group("/sys")
 	{
+		sys.POST("/login", bit.Bind(index.Login))
 		sys.GET("/verify", bit.Bind(index.Verify))
 	}
 }
