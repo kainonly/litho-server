@@ -17,13 +17,10 @@ type Config struct {
 }
 
 type App struct {
-	Name  string `yaml:"name"`
 	Debug bool   `yaml:"debug"`
+	Name  string `yaml:"name"`
+	Key   string `yaml:"key"`
 	Lock  Lock   `yaml:"lock"`
-}
-
-func (x *App) Key(name string) string {
-	return x.Name + ":" + name
 }
 
 type Lock struct {
