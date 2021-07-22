@@ -7,7 +7,9 @@ import (
 	"lab-api/config"
 )
 
-type Query func(tx *gorm.DB) *gorm.DB
+var Provides = fx.Provide(
+	NewAdmin,
+)
 
 type Dependent struct {
 	fx.In
@@ -17,4 +19,4 @@ type Dependent struct {
 	Redis  *redis.Client
 }
 
-var Provides = fx.Provide()
+type Query func(tx *gorm.DB) *gorm.DB
