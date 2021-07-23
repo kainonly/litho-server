@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kainonly/gin-helper/hash"
+	"github.com/kainonly/gin-helper/pwd"
 	"lab-api/bootstrap"
 	"lab-api/model"
 	"log"
@@ -18,7 +18,7 @@ func main() {
 	}
 	db = db.Debug()
 	db.AutoMigrate(&model.Admin{})
-	password, _ := password.Make("pass@VAN1234")
+	password, _ := pwd.Make("pass@VAN1234")
 	db.Create(&model.Admin{
 		Username: "kain",
 		Password: password,
