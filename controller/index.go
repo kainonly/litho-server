@@ -19,8 +19,17 @@ func NewIndex(admin *service.Admin, auth *authx.Auth) *Index {
 }
 
 func (x *Index) Index(c *gin.Context) interface{} {
+	data, err := x.admin.FindOne(func(tx *gorm.DB) *gorm.DB {
+		return tx.
+			Where("username = ?", "kain").
+			Where("status = ?", true)
+	})
+	if err != nil {
+		return err
+	}
 	return gin.H{
 		"version": "1.0",
+		"data":    data,
 	}
 }
 
@@ -43,7 +52,7 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if result, err := pwd.Verify(body.Password, data.Password); err != nil || !result {
 		return errors.New("用户不存在或口令错误")
 	}
-	if _, err := x.auth.Create(c, data.Username, data.UUID, map[string]interface{}{}); err != nil {
+	if _, err := x.auth.Create(c, data.Username, data.ID, map[string]interface{}{}); err != nil {
 		return err
 	}
 	return "ok"
