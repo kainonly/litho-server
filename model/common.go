@@ -6,7 +6,15 @@ import (
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
 	"strings"
+	"time"
 )
+
+type Common struct {
+	ID         uint64    `json:"id"`
+	Status     *bool     `gorm:"default:true" json:"status"`
+	CreateTime time.Time `gorm:"autoCreateTime" json:"create_time"`
+	UpdateTime time.Time `gorm:"autoUpdateTime" json:"update_time"`
+}
 
 type Array []string
 
