@@ -1,0 +1,6 @@
+[submodule "library/gin-helper"]
+	path = library/gin-helper
+	url = git@github.com:kainonly/gin-helper.git
+[submodule "library/gin-bit"]
+	path = library/gin-bit
+	url = git@github.com:kainonly/gin-bit.git
