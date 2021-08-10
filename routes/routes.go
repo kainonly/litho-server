@@ -6,10 +6,8 @@ import (
 	"lab-api/controller"
 )
 
-func Initialize(
-	r *gin.Engine,
-	index *controller.Index,
-) {
+func Initialize(r *gin.Engine, s *controller.Controllers) {
+	index := s.Index
 	r.GET("/", bit.Bind(index.Index))
 
 	sys := r.Group("/sys")

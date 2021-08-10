@@ -1,9 +1,14 @@
 package controller
 
 import (
-	"go.uber.org/fx"
+	"github.com/google/wire"
 )
 
-var Provides = fx.Provide(
+type Controllers struct {
+	*Index
+}
+
+var Provides = wire.NewSet(
+	wire.Struct(new(Controllers), "*"),
 	NewIndex,
 )

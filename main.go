@@ -1,29 +1,19 @@
 package main
 
 import (
-	bit "github.com/kainonly/gin-bit"
-	"go.uber.org/fx"
-	"lab-api/bootstrap"
-	"lab-api/controller"
+	"github.com/gin-gonic/gin"
 	"lab-api/routes"
-	"lab-api/service"
+	"log"
 )
 
 func main() {
-	fx.New(
-		fx.NopLogger,
-		fx.Provide(
-			bootstrap.LoadConfiguration,
-			bootstrap.InitializeDatabase,
-			bootstrap.InitializeRedis,
-			bootstrap.InitializeCookie,
-			bootstrap.InitializeAuth,
-			bootstrap.InitializeDex,
-			bootstrap.HttpServer,
-			bit.Initialize,
-		),
-		service.Provides,
-		controller.Provides,
-		fx.Invoke(routes.Initialize),
-	).Run()
+	route := gin.New()
+	route.Use(gin.Logger())
+	route.Use(gin.Recovery())
+	s, err := Bootstrap()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	routes.Initialize(route, s)
+	route.Run(":8000")
 }
