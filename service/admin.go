@@ -5,13 +5,19 @@ import (
 )
 
 type Admin struct {
-	*Dependent
+	*Dependency
 }
 
-func NewAdmin(dep Dependent) *Admin {
-	return &Admin{
-		Dependent: &dep,
-	}
+func NewAdmin(dep Dependency) *Admin {
+	return &Admin{&dep}
+}
+
+func (x *Admin) Create() {
+
+}
+
+func (x *Admin) FindAll() {
+
 }
 
 func (x *Admin) FindOne(query Query) (data model.Admin, err error) {
@@ -19,4 +25,12 @@ func (x *Admin) FindOne(query Query) (data model.Admin, err error) {
 		return
 	}
 	return
+}
+
+func (x *Admin) Update() {
+
+}
+
+func (x *Admin) Remove() {
+
 }

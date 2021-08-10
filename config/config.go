@@ -7,7 +7,6 @@ import (
 )
 
 type Config struct {
-	Listen   string        `yaml:"listen"`
 	App      App           `yaml:"app"`
 	Database Database      `yaml:"database"`
 	Redis    Redis         `yaml:"redis"`

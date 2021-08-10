@@ -1,4 +1,3 @@
-listen: ':8000'
 app:
   name: lab
   debug: true
@@ -23,7 +22,7 @@ redis:
   db: 0
 cors:
   origin:
-    - *
+    - '*'
   method:
     - POST
     - OPTIONS

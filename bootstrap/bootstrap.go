@@ -1,16 +1,13 @@
 package bootstrap
 
 import (
-	"context"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/wire"
 	"github.com/kainonly/gin-helper/authx"
 	"github.com/kainonly/gin-helper/cookie"
-	"github.com/kainonly/gin-helper/cors"
 	"github.com/kainonly/gin-helper/dex"
-	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -22,14 +19,19 @@ import (
 	"time"
 )
 
-var (
-	LoadConfigurationNotExists = errors.New("the configuration file does not exist")
+var Provides = wire.NewSet(
+	LoadConfiguration,
+	InitializeDatabase,
+	InitializeRedis,
+	InitializeCookie,
+	InitializeDex,
+	InitializeAuth,
 )
 
 // LoadConfiguration 初始化应用配置
 func LoadConfiguration() (cfg *config.Config, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
-		err = LoadConfigurationNotExists
+		err = errors.New("the configuration file does not exist")
 		return
 	}
 	var buf []byte
@@ -108,18 +110,18 @@ func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
 	})
 }
 
-// HttpServer 启动 Gin HTTP 服务
-// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
-	serve = gin.New()
-	serve.Use(gin.Logger())
-	serve.Use(gin.Recovery())
-	serve.Use(cors.Cors(cfg.Cors))
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go serve.Run(cfg.Listen)
-			return nil
-		},
-	})
-	return
-}
+//// HttpServer 启动 Gin HTTP 服务
+//// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
+//func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
+//	serve = gin.New()
+//	serve.Use(gin.Logger())
+//	serve.Use(gin.Recovery())
+//	serve.Use(cors.Cors(cfg.Cors))
+//	lc.Append(fx.Hook{
+//		OnStart: func(ctx context.Context) error {
+//			go serve.Run(cfg.Listen)
+//			return nil
+//		},
+//	})
+//	return
+//}
