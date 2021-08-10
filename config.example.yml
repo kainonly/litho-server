@@ -1,0 +1,42 @@
+listen: ':8000'
+app:
+  name: lab
+  debug: true
+  lock:
+    limit: 5
+    recovery_time: 900
+auth:
+  key:
+  issuer: lab-api
+  audience: [ console ]
+  not_before: 0
+  expires: 3600
+database:
+  dsn: host=localhost user=gorm password=gorm dbname=gorm port=5432 sslmode=disable TimeZone=Asia/Shanghai
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+  table_prefix:
+redis:
+  address: localhost:6379
+  password:
+  db: 0
+cors:
+  origin:
+    - *
+  method:
+    - POST
+    - OPTIONS
+  allow_header:
+    - CONTENT-TYPE
+    - X-REQUESTED-WITH
+  exposed_header:
+  max_age: 86400
+  credentials: false
+storage:
+  type: cos
+  option:
+    secret_id:
+    secret_key:
+    region:
+    bucket:
