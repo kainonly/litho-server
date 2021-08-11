@@ -29,9 +29,7 @@ func Bootstrap() (*controller.Controllers, error) {
 		Redis:  client,
 	}
 	admin := service.NewAdmin(dependency)
-	cookie := bootstrap.InitializeCookie(config)
-	auth := bootstrap.InitializeAuth(config, cookie)
-	index := controller.NewIndex(admin, auth)
+	index := controller.NewIndex(admin)
 	controllers := &controller.Controllers{
 		Index: index,
 	}
