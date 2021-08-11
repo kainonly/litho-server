@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
-	"github.com/kainonly/gin-helper/dex"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,7 +18,6 @@ var Provides = wire.NewSet(
 	LoadConfiguration,
 	InitializeDatabase,
 	InitializeRedis,
-	InitializeDex,
 )
 
 // LoadConfiguration 初始化应用配置
@@ -78,9 +76,4 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 		Password: option.Password,
 		DB:       option.DB,
 	})
-}
-
-// InitializeDex 初始化数据加密
-func InitializeDex(cfg *config.Config) (*dex.Dex, error) {
-	return dex.Make(dex.Option{Key: cfg.App.Key})
 }
