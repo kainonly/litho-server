@@ -14,7 +14,6 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 	wire.Build(
 		InitializeDatabase,
 		InitializeRedis,
-		bit.Initialize,
 		service.Provides,
 		controller.Provides,
 	)

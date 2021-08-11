@@ -22,13 +22,20 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 	if err != nil {
 		return nil, err
 	}
-	dependency := service.Dependency{
+	dependency := &service.Dependency{
 		Db:    db,
 		Redis: client,
 	}
-	admin := service.NewAdmin(dependency)
-	bitBit := bit.Initialize(db, config)
-	index := controller.NewIndex(admin, bitBit)
+	serviceDependency := service.Dependency{
+		Db:    db,
+		Redis: client,
+	}
+	admin := service.NewAdmin(serviceDependency)
+	services := &service.Services{
+		Dependency: dependency,
+		Admin:      admin,
+	}
+	index := controller.NewIndex(services)
 	controllers := &controller.Controllers{
 		Index: index,
 	}

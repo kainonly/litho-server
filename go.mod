@@ -11,7 +11,7 @@ require (
 	github.com/lib/pq v1.6.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.11
 )
