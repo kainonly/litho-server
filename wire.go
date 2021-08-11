@@ -5,16 +5,15 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/kainonly/gin-bit"
 	"lab-api/controller"
 	"lab-api/service"
 )
 
-func Bootstrap() (*controller.Controllers, error) {
+func Boot() (*controller.Controllers, error) {
 	wire.Build(
-		gin_bit.LoadConfiguration,
-		gin_bit.InitializeDatabase,
-		gin_bit.InitializeRedis,
+		LoadConfiguration,
+		InitializeDatabase,
+		InitializeRedis,
 		service.Provides,
 		controller.Provides,
 	)
