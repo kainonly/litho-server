@@ -14,17 +14,18 @@ func NewIndex(admin *service.Admin) *Index {
 	return &Index{admin}
 }
 
-func (x *Index) Index(c *gin.Context) interface{} {
+func (x *Index) Index(c *gin.Context) {
 	data, err := x.admin.FindOne(func(tx *gorm.DB) *gorm.DB {
 		return tx.
 			Where("username = ?", "kain").
 			Where("status = ?", true)
 	})
 	if err != nil {
-		return err
+		c.AbortWithStatusJSON(500, err)
+		return
 	}
-	return gin.H{
+	c.JSON(200, gin.H{
 		"version": "1.0",
 		"data":    data,
-	}
+	})
 }
