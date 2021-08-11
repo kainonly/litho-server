@@ -2,11 +2,8 @@ package bootstrap
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
-	"github.com/kainonly/gin-helper/authx"
-	"github.com/kainonly/gin-helper/cookie"
 	"github.com/kainonly/gin-helper/dex"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
@@ -14,7 +11,6 @@ import (
 	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"lab-api/config"
-	"net/http"
 	"os"
 	"time"
 )
@@ -23,9 +19,7 @@ var Provides = wire.NewSet(
 	LoadConfiguration,
 	InitializeDatabase,
 	InitializeRedis,
-	InitializeCookie,
 	InitializeDex,
-	InitializeAuth,
 )
 
 // LoadConfiguration 初始化应用配置
@@ -86,42 +80,7 @@ func InitializeRedis(cfg *config.Config) *redis.Client {
 	})
 }
 
-// InitializeCookie 初始化 Cookie 设置
-func InitializeCookie(cfg *config.Config) *cookie.Cookie {
-	return cookie.Make(cfg.Cookie, http.SameSiteStrictMode)
-}
-
 // InitializeDex 初始化数据加密
 func InitializeDex(cfg *config.Config) (*dex.Dex, error) {
 	return dex.Make(dex.Option{Key: cfg.App.Key})
 }
-
-// InitializeAuth 初始化鉴权
-func InitializeAuth(cfg *config.Config, c *cookie.Cookie) *authx.Auth {
-	option := cfg.Auth
-	option.Key = cfg.App.Key
-	return authx.Make(cfg.Auth, authx.Args{
-		Method: jwt.SigningMethodHS256,
-		UseCookie: &cookie.Cookie{
-			Name:   "access_token",
-			Option: c.Option,
-		},
-		RefreshFn: nil,
-	})
-}
-
-//// HttpServer 启动 Gin HTTP 服务
-//// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-//func HttpServer(lc fx.Lifecycle, cfg *config.Config) (serve *gin.Engine) {
-//	serve = gin.New()
-//	serve.Use(gin.Logger())
-//	serve.Use(gin.Recovery())
-//	serve.Use(cors.Cors(cfg.Cors))
-//	lc.Append(fx.Hook{
-//		OnStart: func(ctx context.Context) error {
-//			go serve.Run(cfg.Listen)
-//			return nil
-//		},
-//	})
-//	return
-//}

@@ -1,18 +1,9 @@
 package config
 
-import (
-	"github.com/kainonly/gin-helper/authx"
-	"github.com/kainonly/gin-helper/cookie"
-	"github.com/kainonly/gin-helper/cors"
-)
-
 type Config struct {
-	App      App           `yaml:"app"`
-	Database Database      `yaml:"database"`
-	Redis    Redis         `yaml:"redis"`
-	Auth     authx.Option  `yaml:"auth"`
-	Cookie   cookie.Option `yaml:"cookie"`
-	Cors     cors.Option   `yaml:"cors"`
+	App      App      `yaml:"app"`
+	Database Database `yaml:"database"`
+	Redis    Redis    `yaml:"redis"`
 }
 
 type App struct {

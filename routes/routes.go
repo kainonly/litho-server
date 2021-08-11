@@ -9,11 +9,4 @@ import (
 func Initialize(r *gin.Engine, s *controller.Controllers) {
 	index := s.Index
 	r.GET("/", bit.Bind(index.Index))
-
-	sys := r.Group("/sys")
-	{
-		sys.POST("/auth", bit.Bind(index.Login))
-		sys.GET("/auth", bit.Bind(index.Verify))
-		sys.DELETE("/auth", bit.Bind(index.Logout))
-	}
 }
