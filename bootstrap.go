@@ -1,27 +1,20 @@
-package bootstrap
+package main
 
 import (
 	"errors"
 	"github.com/go-redis/redis/v8"
-	"github.com/google/wire"
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"io/ioutil"
-	"lab-api/config"
 	"os"
 	"time"
 )
 
-var Provides = wire.NewSet(
-	LoadConfiguration,
-	InitializeDatabase,
-	InitializeRedis,
-)
-
 // LoadConfiguration 初始化应用配置
-func LoadConfiguration() (cfg *config.Config, err error) {
+func LoadConfiguration() (config map[string]interface{}, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = errors.New("the configuration file does not exist")
 		return
@@ -31,7 +24,7 @@ func LoadConfiguration() (cfg *config.Config, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(buf, &cfg)
+	err = yaml.Unmarshal(buf, &config)
 	if err != nil {
 		return
 	}
@@ -40,8 +33,17 @@ func LoadConfiguration() (cfg *config.Config, err error) {
 
 // InitializeDatabase 初始化 Postgresql 数据库
 // 配置文档 https://gorm.io/docs/connecting_to_the_database.html
-func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
-	option := cfg.Database
+func InitializeDatabase(config map[string]interface{}) (db *gorm.DB, err error) {
+	var option struct {
+		Dsn             string
+		MaxIdleConns    int
+		MaxOpenConns    int
+		ConnMaxLifetime int
+		TablePrefix     string
+	}
+	if err = mapstructure.Decode(config["database"], &option); err != nil {
+		return
+	}
 	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   option.TablePrefix,
@@ -69,11 +71,19 @@ func InitializeDatabase(cfg *config.Config) (db *gorm.DB, err error) {
 
 // InitializeRedis 初始化Redis缓存
 // 配置文档 https://github.com/go-redis/redis
-func InitializeRedis(cfg *config.Config) *redis.Client {
-	option := cfg.Redis
-	return redis.NewClient(&redis.Options{
+func InitializeRedis(config map[string]interface{}) (client *redis.Client, err error) {
+	var option struct {
+		Address  string
+		Password string
+		DB       int
+	}
+	if err = mapstructure.Decode(config["redis"], &option); err != nil {
+		return
+	}
+	client = redis.NewClient(&redis.Options{
 		Addr:     option.Address,
 		Password: option.Password,
 		DB:       option.DB,
 	})
+	return
 }

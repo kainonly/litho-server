@@ -4,7 +4,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
 	"gorm.io/gorm"
-	"lab-api/config"
 )
 
 var Provides = wire.NewSet(
@@ -13,9 +12,8 @@ var Provides = wire.NewSet(
 )
 
 type Dependency struct {
-	Config *config.Config
-	Db     *gorm.DB
-	Redis  *redis.Client
+	Db    *gorm.DB
+	Redis *redis.Client
 }
 
 type Query func(tx *gorm.DB) *gorm.DB

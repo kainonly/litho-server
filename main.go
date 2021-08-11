@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"lab-api/routes"
 	"log"
 )
 
@@ -14,6 +13,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	routes.Initialize(route, s)
+	index := s.Index
+	route.GET("/", index.Index)
 	route.Run(":8000")
 }
