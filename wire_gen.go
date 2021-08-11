@@ -6,7 +6,6 @@
 package main
 
 import (
-	"lab-api/bootstrap"
 	"lab-api/controller"
 	"lab-api/service"
 )
@@ -14,19 +13,21 @@ import (
 // Injectors from wire.go:
 
 func Bootstrap() (*controller.Controllers, error) {
-	config, err := bootstrap.LoadConfiguration()
+	v, err := LoadConfiguration()
 	if err != nil {
 		return nil, err
 	}
-	db, err := bootstrap.InitializeDatabase(config)
+	db, err := InitializeDatabase(v)
 	if err != nil {
 		return nil, err
 	}
-	client := bootstrap.InitializeRedis(config)
+	client, err := InitializeRedis(v)
+	if err != nil {
+		return nil, err
+	}
 	dependency := service.Dependency{
-		Config: config,
-		Db:     db,
-		Redis:  client,
+		Db:    db,
+		Redis: client,
 	}
 	admin := service.NewAdmin(dependency)
 	index := controller.NewIndex(admin)

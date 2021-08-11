@@ -5,14 +5,15 @@ package main
 
 import (
 	"github.com/google/wire"
-	"lab-api/bootstrap"
 	"lab-api/controller"
 	"lab-api/service"
 )
 
 func Bootstrap() (*controller.Controllers, error) {
 	wire.Build(
-		bootstrap.Provides,
+		LoadConfiguration,
+		InitializeDatabase,
+		InitializeRedis,
 		service.Provides,
 		controller.Provides,
 	)
