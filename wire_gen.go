@@ -13,11 +13,7 @@ import (
 
 // Injectors from wire.go:
 
-func Boot() (*controller.Controllers, error) {
-	config, err := bit.LoadConfiguration()
-	if err != nil {
-		return nil, err
-	}
+func Boot(config bit.Config) (*controller.Controllers, error) {
 	db, err := InitializeDatabase(config)
 	if err != nil {
 		return nil, err
