@@ -8,8 +8,14 @@ import (
 
 var Provides = wire.NewSet(
 	wire.Struct(new(Dependency), "*"),
+	wire.Struct(new(Services), "*"),
 	NewAdmin,
 )
+
+type Services struct {
+	*Dependency
+	Admin *Admin
+}
 
 type Dependency struct {
 	Db    *gorm.DB

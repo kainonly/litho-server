@@ -2,11 +2,12 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/go-bit"
 	"log"
 )
 
 func main() {
-	config, err := LoadConfiguration()
+	config, err := bit.LoadConfiguration()
 	if err != nil {
 		log.Fatalln(err)
 	}

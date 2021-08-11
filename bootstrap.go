@@ -1,36 +1,14 @@
 package main
 
 import (
-	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit"
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"io/ioutil"
-	"os"
 	"time"
 )
-
-// LoadConfiguration 初始化应用配置
-func LoadConfiguration() (config bit.Config, err error) {
-	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
-		err = errors.New("the configuration file does not exist")
-		return
-	}
-	var buf []byte
-	buf, err = ioutil.ReadFile("./config.yml")
-	if err != nil {
-		return
-	}
-	err = yaml.Unmarshal(buf, &config)
-	if err != nil {
-		return
-	}
-	return
-}
 
 // InitializeDatabase 初始化 Postgresql 数据库
 // 配置文档 https://gorm.io/docs/connecting_to_the_database.html
