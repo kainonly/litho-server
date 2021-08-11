@@ -6,23 +6,22 @@
 package main
 
 import (
-	"github.com/kainonly/gin-bit"
 	"lab-api/controller"
 	"lab-api/service"
 )
 
 // Injectors from wire.go:
 
-func Bootstrap() (*controller.Controllers, error) {
-	v, err := gin_bit.LoadConfiguration()
+func Boot() (*controller.Controllers, error) {
+	v, err := LoadConfiguration()
 	if err != nil {
 		return nil, err
 	}
-	db, err := gin_bit.InitializeDatabase(v)
+	db, err := InitializeDatabase(v)
 	if err != nil {
 		return nil, err
 	}
-	client, err := gin_bit.InitializeRedis(v)
+	client, err := InitializeRedis(v)
 	if err != nil {
 		return nil, err
 	}

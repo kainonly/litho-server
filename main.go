@@ -6,14 +6,14 @@ import (
 )
 
 func main() {
-	route := gin.New()
-	route.Use(gin.Logger())
-	route.Use(gin.Recovery())
-	s, err := Bootstrap()
+	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	s, err := Boot()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	index := s.Index
-	route.GET("/", index.Index)
-	route.Run(":8000")
+	r.GET("/", s.Index.Index)
+
+	r.Run(":8000")
 }

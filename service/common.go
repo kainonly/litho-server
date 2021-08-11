@@ -15,5 +15,3 @@ type Dependency struct {
 	Db    *gorm.DB
 	Redis *redis.Client
 }
-
-type Query func(tx *gorm.DB) *gorm.DB
