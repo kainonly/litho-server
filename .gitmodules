@@ -1,0 +1,3 @@
+[submodule "library/go-bit"]
+	path = library/go-bit
+	url = git@github.com:kainonly/go-bit.git
