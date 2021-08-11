@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/go-bit"
 	"lab-api/service"
 )
 
@@ -9,7 +10,7 @@ type Index struct {
 	admin *service.Admin
 }
 
-func NewIndex(admin *service.Admin) *Index {
+func NewIndex(admin *service.Admin, bit *bit.Bit) *Index {
 	return &Index{admin}
 }
 

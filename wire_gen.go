@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/kainonly/go-bit"
 	"lab-api/controller"
 	"lab-api/service"
 )
@@ -13,15 +14,15 @@ import (
 // Injectors from wire.go:
 
 func Boot() (*controller.Controllers, error) {
-	v, err := LoadConfiguration()
+	config, err := bit.LoadConfiguration()
 	if err != nil {
 		return nil, err
 	}
-	db, err := InitializeDatabase(v)
+	db, err := InitializeDatabase(config)
 	if err != nil {
 		return nil, err
 	}
-	client, err := InitializeRedis(v)
+	client, err := InitializeRedis(config)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +31,8 @@ func Boot() (*controller.Controllers, error) {
 		Redis: client,
 	}
 	admin := service.NewAdmin(dependency)
-	index := controller.NewIndex(admin)
+	bitBit := bit.Initialize(db, config)
+	index := controller.NewIndex(admin, bitBit)
 	controllers := &controller.Controllers{
 		Index: index,
 	}
