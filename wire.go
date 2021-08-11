@@ -10,9 +10,8 @@ import (
 	"lab-api/service"
 )
 
-func Boot() (*controller.Controllers, error) {
+func Boot(config bit.Config) (*controller.Controllers, error) {
 	wire.Build(
-		bit.LoadConfiguration,
 		InitializeDatabase,
 		InitializeRedis,
 		bit.Initialize,
