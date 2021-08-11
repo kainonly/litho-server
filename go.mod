@@ -1,6 +1,6 @@
 module lab-api
 
-go 1.13
+go 1.15
 
 require (
 	github.com/gin-gonic/gin v1.7.2
@@ -14,3 +14,10 @@ require (
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.11
 )
+
+replace (
+	github.com/kainonly/go-bit v0.0.0-20210630045306-1050ca2c7fcd => ./library/go-bit
+)
+
+
+
