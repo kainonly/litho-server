@@ -8,8 +8,8 @@ type Admin struct {
 	*Dependency
 }
 
-func NewAdmin(dep Dependency) *Admin {
-	return &Admin{&dep}
+func NewAdmin(d Dependency) *Admin {
+	return &Admin{&d}
 }
 
 func (x *Admin) FindByUsername(username string) (data model.Admin, err error) {

@@ -7,11 +7,11 @@ import (
 	"lab-api/service"
 )
 
-type Services struct {
+type Dependency struct {
 	fx.In
 
-	Crud   *crud.Crud
-	Cooike *cookie.Cookie
+	*crud.Crud
+	*cookie.Cookie
 	*service.Admin
 }
 

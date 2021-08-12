@@ -6,10 +6,10 @@ import (
 )
 
 type Resource struct {
-	*Services
+	*Dependency
 	*crud.Resource
 }
 
-func NewResource(s Services) *Resource {
-	return &Resource{&s, s.Crud.Make(model.Resource{})}
+func NewResource(d Dependency) *Resource {
+	return &Resource{&d, d.Crud.Create(model.Resource{})}
 }
