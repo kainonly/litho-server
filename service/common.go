@@ -2,26 +2,15 @@ package service
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/google/wire"
-	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/crud"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
-var Provides = wire.NewSet(
-	wire.Struct(new(Dependency), "*"),
-	wire.Struct(new(Services), "*"),
-	NewAdmin,
-)
-
-type Services struct {
-	*Dependency
-	Crud   *crud.Crud
-	Cooike *cookie.Cookie
-	Admin  *Admin
-}
-
 type Dependency struct {
+	fx.In
+
 	Db    *gorm.DB
 	Redis *redis.Client
 }
+
+var Provides = fx.Provide(NewAdmin)

@@ -1,18 +1,22 @@
 package controller
 
 import (
-	"github.com/google/wire"
+	"github.com/kainonly/go-bit/cookie"
+	"github.com/kainonly/go-bit/crud"
+	"go.uber.org/fx"
+	"lab-api/service"
 )
 
-var Provides = wire.NewSet(
-	wire.Struct(new(Controllers), "*"),
+type Services struct {
+	fx.In
+
+	Crud   *crud.Crud
+	Cooike *cookie.Cookie
+	*service.Admin
+}
+
+var Provides = fx.Provide(
 	NewIndex,
 	NewResource,
 	NewAdmin,
 )
-
-type Controllers struct {
-	*Index
-	*Resource
-	*Admin
-}
