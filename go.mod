@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-redis/redis/v8 v8.11.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/google/wire v0.5.0
 	github.com/json-iterator/go v1.1.10
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210811090207-971bd0dee3d0

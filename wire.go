@@ -16,6 +16,7 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 		bootstrap.InitializeDatabase,
 		bootstrap.InitializeRedis,
 		bit.InitializeCrud,
+		bit.InitializeCookie,
 		service.Provides,
 		controller.Provides,
 	)

@@ -13,8 +13,8 @@ func NewIndex(s *service.Services) *Index {
 	return &Index{s}
 }
 
-func (x *Index) Index(c *gin.Context) {
-	c.JSON(200, gin.H{
+func (x *Index) Index(c *gin.Context) interface{} {
+	return gin.H{
 		"version": "1.0",
-	})
+	}
 }

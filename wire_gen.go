@@ -28,6 +28,10 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 		Redis: client,
 	}
 	crud := bit.InitializeCrud(db)
+	cookie, err := bit.InitializeCookie(config)
+	if err != nil {
+		return nil, err
+	}
 	serviceDependency := service.Dependency{
 		Db:    db,
 		Redis: client,
@@ -36,6 +40,7 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 	services := &service.Services{
 		Dependency: dependency,
 		Crud:       crud,
+		Cooike:     cookie,
 		Admin:      admin,
 	}
 	index := controller.NewIndex(services)
