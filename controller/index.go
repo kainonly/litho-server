@@ -5,11 +5,11 @@ import (
 )
 
 type Index struct {
-	*Services
+	*Dependency
 }
 
-func NewIndex(s Services) *Index {
-	return &Index{&s}
+func NewIndex(d Dependency) *Index {
+	return &Index{&d}
 }
 
 func (x *Index) Index(c *gin.Context) interface{} {

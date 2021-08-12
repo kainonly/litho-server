@@ -6,10 +6,10 @@ import (
 )
 
 type Admin struct {
-	*Services
+	*Dependency
 	*crud.Resource
 }
 
-func NewAdmin(s Services) *Admin {
-	return &Admin{&s, s.Crud.Make(model.Admin{})}
+func NewAdmin(d Dependency) *Admin {
+	return &Admin{&d, d.Crud.Create(model.Admin{})}
 }

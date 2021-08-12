@@ -7,7 +7,7 @@ import (
 	"lab-api/controller"
 )
 
-type Controllers struct {
+type Dependency struct {
 	fx.In
 
 	*controller.Index
@@ -15,11 +15,11 @@ type Controllers struct {
 	*controller.Admin
 }
 
-func Initialize(r *gin.Engine, s Controllers) {
-	r.GET("/", crud.Bind(s.Index.Index))
+func Initialize(r *gin.Engine, d Dependency) {
+	r.GET("/", crud.Bind(d.Index.Index))
 	resourceRoute := r.Group("resource")
 	{
-		resource := s.Resource
+		resource := d.Resource
 		resourceRoute.POST("originLists", crud.Bind(resource.OriginLists))
 		resourceRoute.POST("lists", crud.Bind(resource.Lists))
 		resourceRoute.POST("get", crud.Bind(resource.Get))
