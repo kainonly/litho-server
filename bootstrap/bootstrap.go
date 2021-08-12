@@ -1,9 +1,12 @@
 package bootstrap
 
 import (
+	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit"
 	"github.com/mitchellh/mapstructure"
+	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -63,6 +66,21 @@ func InitializeRedis(config bit.Config) (client *redis.Client, err error) {
 		Addr:     option.Address,
 		Password: option.Password,
 		DB:       option.DB,
+	})
+	return
+}
+
+// HttpServer 启动 Gin HTTP 服务
+// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
+func HttpServer(lc fx.Lifecycle) (serve *gin.Engine) {
+	serve = gin.New()
+	serve.Use(gin.Logger())
+	serve.Use(gin.Recovery())
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go serve.Run(":8000")
+			return nil
+		},
 	})
 	return
 }

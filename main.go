@@ -1,34 +1,27 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit"
-	"github.com/kainonly/go-bit/crud"
-	"log"
+	"go.uber.org/fx"
+	"lab-api/bootstrap"
+	"lab-api/controller"
+	"lab-api/routes"
+	"lab-api/service"
 )
 
 func main() {
-	app := gin.New()
-	app.Use(gin.Logger())
-	app.Use(gin.Recovery())
-	config, err := bit.LoadConfiguration()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	s, err := Boot(config)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	app.GET("/", crud.Bind(s.Index.Index))
-	resourceRoute := app.Group("resource")
-	{
-		resource := s.Resource
-		resourceRoute.POST("originLists", crud.Bind(resource.OriginLists))
-		resourceRoute.POST("lists", crud.Bind(resource.Lists))
-		resourceRoute.POST("get", crud.Bind(resource.Get))
-		resourceRoute.POST("add", crud.Bind(resource.Add))
-		resourceRoute.POST("edit", crud.Bind(resource.Edit))
-		resourceRoute.POST("delete", crud.Bind(resource.Delete))
-	}
-	app.Run(":8000")
+	fx.New(
+		fx.NopLogger,
+		fx.Provide(
+			bit.LoadConfiguration,
+			bit.InitializeCrud,
+			bit.InitializeCookie,
+			bootstrap.InitializeDatabase,
+			bootstrap.InitializeRedis,
+			bootstrap.HttpServer,
+		),
+		service.Provides,
+		controller.Provides,
+		fx.Invoke(routes.Initialize),
+	).Run()
 }
