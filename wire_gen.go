@@ -39,10 +39,12 @@ func Boot(config bit.Config) (*controller.Controllers, error) {
 		Admin:      admin,
 	}
 	index := controller.NewIndex(services)
+	resource := controller.NewResource(services)
 	controllerAdmin := controller.NewAdmin(services)
 	controllers := &controller.Controllers{
-		Index: index,
-		Admin: controllerAdmin,
+		Index:    index,
+		Resource: resource,
+		Admin:    controllerAdmin,
 	}
 	return controllers, nil
 }
