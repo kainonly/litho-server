@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
@@ -10,13 +11,15 @@ import (
 type Dependency struct {
 	fx.In
 
-	*crud.Crud
-	*cookie.Cookie
+	Crud   *crud.Crud
+	Cookie *cookie.Cookie
+	Cipher *cipher.Cipher
 
 	AdminService *service.Admin
 }
 
 var Provides = fx.Provide(
+	NewIndex,
 	NewResource,
 	NewAdmin,
 )

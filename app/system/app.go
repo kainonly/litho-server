@@ -16,6 +16,7 @@ var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
 type Dependency struct {
 	fx.In
 
+	*controller.Index
 	*controller.Resource
 	*controller.Admin
 }
@@ -31,6 +32,11 @@ func Routes(r *gin.Engine, d Dependency, config config.Config) {
 		MaxAge:           time.Duration(cros.MaxAge) * time.Second,
 		AllowCredentials: cros.Credentials,
 	}))
+
+	s.POST("auth", crud.Bind(d.Index.Login))
+	s.GET("auth", crud.Bind(d.Index.Verify))
+	s.DELETE("auth", crud.Bind(d.Index.Logout))
+
 	resource := s.Group("resource")
 	{
 		resource.POST("originLists", crud.Bind(d.Resource.OriginLists))

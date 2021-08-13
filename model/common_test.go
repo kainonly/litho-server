@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/kainonly/go-bit"
 	"gorm.io/gorm"
 	"lab-api/bootstrap"
 	"log"
@@ -13,7 +12,7 @@ var db *gorm.DB
 
 func TestMain(m *testing.M) {
 	os.Chdir(`../`)
-	config, err := bit.LoadConfiguration()
+	config, err := bootstrap.LoadConfiguration()
 	if err != nil {
 		log.Fatalln(err)
 	}
