@@ -11,5 +11,5 @@ type Admin struct {
 }
 
 func NewAdmin(d Dependency) *Admin {
-	return &Admin{&d, d.Crud.Create(model.Admin{})}
+	return &Admin{&d, d.Crud.Make(model.Admin{})}
 }

@@ -1,27 +1,24 @@
 package main
 
 import (
-	"github.com/kainonly/go-bit"
 	"go.uber.org/fx"
+	"lab-api/app/api"
+	"lab-api/app/system"
 	"lab-api/bootstrap"
-	"lab-api/controller"
-	"lab-api/routes"
-	"lab-api/service"
 )
 
 func main() {
 	fx.New(
 		fx.NopLogger,
 		fx.Provide(
-			bit.LoadConfiguration,
-			bit.InitializeCrud,
-			bit.InitializeCookie,
+			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
 			bootstrap.InitializeRedis,
+			bootstrap.InitializeCrud,
+			bootstrap.InitializeCookie,
 			bootstrap.HttpServer,
 		),
-		service.Provides,
-		controller.Provides,
-		fx.Invoke(routes.Initialize),
+		system.App,
+		api.App,
 	).Run()
 }
