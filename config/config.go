@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
-	App      App           `yaml:"app"`
-	Database Database      `yaml:"database"`
-	Redis    Redis         `yaml:"redis"`
-	Cors     CorsOption    `yaml:"cors"`
-	Cookie   cookie.Option `yaml:"cookie"`
-	Auth     authx.Option  `yaml:"auth"`
+	App      App                     `yaml:"app"`
+	Database Database                `yaml:"database"`
+	Redis    Redis                   `yaml:"redis"`
+	Cookie   cookie.Option           `yaml:"cookie"`
+	Cors     map[string]CorsOption   `yaml:"cors"`
+	Auth     map[string]authx.Option `yaml:"auth"`
 }
