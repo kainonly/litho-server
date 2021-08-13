@@ -13,7 +13,5 @@ func NewIndex(d Dependency) *Index {
 }
 
 func (x *Index) Index(c *gin.Context) interface{} {
-	return gin.H{
-		"version": "1.0",
-	}
+	return x.IndexService.Version()
 }
