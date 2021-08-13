@@ -36,6 +36,7 @@ func Routes(r *gin.Engine, d Dependency, config config.Config) {
 	s.POST("auth", crud.Bind(d.Index.Login))
 	s.GET("auth", crud.Bind(d.Index.Verify))
 	s.DELETE("auth", crud.Bind(d.Index.Logout))
+	s.GET("test", crud.Bind(d.Index.Test))
 
 	resource := s.Group("resource")
 	{

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/hash"
+	"github.com/kainonly/go-bit/str"
 )
 
 type Index struct {
@@ -16,6 +17,14 @@ func NewIndex(d Dependency, authx *authx.Authx) *Index {
 		Dependency: &d,
 		auth:       authx.Make("system"),
 	}
+}
+
+func (x *Index) Test(c *gin.Context) interface{} {
+	tokenString, err := x.auth.Create(str.Uuid().String(), str.Uuid().String(), nil)
+	if err != nil {
+		return err
+	}
+	return tokenString
 }
 
 func (x *Index) Login(c *gin.Context) interface{} {
@@ -33,8 +42,13 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if err := hash.Verify(body.Password, data.Password); err != nil {
 		return err
 	}
-	tokenString, err := x.auth.Create(data.UID.String(), nil)
+	uid := data.UID.String()
+	jti := str.Uuid().String()
+	tokenString, err := x.auth.Create(jti, uid, nil)
 	if err != nil {
+		return err
+	}
+	if err := x.Session.Update(jti, uid); err != nil {
 		return err
 	}
 	x.Cookie.Set(c, "system_access_token", tokenString)
@@ -42,9 +56,19 @@ func (x *Index) Login(c *gin.Context) interface{} {
 }
 
 func (x *Index) Verify(c *gin.Context) interface{} {
-	return gin.H{}
+	tokenString, err := x.Cookie.Get(c, "system_access_token")
+	if err != nil {
+		return err
+	}
+	if _, err := x.auth.Verify(tokenString); err != nil {
+		return err
+	}
+	return "ok"
 }
 
 func (x *Index) Logout(c *gin.Context) interface{} {
-	return gin.H{}
+	//x.Session.Destory()
+	x.Cookie.Del(c, "system_access_token")
+
+	return "ok"
 }
