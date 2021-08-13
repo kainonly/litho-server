@@ -3,9 +3,9 @@ package bootstrap
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
@@ -94,9 +94,18 @@ func InitializeCookie(config config.Config) *cookie.Cookie {
 	return cookie.New(config.Cookie)
 }
 
-//func InitializeAuthx(config config.Config) (x *authx.Authx, err error) {
-//	return authx.New(option), nil
-//}
+func InitializeAuthx(config config.Config) *authx.Authx {
+	options := config.Auth
+	for _, v := range options {
+		if v.Key == "" {
+			v.Key = config.App.Key
+		}
+		if v.Iss == "" {
+			v.Iss = config.App.Name
+		}
+	}
+	return authx.New(options)
+}
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
@@ -104,18 +113,9 @@ func HttpServer(lc fx.Lifecycle, config config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
-	crosOpt := config.Cors
-	serve.Use(cors.New(cors.Config{
-		AllowOrigins:     crosOpt.Origin,
-		AllowMethods:     crosOpt.Method,
-		AllowHeaders:     crosOpt.AllowHeader,
-		ExposeHeaders:    crosOpt.ExposedHeader,
-		MaxAge:           time.Duration(crosOpt.MaxAge) * time.Second,
-		AllowCredentials: crosOpt.Credentials,
-	}))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go serve.Run(":8000")
+			go serve.Run(config.App.Listen)
 			return nil
 		},
 	})

@@ -16,6 +16,8 @@ func main() {
 			bootstrap.InitializeRedis,
 			bootstrap.InitializeCrud,
 			bootstrap.InitializeCookie,
+			bootstrap.InitializeAuthx,
+			bootstrap.InitializeCipher,
 			bootstrap.HttpServer,
 		),
 		system.App,
