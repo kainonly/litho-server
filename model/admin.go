@@ -1,12 +1,16 @@
 package model
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Admin struct {
 	ID         uint64    `json:"id"`
 	Status     *bool     `gorm:"default:true" json:"status"`
 	CreateTime time.Time `gorm:"autoCreateTime" json:"create_time"`
 	UpdateTime time.Time `gorm:"autoUpdateTime" json:"update_time"`
+	UID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Username   string    `gorm:"type:varchar(20);not null;unique" json:"username"`
 	Password   string    `gorm:"type:varchar(255);not null" json:"-"`
 	Super      *bool     `gorm:"default:false" json:"-"`

@@ -11,5 +11,8 @@ type Resource struct {
 }
 
 func NewResource(d Dependency) *Resource {
-	return &Resource{&d, d.Crud.Make(model.Resource{})}
+	return &Resource{
+		Dependency: &d,
+		Resource:   d.Crud.Make(model.Resource{}),
+	}
 }
