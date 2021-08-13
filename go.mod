@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.3
-	github.com/go-redis/redis/v8 v8.11.2
+	github.com/go-redis/redis/v8 v8.11.3
 	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.10
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac
