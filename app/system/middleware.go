@@ -1,24 +1,10 @@
 package system
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cookie"
-	"lab-api/config"
-	"time"
 )
-
-func corsMiddleware(option config.CorsOption) gin.HandlerFunc {
-	return cors.New(cors.Config{
-		AllowOrigins:     option.Origin,
-		AllowMethods:     option.Method,
-		AllowHeaders:     option.AllowHeader,
-		ExposeHeaders:    option.ExposedHeader,
-		MaxAge:           time.Duration(option.MaxAge) * time.Second,
-		AllowCredentials: option.Credentials,
-	})
-}
 
 func authMiddleware(auth *authx.Auth, cookie *cookie.Cookie) gin.HandlerFunc {
 	return func(c *gin.Context) {
