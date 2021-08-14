@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/kainonly/go-bit/authx"
@@ -53,11 +54,14 @@ func (x *Index) Verify(c *gin.Context) interface{} {
 	if _, err := x.auth.Verify(tokenString); err != nil {
 		return err
 	}
-	return "ok"
+	return true
 }
 
 func (x *Index) Code(c *gin.Context) interface{} {
-	claims, _ := c.Get("access_token")
+	claims, exists := c.Get("access_token")
+	if !exists {
+		return errors.New("login authentication has expired")
+	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := str.Random(8)
 	if err := x.IndexService.SetCode(jti, code); err != nil {
