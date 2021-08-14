@@ -9,7 +9,6 @@ import (
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
-	"github.com/kainonly/go-bit/session"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
@@ -93,11 +92,6 @@ func InitializeCipher(config config.Config) (*cipher.Cipher, error) {
 // InitializeCookie 创建 Cookie 工具
 func InitializeCookie(config config.Config) *cookie.Cookie {
 	return cookie.New(config.Cookie)
-}
-
-// InitializeSession 初始化模拟 Session
-func InitializeSession(r *redis.Client) *session.Session {
-	return session.New(r, time.Hour*6)
 }
 
 func InitializeAuthx(config config.Config) *authx.Authx {

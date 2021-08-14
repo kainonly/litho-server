@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/hash"
 	"github.com/kainonly/go-bit/str"
@@ -17,14 +18,6 @@ func NewIndex(d Dependency, authx *authx.Authx) *Index {
 		Dependency: &d,
 		auth:       authx.Make("system"),
 	}
-}
-
-func (x *Index) Test(c *gin.Context) interface{} {
-	tokenString, err := x.auth.Create(str.Uuid().String(), str.Uuid().String(), nil)
-	if err != nil {
-		return err
-	}
-	return tokenString
 }
 
 func (x *Index) Login(c *gin.Context) interface{} {
@@ -48,9 +41,6 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if err := x.Session.Update(jti, uid); err != nil {
-		return err
-	}
 	x.Cookie.Set(c, "system_access_token", tokenString)
 	return "ok"
 }
@@ -66,9 +56,39 @@ func (x *Index) Verify(c *gin.Context) interface{} {
 	return "ok"
 }
 
-func (x *Index) Logout(c *gin.Context) interface{} {
-	//x.Session.Destory()
-	x.Cookie.Del(c, "system_access_token")
+func (x *Index) Code(c *gin.Context) interface{} {
+	claims, _ := c.Get("access_token")
+	jti := claims.(jwt.MapClaims)["jti"].(string)
+	code := str.Random(8)
+	if err := x.IndexService.SetCode(jti, code); err != nil {
+		return err
+	}
+	return gin.H{
+		"code": code,
+	}
+}
 
+func (x *Index) RefreshToken(c *gin.Context) interface{} {
+	var body struct {
+		Code string `json:"code" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	claims, _ := c.Get("access_token")
+	jti := claims.(jwt.MapClaims)["jti"].(string)
+	if err := x.IndexService.CheckCode(jti, body.Code); err != nil {
+		return err
+	}
+	tokenString, err := x.auth.Create(jti, claims.(jwt.MapClaims)["uid"].(string), nil)
+	if err != nil {
+		return err
+	}
+	x.Cookie.Set(c, "system_access_token", tokenString)
+	return "ok"
+}
+
+func (x *Index) Logout(c *gin.Context) interface{} {
+	x.Cookie.Del(c, "system_access_token")
 	return "ok"
 }
