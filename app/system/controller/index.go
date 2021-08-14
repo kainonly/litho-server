@@ -9,6 +9,8 @@ import (
 	"github.com/kainonly/go-bit/str"
 )
 
+var LoginExpired = errors.New("login authentication has expired")
+
 type Index struct {
 	*Dependency
 	auth *authx.Auth
@@ -49,18 +51,18 @@ func (x *Index) Login(c *gin.Context) interface{} {
 func (x *Index) Verify(c *gin.Context) interface{} {
 	tokenString, err := x.Cookie.Get(c, "system_access_token")
 	if err != nil {
-		return err
+		return LoginExpired
 	}
 	if _, err := x.auth.Verify(tokenString); err != nil {
 		return err
 	}
-	return true
+	return "ok"
 }
 
 func (x *Index) Code(c *gin.Context) interface{} {
 	claims, exists := c.Get("access_token")
 	if !exists {
-		return errors.New("login authentication has expired")
+		return LoginExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := str.Random(8)
