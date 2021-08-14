@@ -9,14 +9,13 @@ import (
 
 func main() {
 	fx.New(
-		//fx.NopLogger,
+		fx.NopLogger,
 		fx.Provide(
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
 			bootstrap.InitializeRedis,
 			bootstrap.InitializeCrud,
 			bootstrap.InitializeCookie,
-			bootstrap.InitializeSession,
 			bootstrap.InitializeAuthx,
 			bootstrap.InitializeCipher,
 			bootstrap.HttpServer,

@@ -1,14 +1,14 @@
 package system
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"lab-api/app/system/controller"
 	"lab-api/app/system/service"
 	"lab-api/config"
-	"time"
 )
 
 var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
@@ -16,30 +16,28 @@ var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
 type Dependency struct {
 	fx.In
 
+	Config config.Config
+	Authx  *authx.Authx
+	Cookie *cookie.Cookie
+
 	*controller.Index
 	*controller.Resource
 	*controller.Admin
 }
 
-func Routes(r *gin.Engine, d Dependency, config config.Config) {
+func Routes(r *gin.Engine, d Dependency) {
 	s := r.Group("/system")
-	cros := config.Cors["system"]
-	s.Use(cors.New(cors.Config{
-		AllowOrigins:     cros.Origin,
-		AllowMethods:     cros.Method,
-		AllowHeaders:     cros.AllowHeader,
-		ExposeHeaders:    cros.ExposedHeader,
-		MaxAge:           time.Duration(cros.MaxAge) * time.Second,
-		AllowCredentials: cros.Credentials,
-	}))
+	s.Use(corsMiddleware(d.Config.Cors["system"]))
 
 	s.POST("auth", crud.Bind(d.Index.Login))
 	s.HEAD("auth", crud.Bind(d.Index.Verify))
-	s.GET("auth", crud.Bind(d.Index.Code))
-	s.PUT("auth", crud.Bind(d.Index.RefreshToken))
-	s.DELETE("auth", crud.Bind(d.Index.Logout))
+	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
 
-	resource := s.Group("resource")
+	s.GET("auth", auth, crud.Bind(d.Index.Code))
+	s.PUT("auth", auth, crud.Bind(d.Index.RefreshToken))
+	s.DELETE("auth", auth, crud.Bind(d.Index.Logout))
+
+	resource := s.Group("resource", auth)
 	{
 		resource.POST("originLists", crud.Bind(d.Resource.OriginLists))
 		resource.POST("lists", crud.Bind(d.Resource.Lists))
