@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"errors"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit/authx"
@@ -113,6 +114,13 @@ func HttpServer(lc fx.Lifecycle, config config.Config) (serve *gin.Engine) {
 	serve = gin.New()
 	serve.Use(gin.Logger())
 	serve.Use(gin.Recovery())
+	serve.Use(cors.New(cors.Config{
+		AllowOrigins:     config.Cors,
+		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go serve.Run(config.App.Listen)

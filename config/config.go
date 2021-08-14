@@ -10,6 +10,6 @@ type Config struct {
 	Database Database               `yaml:"database"`
 	Redis    Redis                  `yaml:"redis"`
 	Cookie   cookie.Option          `yaml:"cookie"`
-	Cors     map[string]CorsOption  `yaml:"cors"`
+	Cors     []string               `yaml:"cors"`
 	Auth     map[string]*authx.Auth `yaml:"auth"`
 }

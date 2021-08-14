@@ -27,12 +27,10 @@ type Dependency struct {
 
 func Routes(r *gin.Engine, d Dependency) {
 	s := r.Group("/system")
-	s.Use(corsMiddleware(d.Config.Cors["system"]))
+	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
 
 	s.POST("auth", crud.Bind(d.Index.Login))
-	s.GET("verify", crud.Bind(d.Index.Verify))
-
-	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
+	s.GET("auth", crud.Bind(d.Index.Verify))
 	s.GET("code", auth, crud.Bind(d.Index.Code))
 	s.PUT("auth", auth, crud.Bind(d.Index.RefreshToken))
 	s.DELETE("auth", auth, crud.Bind(d.Index.Logout))
