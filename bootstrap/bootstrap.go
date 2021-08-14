@@ -116,7 +116,7 @@ func HttpServer(lc fx.Lifecycle, config config.Config) (serve *gin.Engine) {
 	serve.Use(gin.Recovery())
 	serve.Use(cors.New(cors.Config{
 		AllowOrigins:     config.Cors,
-		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
