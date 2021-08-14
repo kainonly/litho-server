@@ -30,10 +30,10 @@ func Routes(r *gin.Engine, d Dependency) {
 	s.Use(corsMiddleware(d.Config.Cors["system"]))
 
 	s.POST("auth", crud.Bind(d.Index.Login))
-	s.HEAD("auth", crud.Bind(d.Index.Verify))
-	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
+	s.GET("verify", crud.Bind(d.Index.Verify))
 
-	s.GET("auth", auth, crud.Bind(d.Index.Code))
+	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
+	s.GET("code", auth, crud.Bind(d.Index.Code))
 	s.PUT("auth", auth, crud.Bind(d.Index.RefreshToken))
 	s.DELETE("auth", auth, crud.Bind(d.Index.Logout))
 
