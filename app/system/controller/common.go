@@ -4,7 +4,6 @@ import (
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
-	"github.com/kainonly/go-bit/session"
 	"go.uber.org/fx"
 	"lab-api/app/system/service"
 )
@@ -12,11 +11,11 @@ import (
 type Dependency struct {
 	fx.In
 
-	Crud    *crud.Crud
-	Cookie  *cookie.Cookie
-	Session *session.Session
-	Cipher  *cipher.Cipher
+	Crud   *crud.Crud
+	Cookie *cookie.Cookie
+	Cipher *cipher.Cipher
 
+	IndexService *service.Index
 	AdminService *service.Admin
 }
 
