@@ -208,7 +208,12 @@ func TestResource(t *testing.T) {
 			Icon:     "",
 		},
 	}
-	db.Create(&data)
+	if err := db.Create(&data).Error; err != nil {
+		t.Error(err)
+	}
+	// 指定ID写入后手动更新序列值
 	sql := `alter sequence resource_id_seq restart 23`
-	db.Exec(sql)
+	if err := db.Exec(sql).Error; err != nil {
+		t.Error(err)
+	}
 }
