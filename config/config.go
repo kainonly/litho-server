@@ -13,3 +13,7 @@ type Config struct {
 	Cors     []string               `yaml:"cors"`
 	Auth     map[string]*authx.Auth `yaml:"auth"`
 }
+
+func (x *Config) RedisKey(name string) string {
+	return x.App.Name + ":" + name
+}

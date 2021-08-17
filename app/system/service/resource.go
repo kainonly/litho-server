@@ -1,0 +1,62 @@
+package service
+
+import (
+	"context"
+	jsoniter "github.com/json-iterator/go"
+	"lab-api/model"
+)
+
+type Resource struct {
+	*Dependency
+	Key string
+}
+
+func NewResource(d Dependency) *Resource {
+	return &Resource{
+		Dependency: &d,
+		Key:        d.Config.RedisKey("resource"),
+	}
+}
+
+func (x *Resource) FetchFromCache(ctx context.Context) (data []model.Resource, err error) {
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
+		return
+	}
+	if exists == 0 {
+		if err = x.RefreshCache(ctx); err != nil {
+			return
+		}
+	}
+	var result string
+	if result, err = x.Redis.Get(ctx, x.Key).Result(); err != nil {
+		return
+	}
+	if err = jsoniter.Unmarshal([]byte(result), &data); err != nil {
+		return
+	}
+	return
+}
+
+func (x *Resource) RefreshCache(ctx context.Context) (err error) {
+	var data []map[string]interface{}
+	if err = x.Db.Model(&model.Resource{}).
+		Omit("status,create_time,update_time,sort").
+		Where("status = ?", true).
+		Order("sort").
+		Find(&data).Error; err != nil {
+		return
+	}
+	var value []byte
+	if value, err = jsoniter.Marshal(&data); err != nil {
+		return
+	}
+	if err = x.Redis.Set(ctx, x.Key, value, 0).Err(); err != nil {
+		return
+	}
+	return
+}
+
+func (x Resource) RemoveCache(ctx context.Context) error {
+	return x.Redis.Del(ctx, x.Key).Err()
+}

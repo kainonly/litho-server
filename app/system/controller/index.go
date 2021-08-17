@@ -98,3 +98,7 @@ func (x *Index) Logout(c *gin.Context) interface{} {
 	x.Cookie.Del(c, "system_access_token")
 	return "ok"
 }
+
+func (x *Index) Resource(c *gin.Context) interface{} {
+	return nil
+}
