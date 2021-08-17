@@ -28,11 +28,11 @@ func (x *Resource) Get(ctx context.Context) (data []map[string]interface{}, err 
 			return
 		}
 	}
-	var result string
-	if result, err = x.Redis.Get(ctx, x.Key).Result(); err != nil {
+	var value string
+	if value, err = x.Redis.Get(ctx, x.Key).Result(); err != nil {
 		return
 	}
-	if err = jsoniter.Unmarshal([]byte(result), &data); err != nil {
+	if err = jsoniter.Unmarshal([]byte(value), &data); err != nil {
 		return
 	}
 	return

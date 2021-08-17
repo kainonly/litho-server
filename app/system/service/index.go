@@ -2,44 +2,40 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 )
 
-var Inconsistent = errors.New("verification is inconsistent")
-
 type Index struct {
 	*Dependency
+	Key string
 }
 
 func NewIndex(d Dependency) *Index {
-	return &Index{Dependency: &d}
+	return &Index{
+		Dependency: &d,
+		Key:        d.Config.RedisKey("code:"),
+	}
 }
 
-func (x *Index) SetCode(key string, code string) error {
-	return x.Redis.Set(context.Background(), "code:"+key, code, time.Minute).Err()
+func (x *Index) GenerateCode(ctx context.Context, index string, code string) error {
+	return x.Redis.Set(ctx, x.Key+index, code, time.Minute).Err()
 }
 
-func (x *Index) CheckCode(key string, code string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	result, err := x.Redis.Exists(ctx, "code:"+key).Result()
-	if err != nil {
+func (x *Index) VerifyCode(ctx context.Context, index string, code string) (result bool, err error) {
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, x.Key+index).Result(); err != nil {
 		return
 	}
-	if result == 0 {
-		return Inconsistent
+	if exists == 0 {
+		return false, nil
 	}
-	text, err := x.Redis.Get(ctx, "code:"+key).Result()
-	if err != nil {
+	var value string
+	if value, err = x.Redis.Get(ctx, x.Key+index).Result(); err != nil {
 		return
 	}
-	if text != code {
-		return Inconsistent
-	}
-	return nil
+	return value != code, nil
 }
 
-func (x *Index) DelCode(key string) error {
-	return x.Redis.Del(context.Background(), "code:"+key).Err()
+func (x *Index) RemoveCode(ctx context.Context, index string) error {
+	return x.Redis.Del(ctx, x.Key+index).Err()
 }

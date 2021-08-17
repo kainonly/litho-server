@@ -8,6 +8,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/hash"
 	"github.com/kainonly/go-bit/str"
+	"time"
 )
 
 var LoginExpired = errors.New("login authentication has expired")
@@ -67,7 +68,7 @@ func (x *Index) Code(c *gin.Context) interface{} {
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := str.Random(8)
-	if err := x.IndexService.SetCode(jti, code); err != nil {
+	if err := x.IndexService.GenerateCode(context.Background(), jti, code); err != nil {
 		return err
 	}
 	return gin.H{
@@ -84,7 +85,16 @@ func (x *Index) RefreshToken(c *gin.Context) interface{} {
 	}
 	claims, _ := c.Get("access_token")
 	jti := claims.(jwt.MapClaims)["jti"].(string)
-	if err := x.IndexService.CheckCode(jti, body.Code); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	result, err := x.IndexService.VerifyCode(ctx, jti, body.Code)
+	if err != nil {
+		return err
+	}
+	if !result {
+		return LoginExpired
+	}
+	if err = x.IndexService.RemoveCode(ctx, jti); err != nil {
 		return err
 	}
 	tokenString, err := x.auth.Create(jti, claims.(jwt.MapClaims)["uid"].(string), nil)

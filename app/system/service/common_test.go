@@ -12,6 +12,7 @@ var s *Tests
 type Tests struct {
 	fx.In
 
+	Index    *Index
 	Resource *Resource
 }
 
