@@ -5,23 +5,7 @@ import (
 	"errors"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
-	"strings"
 )
-
-type Array []string
-
-func (x *Array) Scan(input interface{}) error {
-	text, ok := input.([]byte)
-	if !ok {
-		return errors.New(fmt.Sprint("Failed to format String value:", input))
-	}
-	*x = strings.Split(string(text), ",")
-	return nil
-}
-
-func (x Array) Value() (driver.Value, error) {
-	return strings.Join(x, ","), nil
-}
 
 type JSONArray []interface{}
 
