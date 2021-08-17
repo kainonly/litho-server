@@ -15,20 +15,17 @@ type Acl struct {
 	UpdateTime time.Time `gorm:"autoUpdateTime" json:"update_time"`
 	Key        string    `gorm:"varchar(20);not null;unique;comment:访问控制索引" json:"key"`
 	Name       string    `gorm:"varchar(20);not null;comment:访问控制名称" json:"name"`
-	Api        Api       `gorm:"type:jsonb;default:'{\"w\":[],\"r\":[]}';comment:访问控制单元" json:"api"`
+	Acts       Acts      `gorm:"type:jsonb;default:'[]';comment:访问控制单元" json:"acts"`
 }
 
-type Api struct {
-	W map[string]ApiUnit `json:"w"`
-	R map[string]ApiUnit `json:"r"`
-}
+type Acts [2][]Act
 
-type ApiUnit struct {
+type Act struct {
 	Path        string `json:"path"`
 	Description string `json:"description"`
 }
 
-func (x *Api) Scan(input interface{}) error {
+func (x *Acts) Scan(input interface{}) error {
 	data, ok := input.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSON value:", input))
@@ -36,7 +33,7 @@ func (x *Api) Scan(input interface{}) error {
 	return jsoniter.Unmarshal(data, x)
 }
 
-func (x Api) Value() (driver.Value, error) {
+func (x Acts) Value() (driver.Value, error) {
 	data, err := jsoniter.Marshal(x)
 	return string(data), err
 }
