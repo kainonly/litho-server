@@ -13,7 +13,6 @@ type Admin struct {
 	UID        uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Username   string     `gorm:"type:varchar(20);not null;unique" json:"username"`
 	Password   string     `gorm:"type:varchar(255);not null" json:"-"`
-	Super      *bool      `gorm:"default:false" json:"-"`
 	Role       []string   `gorm:"type:varchar(20)[]" json:"-"`
 	Name       string     `gorm:"type:varchar(20)" json:"name"`
 	Email      string     `gorm:"type:varchar(255)" json:"email"`
