@@ -5,6 +5,9 @@ import (
 )
 
 func TestResource(t *testing.T) {
+	if err := db.SetupJoinTable(&Resource{}, "Acls", &Policy{}); err != nil {
+		t.Error(err)
+	}
 	if err := db.AutoMigrate(&Resource{}); err != nil {
 		t.Error(err)
 	}
