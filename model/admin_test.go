@@ -13,7 +13,6 @@ func TestAdmin(t *testing.T) {
 	if err := db.Create(&Admin{
 		Username: "kain",
 		Password: password,
-		Super:    True(),
 		Roles: []Role{
 			{Key: "*"},
 		},
