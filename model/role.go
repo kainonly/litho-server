@@ -7,14 +7,8 @@ type Role struct {
 	Status     *bool      `gorm:"default:true" json:"status"`
 	CreateTime time.Time  `gorm:"autoCreateTime" json:"create_time"`
 	UpdateTime time.Time  `gorm:"autoUpdateTime" json:"update_time"`
-	Key        string     `gorm:"type:varchar(20);not null"`
+	Key        string     `gorm:"type:varchar(20);not null;unique"`
 	Name       string     `gorm:"type:varchar(20);not null"`
 	Note       string     `gorm:"type:text"`
-	Resource   []Resource `gorm:"many2many:role_to_resource"`
-}
-
-type RoleToResource struct {
-	ID         uint64
-	RoleID     uint64 `gorm:"primaryKey"`
-	ResourceID uint64 `gorm:"primaryKey"`
+	Resources  []Resource `gorm:"many2many:role_resource_rel;constraint:OnDelete:CASCADE"`
 }
