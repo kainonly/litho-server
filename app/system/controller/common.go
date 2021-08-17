@@ -15,8 +15,9 @@ type Dependency struct {
 	Cookie *cookie.Cookie
 	Cipher *cipher.Cipher
 
-	IndexService *service.Index
-	AdminService *service.Admin
+	IndexService    *service.Index
+	ResourceService *service.Resource
+	AdminService    *service.Admin
 }
 
 var Provides = fx.Provide(

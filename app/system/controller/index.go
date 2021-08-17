@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -100,5 +101,9 @@ func (x *Index) Logout(c *gin.Context) interface{} {
 }
 
 func (x *Index) Resource(c *gin.Context) interface{} {
-	return nil
+	data, err := x.ResourceService.Get(context.Background())
+	if err != nil {
+		return err
+	}
+	return data
 }
