@@ -10,7 +10,7 @@ func TestAdmin(t *testing.T) {
 		t.Error(err)
 	}
 	password, _ := hash.Make("pass@VAN1234")
-	db.Create(&Admin{
+	db.Create(Admin{
 		Username: "kain",
 		Password: password,
 		Super:    True(),
