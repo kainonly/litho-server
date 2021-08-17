@@ -19,6 +19,5 @@ func TestMain(m *testing.M) {
 	if db, err = bootstrap.InitializeDatabase(config); err != nil {
 		return
 	}
-	db = db.Debug()
 	os.Exit(m.Run())
 }

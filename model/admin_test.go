@@ -10,9 +10,14 @@ func TestAdmin(t *testing.T) {
 		t.Error(err)
 	}
 	password, _ := hash.Make("pass@VAN1234")
-	db.Create(Admin{
+	if err := db.Create(&Admin{
 		Username: "kain",
 		Password: password,
 		Super:    True(),
-	})
+		Roles: []Role{
+			{Key: "*"},
+		},
+	}).Error; err != nil {
+		t.Error(err)
+	}
 }
