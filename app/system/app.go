@@ -36,6 +36,7 @@ func Routes(r *gin.Engine, d Dependency) {
 	s.POST("code", auth, mvc.Bind(d.Index.Code))
 	s.POST("refresh", auth, mvc.Bind(d.Index.RefreshToken))
 	s.POST("logout", auth, mvc.Bind(d.Index.Logout))
+	s.POST("resource", auth, mvc.Bind(d.Index.Resource))
 
 	acl := s.Group("acl", auth)
 	{
