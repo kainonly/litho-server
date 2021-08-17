@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/crud"
+	"github.com/kainonly/go-bit/mvc"
 	"go.uber.org/fx"
 	"lab-api/app/system/controller"
 	"lab-api/app/system/service"
@@ -29,19 +29,18 @@ func Routes(r *gin.Engine, d Dependency) {
 	s := r.Group("/system")
 	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
 
-	s.POST("auth", crud.Bind(d.Index.Login))
-	s.GET("auth", crud.Bind(d.Index.Verify))
-	s.GET("code", auth, crud.Bind(d.Index.Code))
-	s.PUT("auth", auth, crud.Bind(d.Index.RefreshToken))
-	s.DELETE("auth", auth, crud.Bind(d.Index.Logout))
+	s.POST("login", mvc.Bind(d.Index.Login))
+	s.POST("verify", mvc.Bind(d.Index.Verify))
+	s.POST("code", auth, mvc.Bind(d.Index.Code))
+	s.POST("refresh", auth, mvc.Bind(d.Index.RefreshToken))
+	s.POST("logout", auth, mvc.Bind(d.Index.Logout))
 
 	resource := s.Group("resource", auth)
 	{
-		resource.POST("originLists", crud.Bind(d.Resource.OriginLists))
-		resource.POST("lists", crud.Bind(d.Resource.Lists))
-		resource.POST("get", crud.Bind(d.Resource.Get))
-		resource.POST("add", crud.Bind(d.Resource.Add))
-		resource.POST("edit", crud.Bind(d.Resource.Edit))
-		resource.POST("delete", crud.Bind(d.Resource.Delete))
+		resource.POST("originLists", mvc.Bind(d.Resource.OriginLists))
+		resource.POST("get", mvc.Bind(d.Resource.Get))
+		resource.POST("add", mvc.Bind(d.Resource.Add))
+		resource.POST("edit", mvc.Bind(d.Resource.Edit))
+		resource.POST("delete", mvc.Bind(d.Resource.Delete))
 	}
 }
