@@ -18,7 +18,7 @@ func NewResource(d Dependency) *Resource {
 	}
 }
 
-func (x *Resource) Get(ctx context.Context) (data []map[string]interface{}, err error) {
+func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interface{}, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
 		return

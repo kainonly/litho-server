@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestResource_Get(t *testing.T) {
-	data, err := s.Resource.Get(context.Background())
+func TestResource_GetFromCache(t *testing.T) {
+	data, err := s.Resource.GetFromCache(context.Background())
 	if err != nil {
 		t.Error(err)
 	}

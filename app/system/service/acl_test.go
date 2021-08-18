@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestAcl_Get(t *testing.T) {
-	data, err := s.Acl.Get(context.Background(), "acl", false)
+func TestAcl_GetFromCache(t *testing.T) {
+	data, err := s.Acl.GetFromCache(context.Background(), "acl", false)
 	if err != nil {
 		t.Error(err)
 	}

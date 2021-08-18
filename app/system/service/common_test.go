@@ -15,6 +15,7 @@ type Tests struct {
 	Index    *Index
 	Acl      *Acl
 	Resource *Resource
+	Role     *Role
 	Admin    *Admin
 }
 
