@@ -35,7 +35,7 @@ func (x *Index) VerifyCode(ctx context.Context, index string, code string) (resu
 	if value, err = x.Redis.Get(ctx, x.Key+index).Result(); err != nil {
 		return
 	}
-	return value != code, nil
+	return value == code, nil
 }
 
 // RemoveCode 移除验证码
