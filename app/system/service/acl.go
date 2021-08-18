@@ -18,7 +18,7 @@ func NewAcl(d Dependency) *Acl {
 	}
 }
 
-func (x *Acl) Get(ctx context.Context, key string, readonly bool) (data map[string]string, err error) {
+func (x *Acl) GetFromCache(ctx context.Context, key string, readonly bool) (data map[string]string, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
 		return
