@@ -5,7 +5,7 @@ import (
 )
 
 func TestResource(t *testing.T) {
-	if err := db.SetupJoinTable(&Resource{}, "Acls", &Policy{}); err != nil {
+	if err := db.SetupJoinTable(&Resource{}, "Acls", &ResourceAclRel{}); err != nil {
 		t.Error(err)
 	}
 	if err := db.AutoMigrate(&Resource{}); err != nil {
@@ -186,8 +186,8 @@ func TestResource(t *testing.T) {
 		{
 			ID:       20,
 			Parent:   19,
-			Fragment: "73",
-			Name:     "73",
+			Fragment: "403",
+			Name:     "403",
 			Nav:      True(),
 			Router:   True(),
 			Icon:     "",
@@ -195,8 +195,8 @@ func TestResource(t *testing.T) {
 		{
 			ID:       21,
 			Parent:   19,
-			Fragment: "74",
-			Name:     "74",
+			Fragment: "404",
+			Name:     "404",
 			Nav:      True(),
 			Router:   True(),
 			Icon:     "",
