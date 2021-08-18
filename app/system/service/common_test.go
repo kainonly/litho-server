@@ -13,12 +13,15 @@ type Tests struct {
 	fx.In
 
 	Index    *Index
+	Acl      *Acl
 	Resource *Resource
+	Admin    *Admin
 }
 
 func TestMain(m *testing.M) {
 	os.Chdir(`../../../`)
 	fx.New(
+		fx.NopLogger,
 		fx.Provide(
 			bootstrap.LoadConfiguration,
 			bootstrap.InitializeDatabase,
