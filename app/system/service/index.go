@@ -17,10 +17,12 @@ func NewIndex(d Dependency) *Index {
 	}
 }
 
+// GenerateCode 生成验证码
 func (x *Index) GenerateCode(ctx context.Context, index string, code string) error {
 	return x.Redis.Set(ctx, x.Key+index, code, time.Minute).Err()
 }
 
+// VerifyCode 校验验证码
 func (x *Index) VerifyCode(ctx context.Context, index string, code string) (result bool, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key+index).Result(); err != nil {
@@ -36,6 +38,7 @@ func (x *Index) VerifyCode(ctx context.Context, index string, code string) (resu
 	return value != code, nil
 }
 
+// RemoveCode 移除验证码
 func (x *Index) RemoveCode(ctx context.Context, index string) error {
 	return x.Redis.Del(ctx, x.Key+index).Err()
 }

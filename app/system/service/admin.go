@@ -6,10 +6,14 @@ import (
 
 type Admin struct {
 	*Dependency
+	Key string
 }
 
 func NewAdmin(d Dependency) *Admin {
-	return &Admin{&d}
+	return &Admin{
+		Dependency: &d,
+		Key:        d.Config.RedisKey("admin"),
+	}
 }
 
 func (x *Admin) FindByUsername(username string) (data model.Admin, err error) {

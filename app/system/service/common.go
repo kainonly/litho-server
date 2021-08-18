@@ -15,4 +15,10 @@ type Dependency struct {
 	Redis  *redis.Client
 }
 
-var Provides = fx.Provide(NewIndex, NewAdmin, NewResource)
+var Provides = fx.Provide(
+	NewIndex,
+	NewAcl,
+	NewResource,
+	NewRole,
+	NewAdmin,
+)

@@ -57,6 +57,6 @@ func (x *Resource) RefreshCache(ctx context.Context) (err error) {
 	return
 }
 
-func (x Resource) RemoveCache(ctx context.Context) error {
+func (x *Resource) RemoveCache(ctx context.Context) error {
 	return x.Redis.Del(ctx, x.Key).Err()
 }
