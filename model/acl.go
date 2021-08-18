@@ -18,12 +18,12 @@ type Acl struct {
 	Acts       Acts      `gorm:"type:jsonb;default:'[]';comment:访问控制单元" json:"acts"`
 }
 
-type Acts [2][]Act
-
-type Act struct {
-	Path        string `json:"path"`
-	Description string `json:"description"`
+type Acts struct {
+	R Act `json:"r"`
+	W Act `json:"w"`
 }
+
+type Act map[string]string
 
 func (x *Acts) Scan(input interface{}) error {
 	data, ok := input.([]byte)

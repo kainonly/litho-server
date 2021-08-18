@@ -9,32 +9,64 @@ func TestAcl(t *testing.T) {
 	data := []Acl{
 		{
 			Key:  "acl",
-			Name: "访问控制权",
-			Acts: [2][]Act{
-				{
-					{Path: "originLists", Description: "获取原始列表资源"},
-					{Path: "lists", Description: "获取分页列表资源"},
-					{Path: "get", Description: "获取单条资源"},
+			Name: "访问控制",
+			Acts: Acts{
+				R: Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
 				},
-				{
-					{Path: "add", Description: "创建资源"},
-					{Path: "edit", Description: "更新资源"},
-					{Path: "delete", Description: "删除资源"},
+				W: Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
 				},
 			},
 		},
 		{
 			Key:  "resource",
-			Name: "资源控制权",
-			Acts: [2][]Act{
-				{
-					{Path: "originLists", Description: "获取原始列表资源"},
-					{Path: "get", Description: "获取单条资源"},
+			Name: "资源控制",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"get":         "获取单条资源",
 				},
-				{
-					{Path: "add", Description: "创建资源"},
-					{Path: "edit", Description: "更新资源"},
-					{Path: "delete", Description: "删除资源"},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Key:  "role",
+			Name: "权限组",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
+				},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Key:  "admin",
+			Name: "用户管理",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
+				},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
 				},
 			},
 		},
@@ -42,5 +74,4 @@ func TestAcl(t *testing.T) {
 	if err := db.Create(&data).Error; err != nil {
 		t.Error(err)
 	}
-
 }
