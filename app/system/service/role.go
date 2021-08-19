@@ -32,10 +32,18 @@ func (x *Role) GetFromCache(ctx context.Context) (data map[string]string, err er
 }
 
 func (x *Role) RefreshCache(ctx context.Context) (err error) {
-	var data []*model.Role
-	if err = x.Db.Model(&model.Role{}).
-		Association("Resources").
-		Find(&data); err != nil {
+	var data []map[string]interface{}
+	if err = x.Db.WithContext(ctx).
+		Model(&model.Role{}).
+		Select([]string{
+			"id", "name",
+			"array_agg(rrr.resource_id) as resources",
+		}).
+		Joins("left join role_resource_rel rrr on role.id = rrr.role_id").
+		Group("id,name").
+		Where("id <> ?", 1).
+		Where("status = ?", true).
+		Find(&data).Error; err != nil {
 		return
 	}
 	log.Println(data)

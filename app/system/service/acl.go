@@ -47,14 +47,15 @@ func (x *Acl) GetFromCache(ctx context.Context, key string, readonly bool) (data
 
 func (x *Acl) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
-	if err = x.Db.Model(&model.Acl{}).
-		Select([]string{"key", "acts"}).
+	if err = x.Db.WithContext(ctx).
+		Model(&model.Acl{}).
+		Select([]string{"model", "acts"}).
 		Find(&data).Error; err != nil {
 		return
 	}
 	values := make(map[string]interface{}, len(data))
 	for _, v := range data {
-		values[v["key"].(string)] = v["acts"]
+		values[v["model"].(string)] = v["acts"]
 	}
 	if err = x.Redis.HMSet(ctx, x.Key, values).Err(); err != nil {
 		return

@@ -8,20 +8,8 @@ func TestPermission(t *testing.T) {
 	}
 	data := []Permission{
 		{
-			Code: "ACCESS_ACL",
-			Name: "访问控制",
-		},
-		{
-			Code: "ACCESS_RESOURCE",
-			Name: "资源控制",
-		},
-		{
-			Code: "ACCESS_ROLE",
-			Name: "权限组",
-		},
-		{
-			Code: "ACCESS_ADMIN",
-			Name: "用户管理",
+			Code: "ACCESS_FINANCE_AUDIT",
+			Name: "允许财务审计",
 		},
 	}
 	if err := db.Create(&data).Error; err != nil {
