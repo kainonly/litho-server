@@ -13,9 +13,6 @@ func TestAdmin(t *testing.T) {
 	if err := db.Create(&Admin{
 		Username: "kain",
 		Password: password,
-		Roles: []Role{
-			{Key: "*"},
-		},
 	}).Error; err != nil {
 		t.Error(err)
 	}

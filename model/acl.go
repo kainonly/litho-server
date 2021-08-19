@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
-	"time"
 )
 
 type Acl struct {
-	ID         uint64    `json:"id"`
-	Status     *bool     `gorm:"default:true" json:"status"`
-	CreateTime time.Time `gorm:"autoCreateTime" json:"create_time"`
-	UpdateTime time.Time `gorm:"autoUpdateTime" json:"update_time"`
-	Key        string    `gorm:"varchar(20);not null;unique;comment:访问控制索引" json:"key"`
-	Name       string    `gorm:"varchar(20);not null;comment:访问控制名称" json:"name"`
-	Acts       Acts      `gorm:"type:jsonb;default:'[]';comment:访问控制单元" json:"acts"`
+	ID     uint64 `json:"id"`
+	Status *bool  `gorm:"default:true" json:"status"`
+	Name   string `gorm:"type:varchar(20);not null;comment:访问控制名称" json:"name"`
+	Model  string `gorm:"type:varchar(20);not null;unique;comment:模型名称" json:"model"`
+	Acts   Acts   `gorm:"type:jsonb;default:'[]';comment:访问控制单元" json:"acts"`
 }
 
 type Acts struct {
