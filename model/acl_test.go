@@ -8,7 +8,70 @@ func TestAcl(t *testing.T) {
 	}
 	data := []Acl{
 		{
-			Name:  "用户管理",
+			Name:  "访问控制",
+			Model: "acl",
+			Acts: Acts{
+				R: Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
+				},
+				W: Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Name:  "资源控制",
+			Model: "resource",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"get":         "获取单条资源",
+				},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Name:  "特殊授权",
+			Model: "permission",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
+				},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Name:  "权限组",
+			Model: "role",
+			Acts: Acts{
+				Act{
+					"originLists": "获取原始列表资源",
+					"lists":       "获取分页列表资源",
+					"get":         "获取单条资源",
+				},
+				Act{
+					"add":    "创建资源",
+					"edit":   "更新资源",
+					"delete": "删除资源",
+				},
+			},
+		},
+		{
+			Name:  "成员管理",
 			Model: "admin",
 			Acts: Acts{
 				Act{

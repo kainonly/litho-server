@@ -40,7 +40,7 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if err := hash.Verify(body.Password, data.Password); err != nil {
 		return err
 	}
-	uid := data.UID.String()
+	uid := data.UUID.String()
 	jti := str.Uuid().String()
 	tokenString, err := x.auth.Create(jti, uid, nil)
 	if err != nil {
@@ -111,7 +111,7 @@ func (x *Index) Logout(c *gin.Context) interface{} {
 }
 
 func (x *Index) Resource(c *gin.Context) interface{} {
-	data, err := x.ResourceService.Get(context.Background())
+	data, err := x.ResourceService.GetFromCache(context.Background())
 	if err != nil {
 		return err
 	}

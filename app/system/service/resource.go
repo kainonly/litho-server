@@ -40,7 +40,8 @@ func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interfac
 
 func (x *Resource) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
-	if err = x.Db.Model(&model.Resource{}).
+	if err = x.Db.WithContext(ctx).
+		Model(&model.Resource{}).
 		Omit("status,create_time,update_time,sort").
 		Where("status = ?", true).
 		Order("sort").
