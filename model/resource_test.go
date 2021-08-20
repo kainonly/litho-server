@@ -6,7 +6,7 @@ import (
 )
 
 func TestResource(t *testing.T) {
-	if err := db.SetupJoinTable(&Resource{}, "Acls", &ResourceAclRel{}); err != nil {
+	if err := db.SetupJoinTable(&Resource{}, "ResourceAclRel", &ResourceAclRel{}); err != nil {
 		t.Error(err)
 	}
 	if err := db.AutoMigrate(&Resource{}); err != nil {
@@ -31,7 +31,7 @@ func TestResource(t *testing.T) {
 				Name:     "访问控制",
 				Nav:      True(),
 				Router:   True(),
-				Policy:   True(),
+				Strategy: True(),
 			},
 			{
 				Parent:   system.ID,
@@ -39,7 +39,7 @@ func TestResource(t *testing.T) {
 				Name:     "资源控制",
 				Nav:      True(),
 				Router:   True(),
-				Policy:   True(),
+				Strategy: True(),
 			},
 			{
 				Parent:   system.ID,
@@ -47,7 +47,7 @@ func TestResource(t *testing.T) {
 				Name:     "特殊授权",
 				Nav:      True(),
 				Router:   True(),
-				Policy:   True(),
+				Strategy: True(),
 			},
 			{
 				Parent:   system.ID,
@@ -55,7 +55,7 @@ func TestResource(t *testing.T) {
 				Name:     "权限组",
 				Nav:      True(),
 				Router:   True(),
-				Policy:   True(),
+				Strategy: True(),
 			},
 			{
 				Parent:   system.ID,
@@ -63,7 +63,7 @@ func TestResource(t *testing.T) {
 				Name:     "成员管理",
 				Nav:      True(),
 				Router:   True(),
-				Policy:   True(),
+				Strategy: True(),
 			},
 		}
 		if err = tx.Create(&systemItems).Error; err != nil {
@@ -282,16 +282,8 @@ func TestResource(t *testing.T) {
 		t.Error(err)
 	}
 
-	var acls []Acl
-	if err := db.Find(&acls).Error; err != nil {
-		t.Error(err)
-	}
-	a := make(map[string]uint64)
-	for _, v := range acls {
-		a[v.Model] = v.ID
-	}
 	var resources []Resource
-	if err := db.Where("policy = ?", true).Find(&resources).Error; err != nil {
+	if err := db.Where("strategy = ?", true).Find(&resources).Error; err != nil {
 		t.Error(err)
 	}
 	r := make(map[string]uint64)
@@ -301,58 +293,58 @@ func TestResource(t *testing.T) {
 	data := []ResourceAclRel{
 		{
 			ResourceID: r["acl"],
-			AclID:      a["acl"],
-			Policy:     1,
+			Path:       "acl",
+			Mode:       "1",
 		},
 		{
 			ResourceID: r["resource"],
-			AclID:      a["resource"],
-			Policy:     1,
+			Path:       "resource",
+			Mode:       "1",
 		},
 		{
 			ResourceID: r["resource"],
-			AclID:      a["acl"],
-			Policy:     0,
+			Path:       "acl",
+			Mode:       "0",
 		},
 		{
 			ResourceID: r["permission"],
-			AclID:      a["permission"],
-			Policy:     1,
+			Path:       "permission",
+			Mode:       "1",
 		},
 		{
 			ResourceID: r["role"],
-			AclID:      a["role"],
-			Policy:     1,
+			Path:       "role",
+			Mode:       "1",
 		},
 		{
 			ResourceID: r["role"],
-			AclID:      a["resource"],
-			Policy:     0,
+			Path:       "resource",
+			Mode:       "0",
 		},
 		{
 			ResourceID: r["role"],
-			AclID:      a["permission"],
-			Policy:     0,
+			Path:       "permission",
+			Mode:       "0",
 		},
 		{
 			ResourceID: r["admin"],
-			AclID:      a["admin"],
-			Policy:     1,
+			Path:       "admin",
+			Mode:       "1",
 		},
 		{
 			ResourceID: r["admin"],
-			AclID:      a["role"],
-			Policy:     0,
+			Path:       "role",
+			Mode:       "0",
 		},
 		{
 			ResourceID: r["admin"],
-			AclID:      a["resource"],
-			Policy:     0,
+			Path:       "resource",
+			Mode:       "0",
 		},
 		{
 			ResourceID: r["admin"],
-			AclID:      a["permission"],
-			Policy:     0,
+			Path:       "permission",
+			Mode:       "0",
 		},
 	}
 	if err := db.Create(&data).Error; err != nil {
