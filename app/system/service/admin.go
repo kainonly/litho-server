@@ -30,9 +30,10 @@ func (x *Admin) FindByUsername(username string) (data model.Admin, err error) {
 
 func (x *Admin) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
-	if err = x.Db.Model(&model.Admin{}).
+	if err = x.Db.WithContext(ctx).
+		Model(&model.Admin{}).
 		Where("status = ?", true).
-		Order("sort").
+		Joins("").
 		Find(&data).Error; err != nil {
 		return
 	}

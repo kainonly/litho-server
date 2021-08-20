@@ -12,10 +12,6 @@ func TestRole(t *testing.T) {
 	if err := db.Find(&resources).Error; err != nil {
 		t.Error(err)
 	}
-	var permissions []Permission
-	if err := db.Find(&permissions).Error; err != nil {
-		t.Error(err)
-	}
 	role := []Role{
 		{
 			Name:        "超级管理员",
@@ -25,7 +21,7 @@ func TestRole(t *testing.T) {
 			Name:        "管理员",
 			Description: "默认",
 			Resources:   resources,
-			Permissions: permissions,
+			Permissions: []interface{}{"ACCESS_FINANCE_AUDIT"},
 		},
 	}
 	if err := db.Create(role).Error; err != nil {
