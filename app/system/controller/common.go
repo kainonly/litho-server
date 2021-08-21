@@ -24,6 +24,7 @@ var Provides = fx.Provide(
 	NewIndex,
 	NewAcl,
 	NewResource,
+	NewPermission,
 	NewRole,
 	NewAdmin,
 )

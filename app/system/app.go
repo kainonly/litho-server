@@ -23,6 +23,7 @@ type Dependency struct {
 	*controller.Index
 	*controller.Acl
 	*controller.Resource
+	*controller.Permission
 	*controller.Role
 	*controller.Admin
 }
