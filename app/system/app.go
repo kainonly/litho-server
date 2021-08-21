@@ -41,6 +41,7 @@ func Routes(r *gin.Engine, d Dependency) {
 
 	acl := s.Group("acl", auth)
 	{
+		acl.POST("originLists", mvc.Bind(d.Acl.OriginLists))
 		acl.POST("lists", mvc.Bind(d.Acl.Lists))
 		acl.POST("get", mvc.Bind(d.Acl.Get))
 		acl.POST("add", mvc.Bind(d.Acl.Add))

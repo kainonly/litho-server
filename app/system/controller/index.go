@@ -8,7 +8,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/hash"
 	"github.com/kainonly/go-bit/str"
-	"time"
 )
 
 var LoginExpired = errors.New("login authentication has expired")
@@ -33,9 +32,7 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	data, err := x.AdminService.FindByUsername(ctx, body.Username)
+	data, err := x.AdminService.FindByUsername(c, body.Username)
 	if err != nil {
 		return err
 	}
@@ -72,7 +69,7 @@ func (x *Index) Code(c *gin.Context) interface{} {
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := str.Random(8)
-	if err := x.IndexService.GenerateCode(context.Background(), jti, code); err != nil {
+	if err := x.IndexService.GenerateCode(c, jti, code); err != nil {
 		return err
 	}
 	return gin.H{
@@ -89,16 +86,14 @@ func (x *Index) RefreshToken(c *gin.Context) interface{} {
 	}
 	claims, _ := c.Get("access_token")
 	jti := claims.(jwt.MapClaims)["jti"].(string)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	result, err := x.IndexService.VerifyCode(ctx, jti, body.Code)
+	result, err := x.IndexService.VerifyCode(c, jti, body.Code)
 	if err != nil {
 		return err
 	}
 	if !result {
 		return LoginExpired
 	}
-	if err = x.IndexService.RemoveCode(ctx, jti); err != nil {
+	if err = x.IndexService.RemoveCode(c, jti); err != nil {
 		return err
 	}
 	tokenString, err := x.auth.Create(jti, map[string]interface{}{
