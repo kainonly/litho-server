@@ -44,6 +44,8 @@ func LoadConfiguration() (config config.Config, err error) {
 func InitializeDatabase(config config.Config) (db *gorm.DB, err error) {
 	option := config.Database
 	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   option.TablePrefix,
 			SingularTable: true,

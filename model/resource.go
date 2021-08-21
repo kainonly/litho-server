@@ -11,7 +11,7 @@ type Resource struct {
 	Strategy       *bool  `gorm:"default:false;comment:策略节点，可绑定多个访问控制" json:"strategy"`
 	Icon           string `gorm:"type:varchar(200);comment:导航节点的字体图标" json:"icon"`
 	Sort           uint8  `gorm:"default:0;comment:导航节点排序" json:"sort"`
-	ResourceAclRel []Acl  `gorm:"many2many:resource_acl_rel;references:Path;joinReferences:Path;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ResourceAclRel []Acl  `gorm:"many2many:resource_acl_rel;references:Path;joinReferences:Path;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 }
 
 type ResourceAclRel struct {
