@@ -17,5 +17,5 @@ type Resource struct {
 type ResourceAclRel struct {
 	ResourceID uint64 `gorm:"primaryKey"`
 	Path       string `gorm:"type:varchar(20);primaryKey"`
-	Mode       string `gorm:"type:char(1);default:'0';comment:只读或全部"`
+	Mode       uint8  `gorm:"default:0;comment:只读或全部"`
 }

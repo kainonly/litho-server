@@ -294,57 +294,57 @@ func TestResource(t *testing.T) {
 		{
 			ResourceID: r["acl"],
 			Path:       "acl",
-			Mode:       "1",
+			Mode:       1,
 		},
 		{
 			ResourceID: r["resource"],
 			Path:       "resource",
-			Mode:       "1",
+			Mode:       1,
 		},
 		{
 			ResourceID: r["resource"],
 			Path:       "acl",
-			Mode:       "0",
+			Mode:       0,
 		},
 		{
 			ResourceID: r["permission"],
 			Path:       "permission",
-			Mode:       "1",
+			Mode:       1,
 		},
 		{
 			ResourceID: r["role"],
 			Path:       "role",
-			Mode:       "1",
+			Mode:       1,
 		},
 		{
 			ResourceID: r["role"],
 			Path:       "resource",
-			Mode:       "0",
+			Mode:       0,
 		},
 		{
 			ResourceID: r["role"],
 			Path:       "permission",
-			Mode:       "0",
+			Mode:       0,
 		},
 		{
 			ResourceID: r["admin"],
 			Path:       "admin",
-			Mode:       "1",
+			Mode:       1,
 		},
 		{
 			ResourceID: r["admin"],
 			Path:       "role",
-			Mode:       "0",
+			Mode:       0,
 		},
 		{
 			ResourceID: r["admin"],
 			Path:       "resource",
-			Mode:       "0",
+			Mode:       0,
 		},
 		{
 			ResourceID: r["admin"],
 			Path:       "permission",
-			Mode:       "0",
+			Mode:       0,
 		},
 	}
 	if err := db.Create(&data).Error; err != nil {
