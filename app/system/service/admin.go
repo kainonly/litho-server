@@ -18,8 +18,8 @@ func NewAdmin(d Dependency) *Admin {
 	}
 }
 
-func (x *Admin) FindByUsername(username string) (data model.Admin, err error) {
-	if err = x.Db.
+func (x *Admin) FindByUsername(ctx context.Context, username string) (data model.Admin, err error) {
+	if err = x.Db.WithContext(ctx).
 		Where("username = ?", username).
 		Where("status = ?", true).
 		First(&data).Error; err != nil {

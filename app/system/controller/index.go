@@ -33,7 +33,9 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	data, err := x.AdminService.FindByUsername(body.Username)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	data, err := x.AdminService.FindByUsername(ctx, body.Username)
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,9 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	}
 	uid := data.UUID.String()
 	jti := str.Uuid().String()
-	tokenString, err := x.auth.Create(jti, uid, nil)
+	tokenString, err := x.auth.Create(jti, map[string]interface{}{
+		"uid": uid,
+	})
 	if err != nil {
 		return err
 	}
@@ -97,7 +101,9 @@ func (x *Index) RefreshToken(c *gin.Context) interface{} {
 	if err = x.IndexService.RemoveCode(ctx, jti); err != nil {
 		return err
 	}
-	tokenString, err := x.auth.Create(jti, claims.(jwt.MapClaims)["uid"].(string), nil)
+	tokenString, err := x.auth.Create(jti, map[string]interface{}{
+		"uid": claims.(jwt.MapClaims)["uid"],
+	})
 	if err != nil {
 		return err
 	}
