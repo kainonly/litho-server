@@ -41,35 +41,30 @@ func (x *Role) GetFromCache(ctx context.Context, roleId int64) (data map[string]
 
 func (x *Role) RefreshCache(ctx context.Context) (err error) {
 	var data []struct {
-		ID          int64           `json:"-"`
-		Resources   model.JSONArray `json:"resources"`
-		Acls        model.JSONArray `json:"acls"`
-		Permissions model.JSONArray `json:"permissions"`
+		ID          int64       `json:"-"`
+		Resources   model.Array `json:"resources"`
+		Strategies  model.Array `json:"strategies"`
+		Permissions model.Array `json:"permissions"`
 	}
 	if err = x.Db.WithContext(ctx).
 		Table("role r").
 		Select([]string{
 			"r.id",
-			"json_agg(distinct rrr.resource_id) as resources",
-			"json_agg(distinct ap.policy) as acls",
-			"json_agg(distinct pp.code) as permissions",
+			"coalesce(json_agg(distinct rrr.resource_id) filter ( where rrr.resource_id is not null ), '[]') as resources",
+			"coalesce(json_agg(distinct p.strategy) filter ( where p.strategy is not null ), '[]')           as strategies",
+			"r.permissions",
 		}).
 		Joins("left join role_resource_rel rrr on r.id = rrr.role_id").
-		Joins("left join (?) ap on r.id = ap.role_id", x.Db.
+		Joins("left join (?) p on r.id = p.role_id", x.Db.
 			Table("role_resource_rel rrr").
 			Select([]string{
 				"rrr.role_id",
-				"json_build_array(a.model, max(rar.policy))::jsonb as policy",
+				"array [rar.path,max(rar.mode)::char(1)] as strategy",
 			}).
 			Joins("join resource_acl_rel rar on rrr.resource_id = rar.resource_id").
-			Joins("left join acl a on rar.acl_id = a.id").
-			Group("rrr.role_id, a.model"),
+			Group("rrr.role_id, rar.path"),
 		).
-		Joins("left join (?) pp on r.id = pp.role_id", x.Db.
-			Table("role_permission_rel rpr").
-			Joins("left join permission p on rpr.permission_id = p.id"),
-		).
-		Group("r.id,r.name").
+		Group("r.id").
 		Where("r.id <> ?", 1).
 		Where("r.status = ?", true).
 		Scan(&data).Error; err != nil {

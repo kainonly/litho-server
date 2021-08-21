@@ -10,11 +10,26 @@ func TestAdmin(t *testing.T) {
 		t.Error(err)
 	}
 	password, _ := hash.Make("pass@VAN1234")
-	if err := db.Create(&Admin{
-		Username: "kain",
-		Password: password,
-		Roles:    []Role{{ID: 1}},
-	}).Error; err != nil {
+	data := []Admin{
+		{
+			Username: "kain",
+			Password: password,
+			Roles:    []Role{{ID: 1}},
+		},
+		{
+			Username:    "admin",
+			Password:    password,
+			Permissions: Array{"ACCESS_FINANCE_AUDIT"},
+			Roles:       []Role{{ID: 2}},
+		},
+		{
+			Username:  "test",
+			Password:  password,
+			Roles:     []Role{{ID: 3}, {ID: 4}},
+			Resources: []Resource{{ID: 1}, {ID: 3}},
+		},
+	}
+	if err := db.Create(&data).Error; err != nil {
 		t.Error(err)
 	}
 }

@@ -10,8 +10,7 @@ func TestRole_GetFromCache(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(data["resources"].([]interface{})[0])
-	t.Log(data["acls"].([]interface{})[0])
+	t.Log(data)
 }
 
 func TestRole_RefreshCache(t *testing.T) {

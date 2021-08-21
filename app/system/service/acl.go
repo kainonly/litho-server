@@ -49,13 +49,13 @@ func (x *Acl) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
 	if err = x.Db.WithContext(ctx).
 		Model(&model.Acl{}).
-		Select([]string{"model", "acts"}).
+		Select([]string{"path", "acts"}).
 		Find(&data).Error; err != nil {
 		return
 	}
 	values := make(map[string]interface{}, len(data))
 	for _, v := range data {
-		values[v["model"].(string)] = v["acts"]
+		values[v["path"].(string)] = v["acts"]
 	}
 	if err = x.Redis.HMSet(ctx, x.Key, values).Err(); err != nil {
 		return

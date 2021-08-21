@@ -23,6 +23,16 @@ func TestRole(t *testing.T) {
 			Resources:   resources,
 			Permissions: []interface{}{"ACCESS_FINANCE_AUDIT"},
 		},
+		{
+			Name:        "权限管理员",
+			Description: "默认",
+			Resources:   []Resource{{ID: 1}, {ID: 5}},
+		},
+		{
+			Name:        "成员管理员",
+			Description: "默认",
+			Resources:   []Resource{{ID: 1}, {ID: 6}},
+		},
 	}
 	if err := db.Create(role).Error; err != nil {
 		t.Error(err)
