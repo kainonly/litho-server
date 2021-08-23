@@ -7,12 +7,12 @@ import (
 
 type Acl struct {
 	*Dependency
-	*crud.Resource
+	*crud.Crud
 }
 
 func NewAcl(d Dependency) *Acl {
 	return &Acl{
 		Dependency: &d,
-		Resource:   d.Crud.Make(model.Acl{}),
+		Crud:       crud.New(d.Db, model.Acl{}),
 	}
 }

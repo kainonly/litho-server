@@ -7,12 +7,12 @@ import (
 
 type Resource struct {
 	*Dependency
-	*crud.Resource
+	*crud.Crud
 }
 
 func NewResource(d Dependency) *Resource {
 	return &Resource{
 		Dependency: &d,
-		Resource:   d.Crud.Make(model.Resource{}),
+		Crud:       crud.New(d.Db, model.Resource{}),
 	}
 }
