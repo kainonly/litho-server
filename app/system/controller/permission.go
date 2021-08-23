@@ -7,12 +7,12 @@ import (
 
 type Permission struct {
 	*Dependency
-	*crud.Resource
+	*crud.Crud
 }
 
 func NewPermission(d Dependency) *Permission {
 	return &Permission{
 		Dependency: &d,
-		Resource:   d.Crud.Make(model.Resource{}),
+		Crud:       crud.New(d.Db, model.Resource{}),
 	}
 }

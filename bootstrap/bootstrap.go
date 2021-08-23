@@ -9,7 +9,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
@@ -80,11 +79,6 @@ func InitializeRedis(config config.Config) (client *redis.Client, err error) {
 		DB:       option.DB,
 	})
 	return
-}
-
-// InitializeCrud 初始化 CRUD 工具
-func InitializeCrud(db *gorm.DB) *crud.Crud {
-	return crud.New(db)
 }
 
 // InitializeCipher 初始化数据加密

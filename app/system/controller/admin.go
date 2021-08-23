@@ -7,12 +7,12 @@ import (
 
 type Admin struct {
 	*Dependency
-	*crud.Resource
+	*crud.Crud
 }
 
 func NewAdmin(d Dependency) *Admin {
 	return &Admin{
 		Dependency: &d,
-		Resource:   d.Crud.Make(model.Admin{}),
+		Crud:       crud.New(d.Db, model.Admin{}),
 	}
 }
