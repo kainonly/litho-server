@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/hash"
-	"github.com/kainonly/go-bit/str"
+	"github.com/kainonly/go-bit/stringx"
 )
 
 var LoginExpired = errors.New("login authentication has expired")
@@ -40,7 +40,7 @@ func (x *Index) Login(c *gin.Context) interface{} {
 		return err
 	}
 	uid := data.UUID.String()
-	jti := str.Uuid().String()
+	jti := stringx.Uuid()
 	tokenString, err := x.auth.Create(jti, map[string]interface{}{
 		"uid": uid,
 	})
@@ -68,7 +68,7 @@ func (x *Index) Code(c *gin.Context) interface{} {
 		return LoginExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
-	code := str.Random(8)
+	code := stringx.Random(8)
 	if err := x.IndexService.GenerateCode(c, jti, code); err != nil {
 		return err
 	}
