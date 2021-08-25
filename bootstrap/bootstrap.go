@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"lab-api/config"
+	"net/http"
 	"os"
 	"time"
 )
@@ -88,7 +89,7 @@ func InitializeCipher(config config.Config) (*cipher.Cipher, error) {
 
 // InitializeCookie 创建 Cookie 工具
 func InitializeCookie(config config.Config) *cookie.Cookie {
-	return cookie.New(config.Cookie)
+	return cookie.New(config.Cookie, http.SameSiteStrictMode)
 }
 
 func InitializeAuthx(config config.Config) *authx.Authx {
