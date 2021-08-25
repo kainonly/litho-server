@@ -15,7 +15,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/postgres v1.1.0
-	gorm.io/gorm v1.21.11
+	gorm.io/gorm v1.21.12
 )
 
 replace github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac => ./library/go-bit
