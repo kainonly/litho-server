@@ -17,10 +17,9 @@ func TestAdmin(t *testing.T) {
 			Roles:    []Role{{ID: 1}},
 		},
 		{
-			Username:    "admin",
-			Password:    password,
-			Permissions: Array{"ACCESS_FINANCE_AUDIT"},
-			Roles:       []Role{{ID: 2}},
+			Username: "admin",
+			Password: password,
+			Roles:    []Role{{ID: 2}},
 		},
 		{
 			Username:  "test",
