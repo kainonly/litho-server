@@ -1,25 +1,19 @@
 package main
 
 import (
-	"go.uber.org/fx"
-	"lab-api/app/api"
-	"lab-api/app/system"
-	"lab-api/bootstrap"
+	"github.com/caarlos0/env/v6"
+	"lab-api/common"
+	"log"
 )
 
 func main() {
-	fx.New(
-		//fx.NopLogger,
-		fx.Provide(
-			bootstrap.LoadConfiguration,
-			bootstrap.InitializeDatabase,
-			bootstrap.InitializeRedis,
-			bootstrap.InitializeCookie,
-			bootstrap.InitializeAuthx,
-			bootstrap.InitializeCipher,
-			bootstrap.HttpServer,
-		),
-		system.App,
-		api.App,
-	).Run()
+	var cfg common.Config
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalln(err)
+	}
+	app, err := App(cfg)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	app.Run(":9000")
 }

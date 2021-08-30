@@ -8,8 +8,8 @@ type Index struct {
 	*Dependency
 }
 
-func NewIndex(d Dependency) *Index {
-	return &Index{&d}
+func NewIndex(d *Dependency) *Index {
+	return &Index{d}
 }
 
 func (x *Index) Index(c *gin.Context) interface{} {
