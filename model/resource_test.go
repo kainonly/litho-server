@@ -6,9 +6,6 @@ import (
 )
 
 func TestResource(t *testing.T) {
-	if err := db.SetupJoinTable(&Resource{}, "ResourceAclRel", &ResourceAclRel{}); err != nil {
-		t.Error(err)
-	}
 	if err := db.AutoMigrate(&Resource{}); err != nil {
 		t.Error(err)
 	}
@@ -27,24 +24,8 @@ func TestResource(t *testing.T) {
 		systemItems := []Resource{
 			{
 				Parent:   system.ID,
-				Fragment: "acl",
-				Name:     "访问控制",
-				Nav:      True(),
-				Router:   True(),
-				Strategy: True(),
-			},
-			{
-				Parent:   system.ID,
 				Fragment: "resource",
 				Name:     "资源控制",
-				Nav:      True(),
-				Router:   True(),
-				Strategy: True(),
-			},
-			{
-				Parent:   system.ID,
-				Fragment: "permission",
-				Name:     "特殊授权",
 				Nav:      True(),
 				Router:   True(),
 				Strategy: True(),
@@ -279,75 +260,6 @@ func TestResource(t *testing.T) {
 		}
 		return
 	}); err != nil {
-		t.Error(err)
-	}
-
-	var resources []Resource
-	if err := db.Where("strategy = ?", true).Find(&resources).Error; err != nil {
-		t.Error(err)
-	}
-	r := make(map[string]uint64)
-	for _, v := range resources {
-		r[v.Fragment] = v.ID
-	}
-	data := []ResourceAclRel{
-		{
-			ResourceID: r["acl"],
-			Path:       "acl",
-			Mode:       1,
-		},
-		{
-			ResourceID: r["resource"],
-			Path:       "resource",
-			Mode:       1,
-		},
-		{
-			ResourceID: r["resource"],
-			Path:       "acl",
-			Mode:       0,
-		},
-		{
-			ResourceID: r["permission"],
-			Path:       "permission",
-			Mode:       1,
-		},
-		{
-			ResourceID: r["role"],
-			Path:       "role",
-			Mode:       1,
-		},
-		{
-			ResourceID: r["role"],
-			Path:       "resource",
-			Mode:       0,
-		},
-		{
-			ResourceID: r["role"],
-			Path:       "permission",
-			Mode:       0,
-		},
-		{
-			ResourceID: r["admin"],
-			Path:       "admin",
-			Mode:       1,
-		},
-		{
-			ResourceID: r["admin"],
-			Path:       "role",
-			Mode:       0,
-		},
-		{
-			ResourceID: r["admin"],
-			Path:       "resource",
-			Mode:       0,
-		},
-		{
-			ResourceID: r["admin"],
-			Path:       "permission",
-			Mode:       0,
-		},
-	}
-	if err := db.Create(&data).Error; err != nil {
 		t.Error(err)
 	}
 }

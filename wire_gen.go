@@ -14,18 +14,19 @@ import (
 	"lab-api/app/system"
 	controller2 "lab-api/app/system/controller"
 	service2 "lab-api/app/system/service"
+	"lab-api/bootstrap"
 	"lab-api/common"
 )
 
 // Injectors from wire.go:
 
 func App(config common.Config) (*app.App, error) {
-	engine := app.HttpServer(config)
-	db, err := app.InitializeDatabase(config)
+	engine := bootstrap.HttpServer(config)
+	db, err := bootstrap.InitializeDatabase(config)
 	if err != nil {
 		return nil, err
 	}
-	client, err := app.InitializeRedis(config)
+	client, err := bootstrap.InitializeRedis(config)
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +54,11 @@ func App(config common.Config) (*app.App, error) {
 		IndexService: serviceIndex,
 	}
 	index2 := controller2.NewIndex(dependency2)
+	admin := controller2.NewAdmin(dependency2)
 	systemDependency := &system.Dependency{
 		Config: config,
 		Index:  index2,
+		Admin:  admin,
 	}
 	systemRoutes := system.NewRoutes(engine, systemDependency)
 	appApp := app.NewApp(engine, routes, systemRoutes)

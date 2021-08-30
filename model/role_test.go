@@ -21,7 +21,6 @@ func TestRole(t *testing.T) {
 			Name:        "管理员",
 			Description: "默认",
 			Resources:   resources,
-			Permissions: []interface{}{"ACCESS_FINANCE_AUDIT"},
 		},
 		{
 			Name:        "权限管理员",
