@@ -14,6 +14,7 @@ var Provides = wire.NewSet(
 	bootstrap.InitializeRedis,
 	bootstrap.InitializeCookie,
 	bootstrap.InitializeAuthx,
+	bootstrap.InitializeCipher,
 	api.Provides,
 	system.Provides,
 	NewApp,

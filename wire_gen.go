@@ -44,24 +44,47 @@ func App(config common.Config) (*app.App, error) {
 	}
 	routes := api.NewRoutes(engine, apiDependency)
 	cookie := bootstrap.InitializeCookie(config)
+	authx := bootstrap.InitializeAuthx(config)
+	cipher, err := bootstrap.InitializeCipher(config)
+	if err != nil {
+		return nil, err
+	}
 	serviceDependency := &service2.Dependency{
 		Config: config,
 		Db:     db,
 		Redis:  client,
 	}
 	serviceIndex := service2.NewIndex(serviceDependency)
+	resource := service2.NewResource(serviceDependency)
+	admin := service2.NewAdmin(serviceDependency)
 	dependency2 := &controller2.Dependency{
-		Db:           db,
-		Cookie:       cookie,
-		IndexService: serviceIndex,
+		Db:              db,
+		Cookie:          cookie,
+		Cipher:          cipher,
+		IndexService:    serviceIndex,
+		ResourceService: resource,
+		AdminService:    admin,
 	}
-	authx := bootstrap.InitializeAuthx(config)
 	index2 := controller2.NewIndex(dependency2, authx)
-	admin := controller2.NewAdmin(dependency2)
+	dependency3 := controller2.Dependency{
+		Db:              db,
+		Cookie:          cookie,
+		Cipher:          cipher,
+		IndexService:    serviceIndex,
+		ResourceService: resource,
+		AdminService:    admin,
+	}
+	controllerResource := controller2.NewResource(dependency3)
+	role := controller2.NewRole(dependency3)
+	controllerAdmin := controller2.NewAdmin(dependency2)
 	systemDependency := &system.Dependency{
-		Config: config,
-		Index:  index2,
-		Admin:  admin,
+		Config:   config,
+		Cookie:   cookie,
+		Authx:    authx,
+		Index:    index2,
+		Resource: controllerResource,
+		Role:     role,
+		Admin:    controllerAdmin,
 	}
 	systemRoutes := system.NewRoutes(engine, systemDependency)
 	appApp := app.NewApp(engine, routes, systemRoutes)
