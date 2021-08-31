@@ -43,7 +43,7 @@ func App(config common.Config) (*app.App, error) {
 		Index: controllerIndex,
 	}
 	routes := api.NewRoutes(engine, apiDependency)
-	serviceDependency := service2.Dependency{
+	serviceDependency := &service2.Dependency{
 		Config: config,
 		Db:     db,
 		Redis:  client,
