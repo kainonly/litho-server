@@ -5,10 +5,13 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/cookie"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"lab-api/common"
+	"net/http"
 	"time"
 )
 
@@ -72,4 +75,22 @@ func InitializeRedis(config common.Config) (client *redis.Client, err error) {
 		return
 	}
 	return
+}
+
+// InitializeCookie 创建 Cookie 工具
+func InitializeCookie(config common.Config) *cookie.Cookie {
+	return cookie.New(config.Cookie, http.SameSiteStrictMode)
+}
+
+// InitializeAuthx 创建认证
+func InitializeAuthx(config common.Config) *authx.Authx {
+	options := map[string]*authx.Auth{
+		"system": {
+			Key: config.App.Key,
+			Iss: config.App.Name,
+			Aud: []string{"admin"},
+			Exp: 720,
+		},
+	}
+	return authx.New(options)
 }

@@ -2,12 +2,14 @@ package controller
 
 import (
 	"github.com/google/wire"
+	"github.com/kainonly/go-bit/cookie"
 	"gorm.io/gorm"
 	"lab-api/app/system/service"
 )
 
 type Dependency struct {
-	Db *gorm.DB
+	Db     *gorm.DB
+	Cookie *cookie.Cookie
 
 	IndexService *service.Index
 }
