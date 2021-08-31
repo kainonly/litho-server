@@ -10,9 +10,9 @@ type Role struct {
 	*crud.Crud
 }
 
-func NewRole(d Dependency) *Role {
+func NewRole(d *Dependency) *Role {
 	return &Role{
-		Dependency: &d,
-		Crud:       crud.New(d.Db, model.Role{}),
+		Dependency: d,
+		Crud:       crud.New(d.Db, &model.Role{}),
 	}
 }

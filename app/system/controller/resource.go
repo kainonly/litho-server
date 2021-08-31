@@ -10,9 +10,9 @@ type Resource struct {
 	*crud.Crud
 }
 
-func NewResource(d Dependency) *Resource {
+func NewResource(d *Dependency) *Resource {
 	return &Resource{
-		Dependency: &d,
-		Crud:       crud.New(d.Db, model.Resource{}),
+		Dependency: d,
+		Crud:       crud.New(d.Db, &model.Resource{}),
 	}
 }

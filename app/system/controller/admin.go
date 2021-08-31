@@ -13,6 +13,6 @@ type Admin struct {
 func NewAdmin(d *Dependency) *Admin {
 	return &Admin{
 		Dependency: d,
-		Crud:       crud.New(d.Db, model.Admin{}),
+		Crud:       crud.New(d.Db, &model.Admin{}),
 	}
 }
