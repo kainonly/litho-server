@@ -15,22 +15,36 @@ func TestRole(t *testing.T) {
 	role := []Role{
 		{
 			Name:        "超级管理员",
+			Code:        "*",
 			Description: "超级管理员拥有完整权限不能编辑，若不使用可以禁用该权限",
 		},
 		{
 			Name:        "管理员",
+			Code:        "admin",
 			Description: "默认",
 			Resources:   resources,
 		},
 		{
-			Name:        "权限管理员",
+			Name:        "分析员",
+			Code:        "analysis",
 			Description: "默认",
-			Resources:   []Resource{{ID: 1}, {ID: 5}},
+			Resources: []Resource{
+				{Path: "dashboard"},
+				{Path: "dashboard/analysis"},
+				{Path: "dashboard/monitor"},
+				{Path: "dashboard/workbench"},
+			},
 		},
 		{
-			Name:        "成员管理员",
+			Name:        "成员",
+			Code:        "staff",
 			Description: "默认",
-			Resources:   []Resource{{ID: 1}, {ID: 6}},
+			Resources: []Resource{
+				{Path: "exception"},
+				{Path: "exception/403"},
+				{Path: "exception/404"},
+				{Path: "exception/500"},
+			},
 		},
 	}
 	if err := db.Create(role).Error; err != nil {
