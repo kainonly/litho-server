@@ -10,6 +10,8 @@ import (
 
 var index *Index
 var resource *Resource
+var role *Role
+var admin *Admin
 
 func TestMain(m *testing.M) {
 	d := new(Dependency)
@@ -25,5 +27,7 @@ func TestMain(m *testing.M) {
 	}
 	index = NewIndex(d)
 	resource = NewResource(d)
+	role = NewRole(d)
+	admin = NewAdmin(d)
 	os.Exit(m.Run())
 }
