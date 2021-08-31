@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -66,5 +67,9 @@ func InitializeRedis(config common.Config) (client *redis.Client, err error) {
 		Password: option.Password,
 		DB:       option.DB,
 	})
+	// Serverless 模式建议关闭
+	if err = client.Ping(context.Background()).Err(); err != nil {
+		return
+	}
 	return
 }
