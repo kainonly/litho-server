@@ -43,6 +43,7 @@ func App(config common.Config) (*app.App, error) {
 		Index: controllerIndex,
 	}
 	routes := api.NewRoutes(engine, apiDependency)
+	cookie := bootstrap.InitializeCookie(config)
 	serviceDependency := &service2.Dependency{
 		Config: config,
 		Db:     db,
@@ -51,9 +52,11 @@ func App(config common.Config) (*app.App, error) {
 	serviceIndex := service2.NewIndex(serviceDependency)
 	dependency2 := &controller2.Dependency{
 		Db:           db,
+		Cookie:       cookie,
 		IndexService: serviceIndex,
 	}
-	index2 := controller2.NewIndex(dependency2)
+	authx := bootstrap.InitializeAuthx(config)
+	index2 := controller2.NewIndex(dependency2, authx)
 	admin := controller2.NewAdmin(dependency2)
 	systemDependency := &system.Dependency{
 		Config: config,

@@ -1,10 +1,17 @@
 package common
 
+import (
+	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/cookie"
+)
+
 type Config struct {
 	App      App
 	Database Database
 	Redis    Redis
+	Cookie   cookie.Option
 	Cors     []string `env:"CORS" envSeparator:","`
+	Auth     map[string]*authx.Auth
 }
 
 type App struct {
