@@ -66,16 +66,8 @@ func App(config common.Config) (*app.App, error) {
 		AdminService:    admin,
 	}
 	index2 := controller2.NewIndex(dependency2, authx)
-	dependency3 := controller2.Dependency{
-		Db:              db,
-		Cookie:          cookie,
-		Cipher:          cipher,
-		IndexService:    serviceIndex,
-		ResourceService: resource,
-		AdminService:    admin,
-	}
-	controllerResource := controller2.NewResource(dependency3)
-	role := controller2.NewRole(dependency3)
+	controllerResource := controller2.NewResource(dependency2)
+	role := controller2.NewRole(dependency2)
 	controllerAdmin := controller2.NewAdmin(dependency2)
 	systemDependency := &system.Dependency{
 		Config:   config,
