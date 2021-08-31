@@ -17,6 +17,6 @@ type Admin struct {
 	Email      string     `gorm:"type:varchar(255);comment:电子邮件" json:"email"`
 	Phone      string     `gorm:"type:varchar(20);comment:联系电话" json:"phone"`
 	Avatar     string     `gorm:"type:varchar(255);comment:头像" json:"avatar"`
-	Roles      []Role     `gorm:"many2many:admin_role_rel;constraint:OnDelete:CASCADE"`
-	Resources  []Resource `gorm:"many2many:admin_resource_rel;constraint:OnDelete:CASCADE"`
+	Roles      []Role     `gorm:"many2many:admin_role_rel;references:Code;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Resources  []Resource `gorm:"many2many:admin_resource_rel;references:Path;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
