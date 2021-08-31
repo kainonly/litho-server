@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -93,4 +94,9 @@ func InitializeAuthx(config common.Config) *authx.Authx {
 		},
 	}
 	return authx.New(options)
+}
+
+// InitializeCipher 初始化数据加密
+func InitializeCipher(config common.Config) (*cipher.Cipher, error) {
+	return cipher.New(config.App.Key)
 }
