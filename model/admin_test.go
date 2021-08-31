@@ -18,27 +18,6 @@ func TestAdmin(t *testing.T) {
 				{Code: "*"},
 			},
 		},
-		{
-			Username: "admin",
-			Password: password,
-			Roles: []Role{
-				{Code: "admin"},
-			},
-		},
-		{
-			Username: "test",
-			Password: password,
-			Roles: []Role{
-				{Code: "analysis"},
-				{Code: "staff"},
-			},
-			Resources: []Resource{
-				{Path: "form"},
-				{Path: "form/basic"},
-				{Path: "form/step"},
-				{Path: "form/advanced"},
-			},
-		},
 	}
 	if err := db.Create(&data).Error; err != nil {
 		t.Error(err)
