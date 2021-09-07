@@ -13,7 +13,7 @@ type Index struct {
 func NewIndex(d Dependency) *Index {
 	return &Index{
 		Dependency: &d,
-		Key:        d.Config.RedisKey("code:"),
+		Key:        d.App.RedisKey("code:"),
 	}
 }
 

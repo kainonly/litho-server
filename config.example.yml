@@ -1,6 +1,5 @@
-app:
-  name: 'weplanx'
-  key: '<A key of length 32>'
+name: 'weplanx'
+key: '<A key of length 32>'
 database:
   dsn: 'host=localhost user=weplanx password=pass dbname=weplanx'
   max_idle_conns: 10

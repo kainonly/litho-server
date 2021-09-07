@@ -14,7 +14,7 @@ type Resource struct {
 func NewResource(d Dependency) *Resource {
 	return &Resource{
 		Dependency: &d,
-		Key:        d.Config.RedisKey("resource"),
+		Key:        d.App.RedisKey("resource"),
 	}
 }
 func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interface{}, err error) {

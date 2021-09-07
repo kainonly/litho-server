@@ -10,9 +10,9 @@ import (
 type Dependency struct {
 	fx.In
 
-	Config common.Config
-	Db     *gorm.DB
-	Redis  *redis.Client
+	App   *common.App
+	Db    *gorm.DB
+	Redis *redis.Client
 }
 
 var Provides = fx.Provide(

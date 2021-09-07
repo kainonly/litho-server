@@ -43,8 +43,8 @@ type Role struct {
 	Status      *bool     `gorm:"default:true"`
 	CreateTime  time.Time `gorm:"autoCreateTime"`
 	UpdateTime  time.Time `gorm:"autoUpdateTime"`
-	Key         string    `gorm:"type:varchar"`
-	Name        string    `gorm:"type:varchar"`
+	Key         string    `gorm:"type:varchar;not null;unique"`
+	Name        string    `gorm:"type:varchar;not null"`
 	Description string    `gorm:"type:text"`
 }
 

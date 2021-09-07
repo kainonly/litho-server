@@ -5,18 +5,14 @@ import (
 	"github.com/kainonly/go-bit/cookie"
 )
 
-type Config struct {
-	App      App                    `yaml:"app"`
+type App struct {
+	Name     string                 `yaml:"name"`
+	Key      string                 `yaml:"key"`
 	Database Database               `yaml:"database"`
 	Redis    Redis                  `yaml:"redis"`
 	Cookie   cookie.Option          `yaml:"cookie"`
 	Cors     []string               `yaml:"cors"`
 	Auth     map[string]*authx.Auth `yaml:"auth"`
-}
-
-type App struct {
-	Name string `yaml:"name"`
-	Key  string `yaml:"key"`
 }
 
 type Database struct {
@@ -32,6 +28,6 @@ type Redis struct {
 	DB       int    `yaml:"db"`
 }
 
-func (x *Config) RedisKey(name string) string {
-	return x.App.Name + ":" + name
+func (x *App) RedisKey(name string) string {
+	return x.Name + ":" + name
 }
