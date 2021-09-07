@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"lab-api/model"
+	"log"
 )
 
 type Developer struct {
@@ -39,6 +40,7 @@ func (x *Developer) Sync(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
+	log.Println(x.App)
 	return "ok"
 }
 

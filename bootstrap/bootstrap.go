@@ -21,7 +21,7 @@ import (
 )
 
 // LoadConfiguration 初始化应用配置
-func LoadConfiguration() (config common.Config, err error) {
+func LoadConfiguration() (app *common.App, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = errors.New("当前路径 [./config.yml] 不存在配置文件")
 		return
@@ -31,7 +31,7 @@ func LoadConfiguration() (config common.Config, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(b, &config)
+	err = yaml.Unmarshal(b, &app)
 	if err != nil {
 		return
 	}
@@ -40,8 +40,8 @@ func LoadConfiguration() (config common.Config, err error) {
 
 // InitializeDatabase 初始化数据库
 // 配置文档 https://gorm.io/docs/connecting_to_the_database.html
-func InitializeDatabase(config common.Config) (db *gorm.DB, err error) {
-	option := config.Database
+func InitializeDatabase(app *common.App) (db *gorm.DB, err error) {
+	option := app.Database
 	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{})
 	if err != nil {
 		return
@@ -64,8 +64,8 @@ func InitializeDatabase(config common.Config) (db *gorm.DB, err error) {
 
 // InitializeRedis 初始化Redis缓存
 // 配置文档 https://github.com/go-redis/redis
-func InitializeRedis(config common.Config) (client *redis.Client, err error) {
-	option := config.Redis
+func InitializeRedis(app *common.App) (client *redis.Client, err error) {
+	option := app.Redis
 	client = redis.NewClient(&redis.Options{
 		Addr:     option.Address,
 		Password: option.Password,
@@ -79,16 +79,16 @@ func InitializeRedis(config common.Config) (client *redis.Client, err error) {
 }
 
 // InitializeCookie 创建 Cookie 工具
-func InitializeCookie(config common.Config) *cookie.Cookie {
-	return cookie.New(config.Cookie, http.SameSiteStrictMode)
+func InitializeCookie(app *common.App) *cookie.Cookie {
+	return cookie.New(app.Cookie, http.SameSiteStrictMode)
 }
 
 // InitializeAuthx 创建认证
-func InitializeAuthx(config common.Config) *authx.Authx {
+func InitializeAuthx(app *common.App) *authx.Authx {
 	options := map[string]*authx.Auth{
 		"system": {
-			Key: config.App.Key,
-			Iss: config.App.Name,
+			Key: app.Key,
+			Iss: app.Name,
 			Aud: []string{"admin"},
 			Exp: 720,
 		},
@@ -97,26 +97,30 @@ func InitializeAuthx(config common.Config) *authx.Authx {
 }
 
 // InitializeCipher 初始化数据加密
-func InitializeCipher(config common.Config) (*cipher.Cipher, error) {
-	return cipher.New(config.App.Key)
+func InitializeCipher(app *common.App) (*cipher.Cipher, error) {
+	return cipher.New(app.Key)
 }
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(lc fx.Lifecycle, config common.Config) (serve *gin.Engine) {
-	serve = gin.New()
-	serve.Use(gin.Logger())
-	serve.Use(gin.Recovery())
-	serve.Use(cors.New(cors.Config{
-		AllowOrigins:     config.Cors,
+func HttpServer(lc fx.Lifecycle, app *common.App) (router *gin.Engine) {
+	router = gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     app.Cors,
 		AllowMethods:     []string{"POST"},
 		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
 		AllowCredentials: true,
 		MaxAge:           6 * time.Hour,
 	}))
+	srv := &http.Server{
+		Addr:    ":9000",
+		Handler: router,
+	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go serve.Run(":9000")
+			go srv.ListenAndServe()
 			return nil
 		},
 	})

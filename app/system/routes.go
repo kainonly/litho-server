@@ -16,7 +16,7 @@ var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
 type Dependency struct {
 	fx.In
 
-	Config common.Config
+	App    *common.App
 	Authx  *authx.Authx
 	Cookie *cookie.Cookie
 
