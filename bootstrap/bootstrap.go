@@ -13,7 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"lab-api/common"
 	"net/http"
@@ -43,13 +42,7 @@ func LoadConfiguration() (config common.Config, err error) {
 // 配置文档 https://gorm.io/docs/connecting_to_the_database.html
 func InitializeDatabase(config common.Config) (db *gorm.DB, err error) {
 	option := config.Database
-	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
-		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-	})
+	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{})
 	if err != nil {
 		return
 	}
