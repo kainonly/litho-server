@@ -3,15 +3,14 @@ module lab-api
 go 1.17
 
 require (
-	github.com/caarlos0/env/v6 v6.6.2
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/google/wire v0.5.0
 	github.com/json-iterator/go v1.1.11
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac
 	github.com/lib/pq v1.6.0 // indirect
+	go.uber.org/fx v1.14.2
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/postgres v1.1.0
@@ -44,6 +43,10 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/speps/go-hashids/v2 v2.0.1 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
+	go.uber.org/atomic v1.6.0 // indirect
+	go.uber.org/dig v1.12.0 // indirect
+	go.uber.org/multierr v1.5.0 // indirect
+	go.uber.org/zap v1.16.0 // indirect
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect

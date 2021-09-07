@@ -2,19 +2,20 @@ package service
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/google/wire"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 	"lab-api/common"
 )
 
 type Dependency struct {
+	fx.In
+
 	Config common.Config
 	Db     *gorm.DB
 	Redis  *redis.Client
 }
 
-var Provides = wire.NewSet(
-	wire.Struct(new(Dependency), "*"),
+var Provides = fx.Provide(
 	NewIndex,
 	NewResource,
 )

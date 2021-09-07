@@ -1,33 +1,34 @@
 package service
 
 import (
-	"github.com/caarlos0/env/v6"
+	"go.uber.org/fx"
 	"lab-api/bootstrap"
-	"log"
 	"os"
 	"testing"
 )
 
-var index *Index
-var resource *Resource
-var role *Role
-var admin *Admin
+var s *Tests
+
+type Tests struct {
+	fx.In
+
+	Index    *Index
+	Resource *Resource
+}
 
 func TestMain(m *testing.M) {
-	d := new(Dependency)
-	var err error
-	if err = env.Parse(&d.Config); err != nil {
-		log.Fatalln(err)
-	}
-	if d.Db, err = bootstrap.InitializeDatabase(d.Config); err != nil {
-		log.Fatalln(err)
-	}
-	if d.Redis, err = bootstrap.InitializeRedis(d.Config); err != nil {
-		log.Fatalln(err)
-	}
-	index = NewIndex(d)
-	resource = NewResource(d)
-	role = NewRole(d)
-	admin = NewAdmin(d)
-	os.Exit(m.Run())
+	os.Chdir(`../../../`)
+	fx.New(
+		fx.NopLogger,
+		fx.Provide(
+			bootstrap.LoadConfiguration,
+			bootstrap.InitializeDatabase,
+			bootstrap.InitializeRedis,
+		),
+		Provides,
+		fx.Invoke(func(tests Tests) {
+			s = &tests
+			os.Exit(m.Run())
+		}),
+	).Run()
 }

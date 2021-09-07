@@ -6,7 +6,7 @@ import (
 )
 
 func TestResource_GetFromCache(t *testing.T) {
-	data, err := resource.GetFromCache(context.Background())
+	data, err := s.Resource.GetFromCache(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -14,13 +14,13 @@ func TestResource_GetFromCache(t *testing.T) {
 }
 
 func TestResource_RefreshCache(t *testing.T) {
-	if err := resource.RefreshCache(context.Background()); err != nil {
+	if err := s.Resource.RefreshCache(context.Background()); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestResource_RemoveCache(t *testing.T) {
-	if err := resource.RemoveCache(context.Background()); err != nil {
+	if err := s.Resource.RemoveCache(context.Background()); err != nil {
 		t.Error(err)
 	}
 }

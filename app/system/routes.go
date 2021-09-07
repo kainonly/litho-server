@@ -2,34 +2,29 @@ package system
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/mvc"
+	"go.uber.org/fx"
 	"lab-api/app/system/controller"
 	"lab-api/app/system/service"
 	"lab-api/common"
 )
 
-var Provides = wire.NewSet(
-	service.Provides,
-	controller.Provides,
-	wire.Struct(new(Dependency), "*"),
-	NewRoutes,
-)
+var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
 
 type Dependency struct {
+	fx.In
+
 	Config common.Config
-	Cookie *cookie.Cookie
 	Authx  *authx.Authx
+	Cookie *cookie.Cookie
 
 	*controller.Index
 	*controller.Resource
 }
 
-type Routes struct{}
-
-func NewRoutes(r *gin.Engine, d *Dependency) *Routes {
+func Routes(r *gin.Engine, d Dependency) {
 	s := r.Group("/system")
 	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
 
@@ -41,5 +36,4 @@ func NewRoutes(r *gin.Engine, d *Dependency) *Routes {
 	s.POST("resource", auth, mvc.Bind(d.Index.Resource))
 
 	mvc.Crud(s.Group("resource", auth), d.Resource.Crud)
-	return &Routes{}
 }

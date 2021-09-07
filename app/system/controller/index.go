@@ -16,9 +16,9 @@ type Index struct {
 	auth *authx.Auth
 }
 
-func NewIndex(d *Dependency, authx *authx.Authx) *Index {
+func NewIndex(d Dependency, authx *authx.Authx) *Index {
 	return &Index{
-		Dependency: d,
+		Dependency: &d,
 		auth:       authx.Make("system"),
 	}
 }

@@ -10,9 +10,9 @@ type Index struct {
 	Key string
 }
 
-func NewIndex(d *Dependency) *Index {
+func NewIndex(d Dependency) *Index {
 	return &Index{
-		Dependency: d,
+		Dependency: &d,
 		Key:        d.Config.RedisKey("code:"),
 	}
 }
