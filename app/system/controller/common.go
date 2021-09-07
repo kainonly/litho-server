@@ -15,13 +15,10 @@ type Dependency struct {
 
 	IndexService    *service.Index
 	ResourceService *service.Resource
-	AdminService    *service.Admin
 }
 
 var Provides = wire.NewSet(
 	wire.Struct(new(Dependency), "*"),
 	NewIndex,
 	NewResource,
-	NewRole,
-	NewAdmin,
 )
