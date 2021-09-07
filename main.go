@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/caarlos0/env/v6"
-	"lab-api/common"
+	"lab-api/bootstrap"
 	"log"
 )
 
 func main() {
-	var cfg common.Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := bootstrap.LoadConfiguration()
+	if err != nil {
 		log.Fatalln(err)
 	}
 	app, err := App(cfg)

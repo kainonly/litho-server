@@ -2,19 +2,41 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"io/ioutil"
 	"lab-api/common"
 	"net/http"
+	"os"
 	"time"
 )
+
+// LoadConfiguration 初始化应用配置
+func LoadConfiguration() (config common.Config, err error) {
+	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
+		err = errors.New("当前路径 [./config.yml] 不存在配置文件")
+		return
+	}
+	var b []byte
+	b, err = ioutil.ReadFile("./config.yml")
+	if err != nil {
+		return
+	}
+	err = yaml.Unmarshal(b, &config)
+	if err != nil {
+		return
+	}
+	return
+}
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
