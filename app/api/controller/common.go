@@ -18,4 +18,5 @@ type Dependency struct {
 
 var Provides = fx.Provide(
 	NewIndex,
+	NewDeveloper,
 )
