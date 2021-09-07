@@ -18,4 +18,6 @@ type Dependency struct {
 
 func Routes(r *gin.Engine, d Dependency) {
 	r.GET("/", mvc.Bind(d.Index.Index))
+	r.POST("/setup", mvc.Bind(d.Index.Setup))
+	r.PUT("/sync", mvc.Bind(d.Index.Sync))
 }
