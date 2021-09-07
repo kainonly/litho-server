@@ -14,10 +14,15 @@ type Dependency struct {
 	fx.In
 
 	*controller.Index
+	*controller.Developer
 }
 
 func Routes(r *gin.Engine, d Dependency) {
 	r.GET("/", mvc.Bind(d.Index.Index))
-	r.POST("/setup", mvc.Bind(d.Index.Setup))
-	r.PUT("/sync", mvc.Bind(d.Index.Sync))
+	dev := r.Group("/dev")
+	{
+		dev.POST("setup", mvc.Bind(d.Developer.Setup))
+		dev.POST("sync", mvc.Bind(d.Developer.Sync))
+		dev.POST("migrate", mvc.Bind(d.Developer.Migrate))
+	}
 }
