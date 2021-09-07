@@ -21,4 +21,6 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
+/node_modules
+/tmp
 /config.yml
