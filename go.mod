@@ -13,12 +13,12 @@ require (
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac
 	github.com/lib/pq v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.12
 )
 
 require (
-	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
