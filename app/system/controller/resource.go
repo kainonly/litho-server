@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/crud"
+	"github.com/kainonly/go-bit/support"
 	"gorm.io/gorm"
-	"lab-api/model"
 )
 
 type Resource struct {
@@ -15,7 +15,7 @@ type Resource struct {
 func NewResource(d *Dependency) *Resource {
 	return &Resource{
 		Dependency: d,
-		Crud:       crud.New(d.Db, &model.Resource{}),
+		Crud:       crud.New(d.Db, &support.Resource{}),
 	}
 }
 

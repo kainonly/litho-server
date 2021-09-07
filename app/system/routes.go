@@ -25,8 +25,6 @@ type Dependency struct {
 
 	*controller.Index
 	*controller.Resource
-	*controller.Role
-	*controller.Admin
 }
 
 type Routes struct{}
@@ -43,7 +41,5 @@ func NewRoutes(r *gin.Engine, d *Dependency) *Routes {
 	s.POST("resource", auth, mvc.Bind(d.Index.Resource))
 
 	mvc.Crud(s.Group("resource", auth), d.Resource.Crud)
-	mvc.Crud(s.Group("role", auth), d.Role.Crud)
-	mvc.Crud(s.Group("admin", auth), d.Admin.Crud)
 	return &Routes{}
 }

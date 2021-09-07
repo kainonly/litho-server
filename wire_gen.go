@@ -56,27 +56,21 @@ func App(config common.Config) (*app.App, error) {
 	}
 	serviceIndex := service2.NewIndex(serviceDependency)
 	resource := service2.NewResource(serviceDependency)
-	admin := service2.NewAdmin(serviceDependency)
 	dependency2 := &controller2.Dependency{
 		Db:              db,
 		Cookie:          cookie,
 		Cipher:          cipher,
 		IndexService:    serviceIndex,
 		ResourceService: resource,
-		AdminService:    admin,
 	}
 	index2 := controller2.NewIndex(dependency2, authx)
 	controllerResource := controller2.NewResource(dependency2)
-	role := controller2.NewRole(dependency2)
-	controllerAdmin := controller2.NewAdmin(dependency2)
 	systemDependency := &system.Dependency{
 		Config:   config,
 		Cookie:   cookie,
 		Authx:    authx,
 		Index:    index2,
 		Resource: controllerResource,
-		Role:     role,
-		Admin:    controllerAdmin,
 	}
 	systemRoutes := system.NewRoutes(engine, systemDependency)
 	appApp := app.NewApp(engine, routes, systemRoutes)

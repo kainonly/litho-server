@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"lab-api/model"
+	"github.com/kainonly/go-bit/support"
 )
 
 type Resource struct {
@@ -40,7 +40,7 @@ func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interfac
 func (x *Resource) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
 	if err = x.Db.WithContext(ctx).
-		Model(&model.Resource{}).
+		Model(&support.Resource{}).
 		Omit("status,create_time,update_time").
 		Where("status = ?", true).
 		Find(&data).Error; err != nil {

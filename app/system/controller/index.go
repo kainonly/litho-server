@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/kainonly/go-bit/authx"
-	"github.com/kainonly/go-bit/hash"
 	"github.com/kainonly/go-bit/stringx"
 )
 
@@ -25,29 +24,29 @@ func NewIndex(d *Dependency, authx *authx.Authx) *Index {
 }
 
 func (x *Index) Login(c *gin.Context) interface{} {
-	var body struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	data, err := x.AdminService.FindByUsername(c, body.Username)
-	if err != nil {
-		return err
-	}
-	if err := hash.Verify(body.Password, data.Password); err != nil {
-		return err
-	}
-	uid := data.UUID.String()
-	jti := stringx.Uuid()
-	tokenString, err := x.auth.Create(jti, map[string]interface{}{
-		"uid": uid,
-	})
-	if err != nil {
-		return err
-	}
-	x.Cookie.Set(c, "system_access_token", tokenString)
+	//var body struct {
+	//	Username string `json:"username" binding:"required"`
+	//	Password string `json:"password" binding:"required"`
+	//}
+	//if err := c.ShouldBindJSON(&body); err != nil {
+	//	return err
+	//}
+	//data, err := x.AdminService.FindByUsername(c, body.Username)
+	//if err != nil {
+	//	return err
+	//}
+	//if err := hash.Verify(body.Password, data.Password); err != nil {
+	//	return err
+	//}
+	//uid := data.UUID.String()
+	//jti := stringx.Uuid()
+	//tokenString, err := x.auth.Create(jti, map[string]interface{}{
+	//	"uid": uid,
+	//})
+	//if err != nil {
+	//	return err
+	//}
+	//x.Cookie.Set(c, "system_access_token", tokenString)
 	return "ok"
 }
 
