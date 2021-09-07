@@ -11,9 +11,9 @@ type Resource struct {
 	Key string
 }
 
-func NewResource(d *Dependency) *Resource {
+func NewResource(d Dependency) *Resource {
 	return &Resource{
-		Dependency: d,
+		Dependency: &d,
 		Key:        d.Config.RedisKey("resource"),
 	}
 }

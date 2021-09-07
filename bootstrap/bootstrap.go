@@ -9,6 +9,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,22 +36,6 @@ func LoadConfiguration() (config common.Config, err error) {
 	if err != nil {
 		return
 	}
-	return
-}
-
-// HttpServer 启动 Gin HTTP 服务
-// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(config common.Config) (serve *gin.Engine) {
-	serve = gin.New()
-	serve.Use(gin.Logger())
-	serve.Use(gin.Recovery())
-	serve.Use(cors.New(cors.Config{
-		AllowOrigins:     config.Cors,
-		AllowMethods:     []string{"POST"},
-		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
-		AllowCredentials: true,
-		MaxAge:           6 * time.Hour,
-	}))
 	return
 }
 
@@ -121,4 +106,26 @@ func InitializeAuthx(config common.Config) *authx.Authx {
 // InitializeCipher 初始化数据加密
 func InitializeCipher(config common.Config) (*cipher.Cipher, error) {
 	return cipher.New(config.App.Key)
+}
+
+// HttpServer 启动 Gin HTTP 服务
+// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
+func HttpServer(lc fx.Lifecycle, config common.Config) (serve *gin.Engine) {
+	serve = gin.New()
+	serve.Use(gin.Logger())
+	serve.Use(gin.Recovery())
+	serve.Use(cors.New(cors.Config{
+		AllowOrigins:     config.Cors,
+		AllowMethods:     []string{"POST"},
+		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
+		AllowCredentials: true,
+		MaxAge:           6 * time.Hour,
+	}))
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go serve.Run(":9000")
+			return nil
+		},
+	})
+	return
 }
