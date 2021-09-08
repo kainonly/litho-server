@@ -14,6 +14,6 @@ func NewIndex(d Dependency) *Index {
 
 func (x *Index) Version() interface{} {
 	return gin.H{
-		"version": "1.0",
+		"version": "1.1",
 	}
 }

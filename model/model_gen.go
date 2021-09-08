@@ -46,6 +46,7 @@ type Role struct {
 	Key         string    `gorm:"type:varchar;not null;unique"`
 	Name        string    `gorm:"type:varchar;not null"`
 	Description string    `gorm:"type:text"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'"`
 }
 
 func AutoMigrate(tx *gorm.DB, models ...string) {
