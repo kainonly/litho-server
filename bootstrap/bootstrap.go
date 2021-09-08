@@ -21,7 +21,7 @@ import (
 )
 
 // LoadConfiguration 初始化应用配置
-func LoadConfiguration() (app *common.App, err error) {
+func LoadConfiguration() (app *common.Set, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = errors.New("当前路径 [./config.yml] 不存在配置文件")
 		return
@@ -40,7 +40,7 @@ func LoadConfiguration() (app *common.App, err error) {
 
 // InitializeDatabase 初始化数据库
 // 配置文档 https://gorm.io/docs/connecting_to_the_database.html
-func InitializeDatabase(app *common.App) (db *gorm.DB, err error) {
+func InitializeDatabase(app *common.Set) (db *gorm.DB, err error) {
 	option := app.Database
 	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
@@ -68,7 +68,7 @@ func InitializeDatabase(app *common.App) (db *gorm.DB, err error) {
 
 // InitializeRedis 初始化Redis缓存
 // 配置文档 https://github.com/go-redis/redis
-func InitializeRedis(app *common.App) (client *redis.Client, err error) {
+func InitializeRedis(app *common.Set) (client *redis.Client, err error) {
 	option := app.Redis
 	client = redis.NewClient(&redis.Options{
 		Addr:     option.Address,
@@ -83,12 +83,12 @@ func InitializeRedis(app *common.App) (client *redis.Client, err error) {
 }
 
 // InitializeCookie 创建 Cookie 工具
-func InitializeCookie(app *common.App) *cookie.Cookie {
+func InitializeCookie(app *common.Set) *cookie.Cookie {
 	return cookie.New(app.Cookie, http.SameSiteStrictMode)
 }
 
 // InitializeAuthx 创建认证
-func InitializeAuthx(app *common.App) *authx.Authx {
+func InitializeAuthx(app *common.Set) *authx.Authx {
 	options := map[string]*authx.Auth{
 		"system": {
 			Key: app.Key,
@@ -101,13 +101,13 @@ func InitializeAuthx(app *common.App) *authx.Authx {
 }
 
 // InitializeCipher 初始化数据加密
-func InitializeCipher(app *common.App) (*cipher.Cipher, error) {
+func InitializeCipher(app *common.Set) (*cipher.Cipher, error) {
 	return cipher.New(app.Key)
 }
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(config *common.App) (router *gin.Engine) {
+func HttpServer(config *common.Set) (router *gin.Engine) {
 	router = gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())

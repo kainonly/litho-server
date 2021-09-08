@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type App struct {
+type Set struct {
 	Name     string                 `yaml:"name"`
 	Key      string                 `yaml:"key"`
 	Database Database               `yaml:"database"`
@@ -31,12 +31,12 @@ type Redis struct {
 	DB       int    `yaml:"db"`
 }
 
-func (x *App) RedisKey(name string) string {
+func (x *Set) RedisKey(name string) string {
 	return x.Name + ":" + name
 }
 
 type Dependency struct {
-	App    *App
+	Set    *Set
 	Db     *gorm.DB
 	Redis  *redis.Client
 	Cookie *cookie.Cookie

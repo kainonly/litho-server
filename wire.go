@@ -8,7 +8,7 @@ import (
 	"lab-api/common"
 )
 
-func Bootstrap(_ *common.App) (*app.App, error) {
+func Bootstrap(_ *common.Set) (*app.App, error) {
 	wire.Build(app.Provides)
 	return &app.App{}, nil
 }

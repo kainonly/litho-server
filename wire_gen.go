@@ -20,24 +20,24 @@ import (
 
 // Injectors from wire.go:
 
-func Bootstrap(commonApp *common.App) (*app.App, error) {
-	engine := bootstrap.HttpServer(commonApp)
-	db, err := bootstrap.InitializeDatabase(commonApp)
+func Bootstrap(set *common.Set) (*app.App, error) {
+	engine := bootstrap.HttpServer(set)
+	db, err := bootstrap.InitializeDatabase(set)
 	if err != nil {
 		return nil, err
 	}
-	client, err := bootstrap.InitializeRedis(commonApp)
+	client, err := bootstrap.InitializeRedis(set)
 	if err != nil {
 		return nil, err
 	}
-	cookie := bootstrap.InitializeCookie(commonApp)
-	authx := bootstrap.InitializeAuthx(commonApp)
-	cipher, err := bootstrap.InitializeCipher(commonApp)
+	cookie := bootstrap.InitializeCookie(set)
+	authx := bootstrap.InitializeAuthx(set)
+	cipher, err := bootstrap.InitializeCipher(set)
 	if err != nil {
 		return nil, err
 	}
 	dependency := &common.Dependency{
-		App:    commonApp,
+		Set:    set,
 		Db:     db,
 		Redis:  client,
 		Cookie: cookie,
