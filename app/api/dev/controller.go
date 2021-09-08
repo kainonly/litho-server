@@ -1,4 +1,4 @@
-package controller
+package dev
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,17 +9,7 @@ import (
 	"lab-api/model"
 )
 
-type Developer struct {
-	*Dependency
-}
-
-func NewDeveloper(d Dependency) *Developer {
-	return &Developer{
-		Dependency: &d,
-	}
-}
-
-func (x *Developer) Setup(c *gin.Context) interface{} {
+func (x *Controller) Setup(c *gin.Context) interface{} {
 	tx := x.Db.WithContext(c)
 	if err := support.GenerateResources(tx); err != nil {
 		return err
@@ -27,11 +17,14 @@ func (x *Developer) Setup(c *gin.Context) interface{} {
 	if err, ok := x.Sync(c).(error); ok {
 		return err
 	}
-	model.AutoMigrate(tx, "roles")
+	model.AutoMigrate(tx, "role", "admin")
+	if err := support.InitSeeder(tx); err != nil {
+		return err
+	}
 	return "ok"
 }
 
-func (x *Developer) Sync(c *gin.Context) interface{} {
+func (x *Controller) Sync(c *gin.Context) interface{} {
 	buf, err := support.GenerateModels(x.Db.WithContext(c))
 	if err != nil {
 		return err
@@ -47,7 +40,7 @@ func (x *Developer) Sync(c *gin.Context) interface{} {
 	return "ok"
 }
 
-func (x *Developer) Migrate(c *gin.Context) interface{} {
+func (x *Controller) Migrate(c *gin.Context) interface{} {
 	var body struct {
 		Key []string `json:"key" binding:"required"`
 	}

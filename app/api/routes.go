@@ -4,25 +4,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/mvc"
 	"go.uber.org/fx"
-	"lab-api/app/api/controller"
-	"lab-api/app/api/service"
+	"lab-api/app/api/dev"
+	"lab-api/app/api/index"
 )
 
-var App = fx.Options(service.Provides, controller.Provides, fx.Invoke(Routes))
+var App = fx.Options(index.Provides, dev.Provides, fx.Invoke(Routes))
 
-type Dependency struct {
+type Inject struct {
 	fx.In
 
-	*controller.Index
-	*controller.Developer
+	Index *index.Controller
+	Dev   *dev.Controller
 }
 
-func Routes(r *gin.Engine, d Dependency) {
-	r.GET("/", mvc.Bind(d.Index.Index))
-	dev := r.Group("/dev")
+func Routes(r *gin.Engine, i Inject) {
+	r.GET("/", mvc.Bind(i.Index.Index))
+	sub := r.Group("/dev")
 	{
-		dev.POST("setup", mvc.Bind(d.Developer.Setup))
-		dev.POST("sync", mvc.Bind(d.Developer.Sync))
-		dev.POST("migrate", mvc.Bind(d.Developer.Migrate))
+		sub.POST("setup", mvc.Bind(i.Dev.Setup))
+		sub.POST("sync", mvc.Bind(i.Dev.Sync))
+		sub.POST("migrate", mvc.Bind(i.Dev.Migrate))
 	}
 }

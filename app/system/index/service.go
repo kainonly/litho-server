@@ -1,29 +1,17 @@
-package service
+package index
 
 import (
 	"context"
 	"time"
 )
 
-type Index struct {
-	*Dependency
-	Key string
-}
-
-func NewIndex(d Dependency) *Index {
-	return &Index{
-		Dependency: &d,
-		Key:        d.App.RedisKey("code:"),
-	}
-}
-
 // GenerateCode 生成验证码
-func (x *Index) GenerateCode(ctx context.Context, index string, code string) error {
+func (x *Service) GenerateCode(ctx context.Context, index string, code string) error {
 	return x.Redis.Set(ctx, x.Key+index, code, time.Minute).Err()
 }
 
 // VerifyCode 校验验证码
-func (x *Index) VerifyCode(ctx context.Context, index string, code string) (result bool, err error) {
+func (x *Service) VerifyCode(ctx context.Context, index string, code string) (result bool, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key+index).Result(); err != nil {
 		return
@@ -39,6 +27,6 @@ func (x *Index) VerifyCode(ctx context.Context, index string, code string) (resu
 }
 
 // RemoveCode 移除验证码
-func (x *Index) RemoveCode(ctx context.Context, index string) error {
+func (x *Service) RemoveCode(ctx context.Context, index string) error {
 	return x.Redis.Del(ctx, x.Key+index).Err()
 }

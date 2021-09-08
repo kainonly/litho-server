@@ -1,8 +1,12 @@
 package common
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 type App struct {
@@ -30,4 +34,15 @@ type Redis struct {
 
 func (x *App) RedisKey(name string) string {
 	return x.Name + ":" + name
+}
+
+type Dependency struct {
+	fx.In
+
+	App    *App
+	Db     *gorm.DB
+	Redis  *redis.Client
+	Cookie *cookie.Cookie
+	Authx  *authx.Authx
+	Cipher *cipher.Cipher
 }
