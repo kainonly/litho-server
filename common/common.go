@@ -5,7 +5,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
-	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
@@ -37,8 +36,6 @@ func (x *App) RedisKey(name string) string {
 }
 
 type Dependency struct {
-	fx.In
-
 	App    *App
 	Db     *gorm.DB
 	Redis  *redis.Client
