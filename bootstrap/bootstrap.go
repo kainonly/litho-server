@@ -9,7 +9,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
-	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -108,26 +107,16 @@ func InitializeCipher(app *common.App) (*cipher.Cipher, error) {
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(lc fx.Lifecycle, app *common.App) (router *gin.Engine) {
+func HttpServer(config *common.App) (router *gin.Engine) {
 	router = gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     app.Cors,
+		AllowOrigins:     config.Cors,
 		AllowMethods:     []string{"POST"},
 		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
 		AllowCredentials: true,
 		MaxAge:           6 * time.Hour,
 	}))
-	srv := &http.Server{
-		Addr:    ":9000",
-		Handler: router,
-	}
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go srv.ListenAndServe()
-			return nil
-		},
-	})
 	return
 }
