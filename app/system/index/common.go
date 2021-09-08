@@ -1,13 +1,14 @@
 package index
 
 import (
+	"github.com/google/wire"
 	"github.com/kainonly/go-bit/authx"
-	"go.uber.org/fx"
 	"lab-api/app/system/resource"
 	"lab-api/common"
 )
 
-var Provides = fx.Provide(
+var Provides = wire.NewSet(
+	wire.Struct(new(ControllerInject), "*"),
 	NewController,
 	NewService,
 )
@@ -19,16 +20,14 @@ type Controller struct {
 }
 
 type ControllerInject struct {
-	fx.In
-
 	Service         *Service
 	ResourceService *resource.Service
 }
 
-func NewController(d common.Dependency, i ControllerInject, authx *authx.Authx) *Controller {
+func NewController(d *common.Dependency, i *ControllerInject, authx *authx.Authx) *Controller {
 	return &Controller{
-		Dependency:       &d,
-		ControllerInject: &i,
+		Dependency:       d,
+		ControllerInject: i,
 		Auth:             authx.Make("system"),
 	}
 }
@@ -38,9 +37,9 @@ type Service struct {
 	Key string
 }
 
-func NewService(d common.Dependency) *Service {
+func NewService(d *common.Dependency) *Service {
 	return &Service{
-		Dependency: &d,
-		Key:        d.App.RedisKey("code:"),
+		Dependency: d,
+		Key:        d.Set.RedisKey("code:"),
 	}
 }
