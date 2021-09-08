@@ -6,14 +6,14 @@ import (
 )
 
 func main() {
-	app, err := bootstrap.LoadConfiguration()
+	set, err := bootstrap.LoadConfiguration()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	a, err := Bootstrap(app)
+	app, err := Bootstrap(set)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	a.Run(":9000")
+	app.Run(":9000")
 }

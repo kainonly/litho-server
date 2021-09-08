@@ -40,6 +40,6 @@ type Service struct {
 func NewService(d *common.Dependency) *Service {
 	return &Service{
 		Dependency: d,
-		Key:        d.App.RedisKey("code:"),
+		Key:        d.Set.RedisKey("code:"),
 	}
 }
