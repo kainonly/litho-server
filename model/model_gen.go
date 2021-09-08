@@ -4,6 +4,7 @@ package model
 
 import (
 	"database/sql/driver"
+	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm"
 	"time"
@@ -41,17 +42,33 @@ func False() *bool {
 type Role struct {
 	ID          int64
 	Status      *bool     `gorm:"default:true"`
-	CreateTime  time.Time `gorm:"autoCreateTime"`
-	UpdateTime  time.Time `gorm:"autoUpdateTime"`
+	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp"`
 	Key         string    `gorm:"type:varchar;not null;unique"`
 	Name        string    `gorm:"type:varchar;not null"`
 	Description string    `gorm:"type:text"`
 	Permissions Array     `gorm:"type:jsonb;default:'[]'"`
 }
 
+type Admin struct {
+	ID          int64
+	Status      *bool     `gorm:"default:true"`
+	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp"`
+	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
+	Username    string    `gorm:"type:varchar;not null;unique"`
+	Password    string    `gorm:"type:varchar;not null"`
+	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'"`
+	Name        string    `gorm:"type:varchar"`
+	Email       string    `gorm:"type:varchar"`
+	Phone       string    `gorm:"type:varchar"`
+	Avatar      Object    `gorm:"type:jsonb;default:'[]'"`
+}
+
 func AutoMigrate(tx *gorm.DB, models ...string) {
 	mapper := map[string]interface{}{
-		"role": &Role{},
+		"role": &Role{}, "admin": &Admin{},
 	}
 
 	for _, model := range models {
