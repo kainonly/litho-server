@@ -1,4 +1,4 @@
-package service
+package resource
 
 import (
 	"context"
@@ -6,18 +6,7 @@ import (
 	"github.com/kainonly/go-bit/support"
 )
 
-type Resource struct {
-	*Dependency
-	Key string
-}
-
-func NewResource(d Dependency) *Resource {
-	return &Resource{
-		Dependency: &d,
-		Key:        d.App.RedisKey("resource"),
-	}
-}
-func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interface{}, err error) {
+func (x *Service) GetFromCache(ctx context.Context) (data []map[string]interface{}, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
 		return
@@ -37,7 +26,7 @@ func (x *Resource) GetFromCache(ctx context.Context) (data []map[string]interfac
 	return
 }
 
-func (x *Resource) RefreshCache(ctx context.Context) (err error) {
+func (x *Service) RefreshCache(ctx context.Context) (err error) {
 	var data []map[string]interface{}
 	if err = x.Db.WithContext(ctx).
 		Model(&support.Resource{}).
@@ -56,6 +45,6 @@ func (x *Resource) RefreshCache(ctx context.Context) (err error) {
 	return
 }
 
-func (x *Resource) RemoveCache(ctx context.Context) error {
+func (x *Service) RemoveCache(ctx context.Context) error {
 	return x.Redis.Del(ctx, x.Key).Err()
 }

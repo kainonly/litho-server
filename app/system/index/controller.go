@@ -1,29 +1,15 @@
-package controller
+package index
 
 import (
-	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/stringx"
 )
 
 var LoginExpired = errors.New("login authentication has expired")
 
-type Index struct {
-	*Dependency
-	auth *authx.Auth
-}
-
-func NewIndex(d Dependency, authx *authx.Authx) *Index {
-	return &Index{
-		Dependency: &d,
-		auth:       authx.Make("system"),
-	}
-}
-
-func (x *Index) Login(c *gin.Context) interface{} {
+func (x *Controller) Login(c *gin.Context) interface{} {
 	//var body struct {
 	//	Username string `json:"username" binding:"required"`
 	//	Password string `json:"password" binding:"required"`
@@ -50,25 +36,25 @@ func (x *Index) Login(c *gin.Context) interface{} {
 	return "ok"
 }
 
-func (x *Index) Verify(c *gin.Context) interface{} {
+func (x *Controller) Verify(c *gin.Context) interface{} {
 	tokenString, err := x.Cookie.Get(c, "system_access_token")
 	if err != nil {
 		return LoginExpired
 	}
-	if _, err := x.auth.Verify(tokenString); err != nil {
+	if _, err := x.Auth.Verify(tokenString); err != nil {
 		return err
 	}
 	return "ok"
 }
 
-func (x *Index) Code(c *gin.Context) interface{} {
+func (x *Controller) Code(c *gin.Context) interface{} {
 	claims, exists := c.Get("access_token")
 	if !exists {
 		return LoginExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := stringx.Random(8)
-	if err := x.IndexService.GenerateCode(c, jti, code); err != nil {
+	if err := x.Service.GenerateCode(c, jti, code); err != nil {
 		return err
 	}
 	return gin.H{
@@ -76,7 +62,7 @@ func (x *Index) Code(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Index) RefreshToken(c *gin.Context) interface{} {
+func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	var body struct {
 		Code string `json:"code" binding:"required"`
 	}
@@ -85,17 +71,17 @@ func (x *Index) RefreshToken(c *gin.Context) interface{} {
 	}
 	claims, _ := c.Get("access_token")
 	jti := claims.(jwt.MapClaims)["jti"].(string)
-	result, err := x.IndexService.VerifyCode(c, jti, body.Code)
+	result, err := x.Service.VerifyCode(c, jti, body.Code)
 	if err != nil {
 		return err
 	}
 	if !result {
 		return LoginExpired
 	}
-	if err = x.IndexService.RemoveCode(c, jti); err != nil {
+	if err = x.Service.RemoveCode(c, jti); err != nil {
 		return err
 	}
-	tokenString, err := x.auth.Create(jti, map[string]interface{}{
+	tokenString, err := x.Auth.Create(jti, map[string]interface{}{
 		"uid": claims.(jwt.MapClaims)["uid"],
 	})
 	if err != nil {
@@ -105,13 +91,13 @@ func (x *Index) RefreshToken(c *gin.Context) interface{} {
 	return "ok"
 }
 
-func (x *Index) Logout(c *gin.Context) interface{} {
+func (x *Controller) Logout(c *gin.Context) interface{} {
 	x.Cookie.Del(c, "system_access_token")
 	return "ok"
 }
 
-func (x *Index) Resource(c *gin.Context) interface{} {
-	data, err := x.ResourceService.GetFromCache(context.Background())
+func (x *Controller) Resource(c *gin.Context) interface{} {
+	data, err := x.ResourceService.GetFromCache(c)
 	if err != nil {
 		return err
 	}
