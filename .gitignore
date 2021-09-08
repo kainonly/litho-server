@@ -21,6 +21,9 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
-/node_modules
 /tmp
+/node_modules
+/package-lock.json
+/.env
 /config.yml
+/serverless.yml

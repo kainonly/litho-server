@@ -1,7 +1,9 @@
 {
   "name": "lab-api",
-  "version": "1.0.0",
+  "version": "0.0.0-NOT-USED",
   "scripts": {
-    "start": "air"
+    "start": "air",
+    "build:scf-api": "go build -tags=jsoniter -o dist/scf_bootstrap main.go wire_gen.go",
+    "deploy:scf-api": "npm run build:scf-api && serverless deploy"
   }
 }

@@ -1,0 +1,25 @@
+component: scf
+name: lab-scf
+
+inputs:
+  src: ./dist
+  type: web
+  handler: main
+  runtime: Go1
+  namespace: default
+  region: ap-guangzhou
+  memorySize: 128
+  timeout: 5
+  environment:
+    variables:
+      GIN_MODE: release
+  events:
+    - apigw:
+        parameters:
+          protocols:
+            - http
+            - https
+          environment: release
+          endpoints:
+            - path: /
+              method: ANY
