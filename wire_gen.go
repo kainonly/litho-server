@@ -14,25 +14,24 @@ import (
 	"lab-api/app/system"
 	index2 "lab-api/app/system/index"
 	"lab-api/app/system/resource"
-	"lab-api/bootstrap"
 	"lab-api/common"
 )
 
 // Injectors from wire.go:
 
 func Bootstrap(set *common.Set) (*app.App, error) {
-	engine := bootstrap.HttpServer(set)
-	db, err := bootstrap.InitializeDatabase(set)
+	engine := common.HttpServer(set)
+	db, err := common.InitializeDatabase(set)
 	if err != nil {
 		return nil, err
 	}
-	client, err := bootstrap.InitializeRedis(set)
+	client, err := common.InitializeRedis(set)
 	if err != nil {
 		return nil, err
 	}
-	cookie := bootstrap.InitializeCookie(set)
-	authx := bootstrap.InitializeAuthx(set)
-	cipher, err := bootstrap.InitializeCipher(set)
+	cookie := common.InitializeCookie(set)
+	authx := common.InitializeAuthx(set)
+	cipher, err := common.InitializeCipher(set)
 	if err != nil {
 		return nil, err
 	}
