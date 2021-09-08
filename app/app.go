@@ -5,17 +5,16 @@ import (
 	"github.com/google/wire"
 	"lab-api/app/api"
 	"lab-api/app/system"
-	"lab-api/bootstrap"
 	"lab-api/common"
 )
 
 var Provides = wire.NewSet(
-	bootstrap.HttpServer,
-	bootstrap.InitializeDatabase,
-	bootstrap.InitializeRedis,
-	bootstrap.InitializeCookie,
-	bootstrap.InitializeAuthx,
-	bootstrap.InitializeCipher,
+	common.HttpServer,
+	common.InitializeDatabase,
+	common.InitializeRedis,
+	common.InitializeCookie,
+	common.InitializeAuthx,
+	common.InitializeCipher,
 	wire.Struct(new(common.Dependency), "*"),
 	api.Provides,
 	system.Provides,

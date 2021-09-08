@@ -1,12 +1,12 @@
 package main
 
 import (
-	"lab-api/bootstrap"
+	"lab-api/common"
 	"log"
 )
 
 func main() {
-	set, err := bootstrap.LoadConfiguration()
+	set, err := common.LoadSettings()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -14,6 +14,5 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	app.Run(":9000")
 }
