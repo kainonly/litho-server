@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"lab-api/model"
-	"log"
 )
 
 type Developer struct {
@@ -21,14 +20,19 @@ func NewDeveloper(d Dependency) *Developer {
 }
 
 func (x *Developer) Setup(c *gin.Context) interface{} {
-	if err := support.GenerateResources(x.Db); err != nil {
+	tx := x.Db.WithContext(c)
+	if err := support.GenerateResources(tx); err != nil {
 		return err
 	}
+	if err, ok := x.Sync(c).(error); ok {
+		return err
+	}
+	model.AutoMigrate(tx, "roles")
 	return "ok"
 }
 
 func (x *Developer) Sync(c *gin.Context) interface{} {
-	buf, err := support.GenerateModels(x.Db)
+	buf, err := support.GenerateModels(x.Db.WithContext(c))
 	if err != nil {
 		return err
 	}
@@ -40,17 +44,16 @@ func (x *Developer) Sync(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	log.Println(x.App)
 	return "ok"
 }
 
 func (x *Developer) Migrate(c *gin.Context) interface{} {
 	var body struct {
-		Key string `json:"key" binding:"required"`
+		Key []string `json:"key" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	model.AutoMigrate(x.Db, body.Key)
+	model.AutoMigrate(x.Db, body.Key...)
 	return "ok"
 }
