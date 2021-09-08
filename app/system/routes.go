@@ -2,23 +2,28 @@ package system
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 	"github.com/kainonly/go-bit/mvc"
-	"go.uber.org/fx"
 	"lab-api/app/system/index"
 	"lab-api/app/system/resource"
 	"lab-api/common"
 )
 
-var App = fx.Options(index.Provides, resource.Provides, fx.Invoke(Routes))
+var Provides = wire.NewSet(
+	wire.Struct(new(Inject), "*"),
+	index.Provides,
+	resource.Provides,
+	NewRoutes,
+)
 
 type Inject struct {
-	fx.In
-
 	Index    *index.Controller
 	Resource *resource.Controller
 }
 
-func Routes(r *gin.Engine, d common.Dependency, i Inject) {
+type Routes struct{}
+
+func NewRoutes(r *gin.Engine, d *common.Dependency, i *Inject) *Routes {
 	s := r.Group("/system")
 	auth := authMiddleware(d.Authx.Make("system"), d.Cookie)
 
@@ -30,4 +35,5 @@ func Routes(r *gin.Engine, d common.Dependency, i Inject) {
 	s.POST("resource", auth, mvc.Bind(i.Index.Resource))
 
 	mvc.Crud(s.Group("resource", auth), i.Resource.Crud)
+	return &Routes{}
 }

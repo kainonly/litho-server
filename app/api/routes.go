@@ -2,22 +2,27 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 	"github.com/kainonly/go-bit/mvc"
-	"go.uber.org/fx"
 	"lab-api/app/api/dev"
 	"lab-api/app/api/index"
 )
 
-var App = fx.Options(index.Provides, dev.Provides, fx.Invoke(Routes))
+var Provides = wire.NewSet(
+	wire.Struct(new(Inject), "*"),
+	index.Provides,
+	dev.Provides,
+	NewRoutes,
+)
 
 type Inject struct {
-	fx.In
-
 	Index *index.Controller
 	Dev   *dev.Controller
 }
 
-func Routes(r *gin.Engine, i Inject) {
+type Routes struct{}
+
+func NewRoutes(r *gin.Engine, i *Inject) *Routes {
 	r.GET("/", mvc.Bind(i.Index.Index))
 	sub := r.Group("/dev")
 	{
@@ -25,4 +30,5 @@ func Routes(r *gin.Engine, i Inject) {
 		sub.POST("sync", mvc.Bind(i.Dev.Sync))
 		sub.POST("migrate", mvc.Bind(i.Dev.Migrate))
 	}
+	return &Routes{}
 }

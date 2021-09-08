@@ -3,10 +3,10 @@ tmp_dir = "tmp"
 
 [build]
 bin = "tmp\\main.exe"
-cmd = "go build -tags=jsoniter -o ./tmp/main.exe ."
+cmd = "wire && go build -tags=jsoniter -o ./tmp/main.exe ."
 delay = 500
 exclude_dir = ["assets", "tmp", "vendor", ".idea", ".git"]
-exclude_file = []
+exclude_file = ["wire_gen.go"]
 exclude_regex = []
 exclude_unchanged = false
 follow_symlink = false
