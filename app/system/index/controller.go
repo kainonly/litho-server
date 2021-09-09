@@ -2,13 +2,17 @@ package index
 
 import (
 	"errors"
+	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/kainonly/go-bit/hash"
-	"github.com/kainonly/go-bit/stringx"
+	"github.com/google/uuid"
+	"github.com/thoas/go-funk"
 )
 
-var LoginExpired = errors.New("login authentication has expired")
+var (
+	LoginExpired = errors.New(`登录认证已失效`)
+	LoginInvalid = errors.New(`用户密码不正确`)
+)
 
 func (x *Controller) Login(c *gin.Context) interface{} {
 	var body struct {
@@ -22,11 +26,15 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if err := hash.Verify(body.Password, data.Password); err != nil {
+	match, err := argon2id.ComparePasswordAndHash(body.Password, data.Password)
+	if err != nil {
 		return err
 	}
+	if match == false {
+		return LoginInvalid
+	}
 	uid := data.Uuid.String()
-	jti := stringx.Uuid()
+	jti := uuid.New().String()
 	tokenString, err := x.Auth.Create(jti, map[string]interface{}{
 		"uid": uid,
 	})
@@ -54,7 +62,7 @@ func (x *Controller) Code(c *gin.Context) interface{} {
 		return LoginExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
-	code := stringx.Random(8)
+	code := funk.RandomString(8)
 	if err := x.Service.GenerateCode(c, jti, code); err != nil {
 		return err
 	}
