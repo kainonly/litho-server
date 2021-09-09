@@ -23,6 +23,8 @@ var Provides = wire.NewSet(
 type Inject struct {
 	Index    *index.Controller
 	Resource *resource.Controller
+	Role     *role.Controller
+	Admin    *admin.Controller
 }
 
 type Routes struct{}
@@ -39,5 +41,7 @@ func NewRoutes(r *gin.Engine, d *common.Dependency, i *Inject) *Routes {
 	s.POST("resource", auth, mvc.Bind(i.Index.Resource))
 
 	mvc.Crud(s.Group("resource", auth), i.Resource.Crud)
+	mvc.Crud(s.Group("role", auth), i.Role.Crud)
+	mvc.Crud(s.Group("admin", auth), i.Admin.Crud)
 	return &Routes{}
 }
