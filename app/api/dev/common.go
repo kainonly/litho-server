@@ -1,38 +1,41 @@
 package dev
 
 import (
-	"github.com/google/wire"
+	"go.uber.org/fx"
 	"lab-api/common"
 )
 
-var Provides = wire.NewSet(
-	wire.Struct(new(ControllerInject), "*"),
+var Provides = fx.Provide(
 	NewController,
 	NewService,
 )
 
 type Controller struct {
-	*common.Dependency
 	*ControllerInject
 }
 
 type ControllerInject struct {
+	common.App
+
 	*Service
 }
 
-func NewController(d *common.Dependency, i *ControllerInject) *Controller {
+func NewController(i ControllerInject) *Controller {
 	return &Controller{
-		Dependency:       d,
-		ControllerInject: i,
+		ControllerInject: &i,
 	}
 }
 
 type Service struct {
-	*common.Dependency
+	*ServiceInject
 }
 
-func NewService(d *common.Dependency) *Service {
+type ServiceInject struct {
+	common.App
+}
+
+func NewService(i ServiceInject) *Service {
 	return &Service{
-		Dependency: d,
+		ServiceInject: &i,
 	}
 }

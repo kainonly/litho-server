@@ -1,44 +1,47 @@
 package resource
 
 import (
-	"github.com/google/wire"
 	"github.com/kainonly/go-bit/crud"
 	"github.com/kainonly/go-bit/support"
+	"go.uber.org/fx"
 	"lab-api/common"
 )
 
-var Provides = wire.NewSet(
-	wire.Struct(new(ControllerInject), "*"),
+var Provides = fx.Provide(
 	NewController,
 	NewService,
 )
 
 type Controller struct {
-	*common.Dependency
 	*ControllerInject
 	*crud.Crud
 }
 
 type ControllerInject struct {
+	common.App
+
 	Service *Service
 }
 
-func NewController(d *common.Dependency, i *ControllerInject) *Controller {
+func NewController(i ControllerInject) *Controller {
 	return &Controller{
-		Dependency:       d,
-		ControllerInject: i,
-		Crud:             crud.New(d.Db, &support.Resource{}),
+		ControllerInject: &i,
+		Crud:             crud.New(i.Db, &support.Resource{}),
 	}
 }
 
 type Service struct {
-	*common.Dependency
+	*ServiceInject
 	Key string
 }
 
-func NewService(d *common.Dependency) *Service {
+type ServiceInject struct {
+	common.App
+}
+
+func NewService(i ServiceInject) *Service {
 	return &Service{
-		Dependency: d,
-		Key:        d.Set.RedisKey("resource"),
+		ServiceInject: &i,
+		Key:           i.Set.RedisKey("resource"),
 	}
 }
