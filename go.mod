@@ -9,12 +9,11 @@ require (
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
-	github.com/google/wire v0.5.0
 	github.com/json-iterator/go v1.1.11
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac
 	github.com/lib/pq v1.6.0 // indirect
 	github.com/thoas/go-funk v0.9.1
-	go.uber.org/fx v1.14.2 // indirect
+	go.uber.org/fx v1.14.2
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/postgres v1.1.0
