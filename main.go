@@ -1,18 +1,17 @@
 package main
 
 import (
-	"lab-api/common"
-	"log"
+	"go.uber.org/fx"
+	"lab-api/app/api"
+	"lab-api/app/system"
+	"lab-api/bootstrap"
 )
 
 func main() {
-	set, err := common.LoadSettings()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	app, err := App(set)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	app.Run(":9000")
+	fx.New(
+		fx.NopLogger,
+		bootstrap.Provides,
+		api.Options,
+		system.Options,
+	).Run()
 }

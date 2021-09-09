@@ -5,8 +5,20 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
+
+type App struct {
+	fx.In
+
+	Set    *Set
+	Db     *gorm.DB
+	Redis  *redis.Client
+	Cookie *cookie.Cookie
+	Authx  *authx.Authx
+	Cipher *cipher.Cipher
+}
 
 type Set struct {
 	Name     string                 `yaml:"name"`
@@ -33,13 +45,4 @@ type Redis struct {
 
 func (x *Set) RedisKey(name string) string {
 	return x.Name + ":" + name
-}
-
-type Dependency struct {
-	Set    *Set
-	Db     *gorm.DB
-	Redis  *redis.Client
-	Cookie *cookie.Cookie
-	Authx  *authx.Authx
-	Cipher *cipher.Cipher
 }
