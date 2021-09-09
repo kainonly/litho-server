@@ -4,8 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/kainonly/go-bit/mvc"
+	"lab-api/app/system/admin"
 	"lab-api/app/system/index"
 	"lab-api/app/system/resource"
+	"lab-api/app/system/role"
 	"lab-api/common"
 )
 
@@ -13,6 +15,8 @@ var Provides = wire.NewSet(
 	wire.Struct(new(Inject), "*"),
 	index.Provides,
 	resource.Provides,
+	role.Provides,
+	admin.Provides,
 	NewRoutes,
 )
 

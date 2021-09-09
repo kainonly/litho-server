@@ -12,6 +12,7 @@ import (
 	"lab-api/app/api/dev"
 	"lab-api/app/api/index"
 	"lab-api/app/system"
+	"lab-api/app/system/admin"
 	index2 "lab-api/app/system/index"
 	"lab-api/app/system/resource"
 	"lab-api/common"
@@ -60,9 +61,11 @@ func App(set *common.Set) (*app.App, error) {
 	routes := api.NewRoutes(engine, inject)
 	indexService := index2.NewService(dependency)
 	resourceService := resource.NewService(dependency)
+	adminService := admin.NewService(dependency)
 	indexControllerInject := &index2.ControllerInject{
 		Service:         indexService,
 		ResourceService: resourceService,
+		AdminService:    adminService,
 	}
 	indexController := index2.NewController(dependency, indexControllerInject, authx)
 	resourceControllerInject := &resource.ControllerInject{

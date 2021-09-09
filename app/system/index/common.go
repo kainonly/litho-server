@@ -3,6 +3,7 @@ package index
 import (
 	"github.com/google/wire"
 	"github.com/kainonly/go-bit/authx"
+	"lab-api/app/system/admin"
 	"lab-api/app/system/resource"
 	"lab-api/common"
 )
@@ -22,6 +23,7 @@ type Controller struct {
 type ControllerInject struct {
 	Service         *Service
 	ResourceService *resource.Service
+	AdminService    *admin.Service
 }
 
 func NewController(d *common.Dependency, i *ControllerInject, authx *authx.Authx) *Controller {
