@@ -40,8 +40,8 @@ func NewRoutes(r *gin.Engine, d *common.Dependency, i *Inject) *Routes {
 	s.POST("logout", auth, mvc.Bind(i.Index.Logout))
 	s.POST("resource", auth, mvc.Bind(i.Index.Resource))
 
-	mvc.Crud(s.Group("resource", auth), i.Resource.Crud)
-	mvc.Crud(s.Group("role", auth), i.Role.Crud)
-	mvc.Crud(s.Group("admin", auth), i.Admin.Crud)
+	mvc.Crud(s.Group("resource", auth), i.Resource)
+	mvc.Crud(s.Group("role", auth), i.Role)
+	mvc.Crud(s.Group("admin", auth), i.Admin)
 	return &Routes{}
 }
