@@ -19,7 +19,7 @@ import (
 
 // Injectors from wire.go:
 
-func Bootstrap(set *common.Set) (*app.App, error) {
+func App(set *common.Set) (*app.App, error) {
 	engine := common.HttpServer(set)
 	db, err := common.InitializeDatabase(set)
 	if err != nil {

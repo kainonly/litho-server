@@ -1,12 +1,12 @@
-package resource
+package role
 
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/kainonly/go-bit/support"
+	"lab-api/model"
 )
 
-func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, err error) {
+func (x *Service) GetFromCache(ctx context.Context, code string) (data []string, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
 		return
@@ -17,7 +17,7 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, er
 		}
 	}
 	var value string
-	if value, err = x.Redis.Get(ctx, x.Key).Result(); err != nil {
+	if value, err = x.Redis.HGet(ctx, x.Key, code).Result(); err != nil {
 		return
 	}
 	if err = jsoniter.Unmarshal([]byte(value), &data); err != nil {
@@ -27,17 +27,24 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, er
 }
 
 func (x *Service) RefreshCache(ctx context.Context) (err error) {
-	var data []support.Resource
+	var data []struct {
+		ID          int64
+		Key         string
+		Permissions string
+	}
 	if err = x.Db.WithContext(ctx).
-		Model(&support.Resource{}).
+		Model(&model.Role{}).
+		Where("status = ?", true).
+		Where("key <> ?", "*").
+		Select([]string{"key", "permissions"}).
 		Find(&data).Error; err != nil {
 		return
 	}
-	var value []byte
-	if value, err = jsoniter.Marshal(&data); err != nil {
-		return
+	values := make(map[string]interface{}, len(data))
+	for _, v := range data {
+		values[v.Key] = v.Permissions
 	}
-	if err = x.Redis.Set(ctx, x.Key, value, 0).Err(); err != nil {
+	if err = x.Redis.HMSet(ctx, x.Key, values).Err(); err != nil {
 		return
 	}
 	return

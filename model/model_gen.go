@@ -40,30 +40,30 @@ func False() *bool {
 }
 
 type Role struct {
-	ID          int64
-	Status      *bool     `gorm:"default:true"`
-	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp"`
-	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp"`
-	Key         string    `gorm:"type:varchar;not null;unique"`
-	Name        string    `gorm:"type:varchar;not null"`
-	Description string    `gorm:"type:text"`
-	Permissions Array     `gorm:"type:jsonb;default:'[]'"`
+	ID          int64     `json:"id"`
+	Status      *bool     `gorm:"default:true" json:"status"`
+	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
+	Key         string    `gorm:"type:varchar;not null;unique" json:"key"`
+	Name        string    `gorm:"type:varchar;not null" json:"name"`
+	Description string    `gorm:"type:text" json:"description"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
 type Admin struct {
-	ID          int64
-	Status      *bool     `gorm:"default:true"`
-	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp"`
-	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp"`
+	ID          int64     `json:"id"`
+	Status      *bool     `gorm:"default:true" json:"status"`
+	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
 	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
-	Username    string    `gorm:"type:varchar;not null;unique"`
-	Password    string    `gorm:"type:varchar;not null"`
-	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'"`
-	Permissions Array     `gorm:"type:jsonb;default:'[]'"`
-	Name        string    `gorm:"type:varchar"`
-	Email       string    `gorm:"type:varchar"`
-	Phone       string    `gorm:"type:varchar"`
-	Avatar      Object    `gorm:"type:jsonb;default:'[]'"`
+	Username    string    `gorm:"type:varchar;not null;unique" json:"username"`
+	Password    string    `gorm:"type:varchar;not null" json:"password"`
+	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'" json:"roles"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
+	Name        string    `gorm:"type:varchar" json:"name"`
+	Email       string    `gorm:"type:varchar" json:"email"`
+	Phone       string    `gorm:"type:varchar" json:"phone"`
+	Avatar      Array     `gorm:"type:jsonb;default:'[]'" json:"avatar"`
 }
 
 func AutoMigrate(tx *gorm.DB, models ...string) {
