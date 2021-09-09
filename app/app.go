@@ -9,13 +9,6 @@ import (
 )
 
 var Provides = wire.NewSet(
-	common.HttpServer,
-	common.InitializeDatabase,
-	common.InitializeRedis,
-	common.InitializeCookie,
-	common.InitializeAuthx,
-	common.InitializeCipher,
-	wire.Struct(new(common.Dependency), "*"),
 	api.Provides,
 	system.Provides,
 	NewApp,
@@ -31,4 +24,18 @@ func NewApp(
 	_ *system.Routes,
 ) *App {
 	return &App{Engine: r}
+}
+
+func Run(_ *common.Set) (*App, error) {
+	wire.Build(
+		common.HttpServer,
+		common.InitializeDatabase,
+		common.InitializeRedis,
+		common.InitializeCookie,
+		common.InitializeAuthx,
+		common.InitializeCipher,
+		wire.Struct(new(common.Dependency), "*"),
+		Provides,
+	)
+	return &App{}, nil
 }

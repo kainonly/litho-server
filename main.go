@@ -10,7 +10,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	app, err := Bootstrap(set)
+	app, err := App(set)
 	if err != nil {
 		log.Fatalln(err)
 	}
