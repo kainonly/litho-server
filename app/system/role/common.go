@@ -32,7 +32,8 @@ func NewController(i ControllerInject) *Controller {
 
 type Service struct {
 	*ServiceInject
-	Key string
+	Routers     string
+	Permissions string
 }
 
 type ServiceInject struct {
@@ -42,6 +43,7 @@ type ServiceInject struct {
 func NewService(i ServiceInject) *Service {
 	return &Service{
 		ServiceInject: &i,
-		Key:           i.Set.RedisKey("role"),
+		Routers:       i.Set.RedisKey("routers"),
+		Permissions:   i.Set.RedisKey("permissions"),
 	}
 }
