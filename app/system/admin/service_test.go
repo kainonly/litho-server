@@ -14,7 +14,7 @@ func TestService_FindByUsername(t *testing.T) {
 }
 
 func TestService_GetFromCache(t *testing.T) {
-	data, err := s.GetFromCache(context.Background(), "426597eb-fd6a-4ea4-a734-da248361eb9b")
+	data, err := s.GetFromCache(context.Background(), "48ee5eda-4117-402a-88db-9d12df42aae9")
 	if err != nil {
 		t.Error(err)
 	}

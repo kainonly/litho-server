@@ -47,6 +47,7 @@ func (x *Service) RefreshCache(ctx context.Context) (err error) {
 		var value []byte
 		if value, err = jsoniter.Marshal(&map[string]interface{}{
 			"roles":       v.Roles,
+			"routers":     v.Routers,
 			"permissions": v.Permissions,
 		}); err != nil {
 			return

@@ -5,8 +5,16 @@ import (
 	"testing"
 )
 
-func TestService_GetFromCache(t *testing.T) {
-	data, err := s.GetFromCache(context.TODO(), "admin")
+func TestService_GetRouters(t *testing.T) {
+	data, err := s.GetRouters(context.TODO(), "admin")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(data)
+}
+
+func TestService_GetPermissions(t *testing.T) {
+	data, err := s.GetPermissions(context.TODO(), "admin")
 	if err != nil {
 		t.Error(err)
 	}
@@ -20,5 +28,7 @@ func TestService_RefreshCache(t *testing.T) {
 }
 
 func TestService_RemoveCache(t *testing.T) {
-
+	if err := s.RemoveCache(context.TODO()); err != nil {
+		t.Error(err)
+	}
 }
