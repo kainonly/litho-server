@@ -47,6 +47,7 @@ type Role struct {
 	Key         string    `gorm:"type:varchar;not null;unique" json:"key"`
 	Name        string    `gorm:"type:varchar;not null" json:"name"`
 	Description string    `gorm:"type:text" json:"description"`
+	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
 	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
@@ -59,11 +60,12 @@ type Admin struct {
 	Username    string    `gorm:"type:varchar;not null;unique" json:"username"`
 	Password    string    `gorm:"type:varchar;not null" json:"password"`
 	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'" json:"roles"`
-	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 	Name        string    `gorm:"type:varchar" json:"name"`
 	Email       string    `gorm:"type:varchar" json:"email"`
 	Phone       string    `gorm:"type:varchar" json:"phone"`
 	Avatar      Array     `gorm:"type:jsonb;default:'[]'" json:"avatar"`
+	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
 func AutoMigrate(tx *gorm.DB, models ...string) {
