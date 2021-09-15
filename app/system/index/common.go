@@ -2,6 +2,7 @@ package index
 
 import (
 	"github.com/kainonly/go-bit/authx"
+	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"lab-api/app/system/admin"
 	"lab-api/app/system/resource"
@@ -15,6 +16,7 @@ var Provides = fx.Provide(
 
 type Controller struct {
 	*ControllerInject
+	*crud.API
 	Auth *authx.Auth
 }
 

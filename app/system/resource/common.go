@@ -14,7 +14,7 @@ var Provides = fx.Provide(
 
 type Controller struct {
 	*ControllerInject
-	*crud.Crud
+	*crud.API
 }
 
 type ControllerInject struct {
@@ -26,7 +26,7 @@ type ControllerInject struct {
 func NewController(i ControllerInject) *Controller {
 	return &Controller{
 		ControllerInject: &i,
-		Crud:             crud.New(i.Db, &support.Resource{}),
+		API:              i.Crud.API(support.Resource{}),
 	}
 }
 
