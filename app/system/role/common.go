@@ -4,7 +4,6 @@ import (
 	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"lab-api/common"
-	"lab-api/model"
 )
 
 var Provides = fx.Provide(
@@ -14,7 +13,7 @@ var Provides = fx.Provide(
 
 type Controller struct {
 	*ControllerInject
-	*crud.Crud
+	*crud.API
 }
 
 type ControllerInject struct {
@@ -26,7 +25,7 @@ type ControllerInject struct {
 func NewController(i ControllerInject) *Controller {
 	return &Controller{
 		ControllerInject: &i,
-		Crud:             crud.New(i.Db, &model.Role{}),
+		API:              i.Crud.API("role"),
 	}
 }
 

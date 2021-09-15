@@ -9,6 +9,7 @@ import (
 	"lab-api/app/system/resource"
 	"lab-api/app/system/role"
 	"lab-api/common"
+	"log"
 )
 
 var Options = fx.Options(
@@ -30,16 +31,25 @@ type Inject struct {
 
 func Routes(r *gin.Engine, i Inject) {
 	s := r.Group("/system")
-	auth := authMiddleware(i.Authx.Make("system"), i.Cookie)
+	//auth := authMiddleware(i.Authx.Make("system"), i.Cookie)
+	s.POST("/:model/r/find/one", func(c *gin.Context) {
+		var uri struct {
+			Model string `uri:"model"`
+		}
+		if err := c.ShouldBindUri(&uri); err != nil {
+			c.JSON(400, gin.H{"msg": err})
+			return
+		}
+		log.Println(uri)
+	})
+	//s.POST("login", mvc.Bind(i.Index.Login))
+	//s.POST("verify", mvc.Bind(i.Index.Verify))
+	//s.POST("code", auth, mvc.Bind(i.Index.Code))
+	//s.POST("refresh", auth, mvc.Bind(i.Index.RefreshToken))
+	//s.POST("logout", auth, mvc.Bind(i.Index.Logout))
+	//s.POST("resource", auth, mvc.Bind(i.Index.Resource))
 
-	s.POST("login", mvc.Bind(i.Index.Login))
-	s.POST("verify", mvc.Bind(i.Index.Verify))
-	s.POST("code", auth, mvc.Bind(i.Index.Code))
-	s.POST("refresh", auth, mvc.Bind(i.Index.RefreshToken))
-	s.POST("logout", auth, mvc.Bind(i.Index.Logout))
-	s.POST("resource", auth, mvc.Bind(i.Index.Resource))
-
-	mvc.Crud(s.Group("resource", auth), i.Resource)
-	mvc.Crud(s.Group("role", auth), i.Role)
-	mvc.Crud(s.Group("admin", auth), i.Admin)
+	//mvc.Crud(s.Group("resource"), i.Resource)
+	mvc.Crud(s.Group("role"), i.Role)
+	mvc.Crud(s.Group("admin"), i.Admin)
 }
