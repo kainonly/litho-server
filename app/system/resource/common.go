@@ -2,6 +2,7 @@ package resource
 
 import (
 	"github.com/kainonly/go-bit/crud"
+	"github.com/kainonly/go-bit/support"
 	"go.uber.org/fx"
 	"lab-api/common"
 )
@@ -25,7 +26,7 @@ type ControllerInject struct {
 func NewController(i ControllerInject) *Controller {
 	return &Controller{
 		ControllerInject: &i,
-		API:              i.Crud.API("resource"),
+		API:              i.Crud.API(support.Resource{}),
 	}
 }
 
