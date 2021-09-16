@@ -1,4 +1,4 @@
-package dev
+package devtools
 
 import (
 	"go.uber.org/fx"
@@ -17,7 +17,7 @@ type Controller struct {
 type ControllerInject struct {
 	common.App
 
-	*Service
+	Service *Service
 }
 
 func NewController(i ControllerInject) *Controller {
