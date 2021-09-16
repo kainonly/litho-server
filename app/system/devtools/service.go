@@ -23,8 +23,9 @@ func (x *Service) MigrateSchema(ctx context.Context) (err error) {
 	tx.Exec("create index columns_gin on schema using gin(columns)")
 	data := []model.Schema{
 		{
-			Key:  "resource",
-			Kind: "manual",
+			Key:    "resource",
+			Kind:   "manual",
+			System: model.True(),
 		},
 		{
 			Key:  "role",
@@ -230,7 +231,9 @@ func (x *Service) columns(columns model.Columns) string {
 func (x *Service) CreateModels(ctx context.Context) (buf bytes.Buffer, err error) {
 	tx := x.Db.WithContext(ctx)
 	var schemas []model.Schema
-	if err = tx.Find(&schemas).Error; err != nil {
+	if err = tx.
+		Where("kind <> ?", "manual").
+		Find(&schemas).Error; err != nil {
 		return
 	}
 	var tmpl *template.Template

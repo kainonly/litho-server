@@ -8,23 +8,16 @@ import (
 	"time"
 )
 
-type Resource struct {
-	ID         int64     `json:"id"`
-	Status     *bool     `gorm:"default:true" json:"status"`
-	CreateTime time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
-	UpdateTime time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
-}
-
 type Role struct {
 	ID          int64     `json:"id"`
 	Status      *bool     `gorm:"default:true" json:"status"`
 	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
 	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
-	Description string    `gorm:"type:text" json:"description"`
-	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 	Key         string    `gorm:"type:varchar;not null;unique" json:"key"`
 	Name        string    `gorm:"type:varchar;not null" json:"name"`
 	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
+	Description string    `gorm:"type:text" json:"description"`
+	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
 type Admin struct {
@@ -32,21 +25,21 @@ type Admin struct {
 	Status      *bool     `gorm:"default:true" json:"status"`
 	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
 	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
-	Password    string    `gorm:"type:varchar;not null" json:"-"`
-	Name        string    `gorm:"type:varchar" json:"name"`
-	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
-	Email       string    `gorm:"type:varchar" json:"email"`
-	Avatar      Array     `gorm:"type:jsonb;default:'[]'" json:"avatar"`
 	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
 	Phone       string    `gorm:"type:varchar" json:"phone"`
 	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'" json:"roles"`
+	Avatar      Array     `gorm:"type:jsonb;default:'[]'" json:"avatar"`
+	Password    string    `gorm:"type:varchar;not null" json:"-"`
 	Username    string    `gorm:"type:varchar;not null;unique" json:"username"`
+	Name        string    `gorm:"type:varchar" json:"name"`
+	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
+	Email       string    `gorm:"type:varchar" json:"email"`
 	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
 func AutoMigrate(tx *gorm.DB, models ...string) (err error) {
 	mapper := map[string]interface{}{
-		"resource": &Resource{}, "role": &Role{}, "admin": &Admin{},
+		"role": &Role{}, "admin": &Admin{},
 	}
 
 	for _, model := range models {
@@ -56,4 +49,6 @@ func AutoMigrate(tx *gorm.DB, models ...string) (err error) {
 			}
 		}
 	}
+
+	return
 }

@@ -33,5 +33,7 @@ func AutoMigrate(tx *gorm.DB, models ...string) (err error) {
 			}
 		}
 	}
+
+	return
 }
 `
