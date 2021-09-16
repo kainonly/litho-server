@@ -23,6 +23,7 @@ var Options = fx.Options(
 
 type Inject struct {
 	common.App
+
 	DevTools *devtools.Controller
 	Index    *index.Controller
 	Resource *resource.Controller
@@ -45,7 +46,7 @@ func Routes(r *gin.Engine, i Inject) {
 	s.POST("refresh", auth, mvc.Returns(i.Index.RefreshToken))
 	s.POST("logout", auth, mvc.Returns(i.Index.Logout))
 	s.POST("resource", auth, mvc.Returns(i.Index.Resource))
-	resourceRoute := s.Group("resource", auth)
+	resourceRoute := s.Group("resource")
 	{
 		mvc.Crud(resourceRoute, i.Resource)
 	}
