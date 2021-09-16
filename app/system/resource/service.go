@@ -3,10 +3,10 @@ package resource
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/kainonly/go-bit/support"
+	"lab-api/model"
 )
 
-func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, err error) {
+func (x *Service) GetFromCache(ctx context.Context) (data []model.Resource, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
 		return
@@ -27,9 +27,9 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, er
 }
 
 func (x *Service) RefreshCache(ctx context.Context) (err error) {
-	var data []support.Resource
+	var data []model.Resource
 	if err = x.Db.WithContext(ctx).
-		Model(&support.Resource{}).
+		Model(&model.Resource{}).
 		Find(&data).Error; err != nil {
 		return
 	}

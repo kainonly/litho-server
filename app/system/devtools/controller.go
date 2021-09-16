@@ -1,8 +1,7 @@
-package dev
+package devtools
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/go-bit/support"
 	"go/format"
 	"io/fs"
 	"io/ioutil"
@@ -10,22 +9,26 @@ import (
 )
 
 func (x *Controller) Setup(c *gin.Context) interface{} {
-	tx := x.Db.WithContext(c)
-	if err := support.GenerateResources(tx); err != nil {
+	if err := x.Service.MigrateSchema(c); err != nil {
+		return err
+	}
+	if err := x.Service.MigrateResource(c); err != nil {
 		return err
 	}
 	if err, ok := x.Sync(c).(error); ok {
 		return err
 	}
-	model.AutoMigrate(tx, "role", "admin")
-	if err := support.InitSeeder(tx); err != nil {
+	if err := model.AutoMigrate(x.Db.WithContext(c), "role", "admin"); err != nil {
+		return err
+	}
+	if err := x.Service.Seeder(c); err != nil {
 		return err
 	}
 	return "ok"
 }
 
 func (x *Controller) Sync(c *gin.Context) interface{} {
-	buf, err := support.GenerateModels(x.Db.WithContext(c))
+	buf, err := x.Service.CreateModels(c)
 	if err != nil {
 		return err
 	}
@@ -47,6 +50,8 @@ func (x *Controller) Migrate(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	model.AutoMigrate(x.Db, body.Key...)
+	if err := model.AutoMigrate(x.Db.WithContext(c), body.Key...); err != nil {
+		return err
+	}
 	return "ok"
 }

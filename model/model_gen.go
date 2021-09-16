@@ -3,41 +3,10 @@
 package model
 
 import (
-	"database/sql/driver"
 	"github.com/google/uuid"
-	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm"
 	"time"
 )
-
-type Array []interface{}
-
-func (x *Array) Scan(input interface{}) error {
-	return jsoniter.Unmarshal(input.([]byte), x)
-}
-
-func (x Array) Value() (driver.Value, error) {
-	return jsoniter.Marshal(x)
-}
-
-type Object map[string]interface{}
-
-func (x *Object) Scan(input interface{}) error {
-	return jsoniter.Unmarshal(input.([]byte), x)
-}
-
-func (x Object) Value() (driver.Value, error) {
-	return jsoniter.Marshal(x)
-}
-
-func True() *bool {
-	value := true
-	return &value
-}
-
-func False() *bool {
-	return new(bool)
-}
 
 type Role struct {
 	ID          int64     `json:"id"`
@@ -68,14 +37,17 @@ type Admin struct {
 	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 
-func AutoMigrate(tx *gorm.DB, models ...string) {
+func AutoMigrate(tx *gorm.DB, models ...string) (err error) {
 	mapper := map[string]interface{}{
 		"role": &Role{}, "admin": &Admin{},
 	}
 
 	for _, model := range models {
 		if mapper[model] != nil {
-			tx.AutoMigrate(mapper[model])
+			if err = tx.AutoMigrate(mapper[model]); err != nil {
+				return
+			}
 		}
 	}
+	return
 }
