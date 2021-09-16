@@ -29,7 +29,8 @@ type Inject struct {
 }
 
 func Routes(r *gin.Engine, i Inject) {
-	s := r.Group("/system")
+	s := r.Group("system")
+
 	//auth := authMiddleware(i.Authx.Make("system"), i.Cookie)
 	//auto := s.Group("/:model")
 	//{
@@ -51,8 +52,16 @@ func Routes(r *gin.Engine, i Inject) {
 	//s.POST("refresh", auth, mvc.Bind(i.Index.RefreshToken))
 	//s.POST("logout", auth, mvc.Bind(i.Index.Logout))
 	//s.POST("resource", auth, mvc.Bind(i.Index.Resource))
-
-	mvc.Crud(s.Group("resource"), i.Resource)
-	mvc.Crud(s.Group("role"), i.Role)
-	mvc.Crud(s.Group("admin"), i.Admin)
+	resourceRoute := s.Group("resource")
+	{
+		mvc.Crud(resourceRoute, i.Resource)
+	}
+	roleRoute := s.Group("role")
+	{
+		mvc.Crud(roleRoute, i.Role)
+	}
+	adminRoute := s.Group("admin")
+	{
+		mvc.Crud(adminRoute, i.Admin)
+	}
 }

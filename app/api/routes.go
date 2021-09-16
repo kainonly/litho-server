@@ -4,26 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kainonly/go-bit/mvc"
 	"go.uber.org/fx"
-	"lab-api/app/api/dev"
 	"lab-api/app/api/index"
+	"lab-api/app/system/devtools"
 	"lab-api/common"
 )
 
-var Options = fx.Options(index.Provides, dev.Provides, fx.Invoke(Routes))
+var Options = fx.Options(index.Provides, devtools.Provides, fx.Invoke(Routes))
 
 type Inject struct {
 	common.App
 
 	Index *index.Controller
-	Dev   *dev.Controller
 }
 
 func Routes(r *gin.Engine, i Inject) {
-	r.GET("/", mvc.Bind(i.Index.Index))
-	sub := r.Group("/dev")
-	{
-		sub.POST("setup", mvc.Bind(i.Dev.Setup))
-		sub.POST("sync", mvc.Bind(i.Dev.Sync))
-		sub.POST("migrate", mvc.Bind(i.Dev.Migrate))
-	}
+	r.GET("/", mvc.Returns(i.Index.Index))
 }
