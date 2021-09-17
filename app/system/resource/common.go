@@ -4,7 +4,6 @@ import (
 	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"lab-api/common"
-	"lab-api/model"
 )
 
 var Provides = fx.Provide(
@@ -26,7 +25,7 @@ type ControllerInject struct {
 func NewController(i ControllerInject) *Controller {
 	return &Controller{
 		ControllerInject: &i,
-		API:              i.Crud.API(model.Resource{}),
+		API:              i.Crud.API("resource"),
 	}
 }
 
@@ -42,6 +41,5 @@ type ServiceInject struct {
 func NewService(i ServiceInject) *Service {
 	return &Service{
 		ServiceInject: &i,
-		Key:           i.Set.RedisKey("resource"),
 	}
 }
