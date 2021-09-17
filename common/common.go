@@ -5,6 +5,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"github.com/kainonly/go-bit/crud"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 )
@@ -15,6 +16,7 @@ type App struct {
 	Set    *Set
 	Mongo  *mongo.Client
 	Db     *mongo.Database
+	Crud   *crud.Crud
 	Redis  *redis.Client
 	Cookie *cookie.Cookie
 	Authx  *authx.Authx

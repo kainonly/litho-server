@@ -2,14 +2,16 @@ package system
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kainonly/go-bit/mvc"
 	"go.uber.org/fx"
 	"lab-api/app/system/index"
+	"lab-api/app/system/resource"
 	"lab-api/common"
 )
 
 var Options = fx.Options(
 	index.Provides,
-	//resource.Provides,
+	resource.Provides,
 	//role.Provides,
 	//admin.Provides,
 	fx.Invoke(Routes),
@@ -18,14 +20,14 @@ var Options = fx.Options(
 type Inject struct {
 	common.App
 
-	Index *index.Controller
-	//Resource *resource.Controller
+	Index    *index.Controller
+	Resource *resource.Controller
 	//Role     *role.Controller
 	//Admin    *admin.Controller
 }
 
 func Routes(r *gin.Engine, i Inject) {
-	//s := r.Group("system")
+	s := r.Group("system")
 	//if os.Getenv("GIN_MODE") != "release" {
 	//	devtoolsRoute := s.Group("devtools")
 	//	devtoolsRoute.POST("setup", mvc.Returns(i.DevTools.Setup))
@@ -39,10 +41,10 @@ func Routes(r *gin.Engine, i Inject) {
 	//s.POST("refresh", auth, mvc.Returns(i.Index.RefreshToken))
 	//s.POST("logout", auth, mvc.Returns(i.Index.Logout))
 	//s.POST("resource", auth, mvc.Returns(i.Index.Resource))
-	//resourceRoute := s.Group("resource")
-	//{
-	//	mvc.Crud(resourceRoute, i.Resource)
-	//}
+	resourceRoute := s.Group("resource")
+	{
+		resourceRoute.POST("r/first", mvc.Returns(i.Resource.First))
+	}
 	//roleRoute := s.Group("role", auth)
 	//{
 	//	mvc.Crud(roleRoute, i.Role)
