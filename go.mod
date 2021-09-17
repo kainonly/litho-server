@@ -13,6 +13,7 @@ require (
 	github.com/kainonly/go-bit v1.0.1-beta.0.20210813060118-d167d0efebac
 	github.com/lib/pq v1.6.0 // indirect
 	github.com/thoas/go-funk v0.9.1
+	go.mongodb.org/mongo-driver v1.7.2 // indirect
 	go.uber.org/fx v1.14.2
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

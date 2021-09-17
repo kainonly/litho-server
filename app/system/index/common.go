@@ -4,8 +4,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
-	"lab-api/app/system/admin"
-	"lab-api/app/system/resource"
 	"lab-api/common"
 )
 
@@ -23,9 +21,7 @@ type Controller struct {
 type ControllerInject struct {
 	common.App
 
-	Service         *Service
-	ResourceService *resource.Service
-	AdminService    *admin.Service
+	Service *Service
 }
 
 func NewController(i ControllerInject) *Controller {

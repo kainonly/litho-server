@@ -5,11 +5,10 @@ import (
 	"github.com/kainonly/go-bit/mvc"
 	"go.uber.org/fx"
 	"lab-api/app/api/index"
-	"lab-api/app/system/devtools"
 	"lab-api/common"
 )
 
-var Options = fx.Options(index.Provides, devtools.Provides, fx.Invoke(Routes))
+var Options = fx.Options(index.Provides, fx.Invoke(Routes))
 
 type Inject struct {
 	common.App
