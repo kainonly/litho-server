@@ -9,6 +9,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"github.com/kainonly/go-bit/crud"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -24,6 +25,7 @@ import (
 var Provides = fx.Provide(
 	LoadSettings,
 	InitializeDatabase,
+	crud.New,
 	InitializeRedis,
 	InitializeCookie,
 	InitializeAuthx,
