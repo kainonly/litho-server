@@ -6,15 +6,16 @@ import (
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
 type App struct {
 	fx.In
 
 	Set    *Set
-	Db     *gorm.DB
+	Mongo  *mongo.Client
+	Db     *mongo.Database
 	Crud   *crud.Crud
 	Redis  *redis.Client
 	Cookie *cookie.Cookie
@@ -33,10 +34,8 @@ type Set struct {
 }
 
 type Database struct {
-	Dsn             string `yaml:"dsn"`
-	MaxIdleConns    int    `yaml:"max_idle_conns"`
-	MaxOpenConns    int    `yaml:"max_open_conns"`
-	ConnMaxLifetime int    `yaml:"conn_max_lifetime"`
+	Uri  string `yaml:"uri"`
+	Name string `yaml:"name"`
 }
 
 type Redis struct {

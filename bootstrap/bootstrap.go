@@ -10,11 +10,11 @@ import (
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
 	"github.com/kainonly/go-bit/crud"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"lab-api/common"
 	"net/http"
@@ -52,30 +52,17 @@ func LoadSettings() (app *common.Set, err error) {
 }
 
 // InitializeDatabase 初始化数据库
-// 配置文档 https://gorm.io/docs/connecting_to_the_database.html
-func InitializeDatabase(app *common.Set) (db *gorm.DB, err error) {
+func InitializeDatabase(app *common.Set) (client *mongo.Client, db *mongo.Database, err error) {
 	option := app.Database
-	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-	})
-	if err != nil {
+	if client, err = mongo.Connect(context.TODO(),
+		options.Client().ApplyURI(option.Uri),
+	); err != nil {
 		return
 	}
-	sqlDB, err := db.DB()
-	if err != nil {
+	if err = client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		return
 	}
-	if option.MaxIdleConns != 0 {
-		sqlDB.SetMaxIdleConns(option.MaxIdleConns)
-	}
-	if option.MaxOpenConns != 0 {
-		sqlDB.SetMaxOpenConns(option.MaxOpenConns)
-	}
-	if option.ConnMaxLifetime != 0 {
-		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(option.ConnMaxLifetime))
-	}
+	db = client.Database(option.Name)
 	return
 }
 
