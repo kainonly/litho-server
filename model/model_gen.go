@@ -25,15 +25,15 @@ type Admin struct {
 	Status      *bool     `gorm:"default:true" json:"status"`
 	CreateTime  time.Time `gorm:"autoCreateTime;default:current_timestamp" json:"create_time"`
 	UpdateTime  time.Time `gorm:"autoUpdateTime;default:current_timestamp" json:"update_time"`
-	Name        string    `gorm:"type:varchar" json:"name"`
-	Email       string    `gorm:"type:varchar" json:"email"`
+	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
 	Phone       string    `gorm:"type:varchar" json:"phone"`
 	Roles       Array     `gorm:"type:jsonb;not null;default:'[]'" json:"roles"`
-	Username    string    `gorm:"type:varchar;not null;unique" json:"username"`
-	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
 	Avatar      Array     `gorm:"type:jsonb;default:'[]'" json:"avatar"`
-	Routers     Array     `gorm:"type:jsonb;default:'[]'" json:"routers"`
 	Password    string    `gorm:"type:varchar;not null" json:"-"`
+	Username    string    `gorm:"type:varchar;not null;unique" json:"username"`
+	Name        string    `gorm:"type:varchar" json:"name"`
+	Uuid        uuid.UUID `gorm:"type:uuid;not null;unique;default:uuid_generate_v4()" json:"-"`
+	Email       string    `gorm:"type:varchar" json:"email"`
 	Permissions Array     `gorm:"type:jsonb;default:'[]'" json:"permissions"`
 }
 

@@ -54,7 +54,6 @@ func (x Columns) Value() (driver.Value, error) {
 
 type Column struct {
 	Label    string   `json:"label"`
-	Name     string   `json:"name"`
 	Type     string   `json:"type"`
 	Default  string   `json:"default,omitempty"`
 	Unique   bool     `json:"unique,omitempty"`
