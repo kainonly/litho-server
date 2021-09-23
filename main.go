@@ -2,16 +2,14 @@ package main
 
 import (
 	"go.uber.org/fx"
-	"lab-api/app/api"
-	"lab-api/app/system"
+	"lab-api/api"
 	"lab-api/bootstrap"
 )
 
 func main() {
 	fx.New(
-		fx.NopLogger,
+		//fx.NopLogger,
 		bootstrap.Provides,
 		api.Options,
-		system.Options,
 	).Run()
 }
