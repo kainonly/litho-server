@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "api/index";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+service Index {
+  rpc Index (google.protobuf.Empty) returns (IndexReply) {
+    option (google.api.http) = {
+      get: "/",
+    };
+  }
+}
+
+message IndexReply {
+  string message = 1;
+}
