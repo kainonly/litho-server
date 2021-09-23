@@ -1,7 +1,10 @@
 package index
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+	"github.com/golang/protobuf/ptypes/empty"
+)
 
-func (x *Controller) Index(c *gin.Context) interface{} {
-	return x.Service.Version()
+func (x *Controller) Index(_ context.Context, _ *empty.Empty) (*IndexReply, error) {
+	return nil, nil
 }
