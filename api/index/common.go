@@ -11,8 +11,6 @@ var Provides = fx.Provide(
 )
 
 type Controller struct {
-	UnimplementedIndexServer
-
 	*ControllerInject
 }
 
