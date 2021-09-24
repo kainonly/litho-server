@@ -9,7 +9,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/crud"
+	"github.com/kainonly/go-bit/dsapi"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
@@ -26,7 +26,7 @@ var Provides = fx.Provide(
 	LoadSettings,
 	InitializeDatabase,
 	InitializeRedis,
-	crud.InitializeAPI,
+	dsapi.InitializeAPI,
 	InitializeCookie,
 	InitializeAuthx,
 	InitializeCipher,
