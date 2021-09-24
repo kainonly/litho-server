@@ -3,7 +3,6 @@
   "version": "0.0.0-NOT-USED",
   "scripts": {
     "start": "air",
-    "build:scf-api": "go build -tags=jsoniter -o dist/scf_bootstrap main.go wire_gen.go",
-    "deploy:scf-api": "npm run build:scf-api && serverless deploy"
+    "build:crud": "protoc --go_out=. --go-grpc_out=. library/go-bit/crud/api.proto"
   }
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
+	"github.com/kainonly/go-bit/crud"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
@@ -25,6 +26,7 @@ var Provides = fx.Provide(
 	LoadSettings,
 	InitializeDatabase,
 	InitializeRedis,
+	crud.InitializeAPI,
 	InitializeCookie,
 	InitializeAuthx,
 	InitializeCipher,
@@ -58,6 +60,7 @@ func InitializeDatabase(app *common.Set) (db *gorm.DB, err error) {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		return
