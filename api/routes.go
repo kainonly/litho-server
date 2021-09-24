@@ -6,18 +6,26 @@ import (
 	"github.com/kainonly/go-bit/mvc"
 	"github.com/kainonly/go-bit/passport"
 	"go.uber.org/fx"
-	"lab-api/api/index"
+	"lab-api/api/xapi"
+	"lab-api/api/xapi/devops"
+	"lab-api/api/xapi/system"
 )
 
 var Options = fx.Options(
-	index.Provides,
+	xapi.Provides,
 	fx.Invoke(func(
 		route *gin.Engine,
-		api *api.API,
 		pp *passport.Passport,
-		index *index.Controller,
+		api *api.API,
+		xsystem *system.Controller,
+		xdevops *devops.Controller,
 	) {
-		mvc.New(route, index)
-		mvc.New(route, api, mvc.SetPath("xapi"))
+		xapi := route.Group("xapi")
+		{
+			mvc.New(xapi, xsystem)
+			mvc.New(xapi, xdevops, mvc.SetPath("devops"))
+			mvc.New(xapi, api, mvc.SetPath("common"))
+		}
+
 	}),
 )
