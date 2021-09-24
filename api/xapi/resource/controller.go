@@ -1,7 +1,6 @@
-package index
+package resource
 
 import (
-	"github.com/gin-gonic/gin"
 	"lab-api/common"
 )
 
@@ -12,8 +11,4 @@ type Controller struct {
 type InjectController struct {
 	common.App
 	Service *Service
-}
-
-func (x *Controller) Index(c *gin.Context) interface{} {
-	return "123"
 }

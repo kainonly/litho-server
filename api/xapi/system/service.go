@@ -1,4 +1,4 @@
-package index
+package system
 
 import (
 	"github.com/gin-gonic/gin"
