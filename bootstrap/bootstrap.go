@@ -35,7 +35,7 @@ var Provides = fx.Provide(
 // LoadSettings 初始化应用配置
 func LoadSettings() (app *common.Set, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
-		err = errors.New("当前路径 [./config.yml] 不存在配置文件")
+		err = errors.New("the path [./config.yml] does not have a configuration file")
 		return
 	}
 	var b []byte
