@@ -6,10 +6,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/go-bit/authx"
-	"github.com/kainonly/go-bit/cipher"
-	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/dsapi"
+	"github.com/kainonly/go-bit/api"
+	"github.com/kainonly/go-bit/helper"
+	"github.com/kainonly/go-bit/passport"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
@@ -26,9 +25,9 @@ var Provides = fx.Provide(
 	LoadSettings,
 	InitializeDatabase,
 	InitializeRedis,
-	dsapi.InitializeAPI,
+	api.InitializeAPI,
 	InitializeCookie,
-	InitializeAuthx,
+	InitializePassport,
 	InitializeCipher,
 	HttpServer,
 )
@@ -98,13 +97,13 @@ func InitializeRedis(app *common.Set) (client *redis.Client, err error) {
 }
 
 // InitializeCookie 创建 Cookie 工具
-func InitializeCookie(app *common.Set) *cookie.Cookie {
-	return cookie.New(app.Cookie, http.SameSiteStrictMode)
+func InitializeCookie(app *common.Set) *helper.CookieHelper {
+	return helper.NewCookieHelper(app.Cookie, http.SameSiteStrictMode)
 }
 
-// InitializeAuthx 创建认证
-func InitializeAuthx(app *common.Set) *authx.Authx {
-	options := map[string]*authx.Auth{
+// InitializePassport 创建认证
+func InitializePassport(app *common.Set) *passport.Passport {
+	options := map[string]*passport.Auth{
 		"system": {
 			Key: app.Key,
 			Iss: app.Name,
@@ -112,12 +111,12 @@ func InitializeAuthx(app *common.Set) *authx.Authx {
 			Exp: 720,
 		},
 	}
-	return authx.New(options)
+	return passport.New(options)
 }
 
 // InitializeCipher 初始化数据加密
-func InitializeCipher(app *common.Set) (*cipher.Cipher, error) {
-	return cipher.New(app.Key)
+func InitializeCipher(app *common.Set) (*helper.CipherHelper, error) {
+	return helper.NewCipherHelper(app.Key)
 }
 
 // HttpServer 启动 Gin HTTP 服务
