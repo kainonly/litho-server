@@ -2,40 +2,17 @@ package index
 
 import (
 	"go.uber.org/fx"
-	"lab-api/common"
 )
 
 var Provides = fx.Provide(
-	NewController,
-	NewService,
+	func(i InjectController) *Controller {
+		return &Controller{
+			InjectController: &i,
+		}
+	},
+	func(i InjectService) *Service {
+		return &Service{
+			InjectService: &i,
+		}
+	},
 )
-
-type Controller struct {
-	*ControllerInject
-}
-
-type ControllerInject struct {
-	common.App
-
-	*Service
-}
-
-func NewController(i ControllerInject) *Controller {
-	return &Controller{
-		ControllerInject: &i,
-	}
-}
-
-type Service struct {
-	*ServiceInject
-}
-
-type ServiceInject struct {
-	common.App
-}
-
-func NewService(i ServiceInject) *Service {
-	return &Service{
-		ServiceInject: &i,
-	}
-}

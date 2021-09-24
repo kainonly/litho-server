@@ -5,7 +5,6 @@ import (
 	"github.com/kainonly/go-bit/authx"
 	"github.com/kainonly/go-bit/cipher"
 	"github.com/kainonly/go-bit/cookie"
-	"github.com/kainonly/go-bit/dsapi"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -17,8 +16,6 @@ type App struct {
 	Db     *gorm.DB
 	Redis  *redis.Client
 	Cookie *cookie.Cookie
-	API    *dsapi.API
-	Authx  *authx.Authx
 	Cipher *cipher.Cipher
 }
 
