@@ -2,9 +2,8 @@ package common
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/go-bit/authx"
-	"github.com/kainonly/go-bit/cipher"
-	"github.com/kainonly/go-bit/cookie"
+	"github.com/kainonly/go-bit/helper"
+	"github.com/kainonly/go-bit/passport"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -15,18 +14,18 @@ type App struct {
 	Set    *Set
 	Db     *gorm.DB
 	Redis  *redis.Client
-	Cookie *cookie.Cookie
-	Cipher *cipher.Cipher
+	Cookie *helper.CookieHelper
+	Cipher *helper.CipherHelper
 }
 
 type Set struct {
-	Name     string                 `yaml:"name"`
-	Key      string                 `yaml:"key"`
-	Database Database               `yaml:"database"`
-	Redis    Redis                  `yaml:"redis"`
-	Cookie   cookie.Option          `yaml:"cookie"`
-	Cors     []string               `yaml:"cors"`
-	Auth     map[string]*authx.Auth `yaml:"auth"`
+	Name     string                        `yaml:"name"`
+	Key      string                        `yaml:"key"`
+	Database Database                      `yaml:"database"`
+	Redis    Redis                         `yaml:"redis"`
+	Cookie   helper.CookieOption           `yaml:"cookie"`
+	Cors     []string                      `yaml:"cors"`
+	Auth     map[string]*passport.Passport `yaml:"auth"`
 }
 
 type Database struct {
