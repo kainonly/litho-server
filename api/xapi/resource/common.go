@@ -13,6 +13,7 @@ var Provides = fx.Provide(
 	func(i InjectService) *Service {
 		return &Service{
 			InjectService: &i,
+			Key:           i.Set.RedisKey("resource"),
 		}
 	},
 )
