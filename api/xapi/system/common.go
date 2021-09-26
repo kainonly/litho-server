@@ -12,8 +12,7 @@ var Provides = fx.Provide(
 	},
 	func(i InjectService) *Service {
 		return &Service{
-			InjectService:   &i,
-			VerificationKey: i.Set.RedisKey("verify:"),
+			InjectService: &i,
 		}
 	},
 )

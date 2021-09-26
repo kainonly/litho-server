@@ -24,7 +24,7 @@ var Options = fx.Options(
 		{
 			mvc.New(xapi, xsystem)
 			mvc.New(xapi, xdevops, mvc.SetPath("devops"))
-			mvc.New(xapi, api, mvc.SetPath("common"))
+			mvc.New(xapi, api, mvc.SetPath(":model"))
 		}
 
 	}),
