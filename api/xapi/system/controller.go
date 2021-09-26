@@ -1,6 +1,8 @@
 package system
 
 import (
+	"github.com/gin-gonic/gin"
+	"lab-api/api/xapi/resource"
 	"lab-api/common"
 )
 
@@ -10,7 +12,8 @@ type Controller struct {
 
 type InjectController struct {
 	common.App
-	Service *Service
+	Service         *Service
+	ResourceService *resource.Service
 }
 
 //func (x *Controller) Login(c *gin.Context) interface{} {
@@ -104,10 +107,11 @@ type InjectController struct {
 //	return "ok"
 //}
 //
-//func (x *Controller) Resource(c *gin.Context) interface{} {
-//	data, err := x.ResourceService.GetFromCache(c)
-//	if err != nil {
-//		return err
-//	}
-//	return data
-//}
+
+func (x *Controller) Resource(c *gin.Context) interface{} {
+	data, err := x.ResourceService.GetFromCache(c)
+	if err != nil {
+		return err
+	}
+	return data
+}
