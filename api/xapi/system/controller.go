@@ -13,7 +13,7 @@ type Controller struct {
 type InjectController struct {
 	common.App
 	Service         *Service
-	ResourceService *resource.Service
+	ResourceService *planx.Service
 }
 
 //func (x *Controller) Login(c *gin.Context) interface{} {
@@ -108,7 +108,7 @@ type InjectController struct {
 //}
 //
 
-func (x *Controller) Resource(c *gin.Context) interface{} {
+func (x *Controller) Planx(c *gin.Context) interface{} {
 	data, err := x.ResourceService.GetFromCache(c)
 	if err != nil {
 		return err

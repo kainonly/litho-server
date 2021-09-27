@@ -55,14 +55,14 @@ type Admin struct {
 	Status      *bool
 	CreateTime  time.Time
 	UpdateTime  time.Time
-	Avatar      Array
-	Routers     Array
-	Password    string
 	Permissions Array
-	Name        string
 	Uuid        uuid.UUID
 	Email       string
 	Roles       Array
+	Avatar      Array
+	Routers     Array
+	Password    string
+	Name        string
 	Phone       string
 	Username    string
 }
