@@ -1,4 +1,4 @@
-package planx
+package page
 
 import (
 	"lab-api/common"
