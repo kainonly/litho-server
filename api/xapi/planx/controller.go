@@ -1,4 +1,4 @@
-package resource
+package planx
 
 import (
 	"lab-api/common"

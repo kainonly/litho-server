@@ -1,4 +1,4 @@
-package resource
+package planx
 
 import (
 	"context"
@@ -9,16 +9,19 @@ import (
 
 type Service struct {
 	*InjectService
-	Key string
 }
 
 type InjectService struct {
 	common.App
 }
 
-func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, err error) {
+func (x *Service) planxKey() string {
+	return x.Set.RedisKey("planx")
+}
+
+func (x *Service) GetFromCache(ctx context.Context) (data []support.Planx, err error) {
 	var exists int64
-	if exists, err = x.Redis.Exists(ctx, x.Key).Result(); err != nil {
+	if exists, err = x.Redis.Exists(ctx, x.planxKey()).Result(); err != nil {
 		return
 	}
 	if exists == 0 {
@@ -27,7 +30,7 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, er
 		}
 	}
 	var value string
-	if value, err = x.Redis.Get(ctx, x.Key).Result(); err != nil {
+	if value, err = x.Redis.Get(ctx, x.planxKey()).Result(); err != nil {
 		return
 	}
 	if err = jsoniter.Unmarshal([]byte(value), &data); err != nil {
@@ -37,9 +40,9 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Resource, er
 }
 
 func (x *Service) RefreshCache(ctx context.Context) (err error) {
-	var data []support.Resource
+	var data []support.Planx
 	if err = x.Db.WithContext(ctx).
-		Model(&support.Resource{}).
+		Model(&support.Planx{}).
 		Find(&data).Error; err != nil {
 		return
 	}
@@ -47,12 +50,12 @@ func (x *Service) RefreshCache(ctx context.Context) (err error) {
 	if value, err = jsoniter.Marshal(&data); err != nil {
 		return
 	}
-	if err = x.Redis.Set(ctx, x.Key, value, 0).Err(); err != nil {
+	if err = x.Redis.Set(ctx, x.planxKey(), value, 0).Err(); err != nil {
 		return
 	}
 	return
 }
 
 func (x *Service) RemoveCache(ctx context.Context) error {
-	return x.Redis.Del(ctx, x.Key).Err()
+	return x.Redis.Del(ctx, x.planxKey()).Err()
 }

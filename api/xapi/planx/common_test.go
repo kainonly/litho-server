@@ -1,4 +1,4 @@
-package resource
+package planx
 
 import (
 	"go.uber.org/fx"

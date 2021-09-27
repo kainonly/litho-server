@@ -11,7 +11,7 @@ import (
 
 var Provides = fx.Options(
 	system.Provides,
-	resource.Provides,
+	planx.Provides,
 	role.Provides,
 	admin.Provides,
 	devops.Provides,
