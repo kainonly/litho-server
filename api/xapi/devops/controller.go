@@ -23,7 +23,7 @@ func (x *Controller) Setup(c *gin.Context) interface{} {
 	if err := support.GenerateSchema(tx); err != nil {
 		return err
 	}
-	if err := support.GenerateResources(tx); err != nil {
+	if err := support.GeneratePage(tx); err != nil {
 		return err
 	}
 	if err, ok := x.Sync(c).(error); ok {

@@ -2,7 +2,6 @@
   "name": "lab-api",
   "version": "0.0.0-NOT-USED",
   "scripts": {
-    "start": "air",
-    "build:crud": "protoc --go_out=. --go-grpc_out=. library/go-bit/crud/api.proto"
+    "start": "air"
   }
 }

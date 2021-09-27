@@ -43,11 +43,11 @@ type Role struct {
 	Status      *bool
 	CreateTime  time.Time
 	UpdateTime  time.Time
+	Permissions ref
 	Key         string
 	Name        string
-	Routers     Array
+	Routers     ref
 	Description string
-	Permissions Array
 }
 
 type Admin struct {
@@ -55,14 +55,14 @@ type Admin struct {
 	Status      *bool
 	CreateTime  time.Time
 	UpdateTime  time.Time
-	Permissions Array
+	Username    string
 	Uuid        uuid.UUID
 	Email       string
-	Roles       Array
-	Avatar      Array
-	Routers     Array
-	Password    string
-	Name        string
 	Phone       string
-	Username    string
+	Avatar      Array
+	Permissions ref
+	Name        string
+	Roles       ref
+	Routers     ref
+	Password    string
 }
