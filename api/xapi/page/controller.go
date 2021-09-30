@@ -1,7 +1,7 @@
 package page
 
 import (
-	"lab-api/common"
+	"laboratory/common"
 )
 
 type Controller struct {

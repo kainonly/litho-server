@@ -1,4 +1,4 @@
-module lab-api
+module laboratory
 
 go 1.15
 
@@ -7,8 +7,8 @@ require (
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/json-iterator/go v1.1.11
-	github.com/kainonly/go-bit v1.1.0
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/weplanx/support v1.1.0
 	go.uber.org/fx v1.14.2
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -16,4 +16,4 @@ require (
 	gorm.io/gorm v1.21.15
 )
 
-replace github.com/kainonly/go-bit v1.1.0 => ./library/go-bit
+replace github.com/weplanx/support v1.1.0 => ./support

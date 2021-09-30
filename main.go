@@ -2,8 +2,8 @@ package main
 
 import (
 	"go.uber.org/fx"
-	"lab-api/api"
-	"lab-api/bootstrap"
+	"laboratory/api"
+	"laboratory/bootstrap"
 )
 
 func main() {

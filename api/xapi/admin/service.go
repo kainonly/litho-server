@@ -1,7 +1,7 @@
 package admin
 
 import (
-	"lab-api/common"
+	"laboratory/common"
 )
 
 type Service struct {

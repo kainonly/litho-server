@@ -2,8 +2,8 @@ package system
 
 import (
 	"github.com/gin-gonic/gin"
-	"lab-api/api/xapi/page"
-	"lab-api/common"
+	"laboratory/api/xapi/page"
+	"laboratory/common"
 )
 
 type Controller struct {
