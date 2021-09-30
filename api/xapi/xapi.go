@@ -2,11 +2,11 @@ package xapi
 
 import (
 	"go.uber.org/fx"
-	"lab-api/api/xapi/admin"
-	"lab-api/api/xapi/devops"
-	"lab-api/api/xapi/page"
-	"lab-api/api/xapi/role"
-	"lab-api/api/xapi/system"
+	"laboratory/api/xapi/admin"
+	"laboratory/api/xapi/devops"
+	"laboratory/api/xapi/page"
+	"laboratory/api/xapi/role"
+	"laboratory/api/xapi/system"
 )
 
 var Provides = fx.Options(

@@ -2,8 +2,8 @@ package common
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/kainonly/go-bit/helper"
-	"github.com/kainonly/go-bit/passport"
+	"github.com/weplanx/support/helper"
+	"github.com/weplanx/support/passport"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )

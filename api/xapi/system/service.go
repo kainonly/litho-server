@@ -2,7 +2,7 @@ package system
 
 import (
 	"context"
-	"lab-api/common"
+	"laboratory/common"
 	"time"
 )
 

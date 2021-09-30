@@ -2,11 +2,11 @@ package devops
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kainonly/go-bit/support"
+	"github.com/weplanx/support/basic"
 	"go/format"
 	"io/fs"
 	"io/ioutil"
-	"lab-api/common"
+	"laboratory/common"
 )
 
 type Controller struct {
@@ -20,10 +20,10 @@ type InjectController struct {
 
 func (x *Controller) Setup(c *gin.Context) interface{} {
 	tx := x.Db.WithContext(c)
-	if err := support.GenerateSchema(tx); err != nil {
+	if err := basic.GenerateSchema(tx); err != nil {
 		return err
 	}
-	if err := support.GeneratePage(tx); err != nil {
+	if err := basic.GeneratePage(tx); err != nil {
 		return err
 	}
 	if err, ok := x.Sync(c).(error); ok {
@@ -33,7 +33,7 @@ func (x *Controller) Setup(c *gin.Context) interface{} {
 }
 
 func (x *Controller) Sync(c *gin.Context) interface{} {
-	buf, err := support.GenerateModel(x.Db.WithContext(c))
+	buf, err := basic.GenerateModel(x.Db.WithContext(c))
 	if err != nil {
 		return err
 	}

@@ -3,8 +3,8 @@ package page
 import (
 	"context"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/kainonly/go-bit/support"
-	"lab-api/common"
+	"github.com/weplanx/support/basic"
+	"laboratory/common"
 )
 
 type Service struct {
@@ -19,7 +19,7 @@ func (x *Service) pageKey() string {
 	return x.Set.RedisKey("page")
 }
 
-func (x *Service) GetFromCache(ctx context.Context) (data []support.Page, err error) {
+func (x *Service) GetFromCache(ctx context.Context) (data []basic.Page, err error) {
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, x.pageKey()).Result(); err != nil {
 		return
@@ -40,9 +40,9 @@ func (x *Service) GetFromCache(ctx context.Context) (data []support.Page, err er
 }
 
 func (x *Service) RefreshCache(ctx context.Context) (err error) {
-	var data []support.Page
+	var data []basic.Page
 	if err = x.Db.WithContext(ctx).
-		Model(&support.Page{}).
+		Model(&basic.Page{}).
 		Find(&data).Error; err != nil {
 		return
 	}
