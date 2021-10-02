@@ -6,6 +6,7 @@ import (
 	"laboratory/api/xapi/devops"
 	"laboratory/api/xapi/page"
 	"laboratory/api/xapi/role"
+	"laboratory/api/xapi/schema"
 	"laboratory/api/xapi/system"
 )
 
@@ -15,4 +16,5 @@ var Provides = fx.Options(
 	role.Provides,
 	admin.Provides,
 	devops.Provides,
+	schema.Provides,
 )
