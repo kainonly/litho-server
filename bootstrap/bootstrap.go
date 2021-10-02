@@ -25,7 +25,7 @@ var Provides = fx.Provide(
 	LoadSettings,
 	InitializeDatabase,
 	InitializeRedis,
-	api.InitializeAPI,
+	api.New,
 	InitializeCookie,
 	InitializePassport,
 	InitializeCipher,

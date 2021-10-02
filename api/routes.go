@@ -8,6 +8,7 @@ import (
 	"go.uber.org/fx"
 	"laboratory/api/xapi"
 	"laboratory/api/xapi/devops"
+	"laboratory/api/xapi/schema"
 	"laboratory/api/xapi/system"
 )
 
@@ -19,11 +20,13 @@ var Options = fx.Options(
 		api *api.API,
 		xsystem *system.Controller,
 		xdevops *devops.Controller,
+		xschema *schema.Controller,
 	) {
 		xapi := r.Group("xapi")
 		{
 			route.Auto(xapi, xsystem)
 			route.Auto(xapi, xdevops, route.SetPath("devops"))
+			route.Auto(xapi, xschema, route.SetPath("schema"))
 			route.Auto(xapi, api, route.SetPath(":model"))
 		}
 	}),
