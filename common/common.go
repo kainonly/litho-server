@@ -4,15 +4,16 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/weplanx/support/helper"
 	"github.com/weplanx/support/passport"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
 type App struct {
 	fx.In
 
 	Set    *Set
-	Db     *gorm.DB
+	Mongo  *mongo.Client
+	Db     *mongo.Database
 	Redis  *redis.Client
 	Cookie *helper.CookieHelper
 	Cipher *helper.CipherHelper
@@ -29,11 +30,8 @@ type Set struct {
 }
 
 type Database struct {
-	Dsn             string `yaml:"dsn"`
-	MaxIdleConns    int    `yaml:"max_idle_conns"`
-	MaxOpenConns    int    `yaml:"max_open_conns"`
-	ConnMaxLifetime int    `yaml:"conn_max_lifetime"`
-	TablePrefix     string `yaml:"table_prefix"`
+	Uri  string `yaml:"uri"`
+	Name string `yaml:"name"`
 }
 
 type Redis struct {

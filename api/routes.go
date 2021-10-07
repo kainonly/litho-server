@@ -27,7 +27,7 @@ var Options = fx.Options(
 			route.Auto(xapi, xsystem)
 			route.Auto(xapi, xdevops, route.SetPath("devops"))
 			route.Auto(xapi, xschema, route.SetPath("schema"))
-			route.Auto(xapi, api, route.SetPath(":model"))
+			route.Auto(xapi, api, route.SetPath(":collection"))
 		}
 	}),
 )

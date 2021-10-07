@@ -11,6 +11,7 @@ require (
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/weplanx/support v1.1.0
+	go.mongodb.org/mongo-driver v1.7.3 // indirect
 	go.uber.org/fx v1.14.2
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

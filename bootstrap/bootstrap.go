@@ -9,11 +9,10 @@ import (
 	"github.com/weplanx/support/api"
 	"github.com/weplanx/support/helper"
 	"github.com/weplanx/support/passport"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"io/ioutil"
 	"laboratory/common"
 	"net/http"
@@ -51,32 +50,15 @@ func LoadSettings() (app *common.Set, err error) {
 }
 
 // InitializeDatabase 初始化数据库
-func InitializeDatabase(app *common.Set) (db *gorm.DB, err error) {
+func InitializeDatabase(app *common.Set) (client *mongo.Client, db *mongo.Database, err error) {
 	option := app.Database
-	db, err = gorm.Open(postgres.Open(option.Dsn), &gorm.Config{
-		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
-	if err != nil {
+	if client, err = mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(option.Uri),
+	); err != nil {
 		return
 	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		return
-	}
-	if option.MaxIdleConns != 0 {
-		sqlDB.SetMaxIdleConns(option.MaxIdleConns)
-	}
-	if option.MaxOpenConns != 0 {
-		sqlDB.SetMaxOpenConns(option.MaxOpenConns)
-	}
-	if option.ConnMaxLifetime != 0 {
-		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(option.ConnMaxLifetime))
-	}
+	db = client.Database(option.Name)
 	return
 }
 
@@ -103,15 +85,14 @@ func InitializeCookie(app *common.Set) *helper.CookieHelper {
 
 // InitializePassport 创建认证
 func InitializePassport(app *common.Set) *passport.Passport {
-	options := map[string]*passport.Auth{
+	return passport.New(map[string]*passport.Auth{
 		"system": {
 			Key: app.Key,
 			Iss: app.Name,
 			Aud: []string{"admin"},
 			Exp: 720,
 		},
-	}
-	return passport.New(options)
+	})
 }
 
 // InitializeCipher 初始化数据加密
