@@ -2,7 +2,7 @@ package page
 
 import (
 	"go.uber.org/fx"
-	"lab-api/bootstrap"
+	"laboratory/bootstrap"
 	"os"
 	"testing"
 )

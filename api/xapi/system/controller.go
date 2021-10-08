@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/gin-gonic/gin"
 	"laboratory/api/xapi/page"
 	"laboratory/common"
 )
@@ -107,10 +108,10 @@ type InjectController struct {
 //}
 //
 
-//func (x *Controller) Pages(c *gin.Context) interface{} {
-//	data, err := x.PageService.GetFromCache(c)
-//	if err != nil {
-//		return err
-//	}
-//	return data
-//}
+func (x *Controller) Pages(c *gin.Context) interface{} {
+	data, err := x.PageService.Get(c)
+	if err != nil {
+		return err
+	}
+	return data
+}
