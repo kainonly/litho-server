@@ -8,6 +8,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.11
+	github.com/thoas/go-funk v0.9.1 // indirect
 	github.com/weplanx/support v1.1.0
 	go.mongodb.org/mongo-driver v1.7.3
 	go.uber.org/fx v1.14.2
