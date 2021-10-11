@@ -5,11 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/support/api"
-	"github.com/weplanx/support/basic"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"laboratory/common"
-	"log"
 )
 
 type Controller struct {
@@ -29,6 +27,15 @@ func (x *Controller) ExistsCollection(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	count, err := x.Collection.CountDocuments(c, bson.M{
+		"collection": body.Name,
+	})
+	if err != nil {
+		return err
+	}
+	if count != 0 {
+		return true
+	}
 	collections, err := x.Db.ListCollectionNames(c, bson.M{})
 	if err != nil {
 		return err
@@ -37,22 +44,25 @@ func (x *Controller) ExistsCollection(c *gin.Context) interface{} {
 }
 
 func (x *Controller) Delete(c *gin.Context) interface{} {
-	var body api.DeleteBody
+	var body struct {
+		api.DeleteBody
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	h := api.StartHook(c)
+	h.SetBody(body)
 	objectId, err := primitive.ObjectIDFromHex(body.Where["_id"].(string))
 	if err != nil {
 		return err
 	}
-	var data basic.Schema
-	if err := x.Db.Collection("schema").FindOne(c, bson.M{
+	var data map[string]interface{}
+	if err := x.Collection.FindOne(c, bson.M{
 		"_id": objectId,
 	}).Decode(&data); err != nil {
 		return err
 	}
-	log.Println(data)
-	if data.System == basic.True() {
+	if data["system"] == true {
 		return errors.New("该集合为系统组件，不可删除修改")
 	}
 	return x.API.Delete(c)
