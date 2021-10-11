@@ -43,16 +43,8 @@ func (x *Controller) ExistsCollection(c *gin.Context) interface{} {
 	return funk.Contains(collections, body.Name)
 }
 
-func (x *Controller) Delete(c *gin.Context) interface{} {
-	var body struct {
-		api.DeleteBody
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	h := api.StartHook(c)
-	h.SetBody(body)
-	objectId, err := primitive.ObjectIDFromHex(body.Where["_id"].(string))
+func (x *Controller) isSystem(c *gin.Context, id string) error {
+	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
@@ -65,5 +57,56 @@ func (x *Controller) Delete(c *gin.Context) interface{} {
 	if data["system"] == true {
 		return errors.New("该集合为系统组件，不可删除修改")
 	}
+	return nil
+}
+
+func (x *Controller) Update(c *gin.Context) interface{} {
+	var body struct {
+		api.UpdateBody
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	h := api.StartHook(c)
+	h.SetBody(body)
+	if err := x.isSystem(c, body.Where["_id"].(string)); err != nil {
+		return err
+	}
+	return x.API.Update(c)
+}
+
+func (x *Controller) Delete(c *gin.Context) interface{} {
+	var body struct {
+		api.DeleteBody
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	h := api.StartHook(c)
+	h.SetBody(body)
+	if err := x.isSystem(c, body.Where["_id"].(string)); err != nil {
+		return err
+	}
 	return x.API.Delete(c)
+}
+
+func (x *Controller) Sort(c *gin.Context) interface{} {
+	var body struct {
+		Id     primitive.ObjectID `json:"id" binding:"required"`
+		Fields bson.A             `json:"fields" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	result, err := x.Collection.UpdateOne(c, bson.M{
+		"_id": body.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"fields": body.Fields,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return result
 }
