@@ -1,10 +1,8 @@
 name: 'weplanx'
 key: '<A key of length 32>'
 database:
-  dsn: 'host=localhost user=weplanx password=pass dbname=weplanx'
-  max_idle_conns: 10
-  max_open_conns: 100
-  conn_max_lifetime: 3600
+  uri: mongodb://$[username]:$[password]@$[host]:$[port]/$[database]?authSource=admin
+  name: weplanx
 redis:
   address: localhost:6379
   password:
@@ -13,7 +11,7 @@ cookie:
   secure: true
   http_only: true
   same_site: strict
-cors: [ 'https://api.developer.com' ]
+cors: [ 'https://sys.anysite.com' ]
 auth:
   system:
     aud: [ 'admin' ]
