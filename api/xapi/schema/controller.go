@@ -27,7 +27,7 @@ func (x *Controller) ExistsCollection(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	count, err := x.Collection.CountDocuments(c, bson.M{
+	count, err := x.Db.Collection("schema").CountDocuments(c, bson.M{
 		"collection": body.Name,
 	})
 	if err != nil {
@@ -49,7 +49,7 @@ func (x *Controller) isSystem(c *gin.Context, id string) error {
 		return err
 	}
 	var data map[string]interface{}
-	if err := x.Collection.FindOne(c, bson.M{
+	if err := x.Db.Collection("schema").FindOne(c, bson.M{
 		"_id": objectId,
 	}).Decode(&data); err != nil {
 		return err
@@ -98,7 +98,7 @@ func (x *Controller) Sort(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	result, err := x.Collection.UpdateOne(c, bson.M{
+	result, err := x.Db.Collection("schema").UpdateOne(c, bson.M{
 		"_id": body.Id,
 	}, bson.M{
 		"$set": bson.M{
