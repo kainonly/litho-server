@@ -19,6 +19,7 @@ func (x *Service) Get(ctx context.Context) (data []map[string]interface{}, err e
 	if err != nil {
 		return
 	}
+
 	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
