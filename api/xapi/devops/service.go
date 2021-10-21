@@ -2,6 +2,8 @@ package devops
 
 import (
 	"context"
+	"github.com/alexedwards/argon2id"
+	"github.com/weplanx/support/basic"
 	"go.mongodb.org/mongo-driver/bson"
 	"laboratory/common"
 )
@@ -19,15 +21,20 @@ func (x *Service) InitData(ctx context.Context) (err error) {
 		"key":         "*",
 		"name":        "超级管理员",
 		"description": "",
-		"pages":       bson.D{},
+		"pages":       bson.A{},
 	}); err != nil {
+		return
+	}
+	var password string
+	if password, err = argon2id.CreateHash("pass@VAN1234", argon2id.DefaultParams); err != nil {
 		return
 	}
 	if _, err = x.Db.Collection("admin").InsertOne(ctx, bson.M{
 		"username": "admin",
-		"password": "",
+		"password": password,
+		"status":   basic.True(),
 		"roles":    bson.A{"*"},
-		"name":     "",
+		"name":     "超级管理员",
 		"email":    "",
 		"phone":    "",
 		"avatar":   "",

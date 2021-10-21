@@ -3,6 +3,7 @@ module laboratory
 go 1.15
 
 require (
+	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8 // indirect
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.3
 	github.com/go-redis/redis/v8 v8.11.3
