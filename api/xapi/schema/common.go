@@ -9,7 +9,12 @@ var Provides = fx.Provide(
 	func(i InjectController) *Controller {
 		return &Controller{
 			InjectController: &i,
-			API:              api.New(i.Mongo, i.Db, api.SetCollection("schema")),
+			API: api.New(
+				i.Mongo,
+				i.Db,
+				api.SetCollection("schema"),
+				api.ProjectionNone(),
+			),
 		}
 	},
 	func(i InjectService) *Service {

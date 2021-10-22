@@ -3,7 +3,6 @@ package devops
 import (
 	"context"
 	"github.com/alexedwards/argon2id"
-	"github.com/weplanx/support/basic"
 	"go.mongodb.org/mongo-driver/bson"
 	"laboratory/common"
 )
@@ -20,6 +19,7 @@ func (x *Service) InitData(ctx context.Context) (err error) {
 	if _, err = x.Db.Collection("role").InsertOne(ctx, bson.M{
 		"key":         "*",
 		"name":        "超级管理员",
+		"status":      true,
 		"description": "",
 		"pages":       bson.A{},
 	}); err != nil {
@@ -32,7 +32,7 @@ func (x *Service) InitData(ctx context.Context) (err error) {
 	if _, err = x.Db.Collection("admin").InsertOne(ctx, bson.M{
 		"username": "admin",
 		"password": password,
-		"status":   basic.True(),
+		"status":   true,
 		"roles":    bson.A{"*"},
 		"name":     "超级管理员",
 		"email":    "",
