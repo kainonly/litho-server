@@ -22,7 +22,7 @@ func (x *Controller) Setup(c *gin.Context) interface{} {
 	if err := basic.GeneratePage(c, x.Db); err != nil {
 		return err
 	}
-	if err := x.Service.InitData(c); err != nil {
+	if err := basic.GenerateRoleAndAdmin(c, x.Db); err != nil {
 		return err
 	}
 	return "ok"
