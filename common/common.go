@@ -11,12 +11,13 @@ import (
 type App struct {
 	fx.In
 
-	Set    *Set
-	Mongo  *mongo.Client
-	Db     *mongo.Database
-	Redis  *redis.Client
-	Cookie *helper.CookieHelper
-	Cipher *helper.CipherHelper
+	Set      *Set
+	Mongo    *mongo.Client
+	Db       *mongo.Database
+	Redis    *redis.Client
+	Cookie   *helper.CookieHelper
+	Cipher   *helper.CipherHelper
+	Passport *passport.Passport
 }
 
 type Set struct {
