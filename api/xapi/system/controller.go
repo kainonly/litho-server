@@ -1,7 +1,6 @@
 package system
 
 import (
-	"errors"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -12,11 +11,6 @@ import (
 	"laboratory/api/xapi/admin"
 	"laboratory/api/xapi/page"
 	"laboratory/common"
-)
-
-var (
-	LoginInvalid = errors.New("")
-	LoginExpired = errors.New("")
 )
 
 type Controller struct {
@@ -48,7 +42,7 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 		return err
 	}
 	if match == false {
-		return LoginInvalid
+		return common.LoginInvalid
 	}
 	uid := data["_id"].(primitive.ObjectID).Hex()
 	jti := uuid.New().String()
@@ -65,7 +59,7 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 func (x *Controller) Verify(c *gin.Context) interface{} {
 	tokenString, err := x.Cookie.Get(c, "system_access_token")
 	if err != nil {
-		return LoginExpired
+		return common.LoginExpired
 	}
 	if _, err := x.Auth.Verify(tokenString); err != nil {
 		return err
@@ -76,7 +70,7 @@ func (x *Controller) Verify(c *gin.Context) interface{} {
 func (x *Controller) Code(c *gin.Context) interface{} {
 	claims, exists := c.Get("access_token")
 	if !exists {
-		return LoginExpired
+		return common.LoginExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := funk.RandomString(8)
@@ -102,7 +96,7 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 		return err
 	}
 	if !result {
-		return LoginExpired
+		return common.LoginExpired
 	}
 	if err = x.Service.RemoveVerifyCode(c, jti); err != nil {
 		return err
