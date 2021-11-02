@@ -10,14 +10,26 @@ import (
 	"laboratory/common"
 )
 
+type InjectController struct {
+	*common.App
+	Service *Service
+}
+
 type Controller struct {
 	*InjectController
 	*api.API
 }
 
-type InjectController struct {
-	common.App
-	Service *Service
+func NewController(i *InjectController) *Controller {
+	return &Controller{
+		InjectController: i,
+		//API: api.New(
+		//	i.Mongo,
+		//	i.Db,
+		//	api.SetCollection("schema"),
+		//	api.ProjectionNone(),
+		//),
+	}
 }
 
 func (x *Controller) ExistsCollection(c *gin.Context) interface{} {

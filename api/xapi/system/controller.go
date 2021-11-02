@@ -13,16 +13,23 @@ import (
 	"laboratory/common"
 )
 
+type InjectController struct {
+	*common.App
+	Service      *Service
+	AdminService *admin.Service
+	PageService  *page.Service
+}
+
 type Controller struct {
 	*InjectController
 	Auth *passport.Auth
 }
 
-type InjectController struct {
-	common.App
-	Service      *Service
-	AdminService *admin.Service
-	PageService  *page.Service
+func NewController(i *InjectController) *Controller {
+	return &Controller{
+		InjectController: i,
+		Auth:             i.Passport.Make("system"),
+	}
 }
 
 func (x *Controller) Login(c *gin.Context) interface{} {
