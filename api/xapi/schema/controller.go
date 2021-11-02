@@ -23,12 +23,12 @@ type Controller struct {
 func NewController(i *InjectController) *Controller {
 	return &Controller{
 		InjectController: i,
-		//API: api.New(
-		//	i.Mongo,
-		//	i.Db,
-		//	api.SetCollection("schema"),
-		//	api.ProjectionNone(),
-		//),
+		API: api.New(
+			i.Mongo,
+			i.Db,
+			api.SetCollection("schema"),
+			api.ProjectionNone(),
+		),
 	}
 }
 
