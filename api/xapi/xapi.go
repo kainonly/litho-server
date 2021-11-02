@@ -1,19 +1,17 @@
 package xapi
 
 import (
-	"go.uber.org/fx"
+	"github.com/google/wire"
 	"laboratory/api/xapi/admin"
 	"laboratory/api/xapi/devops"
 	"laboratory/api/xapi/page"
-	"laboratory/api/xapi/role"
 	"laboratory/api/xapi/schema"
 	"laboratory/api/xapi/system"
 )
 
-var Provides = fx.Options(
+var Provides = wire.NewSet(
 	system.Provides,
 	page.Provides,
-	role.Provides,
 	admin.Provides,
 	devops.Provides,
 	schema.Provides,

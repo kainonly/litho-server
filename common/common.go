@@ -5,12 +5,9 @@ import (
 	"github.com/weplanx/support/helper"
 	"github.com/weplanx/support/passport"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.uber.org/fx"
 )
 
 type App struct {
-	fx.In
-
 	Set      *Set
 	Mongo    *mongo.Client
 	Db       *mongo.Database

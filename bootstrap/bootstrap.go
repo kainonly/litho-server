@@ -3,32 +3,29 @@ package bootstrap
 import (
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/wire"
 	"github.com/weplanx/support/api"
 	"github.com/weplanx/support/helper"
 	"github.com/weplanx/support/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"laboratory/common"
 	"net/http"
 	"os"
-	"time"
 )
 
-var Provides = fx.Provide(
+var Provides = wire.NewSet(
 	LoadSettings,
+	InitializeMongoDB,
 	InitializeDatabase,
 	InitializeRedis,
-	api.New,
+	InitializeCommonApi,
 	InitializeCookie,
 	InitializePassport,
 	InitializeCipher,
-	HttpServer,
 )
 
 // LoadSettings 初始化应用配置
@@ -49,8 +46,7 @@ func LoadSettings() (app *common.Set, err error) {
 	return
 }
 
-// InitializeDatabase 初始化数据库
-func InitializeDatabase(app *common.Set) (client *mongo.Client, db *mongo.Database, err error) {
+func InitializeMongoDB(app *common.Set) (client *mongo.Client, err error) {
 	option := app.Database
 	if client, err = mongo.Connect(
 		context.TODO(),
@@ -58,6 +54,12 @@ func InitializeDatabase(app *common.Set) (client *mongo.Client, db *mongo.Databa
 	); err != nil {
 		return
 	}
+	return
+}
+
+// InitializeDatabase 初始化数据库
+func InitializeDatabase(app *common.Set, client *mongo.Client) (db *mongo.Database) {
+	option := app.Database
 	db = client.Database(option.Name)
 	return
 }
@@ -76,6 +78,10 @@ func InitializeRedis(app *common.Set) (client *redis.Client, err error) {
 		return
 	}
 	return
+}
+
+func InitializeCommonApi(client *mongo.Client, db *mongo.Database) *api.API {
+	return api.New(client, db)
 }
 
 // InitializeCookie 创建 Cookie 工具
@@ -102,22 +108,22 @@ func InitializeCipher(app *common.Set) (*helper.CipherHelper, error) {
 
 // HttpServer 启动 Gin HTTP 服务
 // 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(lc fx.Lifecycle, config *common.Set) (router *gin.Engine) {
-	router = gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     config.Cors,
-		AllowMethods:     []string{"POST"},
-		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go router.Run(":9000")
-			return nil
-		},
-	})
-	return
-}
+//func HttpServer(lc fx.Lifecycle, config *common.Set) (router *gin.Engine) {
+//	router = gin.New()
+//	router.Use(gin.Logger())
+//	router.Use(gin.Recovery())
+//	router.Use(cors.New(cors.Config{
+//		AllowOrigins:     config.Cors,
+//		AllowMethods:     []string{"POST"},
+//		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
+//		AllowCredentials: true,
+//		MaxAge:           12 * time.Hour,
+//	}))
+//	lc.Append(fx.Hook{
+//		OnStart: func(ctx context.Context) error {
+//			go router.Run(":9000")
+//			return nil
+//		},
+//	})
+//	return
+//}

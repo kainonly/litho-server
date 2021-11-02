@@ -6,12 +6,18 @@ import (
 	"laboratory/common"
 )
 
+type InjectService struct {
+	*common.App
+}
+
 type Service struct {
 	*InjectService
 }
 
-type InjectService struct {
-	common.App
+func NewService(i *InjectService) *Service {
+	return &Service{
+		InjectService: i,
+	}
 }
 
 func (x *Service) Get(ctx context.Context) (data []map[string]interface{}, err error) {
