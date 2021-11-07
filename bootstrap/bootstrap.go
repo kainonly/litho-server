@@ -105,25 +105,3 @@ func InitializePassport(app *common.Set) *passport.Passport {
 func InitializeCipher(app *common.Set) (*helper.CipherHelper, error) {
 	return helper.NewCipherHelper(app.Key)
 }
-
-// HttpServer 启动 Gin HTTP 服务
-// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-//func HttpServer(lc fx.Lifecycle, config *common.Set) (router *gin.Engine) {
-//	router = gin.New()
-//	router.Use(gin.Logger())
-//	router.Use(gin.Recovery())
-//	router.Use(cors.New(cors.Config{
-//		AllowOrigins:     config.Cors,
-//		AllowMethods:     []string{"POST"},
-//		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
-//		AllowCredentials: true,
-//		MaxAge:           12 * time.Hour,
-//	}))
-//	lc.Append(fx.Hook{
-//		OnStart: func(ctx context.Context) error {
-//			go router.Run(":9000")
-//			return nil
-//		},
-//	})
-//	return
-//}
