@@ -1,0 +1,3 @@
+[submodule "libs/support"]
+	path = libs/support
+	url = git@github.com:weplanx/support.git

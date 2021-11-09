@@ -11,6 +11,14 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@weplanx/support": [
+        "libs/support/src"
+      ],
+      "@weplanx/support/*": [
+        "libs/support/src/*"
+      ]
+    }
   }
 }
