@@ -8,6 +8,7 @@ import (
 	"github.com/weplanx/support/helper"
 	"github.com/weplanx/support/passport"
 	"github.com/weplanx/support/route"
+	"laboratory/api/index"
 	"laboratory/api/xapi"
 	"laboratory/api/xapi/devops"
 	"laboratory/api/xapi/schema"
@@ -18,6 +19,7 @@ import (
 )
 
 var Provides = wire.NewSet(
+	index.Provides,
 	xapi.Provides,
 	HttpServer,
 )
@@ -26,6 +28,7 @@ func HttpServer(
 	config *common.Set,
 	pp *passport.Passport,
 	cookie *helper.CookieHelper,
+	index *index.Controller,
 	api *api.API,
 	xsystem *system.Controller,
 	xdevops *devops.Controller,
@@ -41,6 +44,7 @@ func HttpServer(
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	r.GET("/", route.Returns(index.Index))
 	x := r.Group("xapi")
 	{
 		auth := authSystem(pp.Make("system"), cookie)

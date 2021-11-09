@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"laboratory/api"
+	"laboratory/api/index"
 	"laboratory/api/xapi/admin"
 	"laboratory/api/xapi/devops"
 	"laboratory/api/xapi/page"
@@ -32,7 +33,6 @@ func API() (*gin.Engine, error) {
 		return nil, err
 	}
 	database := bootstrap.InitializeDatabase(set, client)
-	apiAPI := bootstrap.InitializeCommonApi(client, database)
 	redisClient, err := bootstrap.InitializeRedis(set)
 	if err != nil {
 		return nil, err
@@ -50,10 +50,20 @@ func API() (*gin.Engine, error) {
 		Cipher:   cipherHelper,
 		Passport: passport,
 	}
-	injectService := &system.InjectService{
+	injectService := &index.InjectService{
 		App: app,
 	}
-	service := system.NewService(injectService)
+	service := index.NewService(injectService)
+	injectController := &index.InjectController{
+		App:     app,
+		Service: service,
+	}
+	controller := index.NewController(injectController)
+	apiAPI := bootstrap.InitializeCommonApi(client, database)
+	systemInjectService := &system.InjectService{
+		App: app,
+	}
+	systemService := system.NewService(systemInjectService)
 	adminInjectService := &admin.InjectService{
 		App: app,
 	}
@@ -62,13 +72,13 @@ func API() (*gin.Engine, error) {
 		App: app,
 	}
 	pageService := page.NewService(pageInjectService)
-	injectController := &system.InjectController{
+	systemInjectController := &system.InjectController{
 		App:          app,
-		Service:      service,
+		Service:      systemService,
 		AdminService: adminService,
 		PageService:  pageService,
 	}
-	controller := system.NewController(injectController)
+	systemController := system.NewController(systemInjectController)
 	devopsInjectService := &devops.InjectService{
 		App: app,
 	}
@@ -87,6 +97,6 @@ func API() (*gin.Engine, error) {
 		Service: schemaService,
 	}
 	schemaController := schema.NewController(schemaInjectController)
-	engine := api.HttpServer(set, passport, cookieHelper, apiAPI, controller, devopsController, schemaController)
+	engine := api.HttpServer(set, passport, cookieHelper, controller, apiAPI, systemController, devopsController, schemaController)
 	return engine, nil
 }
