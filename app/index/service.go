@@ -1,8 +1,6 @@
-package devops
+package index
 
-import (
-	"laboratory/common"
-)
+import "api/common"
 
 type InjectService struct {
 	*common.App

@@ -1,13 +1,13 @@
 package schema
 
 import (
+	"api/common"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/thoas/go-funk"
-	"github.com/weplanx/support/api"
+	"github.com/weplanx/go/api"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"laboratory/common"
 )
 
 type InjectController struct {

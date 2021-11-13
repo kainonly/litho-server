@@ -2,8 +2,8 @@ package common
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/support/helper"
-	"github.com/weplanx/support/passport"
+	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

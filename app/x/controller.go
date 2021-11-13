@@ -1,16 +1,16 @@
-package system
+package x
 
 import (
+	"api/app/x/admin"
+	"api/app/x/page"
+	"api/common"
 	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/thoas/go-funk"
-	"github.com/weplanx/support/passport"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"laboratory/api/xapi/admin"
-	"laboratory/api/xapi/page"
-	"laboratory/common"
 )
 
 type InjectController struct {

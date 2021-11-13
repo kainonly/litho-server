@@ -1,26 +1,25 @@
-package api
+package app
 
 import (
+	"api/app/index"
+	"api/app/x"
+	"api/app/x/devops"
+	"api/app/x/schema"
+	"api/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"github.com/weplanx/support/api"
-	"github.com/weplanx/support/helper"
-	"github.com/weplanx/support/passport"
-	"github.com/weplanx/support/route"
-	"laboratory/api/index"
-	"laboratory/api/xapi"
-	"laboratory/api/xapi/devops"
-	"laboratory/api/xapi/schema"
-	"laboratory/api/xapi/system"
-	"laboratory/common"
+	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
+	"github.com/weplanx/go/route"
 	"os"
 	"time"
 )
 
 var Provides = wire.NewSet(
 	index.Provides,
-	xapi.Provides,
+	x.Provides,
 	HttpServer,
 )
 
@@ -30,7 +29,7 @@ func HttpServer(
 	cookie *helper.CookieHelper,
 	index *index.Controller,
 	api *api.API,
-	xsystem *system.Controller,
+	xindex *x.Controller,
 	xdevops *devops.Controller,
 	xschema *schema.Controller,
 ) (r *gin.Engine) {
@@ -45,15 +44,15 @@ func HttpServer(
 		MaxAge:           12 * time.Hour,
 	}))
 	r.GET("/", route.Returns(index.Index))
-	x := r.Group("xapi")
+	xrg := r.Group("x")
 	{
 		auth := authSystem(pp.Make("system"), cookie)
-		route.Auto(x, xsystem, route.SetMiddleware(auth, "Code", "RefreshToken", "Logout", "Pages"))
+		route.Auto(xrg, xindex, route.SetMiddleware(auth, "Code", "RefreshToken", "Logout", "Pages"))
 		if os.Getenv("GIN_MODE") != "release" {
-			route.Auto(x, xdevops, route.SetPath("devops"))
+			route.Auto(xrg, xdevops, route.SetPath("devops"))
 		}
-		route.Auto(x, xschema, route.SetPath("schema"), route.SetMiddleware(auth))
-		route.Auto(x, api, route.SetPath(":collection"), route.SetMiddleware(auth))
+		route.Auto(xrg, xschema, route.SetPath("schema"), route.SetMiddleware(auth))
+		route.Auto(xrg, api, route.SetPath(":collection"), route.SetMiddleware(auth))
 	}
 	return
 }
