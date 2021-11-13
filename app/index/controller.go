@@ -1,7 +1,8 @@
-package admin
+package index
 
 import (
-	"laboratory/common"
+	"api/common"
+	"github.com/gin-gonic/gin"
 )
 
 type InjectController struct {
@@ -16,5 +17,11 @@ type Controller struct {
 func NewController(i *InjectController) *Controller {
 	return &Controller{
 		InjectController: i,
+	}
+}
+
+func (x *Controller) Index(c *gin.Context) interface{} {
+	return gin.H{
+		"msg": "hi",
 	}
 }

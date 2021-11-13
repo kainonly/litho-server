@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"laboratory/common"
+	"api/common"
 )
 
 type InjectService struct {

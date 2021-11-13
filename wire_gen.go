@@ -7,16 +7,16 @@
 package main
 
 import (
+	"api/app"
+	"api/app/index"
+	"api/app/x"
+	"api/app/x/admin"
+	"api/app/x/devops"
+	"api/app/x/page"
+	"api/app/x/schema"
+	"api/bootstrap"
+	"api/common"
 	"github.com/gin-gonic/gin"
-	"laboratory/api"
-	"laboratory/api/index"
-	"laboratory/api/xapi/admin"
-	"laboratory/api/xapi/devops"
-	"laboratory/api/xapi/page"
-	"laboratory/api/xapi/schema"
-	"laboratory/api/xapi/system"
-	"laboratory/bootstrap"
-	"laboratory/common"
 )
 
 // Injectors from wire.go:
@@ -41,7 +41,7 @@ func API() (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	app := &common.App{
+	commonApp := &common.App{
 		Set:      set,
 		Mongo:    client,
 		Db:       database,
@@ -51,52 +51,52 @@ func API() (*gin.Engine, error) {
 		Passport: passport,
 	}
 	injectService := &index.InjectService{
-		App: app,
+		App: commonApp,
 	}
 	service := index.NewService(injectService)
 	injectController := &index.InjectController{
-		App:     app,
+		App:     commonApp,
 		Service: service,
 	}
 	controller := index.NewController(injectController)
-	apiAPI := bootstrap.InitializeCommonApi(client, database)
-	systemInjectService := &system.InjectService{
-		App: app,
+	api := bootstrap.InitializeCommonApi(client, database)
+	xInjectService := &x.InjectService{
+		App: commonApp,
 	}
-	systemService := system.NewService(systemInjectService)
+	xService := x.NewService(xInjectService)
 	adminInjectService := &admin.InjectService{
-		App: app,
+		App: commonApp,
 	}
 	adminService := admin.NewService(adminInjectService)
 	pageInjectService := &page.InjectService{
-		App: app,
+		App: commonApp,
 	}
 	pageService := page.NewService(pageInjectService)
-	systemInjectController := &system.InjectController{
-		App:          app,
-		Service:      systemService,
+	xInjectController := &x.InjectController{
+		App:          commonApp,
+		Service:      xService,
 		AdminService: adminService,
 		PageService:  pageService,
 	}
-	systemController := system.NewController(systemInjectController)
+	xController := x.NewController(xInjectController)
 	devopsInjectService := &devops.InjectService{
-		App: app,
+		App: commonApp,
 	}
 	devopsService := devops.NewService(devopsInjectService)
 	devopsInjectController := &devops.InjectController{
-		App:     app,
+		App:     commonApp,
 		Service: devopsService,
 	}
 	devopsController := devops.NewController(devopsInjectController)
 	schemaInjectService := &schema.InjectService{
-		App: app,
+		App: commonApp,
 	}
 	schemaService := schema.NewService(schemaInjectService)
 	schemaInjectController := &schema.InjectController{
-		App:     app,
+		App:     commonApp,
 		Service: schemaService,
 	}
 	schemaController := schema.NewController(schemaInjectController)
-	engine := api.HttpServer(set, passport, cookieHelper, controller, apiAPI, systemController, devopsController, schemaController)
+	engine := app.HttpServer(set, passport, cookieHelper, controller, api, xController, devopsController, schemaController)
 	return engine, nil
 }

@@ -1,9 +1,9 @@
 package page
 
 import (
+	"api/common"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
-	"laboratory/common"
 )
 
 type InjectService struct {

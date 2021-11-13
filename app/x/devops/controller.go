@@ -1,9 +1,9 @@
 package devops
 
 import (
+	"api/common"
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/support/basic"
-	"laboratory/common"
+	"github.com/weplanx/go/basic"
 )
 
 type InjectController struct {

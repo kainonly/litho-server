@@ -1,10 +1,10 @@
-package api
+package app
 
 import (
+	"api/common"
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/support/helper"
-	"github.com/weplanx/support/passport"
-	"laboratory/common"
+	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 )
 
 func authSystem(auth *passport.Auth, cookie *helper.CookieHelper) gin.HandlerFunc {

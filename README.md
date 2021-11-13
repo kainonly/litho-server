@@ -1,3 +1,3 @@
-# Laboratory
+# Weplanx API
 
-Simple trial for multiple popular frameworks
+Project service for early version experiments, there will be breaking updates at any time

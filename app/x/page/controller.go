@@ -1,8 +1,6 @@
 package page
 
-import (
-	"laboratory/common"
-)
+import "api/common"
 
 type InjectController struct {
 	*common.App

@@ -1,18 +1,18 @@
 package bootstrap
 
 import (
+	"api/common"
 	"context"
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
-	"github.com/weplanx/support/api"
-	"github.com/weplanx/support/helper"
-	"github.com/weplanx/support/passport"
+	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"laboratory/common"
 	"net/http"
 	"os"
 )
