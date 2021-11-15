@@ -31,5 +31,5 @@ func (x *Controller) Setup(c *gin.Context) interface{} {
 	if err := basic.GenerateRoleAndAdmin(c, x.Db); err != nil {
 		return err
 	}
-	return "ok"
+	return gin.H{"message": "ok"}
 }

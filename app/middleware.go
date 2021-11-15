@@ -1,31 +1,26 @@
 package app
 
 import (
-	"api/common"
 	"github.com/gin-gonic/gin"
+	wpx "github.com/weplanx/go"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
 )
 
 func authSystem(auth *passport.Auth, cookie *helper.CookieHelper) gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return wpx.Returns(func(c *gin.Context) interface{} {
 		tokenString, err := cookie.Get(c, "system_access_token")
 		if err != nil {
-			c.AbortWithStatusJSON(200, gin.H{
-				"code":    1,
-				"message": err.Error(),
-			})
-			return
+			c.Abort()
+			return err
 		}
 		claims, err := auth.Verify(tokenString)
 		if err != nil {
-			c.AbortWithStatusJSON(200, gin.H{
-				"code":    1,
-				"message": common.LoginExpired,
-			})
-			return
+			c.Abort()
+			return err
 		}
 		c.Set("access_token", claims)
 		c.Next()
-	}
+		return nil
+	})
 }
