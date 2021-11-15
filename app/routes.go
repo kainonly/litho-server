@@ -9,10 +9,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	wpx "github.com/weplanx/go"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/go/route"
 	"os"
 	"time"
 )
@@ -43,16 +43,17 @@ func HttpServer(
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.GET("/", route.Returns(index.Index))
+	r.GET("/", wpx.Returns(index.Index))
+	r.GET("/ms", wpx.Returns(index.Ms))
 	xrg := r.Group("x")
 	{
 		auth := authSystem(pp.Make("system"), cookie)
-		route.Auto(xrg, xindex, route.SetMiddleware(auth, "Code", "RefreshToken", "Logout", "Pages"))
+		wpx.Auto(xrg, xindex, wpx.SetMiddleware(auth, "Code", "RefreshToken", "Logout", "Pages"))
 		if os.Getenv("GIN_MODE") != "release" {
-			route.Auto(xrg, xdevops, route.SetPath("devops"))
+			wpx.Auto(xrg, xdevops, wpx.SetPath("devops"))
 		}
-		route.Auto(xrg, xschema, route.SetPath("schema"), route.SetMiddleware(auth))
-		route.Auto(xrg, api, route.SetPath(":collection"), route.SetMiddleware(auth))
+		wpx.Auto(xrg, xschema, wpx.SetPath("schema"), wpx.SetMiddleware(auth))
+		wpx.Auto(xrg, api, wpx.SetPath(":collection"), wpx.SetMiddleware(auth))
 	}
 	return
 }
