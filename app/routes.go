@@ -44,7 +44,6 @@ func HttpServer(
 		MaxAge:           12 * time.Hour,
 	}))
 	r.GET("/", wpx.Returns(index.Index))
-	r.GET("/ms", wpx.Returns(index.Ms))
 	xrg := r.Group("x")
 	{
 		auth := authSystem(pp.Make("system"), cookie)
