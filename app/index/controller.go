@@ -2,7 +2,6 @@ package index
 
 import (
 	"api/common"
-	"errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,8 +24,4 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	return gin.H{
 		"msg": "hi",
 	}
-}
-
-func (x *Controller) Ms(c *gin.Context) interface{} {
-	return errors.New("this is a test")
 }
