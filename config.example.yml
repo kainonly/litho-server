@@ -1,18 +1,17 @@
 name: 'weplanx'
-key: '<A key of length 32>'
+key: '<a key of length 32>'
 database:
   uri: mongodb://$[username]:$[password]@$[host]:$[port]/$[database]?authSource=admin
   name: weplanx
 redis:
-  address: localhost:6379
-  password:
+  address: $[host]:6379
+  password: $[password]
   db: 0
 cookie:
   secure: true
   http_only: true
-  same_site: strict
-cors: [ 'https://sys.anysite.com' ]
+cors: [ 'https://sys.awesome.com' ]
 auth:
   system:
-    aud: [ 'admin' ]
+    aud: [ 'system' ]
     exp: 720
