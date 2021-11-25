@@ -74,9 +74,9 @@ func InitializeRedis(app *common.Set) (client *redis.Client, err error) {
 		DB:       option.DB,
 	})
 	// Serverless 模式建议关闭
-	if err = client.Ping(context.Background()).Err(); err != nil {
-		return
-	}
+	//if err = client.Ping(context.Background()).Err(); err != nil {
+	//	return
+	//}
 	return
 }
 
