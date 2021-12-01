@@ -1,12 +1,18 @@
 package index
 
 import (
-	"github.com/google/wire"
+	"go.uber.org/fx"
 )
 
-var Provides = wire.NewSet(
-	wire.Struct(new(InjectController), "*"),
-	wire.Struct(new(InjectService), "*"),
-	NewController,
-	NewService,
+var Provides = fx.Provide(
+	func(i InjectController) *Controller {
+		return &Controller{
+			InjectController: &i,
+		}
+	},
+	func(i InjectService) *Service {
+		return &Service{
+			InjectService: &i,
+		}
+	},
 )

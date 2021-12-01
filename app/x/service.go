@@ -7,7 +7,7 @@ import (
 )
 
 type InjectService struct {
-	*common.App
+	common.App
 }
 
 type Service struct {

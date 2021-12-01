@@ -1,11 +1,15 @@
 package main
 
-import "log"
+import (
+	"api/app"
+	"api/bootstrap"
+	"go.uber.org/fx"
+)
 
 func main() {
-	serve, err := API()
-	if err != nil {
-		log.Panicln(err)
-	}
-	serve.Run(":9000")
+	fx.New(
+		//fx.NopLogger,
+		bootstrap.Provides,
+		app.Options,
+	).Run()
 }
