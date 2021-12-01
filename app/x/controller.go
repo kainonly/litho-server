@@ -13,16 +13,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type InjectController struct {
-	*common.App
-	Service      *Service
-	AdminService *admin.Service
-	PageService  *page.Service
-}
-
 type Controller struct {
 	*InjectController
 	Auth *passport.Auth
+}
+
+type InjectController struct {
+	common.App
+	Service      *Service
+	AdminService *admin.Service
+	PageService  *page.Service
 }
 
 func NewController(i *InjectController) *Controller {
