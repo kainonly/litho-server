@@ -4,9 +4,11 @@ import (
 	"api/common"
 	"context"
 	"errors"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
@@ -17,6 +19,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -99,22 +102,21 @@ func InitializeCipher(app *common.Set) (*helper.CipherHelper, error) {
 	return helper.NewCipherHelper(app.Key)
 }
 
-// HttpServer 启动 Gin HTTP 服务
-// 配置文档 https://gin-gonic.com/docs/examples/custom-http-config
-func HttpServer(lc fx.Lifecycle, config *common.Set) (router *gin.Engine) {
-	router = gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     config.Cors,
-		AllowMethods:     []string{"POST"},
-		AllowHeaders:     []string{"Origin", "CONTENT-TYPE"},
+// HttpServer 启动 HTTP 服务
+func HttpServer(lc fx.Lifecycle, config *common.Set) (f *fiber.App) {
+	f = fiber.New()
+	f.Use(logger.New())
+	f.Use(recover.New())
+	f.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Join(config.Cors, ","),
+		AllowMethods:     "POST",
+		AllowHeaders:     "Origin, Content-Type, Accept",
 		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+		MaxAge:           int(12 * time.Hour),
 	}))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go router.Run(":9000")
+			go f.Listen(":9000")
 			return nil
 		},
 	})

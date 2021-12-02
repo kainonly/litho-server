@@ -2,7 +2,7 @@ package index
 
 import (
 	"api/common"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Controller struct {
@@ -20,8 +20,8 @@ func NewController(i *InjectController) *Controller {
 	}
 }
 
-func (x *Controller) Index(c *gin.Context) interface{} {
-	return gin.H{
+func (x *Controller) Index(c *fiber.Ctx) interface{} {
+	return fiber.Map{
 		"msg": "hi",
 	}
 }

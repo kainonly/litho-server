@@ -2,7 +2,8 @@ package devops
 
 import (
 	"api/common"
-	"github.com/gin-gonic/gin"
+	"context"
+	"github.com/gofiber/fiber/v2"
 	"github.com/weplanx/go/basic"
 )
 
@@ -21,15 +22,16 @@ func NewController(i *InjectController) *Controller {
 	}
 }
 
-func (x *Controller) Setup(c *gin.Context) interface{} {
-	if err := basic.GenerateSchema(c, x.Db); err != nil {
+func (x *Controller) Setup(c *fiber.Ctx) interface{} {
+	ctx := context.Background()
+	if err := basic.GenerateSchema(ctx, x.Db); err != nil {
 		return err
 	}
-	if err := basic.GeneratePage(c, x.Db); err != nil {
+	if err := basic.GeneratePage(ctx, x.Db); err != nil {
 		return err
 	}
-	if err := basic.GenerateRoleAndAdmin(c, x.Db); err != nil {
+	if err := basic.GenerateRoleAndAdmin(ctx, x.Db); err != nil {
 		return err
 	}
-	return gin.H{"message": "ok"}
+	return fiber.Map{"message": "ok"}
 }
