@@ -8,7 +8,10 @@ import (
 
 func AuthGuard(passport *passport.Passport) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tokenString := c.Cookies("console")
+		tokenString := c.Cookies("access_token")
+		if tokenString == "" {
+			return common.LoginExpired
+		}
 		claims, err := passport.Verify(tokenString)
 		if err != nil {
 			return err
