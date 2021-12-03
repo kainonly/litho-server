@@ -9,9 +9,3 @@ type Service struct {
 type InjectService struct {
 	common.Inject
 }
-
-func NewService(i *InjectService) *Service {
-	return &Service{
-		InjectService: i,
-	}
-}
