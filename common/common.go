@@ -7,6 +7,8 @@ import (
 	"go.uber.org/fx"
 )
 
+const TokenClaimsKey = "token-claims"
+
 type Inject struct {
 	fx.In
 

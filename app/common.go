@@ -1,7 +1,9 @@
 package app
 
 import (
+	"api/app/admin"
 	"api/app/index"
+	"api/app/page"
 	"github.com/gofiber/fiber/v2"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/passport"
@@ -11,6 +13,8 @@ import (
 
 var Options = fx.Options(
 	index.Provides,
+	admin.Provides,
+	page.Provides,
 	fx.Invoke(func(
 		app *fiber.App,
 		api *api.API,
