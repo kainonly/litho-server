@@ -7,7 +7,7 @@ type Service struct {
 }
 
 type InjectService struct {
-	common.App
+	common.Inject
 }
 
 func NewService(i *InjectService) *Service {

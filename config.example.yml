@@ -1,17 +1,22 @@
-name: 'weplanx'
-key: '<a key of length 32>'
+address: ":9000"
+name: <app name>
+key: <a key of length 32>
 database:
-  uri: mongodb://$[username]:$[password]@$[host]:$[port]/$[database]?authSource=admin
-  name: weplanx
+  uri: mongodb://<username>:<password>@<host>:<port>/<database>?authSource=<authSource>
+  dbName: <database>
 redis:
-  address: $[host]:6379
-  password: $[password]
-  db: 0
-cookie:
-  secure: true
-  http_only: true
-cors: [ 'https://sys.awesome.com' ]
+  uri: redis://<user>:<password>@<host>:<port>/<db_number>
+cors:
+  allowOrigins:
+    - https://app.developer.com
+  allowMethods:
+    - POST
+  allowHeaders:
+    - Content-Type
+    - Accept
+  allowCredentials: true
+  maxAge: 7200
 auth:
-  system:
-    aud: [ 'system' ]
+  default:
+    aud: [ 'app' ]
     exp: 720
