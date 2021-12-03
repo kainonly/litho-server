@@ -98,6 +98,18 @@ func UseEncryption(values *common.Values) (cipher *encryption.Cipher, idx *encry
 func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
 	app = fiber.New(fiber.Config{
 		AppName: values.Name,
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			if err != nil {
+				if e, ok := err.(*fiber.Error); ok {
+					return c.Status(fiber.StatusInternalServerError).SendString(e.Message)
+				}
+				return c.JSON(fiber.Map{
+					"code":    1,
+					"message": err.Error(),
+				})
+			}
+			return nil
+		},
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
