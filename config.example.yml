@@ -16,7 +16,6 @@ cors:
     - Accept
   allowCredentials: true
   maxAge: 7200
-auth:
-  default:
-    aud: [ 'app' ]
-    exp: 720
+passport:
+  aud: [ 'console' ]
+  exp: 720

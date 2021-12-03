@@ -14,18 +14,17 @@ type Inject struct {
 	MongoClient *mongo.Client
 	Db          *mongo.Database
 	Redis       *redis.Client
-	//Cipher   *helper.CipherHelper
-	//Passport *passport.Passport
+	Passport    *passport.Passport
 }
 
 type Values struct {
-	Address  string                        `yaml:"address"`
-	Name     string                        `yaml:"name"`
-	Key      string                        `yaml:"key"`
-	Cors     Cors                          `yaml:"cors"`
-	Database Database                      `yaml:"database"`
-	Redis    Redis                         `yaml:"redis"`
-	Auth     map[string]*passport.Passport `yaml:"auth"`
+	Address  string          `yaml:"address"`
+	Name     string          `yaml:"name"`
+	Key      string          `yaml:"key"`
+	Cors     Cors            `yaml:"cors"`
+	Database Database        `yaml:"database"`
+	Redis    Redis           `yaml:"redis"`
+	Passport passport.Option `yaml:"passport"`
 }
 
 type Cors struct {
