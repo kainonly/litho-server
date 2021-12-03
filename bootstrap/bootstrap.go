@@ -8,8 +8,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
@@ -99,6 +101,7 @@ func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(etag.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     strings.Join(values.Cors.AllowOrigins, ","),
 		AllowMethods:     strings.Join(values.Cors.AllowMethods, ","),
@@ -109,6 +112,7 @@ func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
 	app.Use(encryptcookie.New(encryptcookie.Config{
 		Key: values.Key,
 	}))
+	app.Use(requestid.New())
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go app.Listen(values.Address)

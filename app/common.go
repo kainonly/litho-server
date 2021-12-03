@@ -21,9 +21,11 @@ var Options = fx.Options(
 		passport *passport.Passport,
 		index *index.Controller,
 	) {
-		app.Get("/", route.Returns(Home))
 		auth := AuthGuard(passport)
-		route.Auto(app, index)
+
+		app.Get("/", route.Returns(Home))
+
+		route.Auto(app, index, route.SetMiddleware(auth, "Code", "RefreshToken", "Logout", "Pages"))
 		route.Auto(app, api, route.SetPath(":collection"), route.SetMiddleware(auth))
 	}),
 )
