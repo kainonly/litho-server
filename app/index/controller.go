@@ -10,6 +10,7 @@ import (
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/password"
+	"github.com/weplanx/go/route"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -64,7 +65,7 @@ func (x *Controller) Login(c *fiber.Ctx) interface{} {
 func (x *Controller) Verify(c *fiber.Ctx) interface{} {
 	tokenString := c.Cookies("access_token")
 	if tokenString == "" {
-		return common.LoginExpired
+		return route.E{Code: 401, Message: common.LoginExpired.Error()}
 	}
 	if _, err := x.Passport.Verify(tokenString); err != nil {
 		return err
