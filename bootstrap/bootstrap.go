@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/fx"
@@ -25,6 +26,7 @@ var Provides = fx.Provide(
 	SetValues,
 	UseDatabase,
 	UseRedis,
+	UsePassport,
 	HttpServer,
 	api.New,
 )
@@ -72,17 +74,11 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	return
 }
 
-//// InitializePassport 创建认证
-//func UsePassport(values *common.Values) *passport.Passport {
-//	return passport.New(map[string]*passport.Auth{
-//		"system": {
-//			Key: values.Key,
-//			Iss: values.Name,
-//			Aud: []string{"admin"},
-//			Exp: 720,
-//		},
-//	})
-//}
+// UsePassport 创建认证
+func UsePassport(values *common.Values) *passport.Passport {
+	values.Passport.Iss = values.Name
+	return passport.New(values.Key, values.Passport)
+}
 
 // HttpServer 启动 HTTP 服务
 func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
