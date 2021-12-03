@@ -2,6 +2,7 @@ package index
 
 import (
 	"api/app/admin"
+	"api/app/page"
 	"api/common"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -20,6 +21,7 @@ type InjectController struct {
 	common.Inject
 	Service      *Service
 	AdminService *admin.Service
+	PageService  *page.Service
 }
 
 func (x *Controller) Login(c *fiber.Ctx) interface{} {
@@ -137,10 +139,11 @@ func (x *Controller) Logout(c *fiber.Ctx) interface{} {
 	return "ok"
 }
 
-//func (x *Controller) Pages(c *gin.Context) interface{} {
-//	data, err := x.PageService.Get(c)
-//	if err != nil {
-//		return err
-//	}
-//	return data
-//}
+func (x *Controller) Pages(c *fiber.Ctx) interface{} {
+	ctx := c.UserContext()
+	data, err := x.PageService.Get(ctx)
+	if err != nil {
+		return err
+	}
+	return data
+}
