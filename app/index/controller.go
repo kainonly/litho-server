@@ -10,7 +10,7 @@ type Controller struct {
 }
 
 type InjectController struct {
-	common.App
+	common.Inject
 	Service *Service
 }
 
@@ -21,7 +21,20 @@ func NewController(i *InjectController) *Controller {
 }
 
 func (x *Controller) Index(c *fiber.Ctx) interface{} {
+	c.Cookie(&fiber.Cookie{
+		Name:     "name",
+		Value:    "kain",
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
 	return fiber.Map{
 		"msg": "hi",
+	}
+}
+
+func (x *Controller) Get(c *fiber.Ctx) interface{} {
+	return fiber.Map{
+		"name": c.Cookies("name"),
 	}
 }

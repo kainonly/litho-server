@@ -2,45 +2,50 @@ package common
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 )
 
-type App struct {
+type Inject struct {
 	fx.In
 
-	Set      *Set
-	Mongo    *mongo.Client
-	Db       *mongo.Database
-	Redis    *redis.Client
-	Cookie   *helper.CookieHelper
-	Cipher   *helper.CipherHelper
-	Passport *passport.Passport
+	Values      *Values
+	MongoClient *mongo.Client
+	Db          *mongo.Database
+	Redis       *redis.Client
+	//Cipher   *helper.CipherHelper
+	//Passport *passport.Passport
 }
 
-type Set struct {
+type Values struct {
+	Address  string                        `yaml:"address"`
 	Name     string                        `yaml:"name"`
 	Key      string                        `yaml:"key"`
+	Cors     Cors                          `yaml:"cors"`
 	Database Database                      `yaml:"database"`
 	Redis    Redis                         `yaml:"redis"`
-	Cookie   helper.CookieOption           `yaml:"cookie"`
-	Cors     []string                      `yaml:"cors"`
 	Auth     map[string]*passport.Passport `yaml:"auth"`
 }
 
+type Cors struct {
+	AllowOrigins     []string `yaml:"allowOrigins"`
+	AllowMethods     []string `yaml:"allowMethods"`
+	AllowHeaders     []string `yaml:"allowHeaders"`
+	ExposeHeaders    []string `yaml:"exposeHeaders"`
+	AllowCredentials bool     `yaml:"allowCredentials"`
+	MaxAge           int      `yaml:"maxAge"`
+}
+
 type Database struct {
-	Uri  string `yaml:"uri"`
-	Name string `yaml:"name"`
+	Uri    string `yaml:"uri"`
+	DbName string `yaml:"dbName"`
 }
 
 type Redis struct {
-	Address  string `yaml:"address"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
+	Uri string `yaml:"uri"`
 }
 
-func (x *Set) RedisKey(name string) string {
+func (x *Values) RedisKey(name string) string {
 	return x.Name + ":" + name
 }

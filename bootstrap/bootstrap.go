@@ -7,35 +7,30 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/weplanx/go/api"
-	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 )
 
 var Provides = fx.Provide(
-	LoadSettings,
-	InitializeDatabase,
-	InitializeRedis,
-	InitializeCookie,
-	InitializePassport,
-	InitializeCipher,
-	api.New,
+	SetValues,
+	UseDatabase,
+	UseRedis,
 	HttpServer,
+	api.New,
 )
 
-// LoadSettings 初始化应用配置
-func LoadSettings() (app *common.Set, err error) {
+// SetValues 初始化配置
+func SetValues() (values *common.Values, err error) {
 	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
 		err = errors.New("the path [./config.yml] does not have a configuration file")
 		return
@@ -45,78 +40,70 @@ func LoadSettings() (app *common.Set, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(b, &app)
+	err = yaml.Unmarshal(b, &values)
 	if err != nil {
 		return
 	}
 	return
 }
 
-// InitializeDatabase 初始化MongoDB数据库
-func InitializeDatabase(app *common.Set) (client *mongo.Client, db *mongo.Database, err error) {
-	option := app.Database
+func UseDatabase(values *common.Values) (client *mongo.Client, db *mongo.Database, err error) {
 	if client, err = mongo.Connect(
 		context.TODO(),
-		options.Client().ApplyURI(option.Uri),
+		options.Client().ApplyURI(values.Database.Uri),
 	); err != nil {
 		return
 	}
-	db = client.Database(option.Name)
+	db = client.Database(values.Database.DbName)
 	return
 }
 
-// InitializeRedis 初始化Redis缓存
+// UseRedis 初始化Redis缓存
 // 配置文档 https://github.com/go-redis/redis
-func InitializeRedis(app *common.Set) (client *redis.Client, err error) {
-	option := app.Redis
-	client = redis.NewClient(&redis.Options{
-		Addr:     option.Address,
-		Password: option.Password,
-		DB:       option.DB,
-	})
+func UseRedis(values *common.Values) (client *redis.Client, err error) {
+	opts, err := redis.ParseURL(values.Redis.Uri)
+	if err != nil {
+		return
+	}
+	client = redis.NewClient(opts)
 	if err = client.Ping(context.Background()).Err(); err != nil {
 		return
 	}
 	return
 }
 
-// InitializeCookie 创建 Cookie 工具
-func InitializeCookie(app *common.Set) *helper.CookieHelper {
-	return helper.NewCookieHelper(app.Cookie, http.SameSiteStrictMode)
-}
-
-// InitializePassport 创建认证
-func InitializePassport(app *common.Set) *passport.Passport {
-	return passport.New(map[string]*passport.Auth{
-		"system": {
-			Key: app.Key,
-			Iss: app.Name,
-			Aud: []string{"admin"},
-			Exp: 720,
-		},
-	})
-}
-
-// InitializeCipher 初始化数据加密
-func InitializeCipher(app *common.Set) (*helper.CipherHelper, error) {
-	return helper.NewCipherHelper(app.Key)
-}
+//// InitializePassport 创建认证
+//func UsePassport(values *common.Values) *passport.Passport {
+//	return passport.New(map[string]*passport.Auth{
+//		"system": {
+//			Key: values.Key,
+//			Iss: values.Name,
+//			Aud: []string{"admin"},
+//			Exp: 720,
+//		},
+//	})
+//}
 
 // HttpServer 启动 HTTP 服务
-func HttpServer(lc fx.Lifecycle, config *common.Set) (f *fiber.App) {
-	f = fiber.New()
-	f.Use(logger.New())
-	f.Use(recover.New())
-	f.Use(cors.New(cors.Config{
-		AllowOrigins:     strings.Join(config.Cors, ","),
-		AllowMethods:     "POST",
-		AllowHeaders:     "Origin, Content-Type, Accept",
-		AllowCredentials: true,
-		MaxAge:           int(12 * time.Hour),
+func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
+	app = fiber.New(fiber.Config{
+		AppName: values.Name,
+	})
+	app.Use(logger.New())
+	app.Use(recover.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Join(values.Cors.AllowOrigins, ","),
+		AllowMethods:     strings.Join(values.Cors.AllowMethods, ","),
+		AllowHeaders:     strings.Join(values.Cors.AllowHeaders, ","),
+		AllowCredentials: values.Cors.AllowCredentials,
+		MaxAge:           int(time.Duration(values.Cors.MaxAge) * time.Second),
+	}))
+	app.Use(encryptcookie.New(encryptcookie.Config{
+		Key: values.Key,
 	}))
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go f.Listen(":9000")
+			go app.Listen(values.Address)
 			return nil
 		},
 	})
