@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,6 +28,7 @@ var Provides = fx.Provide(
 	UseDatabase,
 	UseRedis,
 	UsePassport,
+	UseEncryption,
 	HttpServer,
 	api.New,
 )
@@ -78,6 +80,16 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 func UsePassport(values *common.Values) *passport.Passport {
 	values.Passport.Iss = values.Name
 	return passport.New(values.Key, values.Passport)
+}
+
+func UseEncryption(values *common.Values) (cipher *encryption.Cipher, idx *encryption.IDx, err error) {
+	if cipher, err = encryption.NewCipher(values.Key); err != nil {
+		return
+	}
+	if idx, err = encryption.NewIDx(values.Key); err != nil {
+		return
+	}
+	return
 }
 
 // HttpServer 启动 HTTP 服务
