@@ -1,19 +1,18 @@
 package app
 
-//func authSystem(auth *passport.Auth, cookie *helper.CookieHelper) fiber.Handler {
-//	return wpx.Returns(func(c *fiber.Ctx) interface{} {
-//		tokenString, err := cookie.Get(c, "system_access_token")
-//		if err != nil {
-//			c.Abort()
-//			return err
-//		}
-//		claims, err := auth.Verify(tokenString)
-//		if err != nil {
-//			c.Abort()
-//			return err
-//		}
-//		c.Set("access_token", claims)
-//		c.Next()
-//		return nil
-//	})
-//}
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/weplanx/go/passport"
+)
+
+func AuthGuard(passport *passport.Passport) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tokenString := c.Cookies("console")
+		claims, err := passport.Verify(tokenString)
+		if err != nil {
+			return err
+		}
+		c.Locals("claims", claims)
+		return c.Next()
+	}
+}
