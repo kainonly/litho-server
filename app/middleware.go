@@ -1,6 +1,7 @@
 package app
 
 import (
+	"api/common"
 	"github.com/gofiber/fiber/v2"
 	"github.com/weplanx/go/passport"
 )
@@ -12,7 +13,7 @@ func AuthGuard(passport *passport.Passport) fiber.Handler {
 		if err != nil {
 			return err
 		}
-		c.Locals("claims", claims)
+		c.Locals(common.TokenClaimsKey, claims)
 		return c.Next()
 	}
 }
