@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
@@ -110,6 +111,8 @@ func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
 			}
 			return nil
 		},
+		JSONEncoder: jsoniter.Marshal,
+		JSONDecoder: jsoniter.Unmarshal,
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
