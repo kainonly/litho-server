@@ -76,7 +76,7 @@ func (x *Controller) Verify(c *fiber.Ctx) interface{} {
 func (x *Controller) Code(c *fiber.Ctx) interface{} {
 	claims := c.Locals(common.TokenClaimsKey)
 	if claims == nil {
-		return common.LoginExpired
+		return route.E{Code: 401, Message: common.LoginExpired.Error()}
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := funk.RandomString(8)
@@ -99,7 +99,7 @@ func (x *Controller) RefreshToken(c *fiber.Ctx) interface{} {
 	}
 	claims := c.Locals(common.TokenClaimsKey)
 	if claims == nil {
-		return common.LoginExpired
+		return route.E{Code: 401, Message: common.LoginExpired.Error()}
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	ctx := c.UserContext()
@@ -108,7 +108,7 @@ func (x *Controller) RefreshToken(c *fiber.Ctx) interface{} {
 		return err
 	}
 	if !result {
-		return common.LoginExpired
+		return route.E{Code: 401, Message: common.LoginExpired.Error()}
 	}
 	if err = x.Service.RemoveVerifyCode(ctx, jti); err != nil {
 		return err
