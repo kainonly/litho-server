@@ -80,7 +80,7 @@ func (x *Controller) Reorganization(c *fiber.Ctx) interface{} {
 	return result
 }
 
-func (x *Controller) FieldSort(c *fiber.Ctx) interface{} {
+func (x *Controller) SortSchemaFields(c *fiber.Ctx) interface{} {
 	var body struct {
 		Id     primitive.ObjectID `json:"id" validate:"required"`
 		Fields []string           `json:"fields" validate:"required"`
@@ -99,6 +99,30 @@ func (x *Controller) FieldSort(c *fiber.Ctx) interface{} {
 		UpdateOne(context.TODO(),
 			bson.M{"_id": body.Id},
 			bson.M{"$set": values},
+		)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+func (x *Controller) DeleteSchemaField(c *fiber.Ctx) interface{} {
+	var body struct {
+		Id  primitive.ObjectID `json:"id" validate:"required"`
+		Key string             `json:"key" validate:"required"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	result, err := x.Db.Collection("pages").
+		UpdateOne(context.TODO(),
+			bson.M{"_id": body.Id},
+			bson.M{"$unset": bson.M{
+				fmt.Sprintf("schema.fields.%s", body.Key): "",
+			}},
 		)
 	if err != nil {
 		return err
