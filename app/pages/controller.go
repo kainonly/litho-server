@@ -3,6 +3,7 @@ package pages
 import (
 	"api/common"
 	"context"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/thoas/go-funk"
@@ -82,7 +83,7 @@ func (x *Controller) Reorganization(c *fiber.Ctx) interface{} {
 func (x *Controller) FieldSort(c *fiber.Ctx) interface{} {
 	var body struct {
 		Id     primitive.ObjectID `json:"id" validate:"required"`
-		Fields bson.A             `json:"fields" validate:"required"`
+		Fields []string           `json:"fields" validate:"required"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return err
@@ -90,10 +91,14 @@ func (x *Controller) FieldSort(c *fiber.Ctx) interface{} {
 	if err := validator.New().Struct(body); err != nil {
 		return err
 	}
+	values := make(bson.M, 0)
+	for i, x := range body.Fields {
+		values[fmt.Sprintf(`schema.fields.%s.sort`, x)] = i
+	}
 	result, err := x.Db.Collection("pages").
 		UpdateOne(context.TODO(),
 			bson.M{"_id": body.Id},
-			bson.M{"$set": bson.M{"schema.fields": body.Fields}},
+			bson.M{"$set": values},
 		)
 	if err != nil {
 		return err
