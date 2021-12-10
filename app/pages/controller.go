@@ -8,6 +8,7 @@ import (
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Controller struct {
@@ -17,10 +18,6 @@ type Controller struct {
 type InjectController struct {
 	common.Inject
 	Service *Service
-}
-
-func (x *Controller) Sort(c *fiber.Ctx) interface{} {
-	return nil
 }
 
 func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
@@ -53,7 +50,36 @@ func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
 	return "ok"
 }
 
-func (x *Controller) SortFields(c *fiber.Ctx) interface{} {
+// Reorganization 重组
+func (x *Controller) Reorganization(c *fiber.Ctx) interface{} {
+	var body struct {
+		Id     *primitive.ObjectID   `json:"id" validate:"required"`
+		Parent string                `json:"parent" validate:"required"`
+		Sort   []*primitive.ObjectID `json:"sort" validate:"required"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	models := []mongo.WriteModel{
+		mongo.NewUpdateOneModel().
+			SetFilter(bson.M{"_id": body.Id}).
+			SetUpdate(bson.M{"$set": bson.M{"parent": body.Parent}}),
+	}
+	for i, x := range body.Sort {
+		models = append(models, mongo.NewUpdateOneModel().
+			SetFilter(bson.M{"_id": x}).
+			SetUpdate(bson.M{"$set": bson.M{"sort": i}}),
+		)
+	}
+	result, err := x.Db.Collection("pages").BulkWrite(ctx, models)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+func (x *Controller) FieldSort(c *fiber.Ctx) interface{} {
 	var body struct {
 		Id     primitive.ObjectID `json:"id" validate:"required"`
 		Fields bson.A             `json:"fields" validate:"required"`
@@ -64,13 +90,11 @@ func (x *Controller) SortFields(c *fiber.Ctx) interface{} {
 	if err := validator.New().Struct(body); err != nil {
 		return err
 	}
-	result, err := x.Db.Collection("pages").UpdateOne(context.TODO(), bson.M{
-		"_id": body.Id,
-	}, bson.M{
-		"$set": bson.M{
-			"schema.fields": body.Fields,
-		},
-	})
+	result, err := x.Db.Collection("pages").
+		UpdateOne(context.TODO(),
+			bson.M{"_id": body.Id},
+			bson.M{"$set": bson.M{"schema.fields": body.Fields}},
+		)
 	if err != nil {
 		return err
 	}
