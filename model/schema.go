@@ -1,38 +1,26 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson"
-
 type Schema struct {
-	Key         string  `bson:"key" json:"key"`
-	Label       string  `bson:"label" json:"label"`
-	Kind        string  `bson:"kind" json:"kind"`
-	Description string  `bson:"description,omitempty" json:"description"`
-	System      bool    `bson:"system,omitempty" json:"system"`
-	Fields      []Field `bson:"fields,omitempty" json:"fields"`
+	// 集合命名
+	Key string `bson:"key" json:"key"`
+
+	// 字段定义
+	Fields SchemaFields `bson:"fields" json:"fields"`
+
+	// 规则
+	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
 }
 
-type Field struct {
-	Key         string      `bson:"key" json:"key"`
-	Label       string      `bson:"label" json:"label"`
-	Type        string      `bson:"type" json:"type"`
-	Description string      `bson:"description,omitempty" json:"description"`
-	Default     string      `bson:"default,omitempty" json:"default,omitempty"`
-	Unique      bool        `bson:"unique,omitempty" json:"unique,omitempty"`
-	Required    bool        `bson:"required,omitempty" json:"required,omitempty"`
-	Private     bool        `bson:"private,omitempty" json:"private,omitempty"`
-	System      bool        `bson:"system,omitempty" json:"system,omitempty"`
-	Option      FieldOption `bson:"option,omitempty" json:"option,omitempty"`
+type SchemaFields map[string]*Field
+
+func NewSchema(key string, fields SchemaFields) *Schema {
+	return &Schema{
+		Key:    key,
+		Fields: fields,
+	}
 }
 
-type FieldOption struct {
-	// 数字类型
-	Max interface{} `bson:"max,omitempty" json:"max,omitempty"`
-	Min interface{} `bson:"min,omitempty" json:"min,omitempty"`
-	// 枚举类型
-	Values   bson.D `bson:"values,omitempty" json:"values,omitempty"`
-	Multiple *bool  `bson:"multiple,omitempty" json:"multiple,omitempty"`
-	// 引用类型
-	Mode   string `bson:"mode,omitempty" json:"mode,omitempty"`
-	Target string `bson:"target,omitempty" json:"target,omitempty"`
-	To     string `bson:"to,omitempty" json:"to,omitempty"`
+func (x *Schema) SetRules(v []interface{}) *Schema {
+	x.Rules = v
+	return x
 }
