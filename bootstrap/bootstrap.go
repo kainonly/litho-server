@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,7 +32,6 @@ var Provides = fx.Provide(
 	UsePassport,
 	UseEncryption,
 	HttpServer,
-	api.New,
 )
 
 // SetValues 初始化配置
