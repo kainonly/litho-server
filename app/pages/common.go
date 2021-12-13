@@ -1,12 +1,14 @@
 package pages
 
 import (
+	"github.com/weplanx/go/api"
 	"go.uber.org/fx"
 )
 
 var Provides = fx.Provide(
 	func(i InjectController) *Controller {
 		return &Controller{
+			Controller:       api.SetController(i.API, "pages"),
 			InjectController: &i,
 		}
 	},
