@@ -13,9 +13,10 @@ import (
 var Options = fx.Options(
 	index.Provides,
 	pages.Provides,
+	fx.Provide(api.New, api.AutoController),
 	fx.Invoke(func(
 		app *fiber.App,
-		api *api.API,
+		api *api.Controller,
 		passport *passport.Passport,
 		index *index.Controller,
 		pages *pages.Controller,
