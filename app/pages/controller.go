@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/thoas/go-funk"
+	"github.com/weplanx/go/api"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,11 +15,17 @@ import (
 
 type Controller struct {
 	*InjectController
+	*api.Controller
 }
 
 type InjectController struct {
 	common.Inject
+	API     *api.API
 	Service *Service
+}
+
+func (x *Controller) Delete(c *fiber.Ctx) interface{} {
+	return x.Controller.Delete(c)
 }
 
 func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
