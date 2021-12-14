@@ -8,7 +8,7 @@ import (
 var Provides = fx.Provide(
 	func(i InjectController) *Controller {
 		return &Controller{
-			Controller:       api.SetController(i.API, "pages"),
+			Controller:       api.SetController(i.APIs, "pages"),
 			InjectController: &i,
 		}
 	},

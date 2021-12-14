@@ -20,12 +20,17 @@ type Controller struct {
 
 type InjectController struct {
 	common.Inject
-	API     *api.API
+	APIs    *api.API
 	Service *Service
 }
 
 func (x *Controller) Delete(c *fiber.Ctx) interface{} {
-	return x.Controller.Delete(c)
+	result := x.Controller.Delete(c)
+	if _, ok := result.(error); ok {
+		return result
+	}
+	// TODO: 发送变更集合名队列
+	return result
 }
 
 func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
