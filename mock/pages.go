@@ -165,6 +165,9 @@ var productsList = [][]interface{}{
 
 func MockPages(db *mongo.Database) (result *mongo.InsertManyResult, err error) {
 	ctx := context.Background()
+	if err = db.Collection("pages").Drop(ctx); err != nil {
+		return
+	}
 	productId := primitive.NewObjectID()
 	orderId := primitive.NewObjectID()
 	productsFields := make(model.SchemaFields, len(productsList))
