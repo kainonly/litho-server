@@ -1,5 +1,7 @@
 package model
 
+import "go.mongodb.org/mongo-driver/bson"
+
 type Schema struct {
 	// 集合命名
 	Key string `bson:"key" json:"key"`
@@ -9,6 +11,9 @@ type Schema struct {
 
 	// 规则
 	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
+
+	// 验证器
+	Validator bson.M `bson:"validator,omitempty" json:"validator,omitempty"`
 }
 
 type SchemaFields map[string]*Field
