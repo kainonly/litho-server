@@ -112,7 +112,7 @@ func (x *Controller) DeleteSchemaField(c *fiber.Ctx) interface{} {
 }
 
 type FindIndexesDto struct {
-	Collection string `json:"collection" validate:"required"`
+	Id primitive.ObjectID `json:"id" validate:"required"`
 }
 
 func (x *Controller) FindIndexes(c *fiber.Ctx) interface{} {
@@ -124,7 +124,11 @@ func (x *Controller) FindIndexes(c *fiber.Ctx) interface{} {
 		return err
 	}
 	ctx := c.UserContext()
-	result, err := x.Service.FindIndexes(ctx, body)
+	page, err := x.Service.FindOneById(ctx, body.Id)
+	if err != nil {
+		return err
+	}
+	result, err := x.Service.FindIndexes(ctx, page.Schema.Key)
 	if err != nil {
 		return err
 	}
@@ -132,10 +136,10 @@ func (x *Controller) FindIndexes(c *fiber.Ctx) interface{} {
 }
 
 type CreateIndexDto struct {
-	Collection string `json:"collection" validate:"required"`
-	Name       string `json:"name" validate:"required"`
-	Keys       bson.D `json:"keys" validate:"required,gt=0"`
-	Unique     *bool  `json:"unique" validate:"required"`
+	Id     primitive.ObjectID `json:"id" validate:"required"`
+	Name   string             `json:"name" validate:"required"`
+	Keys   bson.D             `json:"keys" validate:"required,gt=0"`
+	Unique *bool              `json:"unique" validate:"required"`
 }
 
 func (x *Controller) CreateIndex(c *fiber.Ctx) interface{} {
@@ -147,7 +151,11 @@ func (x *Controller) CreateIndex(c *fiber.Ctx) interface{} {
 		return err
 	}
 	ctx := c.UserContext()
-	result, err := x.Service.CreateIndex(ctx, body)
+	page, err := x.Service.FindOneById(ctx, body.Id)
+	if err != nil {
+		return err
+	}
+	result, err := x.Service.CreateIndex(ctx, body, page.Schema.Key)
 	if err != nil {
 		return err
 	}
@@ -155,8 +163,8 @@ func (x *Controller) CreateIndex(c *fiber.Ctx) interface{} {
 }
 
 type DeleteIndexDto struct {
-	Collection string `json:"collection" validate:"required"`
-	Name       string `json:"name" validate:"required"`
+	Id   primitive.ObjectID `json:"id" validate:"required"`
+	Name string             `json:"name" validate:"required"`
 }
 
 func (x *Controller) DeleteIndex(c *fiber.Ctx) interface{} {
@@ -168,8 +176,11 @@ func (x *Controller) DeleteIndex(c *fiber.Ctx) interface{} {
 		return err
 	}
 	ctx := c.UserContext()
-	_, err := x.Service.DeleteIndex(ctx, body)
+	page, err := x.Service.FindOneById(ctx, body.Id)
 	if err != nil {
+		return err
+	}
+	if _, err = x.Service.DeleteIndex(ctx, body, page.Schema.Key); err != nil {
 		return err
 	}
 	return "ok"

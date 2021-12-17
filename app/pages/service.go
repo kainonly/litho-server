@@ -8,6 +8,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -18,6 +19,15 @@ type Service struct {
 
 type InjectService struct {
 	common.Inject
+}
+
+func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID) (result model.Page, err error) {
+	if err = x.Db.Collection("pages").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&result); err != nil {
+		return
+	}
+	return
 }
 
 func (x *Service) CheckKey(ctx context.Context, data CheckKeyDto) (result string, err error) {
@@ -75,9 +85,9 @@ func (x *Service) DeleteSchemaField(ctx context.Context, data DeleteSchemaFieldD
 	)
 }
 
-func (x *Service) FindIndexes(ctx context.Context, data FindIndexesDto) (result []map[string]interface{}, err error) {
+func (x *Service) FindIndexes(ctx context.Context, name string) (result []map[string]interface{}, err error) {
 	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection(data.Collection).Indexes().List(ctx); err != nil {
+	if cursor, err = x.Db.Collection(name).Indexes().List(ctx); err != nil {
 		return
 	}
 	if err = cursor.All(ctx, &result); err != nil {
@@ -86,15 +96,15 @@ func (x *Service) FindIndexes(ctx context.Context, data FindIndexesDto) (result 
 	return
 }
 
-func (x *Service) CreateIndex(ctx context.Context, data CreateIndexDto) (string, error) {
-	return x.Db.Collection(data.Collection).Indexes().CreateOne(ctx, mongo.IndexModel{
+func (x *Service) CreateIndex(ctx context.Context, data CreateIndexDto, name string) (string, error) {
+	return x.Db.Collection(name).Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    data.Keys,
 		Options: options.Index().SetName(data.Name).SetUnique(*data.Unique),
 	})
 }
 
-func (x *Service) DeleteIndex(ctx context.Context, data DeleteIndexDto) (bson.Raw, error) {
-	return x.Db.Collection(data.Collection).Indexes().DropOne(ctx, data.Name)
+func (x *Service) DeleteIndex(ctx context.Context, data DeleteIndexDto, name string) (bson.Raw, error) {
+	return x.Db.Collection(name).Indexes().DropOne(ctx, data.Name)
 }
 
 func (x *Service) UpdateValidator(ctx context.Context, data UpdateValidatorDto) (result interface{}, err error) {
