@@ -2,17 +2,11 @@ package pages
 
 import (
 	"api/common"
-	"api/model"
-	"context"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/api"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Controller struct {
@@ -35,10 +29,12 @@ func (x *Controller) Delete(c *fiber.Ctx) interface{} {
 	return result
 }
 
+type CheckKeyDto struct {
+	Value string `json:"value" validate:"required"`
+}
+
 func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
-	var body struct {
-		Value string `json:"value" validate:"required"`
-	}
+	var body CheckKeyDto
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
@@ -46,146 +42,155 @@ func (x *Controller) CheckKey(c *fiber.Ctx) interface{} {
 		return err
 	}
 	ctx := c.UserContext()
-	count, err := x.Db.Collection("pages").CountDocuments(ctx, bson.M{
-		"schema.key": body.Value,
-	})
+	result, err := x.Service.CheckKey(ctx, body)
 	if err != nil {
 		return err
 	}
-	if count != 0 {
-		return "duplicated"
-	}
-	collections, err := x.Db.ListCollectionNames(ctx, bson.M{})
-	if err != nil {
-		return err
-	}
-	if funk.Contains(collections, body.Value) {
-		return "history"
-	}
-	return "ok"
+	return result
+}
+
+type ReorganizationDto struct {
+	Id     primitive.ObjectID   `json:"id" validate:"required"`
+	Parent primitive.ObjectID   `json:"parent" validate:"required"`
+	Sort   []primitive.ObjectID `json:"sort" validate:"required"`
 }
 
 // Reorganization 重组
 func (x *Controller) Reorganization(c *fiber.Ctx) interface{} {
-	var body struct {
-		Id     *primitive.ObjectID   `json:"id" validate:"required"`
-		Parent string                `json:"parent" validate:"required"`
-		Sort   []*primitive.ObjectID `json:"sort" validate:"required"`
-	}
+	var body ReorganizationDto
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
 	ctx := c.UserContext()
-	models := []mongo.WriteModel{
-		mongo.NewUpdateOneModel().
-			SetFilter(bson.M{"_id": body.Id}).
-			SetUpdate(bson.M{"$set": bson.M{"parent": body.Parent}}),
-	}
-	for i, x := range body.Sort {
-		models = append(models, mongo.NewUpdateOneModel().
-			SetFilter(bson.M{"_id": x}).
-			SetUpdate(bson.M{"$set": bson.M{"sort": i}}),
-		)
-	}
-	result, err := x.Db.Collection("pages").BulkWrite(ctx, models)
+	result, err := x.Service.Reorganization(ctx, body)
 	if err != nil {
 		return err
 	}
 	return result
+}
+
+type SortSchemaFieldsDto struct {
+	Id     primitive.ObjectID `json:"id" validate:"required"`
+	Fields []string           `json:"fields" validate:"required"`
 }
 
 func (x *Controller) SortSchemaFields(c *fiber.Ctx) interface{} {
-	var body struct {
-		Id     primitive.ObjectID `json:"id" validate:"required"`
-		Fields []string           `json:"fields" validate:"required"`
-	}
+	var body SortSchemaFieldsDto
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
 	if err := validator.New().Struct(body); err != nil {
-		return err
-	}
-	values := make(bson.M, 0)
-	for i, x := range body.Fields {
-		values[fmt.Sprintf(`schema.fields.%s.sort`, x)] = i
-	}
-	result, err := x.Db.Collection("pages").
-		UpdateOne(context.TODO(),
-			bson.M{"_id": body.Id},
-			bson.M{"$set": values},
-		)
-	if err != nil {
-		return err
-	}
-	return result
-}
-
-func (x *Controller) DeleteSchemaField(c *fiber.Ctx) interface{} {
-	var body struct {
-		Id  primitive.ObjectID `json:"id" validate:"required"`
-		Key string             `json:"key" validate:"required"`
-	}
-	if err := c.BodyParser(&body); err != nil {
-		return err
-	}
-	if err := validator.New().Struct(body); err != nil {
-		return err
-	}
-	result, err := x.Db.Collection("pages").
-		UpdateOne(context.TODO(),
-			bson.M{"_id": body.Id},
-			bson.M{"$unset": bson.M{
-				fmt.Sprintf("schema.fields.%s", body.Key): "",
-			}},
-		)
-	if err != nil {
-		return err
-	}
-	return result
-}
-
-func (x *Controller) UpdateValidator(c *fiber.Ctx) interface{} {
-	var body struct {
-		Id        primitive.ObjectID `json:"id" validate:"required"`
-		Validator string             `json:"validator" validate:"required"`
-	}
-	if err := c.BodyParser(&body); err != nil {
-		return err
-	}
-	if err := validator.New().Struct(body); err != nil {
-		return err
-	}
-	var jsonSchema bson.M
-	if err := jsoniter.Unmarshal([]byte(body.Validator), &jsonSchema); err != nil {
 		return err
 	}
 	ctx := c.UserContext()
-	result, err := x.Db.Collection("pages").UpdateOne(ctx, bson.M{
-		"_id": body.Id,
-	}, bson.M{
-		"$set": bson.M{
-			"schema.validator": jsonSchema,
-		},
-	})
+	result, err := x.Service.SortSchemaFields(ctx, body)
 	if err != nil {
 		return err
 	}
-	var data model.Page
-	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
-		"_id": body.Id,
-	}).Decode(&data); err != nil {
+	return result
+}
+
+type DeleteSchemaFieldDto struct {
+	Id  primitive.ObjectID `json:"id" validate:"required"`
+	Key string             `json:"key" validate:"required"`
+}
+
+func (x *Controller) DeleteSchemaField(c *fiber.Ctx) interface{} {
+	var body DeleteSchemaFieldDto
+	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
-	delete(jsonSchema, "$schema")
-	if len(jsonSchema) == 0 {
-		return result
+	if err := validator.New().Struct(body); err != nil {
+		return err
 	}
-	if err = x.Db.RunCommand(ctx, bson.D{
-		{"collMod", data.Schema.Key},
-		{"validator", bson.M{
-			"$jsonSchema": jsonSchema,
-		}},
-	}).Err(); err != nil {
+	ctx := c.UserContext()
+	result, err := x.Service.DeleteSchemaField(ctx, body)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+type FindIndexesDto struct {
+	Collection string `json:"collection" validate:"required"`
+}
+
+func (x *Controller) FindIndexes(c *fiber.Ctx) interface{} {
+	var body FindIndexesDto
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	result, err := x.Service.FindIndexes(ctx, body)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+type CreateIndexDto struct {
+	Collection string `json:"collection" validate:"required"`
+	Name       string `json:"name" validate:"required"`
+	Keys       bson.D `json:"keys" validate:"required,gt=0"`
+	Unique     *bool  `json:"unique" validate:"required"`
+}
+
+func (x *Controller) CreateIndex(c *fiber.Ctx) interface{} {
+	var body CreateIndexDto
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	result, err := x.Service.CreateIndex(ctx, body)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+type DeleteIndexDto struct {
+	Collection string `json:"collection" validate:"required"`
+	Name       string `json:"name" validate:"required"`
+}
+
+func (x *Controller) DeleteIndex(c *fiber.Ctx) interface{} {
+	var body DeleteIndexDto
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	_, err := x.Service.DeleteIndex(ctx, body)
+	if err != nil {
+		return err
+	}
+	return "ok"
+}
+
+type UpdateValidatorDto struct {
+	Id        primitive.ObjectID `json:"id" validate:"required"`
+	Validator string             `json:"validator" validate:"required"`
+}
+
+func (x *Controller) UpdateValidator(c *fiber.Ctx) interface{} {
+	var body UpdateValidatorDto
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	result, err := x.Service.UpdateValidator(ctx, body)
+	if err != nil {
 		return err
 	}
 	return result
