@@ -202,5 +202,20 @@ func MockPages(db *mongo.Database) (result *mongo.InsertManyResult, err error) {
 		InsertMany(ctx, data); err != nil {
 		return
 	}
+	if err = db.CreateCollection(ctx, "products"); err != nil {
+		return
+	}
+	if err = db.CreateCollection(ctx, "product_group"); err != nil {
+		return
+	}
+	if err = db.CreateCollection(ctx, "product_values"); err != nil {
+		return
+	}
+	if err = db.CreateCollection(ctx, "orders"); err != nil {
+		return
+	}
+	if err = db.CreateCollection(ctx, "after_sale_orders"); err != nil {
+		return
+	}
 	return
 }
