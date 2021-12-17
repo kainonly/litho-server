@@ -2,10 +2,12 @@ package pages
 
 import (
 	"api/common"
+	"api/model"
 	"context"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/api"
 	"go.mongodb.org/mongo-driver/bson"
@@ -137,6 +139,53 @@ func (x *Controller) DeleteSchemaField(c *fiber.Ctx) interface{} {
 			}},
 		)
 	if err != nil {
+		return err
+	}
+	return result
+}
+
+func (x *Controller) UpdateValidator(c *fiber.Ctx) interface{} {
+	var body struct {
+		Id        primitive.ObjectID `json:"id" validate:"required"`
+		Validator string             `json:"validator" validate:"required"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(body); err != nil {
+		return err
+	}
+	var jsonSchema bson.M
+	if err := jsoniter.Unmarshal([]byte(body.Validator), &jsonSchema); err != nil {
+		return err
+	}
+	ctx := c.UserContext()
+	result, err := x.Db.Collection("pages").UpdateOne(ctx, bson.M{
+		"_id": body.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"schema.validator": jsonSchema,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	var data model.Page
+	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
+		"_id": body.Id,
+	}).Decode(&data); err != nil {
+		return err
+	}
+	delete(jsonSchema, "$schema")
+	if len(jsonSchema) == 0 {
+		return result
+	}
+	if err = x.Db.RunCommand(ctx, bson.D{
+		{"collMod", data.Schema.Key},
+		{"validator", bson.M{
+			"$jsonSchema": jsonSchema,
+		}},
+	}).Err(); err != nil {
 		return err
 	}
 	return result
