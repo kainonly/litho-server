@@ -1,24 +1,28 @@
-package main
+package mock
 
 import (
 	"api/bootstrap"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
-	"log"
 	"os"
+	"testing"
 )
 
-func main() {
+var (
+	Db *mongo.Database
+)
+
+func TestMain(m *testing.M) {
+	os.Chdir("../")
 	fx.New(
 		fx.NopLogger,
 		fx.Provide(
 			bootstrap.SetValues,
 			bootstrap.UseDatabase,
-			MockPages,
 		),
-		fx.Invoke(func(result *mongo.InsertManyResult) {
-			log.Println(result)
-			os.Exit(0)
+		fx.Invoke(func(client *mongo.Client, db *mongo.Database) {
+			Db = db
+			os.Exit(m.Run())
 		}),
 	)
 }

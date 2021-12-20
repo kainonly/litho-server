@@ -9,7 +9,7 @@ type Page struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 
 	// 父节点
-	Parent *primitive.ObjectID `bson:"parent" json:"parent"`
+	Parent interface{} `bson:"parent" json:"parent"`
 
 	// 名称
 	Name string `bson:"name" json:"name"`
@@ -43,6 +43,7 @@ type Page struct {
 func NewPage(name string, kind string) *Page {
 	return &Page{
 		Name:       name,
+		Parent:     nil,
 		Kind:       kind,
 		Sort:       0,
 		Status:     Bool(true),
@@ -56,7 +57,7 @@ func (x *Page) SetID(v primitive.ObjectID) *Page {
 	return x
 }
 
-func (x *Page) SetParent(v *primitive.ObjectID) *Page {
+func (x *Page) SetParent(v primitive.ObjectID) *Page {
 	x.Parent = v
 	return x
 }

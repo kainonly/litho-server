@@ -1,10 +1,10 @@
-package main
+package mock
 
 import (
 	"api/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"testing"
 )
 
 var productsList = [][]interface{}{
@@ -163,10 +163,10 @@ var productsList = [][]interface{}{
 		SetSpec(&model.FieldSpec{Min: 0})},
 }
 
-func MockPages(db *mongo.Database) (result *mongo.InsertManyResult, err error) {
+func TestPage(t *testing.T) {
 	ctx := context.Background()
-	if err = db.Collection("pages").Drop(ctx); err != nil {
-		return
+	if err := Db.Collection("pages").Drop(ctx); err != nil {
+		t.Error(err)
 	}
 	productId := primitive.NewObjectID()
 	orderId := primitive.NewObjectID()
@@ -179,43 +179,43 @@ func MockPages(db *mongo.Database) (result *mongo.InsertManyResult, err error) {
 			SetID(productId).
 			SetIcon("shopping"),
 		model.NewPage("商品清单", "default").
-			SetParent(&productId).
+			SetParent(productId).
 			SetSchema(model.NewSchema("products", productsFields)),
 		model.NewPage("商品分组", "default").
-			SetParent(&productId).
+			SetParent(productId).
 			SetSchema(model.NewSchema("product_group", model.SchemaFields{})),
 		model.NewPage("商品设置", "form").
-			SetParent(&productId).
+			SetParent(productId).
 			SetSchema(model.NewSchema("product_values", model.SchemaFields{})),
 		model.NewPage("订单管理", "group").
 			SetID(orderId).
 			SetIcon("profile"),
 		model.NewPage("订单列表", "default").
-			SetParent(&orderId).
+			SetParent(orderId).
 			SetSchema(model.NewSchema("orders", model.SchemaFields{})),
 		model.NewPage("售后维权", "default").
-			SetParent(&orderId).
+			SetParent(orderId).
 			SetSchema(model.NewSchema("after_sale_orders", model.SchemaFields{})),
 	}
-	if result, err = db.
+	if _, err := Db.
 		Collection("pages").
 		InsertMany(ctx, data); err != nil {
-		return
+		t.Error(err)
 	}
-	if err = db.CreateCollection(ctx, "products"); err != nil {
-		return
+	if err := Db.CreateCollection(ctx, "products"); err != nil {
+		t.Error(err)
 	}
-	if err = db.CreateCollection(ctx, "product_group"); err != nil {
-		return
+	if err := Db.CreateCollection(ctx, "product_group"); err != nil {
+		t.Error(err)
 	}
-	if err = db.CreateCollection(ctx, "product_values"); err != nil {
-		return
+	if err := Db.CreateCollection(ctx, "product_values"); err != nil {
+		t.Error(err)
 	}
-	if err = db.CreateCollection(ctx, "orders"); err != nil {
-		return
+	if err := Db.CreateCollection(ctx, "orders"); err != nil {
+		t.Error(err)
 	}
-	if err = db.CreateCollection(ctx, "after_sale_orders"); err != nil {
-		return
+	if err := Db.CreateCollection(ctx, "after_sale_orders"); err != nil {
+		t.Error(err)
 	}
 	return
 }
