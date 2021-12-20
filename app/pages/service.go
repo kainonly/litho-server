@@ -93,6 +93,7 @@ func (x *Service) FindIndexes(ctx context.Context, name string) (result []map[st
 	if err = cursor.All(ctx, &result); err != nil {
 		return
 	}
+	result = result[1:]
 	return
 }
 
