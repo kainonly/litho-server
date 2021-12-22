@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/go-redis/redis/v8"
+	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,7 @@ type Inject struct {
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	Idx         *encryption.IDx
+	APIx        *api.API
 }
 
 type Values struct {
