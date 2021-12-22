@@ -15,7 +15,6 @@ var Options = fx.Options(
 	index.Provides,
 	pages.Provides,
 	roles.Provides,
-	fx.Provide(api.New, api.AutoController),
 	fx.Invoke(func(
 		app *fiber.App,
 		api *api.Controller,

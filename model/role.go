@@ -46,7 +46,7 @@ func NewRole(key string, name string) *Role {
 	}
 }
 
-func (x *Role) SetParent(v primitive.ObjectID) *Role {
+func (x *Role) SetParent(v interface{}) *Role {
 	x.Parent = v
 	return x
 }
