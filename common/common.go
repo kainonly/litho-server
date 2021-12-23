@@ -1,27 +1,21 @@
 package common
 
 import (
-	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/go/api"
-	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.uber.org/fx"
 )
 
 const TokenClaimsKey = "token-claims"
 
 type Inject struct {
-	fx.In
-
 	Values      *Values
 	MongoClient *mongo.Client
 	Db          *mongo.Database
-	Redis       *redis.Client
-	Passport    *passport.Passport
-	Cipher      *encryption.Cipher
-	Idx         *encryption.IDx
-	APIx        *api.API
+	//Redis       *redis.Client
+	//Passport    *passport.Passport
+	//Cipher      *encryption.Cipher
+	//Idx         *encryption.IDx
+	//APIx        *api.API
 }
 
 type Values struct {

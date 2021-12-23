@@ -1,16 +1,18 @@
 package index
 
 import (
-	"api/common"
+	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
-	*InjectController
+	Service *Service
 }
 
-type InjectController struct {
-	common.Inject
-	Service *Service
+func (x *Controller) Index(c *gin.Context) interface{} {
+	return gin.H{
+		"name": x.Service.AppName(),
+		"v":    1.1,
+	}
 }
 
 //func (x *Controller) Login(c *fiber.Ctx) interface{} {

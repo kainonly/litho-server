@@ -1,5 +1,25 @@
 package app
 
+import (
+	"api/common"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"time"
+)
+
+func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     values.Cors.AllowOrigins,
+		AllowMethods:     values.Cors.AllowMethods,
+		AllowHeaders:     values.Cors.AllowHeaders,
+		AllowCredentials: values.Cors.AllowCredentials,
+		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
+	}))
+	return r
+}
+
 //func AuthGuard(passport *passport.Passport) fiber.Handler {
 //	return func(c *fiber.Ctx) error {
 //		tokenString := c.Cookies("access_token")
