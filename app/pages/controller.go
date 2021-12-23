@@ -16,7 +16,6 @@ type Controller struct {
 
 type InjectController struct {
 	common.Inject
-	APIs    *api.API
 	Service *Service
 }
 
