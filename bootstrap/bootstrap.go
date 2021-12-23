@@ -4,15 +4,9 @@ import (
 	"api/common"
 	"context"
 	"errors"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
-	"github.com/gofiber/fiber/v2/middleware/etag"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/api"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
@@ -22,7 +16,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -97,41 +90,20 @@ func UseEncryption(values *common.Values) (cipher *encryption.Cipher, idx *encry
 }
 
 // HttpServer 启动 HTTP 服务
-func HttpServer(lc fx.Lifecycle, values *common.Values) (app *fiber.App) {
-	app = fiber.New(fiber.Config{
-		AppName: values.Name,
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			if err != nil {
-				if e, ok := err.(*fiber.Error); ok {
-					return c.Status(fiber.StatusInternalServerError).SendString(e.Message)
-				}
-				return c.JSON(fiber.Map{
-					"code":    1,
-					"message": err.Error(),
-				})
-			}
-			return nil
-		},
-		JSONEncoder: jsoniter.Marshal,
-		JSONDecoder: jsoniter.Unmarshal,
-	})
-	app.Use(logger.New())
-	app.Use(recover.New())
-	app.Use(etag.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     strings.Join(values.Cors.AllowOrigins, ","),
-		AllowMethods:     strings.Join(values.Cors.AllowMethods, ","),
-		AllowHeaders:     strings.Join(values.Cors.AllowHeaders, ","),
+func HttpServer(lc fx.Lifecycle, values *common.Values) (r *gin.Engine) {
+	r = gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     values.Cors.AllowOrigins,
+		AllowMethods:     values.Cors.AllowMethods,
+		AllowHeaders:     values.Cors.AllowHeaders,
 		AllowCredentials: values.Cors.AllowCredentials,
-		MaxAge:           int(time.Duration(values.Cors.MaxAge) * time.Second),
+		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
 	}))
-	app.Use(encryptcookie.New(encryptcookie.Config{
-		Key: values.Key,
-	}))
-	app.Use(requestid.New())
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			go app.Listen(values.Address)
+			go r.Run(values.Address)
 			return nil
 		},
 	})
