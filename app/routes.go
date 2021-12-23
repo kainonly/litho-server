@@ -1,7 +1,9 @@
 package app
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func Home(c *fiber.Ctx) interface{} {
-	return fiber.Map{"msg": "hi"}
+func Home(c *gin.Context) interface{} {
+	return gin.H{"msg": "hi"}
 }
