@@ -1,15 +1,17 @@
 package main
 
 import (
-	"api/app"
 	"api/bootstrap"
-	"go.uber.org/fx"
 )
 
 func main() {
-	fx.New(
-		fx.NopLogger,
-		bootstrap.Provides,
-		app.Options,
-	).Run()
+	values, err := bootstrap.SetValues()
+	if err != nil {
+		panic(err)
+	}
+	app, err := App(values)
+	if err != nil {
+		panic(err)
+	}
+	app.Run(values.Address)
 }
