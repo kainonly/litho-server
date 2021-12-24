@@ -1,4 +1,5 @@
 address: ":9000"
+trusted_proxies: []
 name: <app name>
 key: <a key of length 32>
 database:
