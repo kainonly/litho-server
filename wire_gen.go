@@ -12,6 +12,7 @@ import (
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
+	"github.com/weplanx/go/api"
 )
 
 // Injectors from wire.go:
@@ -33,6 +34,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	controller := &index.Controller{
 		Service: service,
 	}
-	engine := app.New(value, controller)
+	apiService := &api.Service{
+		Db: database,
+	}
+	apiController := &api.Controller{
+		Service: apiService,
+	}
+	engine := app.New(value, controller, apiController)
 	return engine, nil
 }
