@@ -16,6 +16,7 @@ func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
 		AllowOrigins:     values.Cors.AllowOrigins,
 		AllowMethods:     values.Cors.AllowMethods,
 		AllowHeaders:     values.Cors.AllowHeaders,
+		ExposeHeaders:    values.Cors.ExposeHeaders,
 		AllowCredentials: values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
 	}))
