@@ -9,7 +9,7 @@ import (
 )
 
 func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
-	api.RegisterValidation()
+	r.SetTrustedProxies(values.TrustedProxies)
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
@@ -19,6 +19,7 @@ func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
 		AllowCredentials: values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
 	}))
+	api.RegisterValidation()
 	return r
 }
 

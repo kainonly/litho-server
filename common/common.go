@@ -19,13 +19,14 @@ type Inject struct {
 }
 
 type Values struct {
-	Address  string          `yaml:"address"`
-	Name     string          `yaml:"name"`
-	Key      string          `yaml:"key"`
-	Cors     Cors            `yaml:"cors"`
-	Database Database        `yaml:"database"`
-	Redis    Redis           `yaml:"redis"`
-	Passport passport.Option `yaml:"passport"`
+	Address        string          `yaml:"address"`
+	TrustedProxies []string        `yaml:"trusted_proxies"`
+	Name           string          `yaml:"name"`
+	Key            string          `yaml:"key"`
+	Cors           Cors            `yaml:"cors"`
+	Database       Database        `yaml:"database"`
+	Redis          Redis           `yaml:"redis"`
+	Passport       passport.Option `yaml:"passport"`
 }
 
 type Cors struct {
