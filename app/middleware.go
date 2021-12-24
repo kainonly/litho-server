@@ -4,10 +4,12 @@ import (
 	"api/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/weplanx/go/api"
 	"time"
 )
 
 func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
+	api.RegisterValidation()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
