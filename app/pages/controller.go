@@ -10,15 +10,15 @@ type Controller struct {
 	Service *Service
 }
 
-func (x *Controller) SchemaKeyExists(c *gin.Context) interface{} {
+func (x *Controller) HasSchemaKey(c *gin.Context) interface{} {
 	var query struct {
-		Key string `form:"key" binding:"required"`
+		Key string `form:"key" binding:"required,key"`
 	}
 	if err := c.ShouldBindQuery(&query); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	code, err := x.Service.SchemaKeyExists(ctx, query.Key)
+	code, err := x.Service.HasSchemaKey(ctx, query.Key)
 	if err != nil {
 		return err
 	}
@@ -27,76 +27,35 @@ func (x *Controller) SchemaKeyExists(c *gin.Context) interface{} {
 	}
 }
 
-type ReorganizationDto struct {
-	Id     primitive.ObjectID   `json:"id" binding:"required"`
-	Parent primitive.ObjectID   `json:"parent" binding:"required"`
-	Sort   []primitive.ObjectID `json:"sort" binding:"required"`
-}
-
-func (x *Controller) Reorganization(c *gin.Context) interface{} {
-	var body ReorganizationDto
+func (x *Controller) Sort(c *gin.Context) interface{} {
+	var body struct {
+		Sort []primitive.ObjectID `json:"sort" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	result, err := x.Service.Reorganization(ctx, body)
+	result, err := x.Service.Sort(ctx, body.Sort)
 	if err != nil {
 		return err
 	}
 	return result
-}
-
-type SortSchemaFieldsDto struct {
-	Id     primitive.ObjectID `json:"id" binding:"required"`
-	Fields []string           `json:"fields" binding:"required"`
-}
-
-func (x *Controller) SortSchemaFields(c *gin.Context) interface{} {
-	var body SortSchemaFieldsDto
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	result, err := x.Service.SortSchemaFields(ctx, body)
-	if err != nil {
-		return err
-	}
-	return result
-}
-
-type DeleteSchemaFieldDto struct {
-	Id  primitive.ObjectID `json:"id" binding:"required"`
-	Key string             `json:"key" binding:"required"`
-}
-
-func (x *Controller) DeleteSchemaField(c *gin.Context) interface{} {
-	var body DeleteSchemaFieldDto
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	result, err := x.Service.DeleteSchemaField(ctx, body)
-	if err != nil {
-		return err
-	}
-	return result
-}
-
-type FindIndexesDto struct {
-	Id primitive.ObjectID `json:"id" binding:"required"`
 }
 
 func (x *Controller) FindIndexes(c *gin.Context) interface{} {
-	var body FindIndexesDto
-	if err := c.ShouldBindJSON(&body); err != nil {
+	var params struct {
+		Id string `uri:"id" binding:"required,objectId"`
+	}
+	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
+	oid, _ := primitive.ObjectIDFromHex(params.Id)
 	ctx := c.Request.Context()
-	page, err := x.Service.FindOnePage(ctx, body.Id)
+	data, err := x.Service.FindOnePage(ctx, oid)
 	if err != nil {
 		return err
 	}
-	result, err := x.Service.FindIndexes(ctx, page.Schema.Key)
+	result, err := x.Service.FindIndexes(ctx, data.Schema.Key)
 	if err != nil {
 		return err
 	}
@@ -104,48 +63,52 @@ func (x *Controller) FindIndexes(c *gin.Context) interface{} {
 }
 
 type CreateIndexDto struct {
-	Id     primitive.ObjectID `json:"id" binding:"required"`
-	Name   string             `json:"name" binding:"required"`
-	Keys   bson.D             `json:"keys" binding:"required,gt=0"`
-	Unique *bool              `json:"unique" binding:"required"`
+	Keys   bson.D `json:"keys" binding:"required,gt=0"`
+	Unique *bool  `json:"unique" binding:"required"`
 }
 
 func (x *Controller) CreateIndex(c *gin.Context) interface{} {
+	var params struct {
+		Id   string `uri:"id" binding:"required,objectId"`
+		Name string `uri:"name" binding:"required,key"`
+	}
+	if err := c.ShouldBindUri(&params); err != nil {
+		return err
+	}
 	var body CreateIndexDto
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	page, err := x.Service.FindOnePage(ctx, body.Id)
+	oid, _ := primitive.ObjectIDFromHex(params.Id)
+	page, err := x.Service.FindOnePage(ctx, oid)
 	if err != nil {
 		return err
 	}
-	result, err := x.Service.CreateIndex(ctx, body, page.Schema.Key)
-	if err != nil {
+	if _, err = x.Service.CreateIndex(ctx, page.Schema.Key, params.Name, body); err != nil {
 		return err
 	}
-	return result
-}
-
-type DeleteIndexDto struct {
-	Id   primitive.ObjectID `json:"id" binding:"required"`
-	Name string             `json:"name" binding:"required"`
+	return nil
 }
 
 func (x *Controller) DeleteIndex(c *gin.Context) interface{} {
-	var body DeleteIndexDto
-	if err := c.ShouldBindJSON(&body); err != nil {
+	var params struct {
+		Id   string `uri:"id" binding:"required,objectId"`
+		Name string `uri:"name" binding:"required,key"`
+	}
+	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	page, err := x.Service.FindOnePage(ctx, body.Id)
+	oid, _ := primitive.ObjectIDFromHex(params.Id)
+	page, err := x.Service.FindOnePage(ctx, oid)
 	if err != nil {
 		return err
 	}
-	if _, err = x.Service.DeleteIndex(ctx, body, page.Schema.Key); err != nil {
+	if _, err = x.Service.DeleteIndex(ctx, page.Schema.Key, params.Name); err != nil {
 		return err
 	}
-	return "ok"
+	return nil
 }
 
 type UpdateValidatorDto struct {
