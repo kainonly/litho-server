@@ -30,6 +30,14 @@ func New(
 	r.GET("/", route.Use(index.Index))
 
 	api.Auto(r)
-	r.GET("pages/schema-key-exists", route.Use(pages.SchemaKeyExists))
+	_pages := r.Group("pages")
+	{
+		_pages.GET("has-schema-key", route.Use(pages.HasSchemaKey))
+		_pages.PATCH("sort", route.Use(pages.Sort))
+		_pages.GET(":id/indexes", route.Use(pages.FindIndexes))
+		_pages.PUT(":id/indexes/:name", route.Use(pages.CreateIndex))
+		_pages.DELETE(":id/indexes/:name", route.Use(pages.DeleteIndex))
+	}
+
 	return r
 }
