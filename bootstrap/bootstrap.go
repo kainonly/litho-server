@@ -13,7 +13,7 @@ import (
 )
 
 var Provides = wire.NewSet(
-	UseDatabase,
+	UseMongoDB,
 	UseDatabase,
 )
 
