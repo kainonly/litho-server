@@ -9,6 +9,8 @@ package main
 import (
 	"api/app"
 	"api/app/index"
+	"api/app/pages"
+	"api/app/roles"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -40,6 +42,18 @@ func App(value *common.Values) (*gin.Engine, error) {
 	apiController := &api.Controller{
 		Service: apiService,
 	}
-	engine := app.New(value, controller, apiController)
+	pagesService := &pages.Service{
+		Inject: inject,
+	}
+	pagesController := &pages.Controller{
+		Service: pagesService,
+	}
+	rolesService := &roles.Service{
+		Inject: inject,
+	}
+	rolesController := &roles.Controller{
+		Service: rolesService,
+	}
+	engine := app.New(value, controller, apiController, pagesController, rolesController)
 	return engine, nil
 }
