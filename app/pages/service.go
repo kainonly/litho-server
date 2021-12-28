@@ -4,7 +4,6 @@ import (
 	"api/common"
 	"api/model"
 	"context"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -70,14 +69,14 @@ func (x *Service) FindIndexes(ctx context.Context, name string) (result []map[st
 	return
 }
 
-func (x *Service) CreateIndex(ctx context.Context, coll string, name string, data CreateIndexDto) (string, error) {
+func (x *Service) CreateIndex(ctx context.Context, coll string, name string, keys bson.D, unique bool) (string, error) {
 	return x.Db.Collection(coll).
 		Indexes().
 		CreateOne(ctx, mongo.IndexModel{
-			Keys: data.Keys,
+			Keys: keys,
 			Options: options.Index().
 				SetName(name).
-				SetUnique(*data.Unique),
+				SetUnique(unique),
 		})
 }
 
@@ -85,37 +84,9 @@ func (x *Service) DeleteIndex(ctx context.Context, coll string, name string) (bs
 	return x.Db.Collection(coll).Indexes().DropOne(ctx, name)
 }
 
-func (x *Service) UpdateValidator(ctx context.Context, data UpdateValidatorDto) (result interface{}, err error) {
-	var jsonSchema bson.M
-	if err = jsoniter.Unmarshal([]byte(data.Validator), &jsonSchema); err != nil {
-		return
-	}
-	if result, err = x.Db.Collection("pages").UpdateOne(ctx, bson.M{
-		"_id": data.Id,
-	}, bson.M{
-		"$set": bson.M{
-			"schema.validator": jsonSchema,
-		},
-	}); err != nil {
-		return
-	}
-	var page model.Page
-	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
-		"_id": data.Id,
-	}).Decode(&page); err != nil {
-		return
-	}
-	delete(jsonSchema, "$schema")
-	if len(jsonSchema) == 0 {
-		return
-	}
-	if err = x.Db.RunCommand(ctx, bson.D{
-		{"collMod", page.Schema.Key},
-		{"validator", bson.M{
-			"$jsonSchema": jsonSchema,
-		}},
-	}).Err(); err != nil {
-		return
-	}
-	return
+func (x *Service) UpdateValidator(ctx context.Context, coll string, validator string) error {
+	return x.Db.RunCommand(ctx, bson.D{
+		{"collMod", coll},
+		{"validator", bson.M{"$jsonSchema": validator}},
+	}).Err()
 }
