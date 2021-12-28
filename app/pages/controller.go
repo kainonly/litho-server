@@ -62,11 +62,6 @@ func (x *Controller) FindIndexes(c *gin.Context) interface{} {
 	return result
 }
 
-type CreateIndexDto struct {
-	Keys   bson.D `json:"keys" binding:"required,gt=0"`
-	Unique *bool  `json:"unique" binding:"required"`
-}
-
 func (x *Controller) CreateIndex(c *gin.Context) interface{} {
 	var params struct {
 		Id   string `uri:"id" binding:"required,objectId"`
@@ -75,7 +70,10 @@ func (x *Controller) CreateIndex(c *gin.Context) interface{} {
 	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
-	var body CreateIndexDto
+	var body struct {
+		Keys   bson.D `json:"keys" binding:"required,gt=0"`
+		Unique *bool  `json:"unique" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
@@ -85,7 +83,7 @@ func (x *Controller) CreateIndex(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if _, err = x.Service.CreateIndex(ctx, page.Schema.Key, params.Name, body); err != nil {
+	if _, err = x.Service.CreateIndex(ctx, page.Schema.Key, params.Name, body.Keys, *body.Unique); err != nil {
 		return err
 	}
 	return nil
@@ -109,22 +107,4 @@ func (x *Controller) DeleteIndex(c *gin.Context) interface{} {
 		return err
 	}
 	return nil
-}
-
-type UpdateValidatorDto struct {
-	Id        primitive.ObjectID `json:"id" binding:"required"`
-	Validator string             `json:"validator" binding:"required"`
-}
-
-func (x *Controller) UpdateValidator(c *gin.Context) interface{} {
-	var body UpdateValidatorDto
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	result, err := x.Service.UpdateValidator(ctx, body)
-	if err != nil {
-		return err
-	}
-	return result
 }
