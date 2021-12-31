@@ -10,8 +10,6 @@ import (
 
 func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
 	r.SetTrustedProxies(values.TrustedProxies)
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     values.Cors.AllowOrigins,
 		AllowMethods:     values.Cors.AllowMethods,

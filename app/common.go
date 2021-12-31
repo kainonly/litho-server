@@ -26,18 +26,16 @@ func New(
 	pages *pages.Controller,
 	roles *roles.Controller,
 ) *gin.Engine {
-	r := middleware(gin.New(), values)
-	r.GET("/", route.Use(index.Index))
-
+	r := middleware(gin.Default(), values)
 	api.Auto(r)
 	_pages := r.Group("pages")
 	{
-		_pages.GET("has-schema-key", route.Use(pages.HasSchemaKey))
-		_pages.PATCH("sort", route.Use(pages.Sort))
-		_pages.GET(":id/indexes", route.Use(pages.FindIndexes))
-		_pages.PUT(":id/indexes/:name", route.Use(pages.CreateIndex))
-		_pages.DELETE(":id/indexes/:name", route.Use(pages.DeleteIndex))
+		_pages.GET("/has-schema-key", route.Use(pages.HasSchemaKey))
+		_pages.PATCH("/sort", route.Use(pages.Sort))
+		_pages.GET("/:id", route.Use(api.FindOneById, route.SetModel("pages")))
+		_pages.GET("/:id/indexes", route.Use(pages.FindIndexes))
+		_pages.PUT("/:id/indexes/:name", route.Use(pages.CreateIndex))
+		_pages.DELETE("/:id/indexes/:name", route.Use(pages.DeleteIndex))
 	}
-
 	return r
 }
