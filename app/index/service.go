@@ -1,6 +1,8 @@
 package index
 
-import "api/common"
+import (
+	"api/common"
+)
 
 type Service struct {
 	*common.Inject
@@ -13,10 +15,11 @@ func (x *Service) AppName() string {
 //func (x *Service) verifyCodeKey(name string) string {
 //	return x.Values.RedisKey("verify:" + name)
 //}
-//
+
 //func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string) error {
 //	return x.Redis.Set(ctx, x.verifyCodeKey(name), code, time.Minute).Err()
 //}
+
 //
 //// VerifyCode 校验验证码
 //func (x *Service) VerifyCode(ctx context.Context, name string, code string) (result bool, err error) {
