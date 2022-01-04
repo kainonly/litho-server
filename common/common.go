@@ -1,6 +1,9 @@
 package common
 
 import (
+	"github.com/go-redis/redis/v8"
+	"github.com/nats-io/nats.go"
+	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -11,11 +14,11 @@ type Inject struct {
 	Values      *Values
 	MongoClient *mongo.Client
 	Db          *mongo.Database
-	//Redis       *redis.Client
-	//Passport    *passport.Passport
-	//Cipher      *encryption.Cipher
-	//Idx         *encryption.IDx
-	//APIx        *api.API
+	Redis       *redis.Client
+	Nats        *nats.Conn
+	Passport    *passport.Passport
+	Cipher      *encryption.Cipher
+	Idx         *encryption.IDx
 }
 
 type Values struct {
@@ -26,6 +29,7 @@ type Values struct {
 	Cors           Cors            `yaml:"cors"`
 	Database       Database        `yaml:"database"`
 	Redis          Redis           `yaml:"redis"`
+	Nats           Nats            `yaml:"nats"`
 	Passport       passport.Option `yaml:"passport"`
 }
 
@@ -45,6 +49,11 @@ type Database struct {
 
 type Redis struct {
 	Uri string `yaml:"uri"`
+}
+
+type Nats struct {
+	Hosts []string `yaml:"hosts"`
+	Nkey  string   `yaml:"nkey"`
 }
 
 func (x *Values) RedisKey(name string) string {

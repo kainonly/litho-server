@@ -25,10 +25,32 @@ func App(value *common.Values) (*gin.Engine, error) {
 		return nil, err
 	}
 	database := bootstrap.UseDatabase(client, value)
+	redisClient, err := bootstrap.UseRedis(value)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := bootstrap.UseNats(value)
+	if err != nil {
+		return nil, err
+	}
+	passport := bootstrap.UsePassport(value)
+	cipher, err := bootstrap.UseCipher(value)
+	if err != nil {
+		return nil, err
+	}
+	iDx, err := bootstrap.UseIDx(value)
+	if err != nil {
+		return nil, err
+	}
 	inject := &common.Inject{
 		Values:      value,
 		MongoClient: client,
 		Db:          database,
+		Redis:       redisClient,
+		Nats:        conn,
+		Passport:    passport,
+		Cipher:      cipher,
+		Idx:         iDx,
 	}
 	service := &index.Service{
 		Inject: inject,
