@@ -15,12 +15,12 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	}
 }
 
-//func (x *Controller) Login(c *fiber.Ctx) interface{} {
+//func (x *Controller) Login(c *gin.Context) interface{} {
 //	var body struct {
 //		Username string `json:"username" validate:"required"`
 //		Password string `json:"password" validate:"required"`
 //	}
-//	if err := c.BodyParser(&body); err != nil {
+//	if err := c.ShouldBindJSON(&body); err != nil {
 //		return err
 //	}
 //	if err := validator.New().Struct(body); err != nil {
@@ -51,6 +51,7 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 //	})
 //	return "ok"
 //}
+
 //
 //func (x *Controller) Verify(c *fiber.Ctx) interface{} {
 //	tokenString := c.Cookies("access_token")
