@@ -31,7 +31,7 @@ func New(
 	roles *roles.Controller,
 	users *users.Controller,
 ) *gin.Engine {
-	r := globalMiddleware(gin.Default(), values)
+	r := globalMiddleware(gin.New(), values)
 	r.GET("/", route.Use(index.Index))
 	auth := authGuard(passport)
 	r.POST("/auth", route.Use(index.Login))

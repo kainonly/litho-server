@@ -3,14 +3,21 @@ package app
 import (
 	"api/common"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/requestid"
+	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	"go.uber.org/zap"
 	"time"
 )
 
 func globalMiddleware(r *gin.Engine, values *common.Values) *gin.Engine {
 	r.SetTrustedProxies(values.TrustedProxies)
+	r.Use(gin.Recovery())
+	logger, _ := zap.NewProduction()
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+	r.Use(requestid.New())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     values.Cors.AllowOrigins,
 		AllowMethods:     values.Cors.AllowMethods,
