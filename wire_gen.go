@@ -14,7 +14,7 @@ import (
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/engine"
 )
 
 // Injectors from wire.go:
@@ -58,11 +58,17 @@ func App(value *common.Values) (*gin.Engine, error) {
 	controller := &index.Controller{
 		Service: service,
 	}
-	apiService := &api.Service{
+	jetStreamContext, err := bootstrap.UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
+	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
+	engineService := &engine.Service{
 		Db: database,
 	}
-	apiController := &api.Controller{
-		Service: apiService,
+	engineController := &engine.Controller{
+		Engine:  engineEngine,
+		Service: engineService,
 	}
 	pagesService := &pages.Service{
 		Inject: inject,
@@ -76,6 +82,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	rolesController := &roles.Controller{
 		Service: rolesService,
 	}
-	engine := app.New(value, controller, apiController, pagesController, rolesController)
-	return engine, nil
+	ginEngine := app.New(value, controller, engineController, pagesController, rolesController)
+	return ginEngine, nil
 }

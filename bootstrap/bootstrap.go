@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/go/encryption"
+	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,6 +27,7 @@ var Provides = wire.NewSet(
 	UseRedis,
 	UseNats,
 	UseJetStream,
+	UseEngine,
 	UsePassport,
 	UseCipher,
 	UseIDx,
@@ -104,6 +106,13 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
+}
+
+func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
+	return engine.New(
+		engine.SetApp(values.Name),
+		engine.UseEvents(js),
+	)
 }
 
 // UsePassport 创建认证
