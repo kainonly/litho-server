@@ -4,7 +4,7 @@ import (
 	"api/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/go/api"
+	"github.com/weplanx/go/engine"
 	"time"
 )
 
@@ -18,7 +18,7 @@ func middleware(r *gin.Engine, values *common.Values) *gin.Engine {
 		AllowCredentials: values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
 	}))
-	api.RegisterValidation()
+	engine.RegisterValidation()
 	return r
 }
 
