@@ -11,6 +11,7 @@ import (
 	"api/app/index"
 	"api/app/pages"
 	"api/app/roles"
+	"api/app/users"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ import (
 // Injectors from wire.go:
 
 func App(value *common.Values) (*gin.Engine, error) {
+	passport := bootstrap.UsePassport(value)
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -33,7 +35,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	passport := bootstrap.UsePassport(value)
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
 		return nil, err
@@ -55,8 +56,16 @@ func App(value *common.Values) (*gin.Engine, error) {
 	service := &index.Service{
 		Inject: inject,
 	}
+	usersService := &users.Service{
+		Inject: inject,
+	}
+	pagesService := &pages.Service{
+		Inject: inject,
+	}
 	controller := &index.Controller{
 		Service: service,
+		Users:   usersService,
+		Pages:   pagesService,
 	}
 	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
@@ -70,9 +79,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Engine:  engineEngine,
 		Service: engineService,
 	}
-	pagesService := &pages.Service{
-		Inject: inject,
-	}
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
@@ -82,6 +88,9 @@ func App(value *common.Values) (*gin.Engine, error) {
 	rolesController := &roles.Controller{
 		Service: rolesService,
 	}
-	ginEngine := app.New(value, controller, engineController, pagesController, rolesController)
+	usersController := &users.Controller{
+		Service: usersService,
+	}
+	ginEngine := app.New(value, passport, controller, engineController, pagesController, rolesController, usersController)
 	return ginEngine, nil
 }
