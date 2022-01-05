@@ -47,10 +47,10 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 	}
 	uid := data.ID.Hex()
 	jti := helper.Uuid()
-	tokenString, _ := x.Service.Passport.Create(jti, map[string]interface{}{
+	ts, _ := x.Service.Passport.Create(jti, map[string]interface{}{
 		"uid": uid,
 	})
-	c.SetCookie("access_token", tokenString, 0, "", "", true, true)
+	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
 	return nil
 }
@@ -113,10 +113,10 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	if err = x.Service.RemoveVerifyCode(ctx, jti); err != nil {
 		return err
 	}
-	tokenString, _ := x.Service.Passport.Create(jti, map[string]interface{}{
+	ts, _ := x.Service.Passport.Create(jti, map[string]interface{}{
 		"uid": claims.(jwt.MapClaims)["uid"],
 	})
-	c.SetCookie("access_token", tokenString, 0, "", "", true, true)
+	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
 	return nil
 }

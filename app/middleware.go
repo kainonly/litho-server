@@ -32,7 +32,7 @@ func globalMiddleware(r *gin.Engine, values *common.Values) *gin.Engine {
 
 func authGuard(passport *passport.Passport) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString, err := c.Cookie("access_token")
+		ts, err := c.Cookie("access_token")
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{
 				"code":    "AUTH_EXPIRED",
@@ -40,7 +40,7 @@ func authGuard(passport *passport.Passport) gin.HandlerFunc {
 			})
 			return
 		}
-		claims, err := passport.Verify(tokenString)
+		claims, err := passport.Verify(ts)
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{
 				"code":    "AUTH_EXPIRED",
