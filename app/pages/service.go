@@ -15,6 +15,19 @@ type Service struct {
 	*common.Inject
 }
 
+func (x *Service) Fetch(ctx context.Context) (data []model.Page, err error) {
+	var cursor *mongo.Cursor
+	if cursor, err = x.Db.Collection("pages").Find(ctx, bson.M{
+		"status": true,
+	}); err != nil {
+		return
+	}
+	if err = cursor.All(ctx, &data); err != nil {
+		return
+	}
+	return
+}
+
 func (x *Service) FindOnePage(ctx context.Context, id primitive.ObjectID) (result model.Page, err error) {
 	if err = x.Db.Collection("pages").
 		FindOne(ctx, bson.M{"_id": id}).

@@ -8,7 +8,7 @@ import (
 type Role struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 
-	// 权限代码
+	// 权限标识
 	Key string `bson:"key" json:"key"`
 
 	// 父节点
@@ -17,7 +17,7 @@ type Role struct {
 	// 名称
 	Name string `bson:"name" json:"name"`
 
-	// 所属页面
+	// 授权页面
 	Pages []primitive.ObjectID `bson:"pages" json:"pages"`
 
 	// 只读权限
