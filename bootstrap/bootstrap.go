@@ -25,6 +25,7 @@ var Provides = wire.NewSet(
 	UseDatabase,
 	UseRedis,
 	UseNats,
+	UseJetStream,
 	UsePassport,
 	UseCipher,
 	UseIDx,
@@ -99,6 +100,10 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 		return
 	}
 	return
+}
+
+func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
+	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
 // UsePassport 创建认证

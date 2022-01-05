@@ -16,6 +16,7 @@ type Inject struct {
 	Db          *mongo.Database
 	Redis       *redis.Client
 	Nats        *nats.Conn
+	Js          nats.JetStreamContext
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	Idx         *encryption.IDx
