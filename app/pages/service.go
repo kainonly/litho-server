@@ -15,11 +15,16 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) Fetch(ctx context.Context) (data []model.Page, err error) {
+func (x *Service) Navs(ctx context.Context) (data []map[string]interface{}, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").Find(ctx, bson.M{
 		"status": true,
-	}); err != nil {
+	}, options.Find().SetProjection(bson.M{
+		"schema":      0,
+		"status":      0,
+		"create_time": 0,
+		"update_time": 0,
+	})); err != nil {
 		return
 	}
 	if err = cursor.All(ctx, &data); err != nil {

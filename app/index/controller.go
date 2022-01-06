@@ -40,9 +40,11 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	data, err := x.Users.FindByUsername(ctx, body.Username)
 	if err != nil {
+		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
 	if err := password.Verify(body.Password, data.Password); err != nil {
+		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
 	uid := data.ID.Hex()
@@ -129,11 +131,11 @@ func (x *Controller) Logout(c *gin.Context) interface{} {
 
 func (x *Controller) Api(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	pagesData, err := x.Pages.Fetch(ctx)
+	navs, err := x.Pages.Navs(ctx)
 	if err != nil {
 		return err
 	}
 	return gin.H{
-		"pages": pagesData,
+		"navs": navs,
 	}
 }
