@@ -41,7 +41,7 @@ func New(
 	r.DELETE("/auth", auth, route.Use(index.Logout))
 	api := r.Group("/api", auth)
 	{
-		api.GET("/", route.Use(index.Api))
+		api.GET("", route.Use(index.Api))
 		api.POST("/:model", route.Use(engine.Create))
 		api.GET("/:model", route.Use(engine.Find))
 		api.GET("/:model/:id", route.Use(engine.FindOneById))
