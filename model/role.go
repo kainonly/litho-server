@@ -11,9 +11,6 @@ type Role struct {
 	// 权限标识
 	Key string `bson:"key" json:"key"`
 
-	// 父节点
-	Parent interface{} `bson:"parent" json:"parent"`
-
 	// 名称
 	Name string `bson:"name" json:"name"`
 
@@ -36,7 +33,6 @@ type Role struct {
 func NewRole(key string, name string) *Role {
 	return &Role{
 		Key:        key,
-		Parent:     nil,
 		Name:       name,
 		Pages:      []primitive.ObjectID{},
 		Readonly:   []primitive.ObjectID{},
@@ -44,11 +40,6 @@ func NewRole(key string, name string) *Role {
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
-}
-
-func (x *Role) SetParent(v interface{}) *Role {
-	x.Parent = v
-	return x
 }
 
 func (x *Role) SetPages(v []primitive.ObjectID) *Role {
