@@ -14,6 +14,9 @@ type Role struct {
 	// 名称
 	Name string `bson:"name" json:"name"`
 
+	// 描述
+	Description string `bson:"description" json:"description"`
+
 	// 授权页面
 	Pages []primitive.ObjectID `bson:"pages" json:"pages"`
 
@@ -40,6 +43,11 @@ func NewRole(key string, name string) *Role {
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
+}
+
+func (x *Role) SetDescription(v string) *Role {
+	x.Description = v
+	return x
 }
 
 func (x *Role) SetPages(v []primitive.ObjectID) *Role {
