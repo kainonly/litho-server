@@ -11,6 +11,7 @@ import (
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/password"
 	"net/http"
+	"time"
 )
 
 type Controller struct {
@@ -47,10 +48,9 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
-	uid := data.ID.Hex()
 	jti := helper.Uuid()
 	ts, _ := x.Service.Passport.Create(jti, map[string]interface{}{
-		"uid": uid,
+		"uid": data.ID.Hex(),
 	})
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
@@ -58,18 +58,30 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 }
 
 func (x *Controller) Verify(c *gin.Context) interface{} {
-	tokenString, err := c.Cookie("access_token")
+	ts, err := c.Cookie("access_token")
 	if err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return common.LoginExpired
 	}
-	if _, err := x.Service.Passport.Verify(tokenString); err != nil {
+	claims, err := x.Service.Passport.Verify(ts)
+	if err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return err
 	}
-	return nil
+	ctx := c.Request.Context()
+	uid := claims["context"].(map[string]interface{})["uid"].(string)
+	data, err := x.Users.FindById(ctx, uid)
+	if err != nil {
+		return err
+	}
+	return gin.H{
+		"username": data.Username,
+		"name":     data.Name,
+		"avatar":   data.Avatar,
+		"time":     time.Now(),
+	}
 }
 
 func (x *Controller) Code(c *gin.Context) interface{} {
@@ -95,13 +107,14 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	claims, exists := c.Get(common.TokenClaimsKey)
+	value, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return common.LoginExpired
 	}
-	jti := claims.(jwt.MapClaims)["jti"].(string)
+	claims := value.(jwt.MapClaims)
+	jti := claims["jti"].(string)
 	ctx := c.Request.Context()
 	result, err := x.Service.VerifyCode(ctx, jti, body.Code)
 	if err != nil {
@@ -115,9 +128,7 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	if err = x.Service.RemoveVerifyCode(ctx, jti); err != nil {
 		return err
 	}
-	ts, _ := x.Service.Passport.Create(jti, map[string]interface{}{
-		"uid": claims.(jwt.MapClaims)["uid"],
-	})
+	ts, _ := x.Service.Passport.Create(jti, claims["context"].(map[string]interface{}))
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
 	return nil
