@@ -54,7 +54,12 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 	})
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
-	return nil
+	return gin.H{
+		"username": data.Username,
+		"name":     data.Name,
+		"avatar":   data.Avatar,
+		"time":     time.Now(),
+	}
 }
 
 func (x *Controller) Verify(c *gin.Context) interface{} {
@@ -64,24 +69,12 @@ func (x *Controller) Verify(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_EXPIRED")
 		return common.LoginExpired
 	}
-	claims, err := x.Service.Passport.Verify(ts)
-	if err != nil {
+	if _, err = x.Service.Passport.Verify(ts); err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return err
 	}
-	ctx := c.Request.Context()
-	uid := claims["context"].(map[string]interface{})["uid"].(string)
-	data, err := x.Users.FindById(ctx, uid)
-	if err != nil {
-		return err
-	}
-	return gin.H{
-		"username": data.Username,
-		"name":     data.Name,
-		"avatar":   data.Avatar,
-		"time":     time.Now(),
-	}
+	return nil
 }
 
 func (x *Controller) Code(c *gin.Context) interface{} {
