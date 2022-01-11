@@ -4,6 +4,7 @@ import (
 	"api/common"
 	"api/model"
 	"context"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,19 +16,47 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) Navs(ctx context.Context) (data []map[string]interface{}, err error) {
+type NavDto struct {
+	ID     primitive.ObjectID `bson:"_id" json:"_id"`
+	Parent interface{}        `bson:"parent" json:"parent"`
+	Name   string             `bson:"name" json:"name"`
+	Icon   string             `bson:"icon" json:"icon"`
+	Kind   string             `bson:"kind" json:"kind"`
+	Sort   int64              `bson:"sort" json:"sort"`
+}
+
+func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
+	key := x.Values.KeyName("navs")
+	var value []byte
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, key).Result(); exists != 0 {
+		if err = x.Redis.Get(ctx, key).Scan(&value); err != nil {
+			return
+		}
+		if err = jsoniter.Unmarshal(value, &data); err != nil {
+			return
+		}
+		return
+	}
 	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection("pages").Find(ctx, bson.M{
-		"status": true,
-	}, options.Find().SetProjection(bson.M{
-		"schema":      0,
-		"status":      0,
-		"create_time": 0,
-		"update_time": 0,
-	})); err != nil {
+	if cursor, err = x.Db.Collection("pages").Find(ctx,
+		bson.M{"status": true},
+		options.Find().SetProjection(bson.M{
+			"schema":      0,
+			"status":      0,
+			"create_time": 0,
+			"update_time": 0,
+		}),
+	); err != nil {
 		return
 	}
 	if err = cursor.All(ctx, &data); err != nil {
+		return
+	}
+	if value, err = jsoniter.Marshal(&data); err != nil {
+		return
+	}
+	if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
 		return
 	}
 	return

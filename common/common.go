@@ -1,11 +1,13 @@
 package common
 
 import (
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strings"
 )
 
 const TokenClaimsKey = "token-claims"
@@ -56,6 +58,6 @@ type Nats struct {
 	Nkey  string   `yaml:"nkey"`
 }
 
-func (x *Values) RedisKey(name string) string {
-	return x.Name + ":" + name
+func (x *Values) KeyName(v ...string) string {
+	return fmt.Sprintf(`%s:%s`, x.Name, strings.Join(v, ":"))
 }
