@@ -39,10 +39,10 @@ func New(
 	r.GET("/auth", auth, route.Use(index.Code))
 	r.PUT("/auth", auth, route.Use(index.RefreshToken))
 	r.DELETE("/auth", auth, route.Use(index.Logout))
+	r.GET("/navs", auth, route.Use(index.Navs))
+	r.GET("/pages/:id", auth, route.Use(index.Dynamic))
 	api := r.Group("/api", auth)
 	{
-		api.GET("/navs", route.Use(index.Navs))
-		api.GET("/schema/:key", route.Use(index.Schema))
 		api.POST("/:model", route.Use(engine.Create))
 		api.GET("/:model", route.Use(engine.Find))
 		api.GET("/:model/:id", route.Use(engine.FindOneById))

@@ -26,7 +26,7 @@ func (x *Service) FindOneByUsername(ctx context.Context, username string) (data 
 	return
 }
 
-func (x *Service) FindOneUser(ctx context.Context, id string) (data model.User, err error) {
+func (x *Service) FindOneFromCacheById(ctx context.Context, id string) (data model.User, err error) {
 	key := x.Values.KeyName("users", id)
 	var value []byte
 	var exists int64
