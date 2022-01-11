@@ -14,25 +14,25 @@ func (x *Service) AppName() string {
 	return x.Values.Name
 }
 
-func (x *Service) verifyCodeKey(name string) string {
-	return x.Values.RedisKey("verify:" + name)
+func (x *Service) CodeKey(name string) string {
+	return x.Values.KeyName("verify", name)
 }
 
 func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string) error {
-	return x.Redis.Set(ctx, x.verifyCodeKey(name), code, time.Minute).Err()
+	return x.Redis.Set(ctx, x.CodeKey(name), code, time.Minute).Err()
 }
 
 // VerifyCode 校验验证码
 func (x *Service) VerifyCode(ctx context.Context, name string, code string) (result bool, err error) {
 	var exists int64
-	if exists, err = x.Redis.Exists(ctx, x.verifyCodeKey(name)).Result(); err != nil {
+	if exists, err = x.Redis.Exists(ctx, x.CodeKey(name)).Result(); err != nil {
 		return
 	}
 	if exists == 0 {
 		return false, nil
 	}
 	var value string
-	if value, err = x.Redis.Get(ctx, x.verifyCodeKey(name)).Result(); err != nil {
+	if value, err = x.Redis.Get(ctx, x.CodeKey(name)).Result(); err != nil {
 		return
 	}
 	return value == code, nil
@@ -40,5 +40,5 @@ func (x *Service) VerifyCode(ctx context.Context, name string, code string) (res
 
 // RemoveVerifyCode 移除验证码
 func (x *Service) RemoveVerifyCode(ctx context.Context, name string) error {
-	return x.Redis.Del(ctx, x.verifyCodeKey(name)).Err()
+	return x.Redis.Del(ctx, x.CodeKey(name)).Err()
 }
