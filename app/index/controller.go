@@ -39,7 +39,7 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Users.FindByUsername(ctx, body.Username)
+	data, err := x.Users.FindOneByUsername(ctx, body.Username)
 	if err != nil {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
@@ -142,13 +142,26 @@ func (x *Controller) Logout(c *gin.Context) interface{} {
 	return nil
 }
 
-func (x *Controller) Api(c *gin.Context) interface{} {
+func (x *Controller) Navs(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	navs, err := x.Pages.Navs(ctx)
 	if err != nil {
 		return err
 	}
-	return gin.H{
-		"navs": navs,
+	return navs
+}
+
+func (x *Controller) Schema(c *gin.Context) interface{} {
+	var params struct {
+		Key string `json:"key" binding:"required"`
 	}
+	if err := c.ShouldBindUri(&params); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	data, err := x.Pages.FindOneSchema(ctx, params.Key)
+	if err != nil {
+		return err
+	}
+	return data
 }
