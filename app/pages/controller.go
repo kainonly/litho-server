@@ -51,7 +51,7 @@ func (x *Controller) FindIndexes(c *gin.Context) interface{} {
 	}
 	oid, _ := primitive.ObjectIDFromHex(params.Id)
 	ctx := c.Request.Context()
-	data, err := x.Service.FindOnePage(ctx, oid)
+	data, err := x.Service.FindOneById(ctx, oid)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (x *Controller) CreateIndex(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	oid, _ := primitive.ObjectIDFromHex(params.Id)
-	page, err := x.Service.FindOnePage(ctx, oid)
+	page, err := x.Service.FindOneById(ctx, oid)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (x *Controller) DeleteIndex(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	oid, _ := primitive.ObjectIDFromHex(params.Id)
-	page, err := x.Service.FindOnePage(ctx, oid)
+	page, err := x.Service.FindOneById(ctx, oid)
 	if err != nil {
 		return err
 	}

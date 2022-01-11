@@ -144,22 +144,22 @@ func (x *Controller) Logout(c *gin.Context) interface{} {
 
 func (x *Controller) Navs(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	navs, err := x.Pages.Navs(ctx)
+	navs, err := x.Pages.FindNavs(ctx)
 	if err != nil {
 		return err
 	}
 	return navs
 }
 
-func (x *Controller) Schema(c *gin.Context) interface{} {
+func (x *Controller) Dynamic(c *gin.Context) interface{} {
 	var params struct {
-		Key string `json:"key" binding:"required"`
+		Id string `uri:"id" binding:"required"`
 	}
 	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Pages.FindOneSchema(ctx, params.Key)
+	data, err := x.Pages.FindOneFromCacheById(ctx, params.Id)
 	if err != nil {
 		return err
 	}

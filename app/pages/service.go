@@ -25,7 +25,7 @@ type NavDto struct {
 	Sort   int64              `bson:"sort" json:"sort"`
 }
 
-func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
+func (x *Service) FindNavs(ctx context.Context) (data []NavDto, err error) {
 	key := x.Values.KeyName("navs")
 	var value []byte
 	var exists int64
@@ -62,8 +62,8 @@ func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
 	return
 }
 
-func (x *Service) FindOneSchema(ctx context.Context, name string) (data model.Schema, err error) {
-	key := x.Values.KeyName("schema", name)
+func (x *Service) FindOneFromCacheById(ctx context.Context, id string) (data model.Page, err error) {
+	key := x.Values.KeyName("pages", id)
 	var value []byte
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
@@ -78,13 +78,15 @@ func (x *Service) FindOneSchema(ctx context.Context, name string) (data model.Sc
 		}
 		return
 	}
-	var page model.Page
-	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
-		"schema.key": name,
-	}).Decode(&page); err != nil {
+	var oid primitive.ObjectID
+	if oid, err = primitive.ObjectIDFromHex(id); err != nil {
 		return
 	}
-	data = *page.Schema
+	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
+		"_id": oid,
+	}).Decode(&data); err != nil {
+		return
+	}
 	if value, err = jsoniter.Marshal(data); err != nil {
 		return
 	}
@@ -94,7 +96,7 @@ func (x *Service) FindOneSchema(ctx context.Context, name string) (data model.Sc
 	return
 }
 
-func (x *Service) FindOnePage(ctx context.Context, id primitive.ObjectID) (result model.Page, err error) {
+func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID) (result model.Page, err error) {
 	if err = x.Db.Collection("pages").
 		FindOne(ctx, bson.M{"_id": id}).
 		Decode(&result); err != nil {
