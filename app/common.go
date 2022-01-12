@@ -61,6 +61,12 @@ func New(
 			_pages.PUT("/:id/indexes/:name", route.Use(pages.CreateIndex))
 			_pages.DELETE("/:id/indexes/:name", route.Use(pages.DeleteIndex))
 		}
+		_roles := api.Group("roles")
+		{
+			_roles.GET("/has-key", route.Use(roles.HasKey))
+			_roles.GET("/labels", route.Use(roles.FindLabels))
+
+		}
 	}
 	return r
 }
