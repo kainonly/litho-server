@@ -11,7 +11,7 @@ type FieldSpec struct {
 	Decimal int64 `bson:"decimal,omitempty" json:"decimal,omitempty"`
 
 	// 枚举数值
-	Values []Enum `bson:"values,omitempty" json:"values,omitempty"`
+	Values []Value `bson:"values,omitempty" json:"values,omitempty"`
 
 	// 引用数据源
 	Reference string `bson:"reference,omitempty" json:"reference,omitempty"`
