@@ -8,11 +8,11 @@ type Controller struct {
 
 func (x *Controller) FindLabels(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	result, err := x.Service.FindLabels(ctx)
+	values, err := x.Service.FindLabels(ctx)
 	if err != nil {
 		return err
 	}
-	return result
+	return values
 }
 
 func (x *Controller) HasKey(c *gin.Context) interface{} {

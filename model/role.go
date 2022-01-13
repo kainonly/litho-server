@@ -24,7 +24,7 @@ type Role struct {
 	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly"`
 
 	// 标签
-	Labels []Enum `bson:"labels" json:"labels"`
+	Labels []Value `bson:"labels" json:"labels"`
 
 	// 状态
 	Status *bool `bson:"status" json:"status"`
