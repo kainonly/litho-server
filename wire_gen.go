@@ -73,7 +73,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
-		Db: database,
+		Engine: engineEngine,
+		Db:     database,
 	}
 	engineController := &engine.Controller{
 		Engine:  engineEngine,

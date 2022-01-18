@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/encryption"
+	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
@@ -24,15 +25,16 @@ type Inject struct {
 }
 
 type Values struct {
-	Address        string          `yaml:"address"`
-	TrustedProxies []string        `yaml:"trusted_proxies"`
-	Name           string          `yaml:"name"`
-	Key            string          `yaml:"key"`
-	Cors           Cors            `yaml:"cors"`
-	Database       Database        `yaml:"database"`
-	Redis          Redis           `yaml:"redis"`
-	Nats           Nats            `yaml:"nats"`
-	Passport       passport.Option `yaml:"passport"`
+	Address        string                   `yaml:"address"`
+	TrustedProxies []string                 `yaml:"trusted_proxies"`
+	Name           string                   `yaml:"name"`
+	Key            string                   `yaml:"key"`
+	Cors           Cors                     `yaml:"cors"`
+	Database       Database                 `yaml:"database"`
+	Redis          Redis                    `yaml:"redis"`
+	Nats           Nats                     `yaml:"nats"`
+	Passport       passport.Option          `yaml:"passport"`
+	Engines        map[string]engine.Option `yaml:"engines"`
 }
 
 type Cors struct {

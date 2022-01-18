@@ -14,6 +14,44 @@ type Service struct {
 	*common.Inject
 }
 
+func (x *Service) FindLabels(ctx context.Context) (values []model.Value, err error) {
+	var result []interface{}
+	if result, err = x.Db.Collection("users").
+		Distinct(ctx, "labels", bson.M{"status": true}); err != nil {
+		return
+	}
+	values = make([]model.Value, 0)
+	if len(result) == 0 {
+		return
+	}
+	for _, data := range result {
+		var value model.Value
+		for _, v := range data.(primitive.D) {
+			if v.Key == "label" {
+				value.Label = v.Value.(string)
+			}
+			if v.Key == "value" {
+				value.Value = v.Value
+			}
+		}
+		values = append(values, value)
+	}
+	return
+}
+
+func (x *Service) HasUsername(ctx context.Context, username string) (code string, err error) {
+	var count int64
+	if count, err = x.Db.Collection("users").CountDocuments(ctx, bson.M{
+		"username": username,
+	}); err != nil {
+		return
+	}
+	if count != 0 {
+		return "duplicated", nil
+	}
+	return "", err
+}
+
 func (x *Service) FindOneByUsername(ctx context.Context, username string) (data model.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{

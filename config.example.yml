@@ -26,3 +26,7 @@ cors:
 passport:
   aud: [ 'console' ]
   exp: 720
+engines:
+  users:
+    projection:
+      password: 0
