@@ -34,7 +34,7 @@ var productsList = [][]interface{}{
 	{"stock_mode", model.
 		NewField("库存扣减方式", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "拍下减库存", Value: "place_an_order"},
 				{Label: "付款减库存", Value: "payed"},
 			},
@@ -59,7 +59,7 @@ var productsList = [][]interface{}{
 	{"delivery", model.
 		NewField("配送方式", "checkbox").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "快速发货", Value: "send"},
 				{Label: "到店自提", Value: "in_store"},
 			},
@@ -67,7 +67,7 @@ var productsList = [][]interface{}{
 	{"express_shipping", model.
 		NewField("快递运费", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "统一邮费", Value: "unified"},
 				{Label: "运费模板", Value: "template"},
 			},
@@ -81,7 +81,7 @@ var productsList = [][]interface{}{
 	{"sale_mode", model.
 		NewField("开售方式", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "立即开售", Value: "now"},
 				{Label: "定时开售", Value: "timing"},
 				{Label: "放入仓库", Value: "warehouse"},
@@ -96,7 +96,7 @@ var productsList = [][]interface{}{
 	{"after_sale", model.
 		NewField("售后服务", "checkbox").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "支持买家申请换货", Value: "support_exchange"},
 				{Label: "7天无理由退货", Value: "7_days_no_reason"},
 				{Label: "自动退款", Value: "automatic_refund"},
@@ -105,7 +105,7 @@ var productsList = [][]interface{}{
 	{"pre_sale", model.
 		NewField("预售方式", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "全款预售", Value: "support_exchange"},
 				{Label: "定金预售", Value: "deposit"},
 				{Label: "关闭", Value: "off"},
@@ -114,7 +114,7 @@ var productsList = [][]interface{}{
 	{"delivery_time_mode", model.
 		NewField("发货时间", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "指定时间", Value: "specify"},
 				{Label: "预估时间", Value: "estimate"},
 			},
@@ -127,7 +127,7 @@ var productsList = [][]interface{}{
 	{"purchase_limit", model.
 		NewField("限购", "checkbox").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "限制每人可购买数量", Value: "limit_the_number"},
 				{Label: "只允许特定用户购买", Value: "limit_the_group"},
 			},
@@ -135,7 +135,7 @@ var productsList = [][]interface{}{
 	{"purchase_limit_strategy", model.
 		NewField("限购条件", "radio").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "终身限购", Value: "lifelong"},
 				{Label: "按周期限购", Value: "period"},
 			},
@@ -143,7 +143,7 @@ var productsList = [][]interface{}{
 	{"purchase_limit_period", model.
 		NewField("限购周期", "select").
 		SetSpec(&model.FieldSpec{
-			Values: []model.Enum{
+			Values: []model.Value{
 				{Label: "每天", Value: "day"},
 				{Label: "每周", Value: "week"},
 				{Label: "每月", Value: "month"},
