@@ -32,6 +32,9 @@ type User struct {
 	// 头像
 	Avatar string `bson:"avatar" json:"avatar"`
 
+	// 标签
+	Labels []Value `bson:"labels" json:"labels"`
+
 	// 状态
 	Status *bool `bson:"status" json:"status"`
 
@@ -46,6 +49,11 @@ func NewUser(username string, password string) *User {
 	return &User{
 		Username:   username,
 		Password:   password,
+		Roles:      []primitive.ObjectID{},
+		Pages:      []primitive.ObjectID{},
+		Readonly:   []primitive.ObjectID{},
+		Email:      []string{},
+		Labels:     []Value{},
 		Status:     Bool(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
