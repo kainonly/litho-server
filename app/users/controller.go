@@ -17,7 +17,7 @@ func (x *Controller) FindLabels(c *gin.Context) interface{} {
 
 func (x *Controller) HasUsername(c *gin.Context) interface{} {
 	var query struct {
-		Username string `form:"username" binding:"required,username"`
+		Username string `form:"username" binding:"required,key"`
 	}
 	if err := c.ShouldBindQuery(&query); err != nil {
 		return err
