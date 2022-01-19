@@ -15,16 +15,24 @@ func TestRoles(t *testing.T) {
 		t.Error(err)
 	}
 	data := []interface{}{
-		model.NewRole("*", "超级管理员"),
+		model.NewRole("超级管理员").
+			SetDescription("系统默认设置").
+			SetLabel("最高权限"),
 	}
 	if _, err := Db.Collection("roles").
 		InsertMany(ctx, data); err != nil {
 		t.Error(err)
 	}
-	if _, err := Db.Collection("roles").Indexes().CreateOne(ctx,
-		mongo.IndexModel{
-			Keys:    bson.M{"key": 1},
-			Options: options.Index().SetUnique(true),
+	if _, err := Db.Collection("roles").Indexes().CreateMany(ctx,
+		[]mongo.IndexModel{
+			{
+				Keys:    bson.M{"name": 1},
+				Options: options.Index().SetUnique(true),
+			},
+			{
+				Keys:    bson.M{"labels": 1},
+				Options: options.Index(),
+			},
 		},
 	); err != nil {
 		t.Error(err)

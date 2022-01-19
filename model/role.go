@@ -8,9 +8,6 @@ import (
 type Role struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 
-	// 权限标识
-	Key string `bson:"key" json:"key"`
-
 	// 名称
 	Name string `bson:"name" json:"name"`
 
@@ -23,8 +20,8 @@ type Role struct {
 	// 只读权限
 	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly"`
 
-	// 标签
-	Labels []Value `bson:"labels" json:"labels"`
+	// 标记
+	Labels []string `bson:"labels" json:"labels"`
 
 	// 状态
 	Status *bool `bson:"status" json:"status"`
@@ -36,12 +33,12 @@ type Role struct {
 	UpdateTime time.Time `bson:"update_time" json:"-"`
 }
 
-func NewRole(key string, name string) *Role {
+func NewRole(name string) *Role {
 	return &Role{
-		Key:        key,
 		Name:       name,
 		Pages:      []primitive.ObjectID{},
 		Readonly:   []primitive.ObjectID{},
+		Labels:     []string{},
 		Status:     Bool(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
@@ -60,5 +57,10 @@ func (x *Role) SetPages(v []primitive.ObjectID) *Role {
 
 func (x *Role) SetReadonly(v []primitive.ObjectID) *Role {
 	x.Readonly = v
+	return x
+}
+
+func (x *Role) SetLabel(v string) *Role {
+	x.Labels = append(x.Labels, v)
 	return x
 }
