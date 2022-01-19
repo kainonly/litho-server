@@ -18,7 +18,7 @@ func TestUsers(t *testing.T) {
 	}
 	var root model.Role
 	if err := Db.Collection("roles").FindOne(ctx, bson.M{
-		"key": "*",
+		"name": "超级管理员",
 	}).Decode(&root); err != nil {
 		t.Error(err)
 	}
@@ -31,10 +31,16 @@ func TestUsers(t *testing.T) {
 		InsertMany(ctx, data); err != nil {
 		t.Error(err)
 	}
-	if _, err := Db.Collection("users").Indexes().CreateOne(ctx,
-		mongo.IndexModel{
-			Keys:    bson.M{"username": 1},
-			Options: options.Index().SetUnique(true),
+	if _, err := Db.Collection("users").Indexes().CreateMany(ctx,
+		[]mongo.IndexModel{
+			{
+				Keys:    bson.M{"username": 1},
+				Options: options.Index().SetUnique(true),
+			},
+			{
+				Keys:    bson.M{"labels": 1},
+				Options: options.Index(),
+			},
 		},
 	); err != nil {
 		t.Error(err)

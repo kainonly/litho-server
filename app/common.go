@@ -63,7 +63,7 @@ func New(
 		}
 		_roles := api.Group("roles")
 		{
-			_roles.GET("/has-key", route.Use(roles.HasKey))
+			_roles.GET("/has-name", route.Use(roles.HasName))
 			_roles.GET("/labels", route.Use(roles.FindLabels))
 		}
 		_users := api.Group("users")
