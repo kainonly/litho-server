@@ -27,11 +27,11 @@ func TestRoles(t *testing.T) {
 		[]mongo.IndexModel{
 			{
 				Keys:    bson.M{"name": 1},
-				Options: options.Index().SetUnique(true),
+				Options: options.Index().SetName("uk_name").SetUnique(true),
 			},
 			{
 				Keys:    bson.M{"labels": 1},
-				Options: options.Index(),
+				Options: options.Index().SetName("idx_labels"),
 			},
 		},
 	); err != nil {

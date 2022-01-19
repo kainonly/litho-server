@@ -35,11 +35,11 @@ func TestUsers(t *testing.T) {
 		[]mongo.IndexModel{
 			{
 				Keys:    bson.M{"username": 1},
-				Options: options.Index().SetUnique(true),
+				Options: options.Index().SetName("uk_username").SetUnique(true),
 			},
 			{
 				Keys:    bson.M{"labels": 1},
-				Options: options.Index(),
+				Options: options.Index().SetName("idx_labels"),
 			},
 		},
 	); err != nil {
