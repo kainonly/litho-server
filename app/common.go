@@ -2,6 +2,7 @@ package app
 
 import (
 	"api/app/index"
+	"api/app/media"
 	"api/app/pages"
 	"api/app/roles"
 	"api/app/users"
@@ -19,6 +20,7 @@ var Provides = wire.NewSet(
 	pages.Provides,
 	roles.Provides,
 	users.Provides,
+	media.Provides,
 	New,
 )
 
@@ -30,6 +32,7 @@ func New(
 	pages *pages.Controller,
 	roles *roles.Controller,
 	users *users.Controller,
+	media *media.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
 	r.GET("/", route.Use(index.Index))
@@ -71,6 +74,10 @@ func New(
 		{
 			_users.GET("/has-username", route.Use(users.HasUsername))
 			_users.GET("/labels", route.Use(users.FindLabels))
+		}
+		_media := api.Group("media")
+		{
+			_media.GET("/labels", route.Use(media.FindLabels))
 		}
 	}
 	return r
