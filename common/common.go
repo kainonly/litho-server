@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
@@ -22,6 +23,7 @@ type Inject struct {
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	Idx         *encryption.IDx
+	Cos         *cos.Client
 }
 
 type Values struct {
@@ -35,6 +37,7 @@ type Values struct {
 	Nats           Nats                     `yaml:"nats"`
 	Passport       passport.Option          `yaml:"passport"`
 	Engines        map[string]engine.Option `yaml:"engines"`
+	QCloud         QCloud                   `yaml:"qcloud"`
 }
 
 type Cors struct {
@@ -58,6 +61,18 @@ type Redis struct {
 type Nats struct {
 	Hosts []string `yaml:"hosts"`
 	Nkey  string   `yaml:"nkey"`
+}
+
+type QCloud struct {
+	SecretID  string    `yaml:"secret_id"`
+	SecretKey string    `yaml:"secret_key"`
+	Cos       QCloudCos `yaml:"cos"`
+}
+
+type QCloudCos struct {
+	Bucket  string `yaml:"bucket"`
+	Region  string `yaml:"region"`
+	Expired int64  `yaml:"expired"`
 }
 
 func (x *Values) KeyName(v ...string) string {

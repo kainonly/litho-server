@@ -9,6 +9,7 @@ import (
 	"github.com/google/wire"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
@@ -16,6 +17,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -31,6 +34,7 @@ var Provides = wire.NewSet(
 	UsePassport,
 	UseCipher,
 	UseIDx,
+	UseCos,
 )
 
 // SetValues 初始化配置
@@ -133,5 +137,22 @@ func UseIDx(values *common.Values) (idx *encryption.IDx, err error) {
 	if idx, err = encryption.NewIDx(values.Key); err != nil {
 		return
 	}
+	return
+}
+
+func UseCos(values *common.Values) (client *cos.Client, err error) {
+	option := values.QCloud
+	var u *url.URL
+	if u, err = url.Parse(
+		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`, option.Cos.Bucket, option.Cos.Region),
+	); err != nil {
+		return
+	}
+	client = cos.NewClient(&cos.BaseURL{BucketURL: u}, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  option.SecretID,
+			SecretKey: option.SecretKey,
+		},
+	})
 	return
 }

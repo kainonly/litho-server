@@ -30,3 +30,10 @@ engines:
   users:
     projection:
       password: 0
+qcloud:
+  secret_id: <secret_id>
+  secret_key: <secret_key>
+  cos:
+    bucket: examplebucket-1250000000
+    region: ap-guangzhou
+    expired: 300
