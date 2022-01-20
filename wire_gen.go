@@ -43,6 +43,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	cosClient, err := bootstrap.UseCos(value)
+	if err != nil {
+		return nil, err
+	}
 	inject := &common.Inject{
 		Values:      value,
 		MongoClient: client,
@@ -52,6 +56,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Passport:    passport,
 		Cipher:      cipher,
 		Idx:         iDx,
+		Cos:         cosClient,
 	}
 	service := &index.Service{
 		Inject: inject,
