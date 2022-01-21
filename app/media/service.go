@@ -4,6 +4,7 @@ import (
 	"api/common"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Service struct {
@@ -16,4 +17,10 @@ func (x *Service) FindLabels(ctx context.Context) (values []interface{}, err err
 		return
 	}
 	return
+}
+
+func (x *Service) BulkDelete(ctx context.Context, oids []primitive.ObjectID) (interface{}, error) {
+	return x.Db.Collection("media").DeleteMany(ctx, bson.M{
+		"_id": bson.M{"$in": oids},
+	})
 }
