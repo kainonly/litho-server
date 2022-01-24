@@ -18,17 +18,30 @@ func (x *Controller) FindLabels(c *gin.Context) interface{} {
 	return values
 }
 
-type BulkDeleteDto struct {
-	Id []primitive.ObjectID `json:"id" binding:"required,dive,gt=0"`
-}
-
 func (x *Controller) BulkDelete(c *gin.Context) interface{} {
-	ctx := c.Request.Context()
-	var body BulkDeleteDto
+	var body struct {
+		Id []primitive.ObjectID `json:"id" binding:"required,dive,gt=0"`
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	ctx := c.Request.Context()
 	result, err := x.Service.BulkDelete(ctx, body.Id)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
+func (x *Controller) ImageInfo(c *gin.Context) interface{} {
+	var params struct {
+		Url string `form:"url" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&params); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	result, err := x.Service.ImageInfo(ctx, params.Url)
 	if err != nil {
 		return err
 	}

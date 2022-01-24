@@ -77,6 +77,7 @@ func New(
 		}
 		_media := api.Group("media")
 		{
+			_media.GET("/image-info", route.Use(media.ImageInfo))
 			_media.GET("/labels", route.Use(media.FindLabels))
 			_media.POST("/bulk-delete", route.Use(media.BulkDelete))
 		}

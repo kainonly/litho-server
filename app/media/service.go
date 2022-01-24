@@ -3,6 +3,8 @@ package media
 import (
 	"api/common"
 	"context"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -23,4 +25,15 @@ func (x *Service) BulkDelete(ctx context.Context, oids []primitive.ObjectID) (in
 	return x.Db.Collection("media").DeleteMany(ctx, bson.M{
 		"_id": bson.M{"$in": oids},
 	})
+}
+
+func (x *Service) ImageInfo(ctx context.Context, url string) (result map[string]interface{}, err error) {
+	var response *cos.Response
+	if response, err = x.Cos.CI.Get(ctx, url, "imageInfo", nil); err != nil {
+		return
+	}
+	if err = jsoniter.NewDecoder(response.Body).Decode(&result); err != nil {
+		return
+	}
+	return
 }

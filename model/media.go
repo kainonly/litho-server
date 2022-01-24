@@ -17,6 +17,9 @@ type Media struct {
 	// 媒体地址
 	Url string `bson:"url" json:"url"`
 
+	// 数据参数
+	Params map[string]string `bson:"params" json:"params"`
+
 	// 标记
 	Labels []string `bson:"labels" json:"labels"`
 
