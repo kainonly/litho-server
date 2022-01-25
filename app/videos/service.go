@@ -12,7 +12,7 @@ type Service struct {
 }
 
 func (x *Service) FindLabels(ctx context.Context) (values []interface{}, err error) {
-	if values, err = x.Db.Collection("media").
+	if values, err = x.Db.Collection("videos").
 		Distinct(ctx, "labels", bson.M{"status": true}); err != nil {
 		return
 	}
@@ -20,7 +20,7 @@ func (x *Service) FindLabels(ctx context.Context) (values []interface{}, err err
 }
 
 func (x *Service) BulkDelete(ctx context.Context, oids []primitive.ObjectID) (interface{}, error) {
-	return x.Db.Collection("media").DeleteMany(ctx, bson.M{
+	return x.Db.Collection("videos").DeleteMany(ctx, bson.M{
 		"_id": bson.M{"$in": oids},
 	})
 }
