@@ -2,10 +2,11 @@ package app
 
 import (
 	"api/app/index"
-	"api/app/media"
 	"api/app/pages"
+	"api/app/pictures"
 	"api/app/roles"
 	"api/app/users"
+	"api/app/videos"
 	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -20,7 +21,8 @@ var Provides = wire.NewSet(
 	pages.Provides,
 	roles.Provides,
 	users.Provides,
-	media.Provides,
+	pictures.Provides,
+	videos.Provides,
 	New,
 )
 
@@ -32,7 +34,8 @@ func New(
 	pages *pages.Controller,
 	roles *roles.Controller,
 	users *users.Controller,
-	media *media.Controller,
+	pictures *pictures.Controller,
+	videos *videos.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
 	r.GET("/", route.Use(index.Index))
@@ -75,11 +78,16 @@ func New(
 			_users.GET("/has-username", route.Use(users.HasUsername))
 			_users.GET("/labels", route.Use(users.FindLabels))
 		}
-		_media := api.Group("media")
+		_pictures := api.Group("pictures")
 		{
-			_media.GET("/image-info", route.Use(media.ImageInfo))
-			_media.GET("/labels", route.Use(media.FindLabels))
-			_media.POST("/bulk-delete", route.Use(media.BulkDelete))
+			_pictures.GET("/image-info", route.Use(pictures.ImageInfo))
+			_pictures.GET("/labels", route.Use(pictures.FindLabels))
+			_pictures.POST("/bulk-delete", route.Use(pictures.BulkDelete))
+		}
+		_videos := api.Group("videos")
+		{
+			_videos.GET("/labels", route.Use(videos.FindLabels))
+			_videos.POST("/bulk-delete", route.Use(videos.BulkDelete))
 		}
 	}
 	return r

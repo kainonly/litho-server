@@ -1,4 +1,4 @@
-package media
+package videos
 
 import (
 	"github.com/google/wire"

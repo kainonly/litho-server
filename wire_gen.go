@@ -9,10 +9,11 @@ package main
 import (
 	"api/app"
 	"api/app/index"
-	"api/app/media"
 	"api/app/pages"
+	"api/app/pictures"
 	"api/app/roles"
 	"api/app/users"
+	"api/app/videos"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -98,12 +99,18 @@ func App(value *common.Values) (*gin.Engine, error) {
 	usersController := &users.Controller{
 		Service: usersService,
 	}
-	mediaService := &media.Service{
+	picturesService := &pictures.Service{
 		Inject: inject,
 	}
-	mediaController := &media.Controller{
-		Service: mediaService,
+	picturesController := &pictures.Controller{
+		Service: picturesService,
 	}
-	ginEngine := app.New(value, passport, controller, engineController, pagesController, rolesController, usersController, mediaController)
+	videosService := &videos.Service{
+		Inject: inject,
+	}
+	videosController := &videos.Controller{
+		Service: videosService,
+	}
+	ginEngine := app.New(value, passport, controller, engineController, pagesController, rolesController, usersController, picturesController, videosController)
 	return ginEngine, nil
 }
