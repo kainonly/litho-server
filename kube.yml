@@ -61,14 +61,14 @@ spec:
         app: api
     spec:
       containers:
-        - image: ghcr.io/weplanx/api:latest
+        - image: ghcr.io/weplanx/api:0.0.4
           imagePullPolicy: Always
           name: api
           ports:
             - containerPort: 9000
           volumeMounts:
             - name: config
-              mountPath: "/app"
+              mountPath: "/app/config"
               readOnly: true
       volumes:
         - name: config
