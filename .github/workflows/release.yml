@@ -48,6 +48,8 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
+        env:
+          GIN_MODE: release
         with:
           context: .
           push: true

@@ -25,5 +25,5 @@
 /node_modules
 /package-lock.json
 /.env
-/config.yml
+config.yml
 /serverless.yml
