@@ -56,8 +56,12 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: patch deployment
+      - name: Setup Kubectl
         uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: get pods
+
+      - name: Patch Deployment
         run: kubectl patch deployment api-deploy --patch "$(sed "s/\${tag}/${{github.ref_name}}/" < ./config/patch.yml)"
