@@ -55,3 +55,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: patch deployment
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: kubectl patch deployment api-deploy --patch "$(sed "s/\${tag}/${{ steps.meta.outputs.tags }}/" < ./config/patch.yml)"

@@ -1,0 +1,6 @@
+spec:
+  template:
+    spec:
+      containers:
+        - image: ghcr.io/weplanx/api:${tag}
+          name: api
