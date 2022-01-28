@@ -61,4 +61,4 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: kubectl patch deployment api-deploy --patch "$(sed "s/\${tag}/${{ steps.meta.outputs.tags }}/" < ./config/patch.yml)"
+          args: kubectl patch deployment api-deploy --patch "$(sed "s/\${tag}/${{github.ref_name}}/" < ./config/patch.yml)"
