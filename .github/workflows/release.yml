@@ -26,7 +26,7 @@ jobs:
           go-version: ^1.17
 
       - name: Build Application
-        run: go build -o dist/main main.go wire_gen.go
+        run: go build -tags=jsoniter -o dist/main main.go wire_gen.go
         env:
           CGO_ENABLED: 0
           GO111MODULE: on
