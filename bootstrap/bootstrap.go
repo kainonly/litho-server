@@ -39,12 +39,12 @@ var Provides = wire.NewSet(
 
 // SetValues 初始化配置
 func SetValues() (values *common.Values, err error) {
-	if _, err = os.Stat("./config.yml"); os.IsNotExist(err) {
+	if _, err = os.Stat("./config/config.yml"); os.IsNotExist(err) {
 		err = errors.New("the path [./config.yml] does not have a configuration file")
 		return
 	}
 	var b []byte
-	b, err = ioutil.ReadFile("./config.yml")
+	b, err = ioutil.ReadFile("./config/config.yml")
 	if err != nil {
 		return
 	}
