@@ -2,5 +2,5 @@ spec:
   template:
     spec:
       containers:
-        - image: ghcr.io/weplanx/api:${tag}
+        - image: ccr.ccs.tencentyun.com/weplanx/api:${tag}
           name: api

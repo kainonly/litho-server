@@ -15,7 +15,7 @@ spec:
         app: api
     spec:
       containers:
-        - image: ghcr.io/weplanx/api:latest
+        - image: ccr.ccs.tencentyun.com/weplanx/api:0.0.11
           imagePullPolicy: Always
           name: api
           ports:
