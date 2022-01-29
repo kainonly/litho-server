@@ -28,7 +28,8 @@ type Controller struct {
 func (x *Controller) Index(c *gin.Context) interface{} {
 	return gin.H{
 		"name": x.Service.AppName(),
-		"v":    "1.0.0",
+		"ip":   c.ClientIP(),
+		"time": time.Now(),
 	}
 }
 
