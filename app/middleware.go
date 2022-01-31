@@ -6,7 +6,7 @@ import (
 	"github.com/gin-contrib/requestid"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/go/engine"
+	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
 	"go.uber.org/zap"
 	"time"
@@ -26,7 +26,7 @@ func globalMiddleware(r *gin.Engine, values *common.Values) *gin.Engine {
 		AllowCredentials: values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
 	}))
-	engine.RegisterValidation()
+	helper.ExtendValidation()
 	return r
 }
 
