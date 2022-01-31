@@ -9,6 +9,7 @@ import (
 	"github.com/google/wire"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
+	"github.com/speps/go-hashids/v2"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
@@ -134,7 +135,7 @@ func UseCipher(values *common.Values) (cipher *encryption.Cipher, err error) {
 }
 
 func UseIDx(values *common.Values) (idx *encryption.IDx, err error) {
-	if idx, err = encryption.NewIDx(values.Key); err != nil {
+	if idx, err = encryption.NewIDx(values.Key, hashids.DefaultAlphabet); err != nil {
 		return
 	}
 	return
