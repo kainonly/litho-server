@@ -1,4 +1,4 @@
-name: release
+name: 自动部署
 
 on:
   release:
@@ -10,23 +10,23 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build_and_release:
+  build_and_deploy:
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
     steps:
-      - name: Check out the repo
+      - name: 检出
         uses: actions/checkout@v2
         with:
           submodules: true
 
-      - name: Setup Golang
+      - name: 安装 Golang
         uses: actions/setup-go@v2
         with:
           go-version: ^1.17
 
-      - name: Build Application
+      - name: 构建应用
         run: go build -tags=jsoniter -o dist/main main.go wire_gen.go
         env:
           CGO_ENABLED: 0
@@ -34,27 +34,27 @@ jobs:
           GOARCH: amd64
           GOOS: linux
 
-      - name: Log in to GitHub Container Hub
+      - name: 登录 GitHub Container Hub
         uses: docker/login-action@v1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to TCR
+      - name: 登录 TCR
         uses: docker/login-action@v1
         with:
           registry: ${{ env.QCLOUD_REGISTRY }}
           username: ${{ secrets.QCLOUD_USERNAME }}
           password: ${{ secrets.QCLOUD_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: 解析容器镜像标签与标记
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image
+      - name: 构建并推送容器镜像
         uses: docker/build-push-action@v2
         env:
           GIN_MODE: release
@@ -64,7 +64,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Push Image to multiple registries
+      - name: 复制容器镜像至 QCLOUD TCR
         uses: akhilerm/tag-push-action@v2.0.0
         with:
           src: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
@@ -72,7 +72,7 @@ jobs:
             ${{ env.QCLOUD_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.QCLOUD_REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
 
-      - name: Setup Kubectl & Patch Deployment
+      - name: Kubernetes 滚动更新
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBE_CONFIG }}
