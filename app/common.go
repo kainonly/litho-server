@@ -24,6 +24,7 @@ var Provides = wire.NewSet(
 	pictures.Provides,
 	videos.Provides,
 	New,
+	Consumer,
 )
 
 func New(

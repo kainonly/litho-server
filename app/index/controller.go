@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
@@ -193,7 +193,7 @@ func (x *Controller) Uploader(c *gin.Context) interface{} {
 
 func (x *Controller) Navs(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	navs, err := x.Pages.FindNavs(ctx)
+	navs, err := x.Pages.Navs(ctx)
 	if err != nil {
 		return err
 	}
@@ -202,13 +202,13 @@ func (x *Controller) Navs(c *gin.Context) interface{} {
 
 func (x *Controller) Dynamic(c *gin.Context) interface{} {
 	var params struct {
-		Id string `uri:"id" binding:"required"`
+		Id string `uri:"id" binding:"required,objectId"`
 	}
 	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Pages.FindOneFromCacheById(ctx, params.Id)
+	data, err := x.Pages.FindOneById(ctx, params.Id)
 	if err != nil {
 		return err
 	}

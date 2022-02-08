@@ -7,12 +7,9 @@ database:
   dbName: <database>
 redis:
   uri: redis://<user>:<password>@<host>:<port>/<db_number>
-nats:
-  hosts:
-    - <nats/tls>://<host1>:<port/4222>
-    - <nats/tls>://<host2>:<port/4222>
-    - <nats/tls>://<host3>:<port/4222>
-  nkey: <seed>
+pulsar:
+  url: 服务接入地址
+  token: 密钥
 cors:
   allowOrigins:
     - https://app.developer.com
@@ -26,10 +23,6 @@ cors:
 passport:
   aud: [ 'console' ]
   exp: 720
-engines:
-  users:
-    projection:
-      password: 0
 qcloud:
   secret_id: <secret_id>
   secret_key: <secret_key>
@@ -37,3 +30,9 @@ qcloud:
     bucket: examplebucket-1250000000
     region: ap-guangzhou
     expired: 300
+engines:
+  pages:
+    event: 'persistent://集群（租户）ID/命名空间/'
+  users:
+    projection:
+      password: 0

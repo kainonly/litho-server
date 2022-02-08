@@ -4,7 +4,6 @@ import (
 	"api/common"
 	"api/model"
 	"context"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,19 +24,7 @@ type NavDto struct {
 	Sort   int64              `bson:"sort" json:"sort"`
 }
 
-func (x *Service) FindNavs(ctx context.Context) (data []NavDto, err error) {
-	key := x.Values.KeyName("navs")
-	var value []byte
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); exists != 0 {
-		if err = x.Redis.Get(ctx, key).Scan(&value); err != nil {
-			return
-		}
-		if err = jsoniter.Unmarshal(value, &data); err != nil {
-			return
-		}
-		return
-	}
+func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").Find(ctx,
 		bson.M{"status": true},
@@ -53,52 +40,13 @@ func (x *Service) FindNavs(ctx context.Context) (data []NavDto, err error) {
 	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
-	if value, err = jsoniter.Marshal(data); err != nil {
-		return
-	}
-	if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
-		return
-	}
 	return
 }
 
-func (x *Service) FindOneFromCacheById(ctx context.Context, id string) (data model.Page, err error) {
-	key := x.Values.KeyName("pages", id)
-	var value []byte
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
-		return
-	}
-	if exists != 0 {
-		if err = x.Redis.Get(ctx, key).Scan(&value); err != nil {
-			return
-		}
-		if err = jsoniter.Unmarshal(value, &data); err != nil {
-			return
-		}
-		return
-	}
-	var oid primitive.ObjectID
-	if oid, err = primitive.ObjectIDFromHex(id); err != nil {
-		return
-	}
-	if err = x.Db.Collection("pages").FindOne(ctx, bson.M{
-		"_id": oid,
-	}).Decode(&data); err != nil {
-		return
-	}
-	if value, err = jsoniter.Marshal(data); err != nil {
-		return
-	}
-	if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
-		return
-	}
-	return
-}
-
-func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID) (result model.Page, err error) {
+func (x *Service) FindOneById(ctx context.Context, id string) (result model.Page, err error) {
+	oid, _ := primitive.ObjectIDFromHex(id)
 	if err = x.Db.Collection("pages").
-		FindOne(ctx, bson.M{"_id": id}).
+		FindOne(ctx, bson.M{"_id": oid}).
 		Decode(&result); err != nil {
 		return
 	}
