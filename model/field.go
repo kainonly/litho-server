@@ -19,9 +19,6 @@ type Field struct {
 	// 是否必须
 	Required *bool `bson:"required,omitempty" json:"required,omitempty"`
 
-	// 是否唯一
-	Unique *bool `bson:"unique,omitempty" json:"unique,omitempty"`
-
 	// 隐藏字段
 	Hide *bool `bson:"hide,omitempty" json:"hide,omitempty"`
 
@@ -40,7 +37,6 @@ func NewField(label string, datatype string) *Field {
 		Label:    label,
 		Type:     datatype,
 		Required: Bool(false),
-		Unique:   Bool(false),
 		Hide:     Bool(false),
 		Modified: Bool(true),
 		Sort:     0,
@@ -64,11 +60,6 @@ func (x *Field) SetDefault(v interface{}) *Field {
 
 func (x *Field) SetRequired() *Field {
 	x.Required = Bool(true)
-	return x
-}
-
-func (x *Field) SetUnique() *Field {
-	x.Unique = Bool(true)
 	return x
 }
 

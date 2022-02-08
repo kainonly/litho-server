@@ -117,7 +117,6 @@ func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	return engine.New(
 		engine.SetApp(values.Name),
 		engine.UseStaticOptions(values.Engines),
-		engine.UseEvents(js),
 	)
 }
 
