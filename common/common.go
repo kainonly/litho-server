@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"github.com/nats-io/nats.go"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
@@ -19,7 +18,6 @@ type Inject struct {
 	MongoClient *mongo.Client
 	Db          *mongo.Database
 	Redis       *redis.Client
-	Nats        *nats.Conn
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	Idx         *encryption.IDx
@@ -34,7 +32,7 @@ type Values struct {
 	Cors           Cors                     `yaml:"cors"`
 	Database       Database                 `yaml:"database"`
 	Redis          Redis                    `yaml:"redis"`
-	Nats           Nats                     `yaml:"nats"`
+	Pulsar         Pulsar                   `yaml:"pulsar"`
 	Passport       passport.Option          `yaml:"passport"`
 	Engines        map[string]engine.Option `yaml:"engines"`
 	QCloud         QCloud                   `yaml:"qcloud"`
@@ -58,9 +56,10 @@ type Redis struct {
 	Uri string `yaml:"uri"`
 }
 
-type Nats struct {
-	Hosts []string `yaml:"hosts"`
-	Nkey  string   `yaml:"nkey"`
+type Pulsar struct {
+	Url    string            `yaml:"url"`
+	Token  string            `yaml:"token"`
+	Topics map[string]string `yaml:"topics"`
 }
 
 type QCloud struct {
