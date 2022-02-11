@@ -143,6 +143,8 @@ spec:
 
 ## 滚动更新
 
+复制模板内容，并需要自行定制触发条件，原理是每次patch将模板中 `${tag}` 替换为版本执行
+
 ```yml
 spec:
   template:
@@ -152,8 +154,8 @@ spec:
           name: api
 ```
 
-并需要自行定制触发条件，例如：在 Github Actions
-中 `patch deployment api-deploy --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"`，国内可使用 Coding 或 云效等。
+例如：在 Github Actions
+中 `patch deployment api-deploy --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"`，国内可使用**Coding持续部署**或**云效流水线**等。
 
 ## License
 
