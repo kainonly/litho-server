@@ -27,4 +27,4 @@
 /.env
 config-map.yml
 config.yml
-/serverless.yml
+deployment.yml

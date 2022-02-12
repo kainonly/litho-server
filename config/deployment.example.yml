@@ -31,8 +31,6 @@ spec:
             items:
               - key: "config.yml"
                 path: "config.yml"
-      nodeSelector:
-        type: compute
 ---
 apiVersion: v1
 kind: Service
@@ -52,12 +50,12 @@ metadata:
   name: api
   annotations:
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.certresolver: kainonly
-    traefik.ingress.kubernetes.io/router.tls.domains.0.main: kainonly.com
-    traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.kainonly.com"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: "****"
+    traefik.ingress.kubernetes.io/router.tls.domains.0.main: "****.com"
+    traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.****.com"
 spec:
   rules:
-    - host: api.kainonly.com
+    - host: api.****.com
       http:
         paths:
           - path: /
