@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  QCLOUD_REGISTRY: ccr.ccs.tencentyun.com
+  TCR_REGISTRY: ccr.ccs.tencentyun.com
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -44,9 +44,9 @@ jobs:
       - name: 登录 TCR
         uses: docker/login-action@v1
         with:
-          registry: ${{ env.QCLOUD_REGISTRY }}
-          username: ${{ secrets.QCLOUD_USERNAME }}
-          password: ${{ secrets.QCLOUD_PASSWORD }}
+          registry: ${{ env.TCR_REGISTRY }}
+          username: ${{ secrets.TCR_USERNAME }}
+          password: ${{ secrets.TCR_PASSWORD }}
 
       - name: 解析容器镜像标签与标记
         id: meta
@@ -69,8 +69,8 @@ jobs:
         with:
           src: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
           dst: |
-            ${{ env.QCLOUD_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.QCLOUD_REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
+            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
 
       - name: Kubernetes 滚动更新
         uses: steebchen/kubectl@v2.0.0
