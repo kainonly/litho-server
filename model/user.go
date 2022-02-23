@@ -23,14 +23,29 @@ type User struct {
 	// 只读权限
 	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly,omitempty"`
 
-	// 显示名称
+	// 称呼
 	Name string `bson:"name" json:"name"`
-
-	// 电子邮件
-	Email []string `bson:"email" json:"email"`
 
 	// 头像
 	Avatar string `bson:"avatar" json:"avatar"`
+
+	// 地区
+	Region string `bson:"region" json:"region"`
+
+	// 城市
+	City []string `bson:"city" json:"city"`
+
+	// 地址
+	Address string `bson:"address" json:"address"`
+
+	// 个人简介
+	Introduction string `bson:"introduction" json:"introduction"`
+
+	// 联系电话
+	Tel []Tel `bson:"tel" json:"tel"`
+
+	// 电子邮件
+	Email []string `bson:"email" json:"email"`
 
 	// 标记
 	Labels []string `bson:"labels" json:"labels"`
@@ -43,6 +58,11 @@ type User struct {
 
 	// 更新时间
 	UpdateTime time.Time `bson:"update_time" json:"-"`
+}
+
+type Tel struct {
+	Area   string `bson:"area" json:"area"`
+	Number string `bson:"number" json:"number"`
 }
 
 func NewUser(username string, password string) *User {
@@ -62,30 +82,5 @@ func NewUser(username string, password string) *User {
 
 func (x *User) SetRoles(v []primitive.ObjectID) *User {
 	x.Roles = v
-	return x
-}
-
-func (x *User) SetPages(v []primitive.ObjectID) *User {
-	x.Pages = v
-	return x
-}
-
-func (x *User) SetReadonly(v []primitive.ObjectID) *User {
-	x.Readonly = v
-	return x
-}
-
-func (x *User) SetName(v string) *User {
-	x.Name = v
-	return x
-}
-
-func (x *User) SetEmail(v []string) *User {
-	x.Email = v
-	return x
-}
-
-func (x *User) SetAvatar(v string) *User {
-	x.Avatar = v
 	return x
 }
