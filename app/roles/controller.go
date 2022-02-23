@@ -23,7 +23,7 @@ func (x *Controller) HasName(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Controller) FindLabels(c *gin.Context) interface{} {
+func (x *Controller) Labels(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	values, err := x.Service.FindLabels(ctx)
 	if err != nil {
