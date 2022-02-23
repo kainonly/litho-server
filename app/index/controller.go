@@ -4,14 +4,9 @@ import (
 	"api/app/pages"
 	"api/app/users"
 	"api/common"
-	"crypto/hmac"
-	"crypto/sha1"
-	"encoding/hex"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/password"
@@ -149,46 +144,11 @@ func (x *Controller) Logout(c *gin.Context) interface{} {
 }
 
 func (x *Controller) Uploader(c *gin.Context) interface{} {
-	option := x.Service.Values.QCloud
-	expired := time.Second * time.Duration(option.Cos.Expired)
-	date := time.Now()
-	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), date.Add(expired).Unix())
-	key := fmt.Sprintf(`%s/%s/%s`,
-		x.Service.AppName(),
-		date.Format("20060102"),
-		helper.Uuid(),
-	)
-	policy := map[string]interface{}{
-		"expiration": date.Add(expired).Format("2006-01-02T15:04:05.000Z"),
-		"conditions": []interface{}{
-			map[string]interface{}{"bucket": option.Cos.Bucket},
-			[]interface{}{"starts-with", "$key", key},
-			map[string]interface{}{"q-sign-algorithm": "sha1"},
-			map[string]interface{}{"q-ak": option.SecretID},
-			map[string]interface{}{"q-sign-time": keyTime},
-		},
-	}
-	policyText, err := jsoniter.Marshal(policy)
+	data, err := x.Service.Uploader()
 	if err != nil {
 		return err
 	}
-	signKeyHash := hmac.New(sha1.New, []byte(option.SecretKey))
-	signKeyHash.Write([]byte(keyTime))
-	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
-	stringToSignHash := sha1.New()
-	stringToSignHash.Write(policyText)
-	stringToSign := hex.EncodeToString(stringToSignHash.Sum(nil))
-	signatureHash := hmac.New(sha1.New, []byte(signKey))
-	signatureHash.Write([]byte(stringToSign))
-	signature := hex.EncodeToString(signatureHash.Sum(nil))
-	return gin.H{
-		"key":              key,
-		"policy":           policyText,
-		"q-sign-algorithm": "sha1",
-		"q-ak":             option.SecretID,
-		"q-key-time":       keyTime,
-		"q-signature":      signature,
-	}
+	return data
 }
 
 func (x *Controller) Navs(c *gin.Context) interface{} {
@@ -209,6 +169,17 @@ func (x *Controller) Dynamic(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	data, err := x.Pages.FindOneById(ctx, params.Id)
+	if err != nil {
+		return err
+	}
+	return data
+}
+
+func (x *Controller) FindInfo(c *gin.Context) interface{} {
+	value, _ := c.Get(common.TokenClaimsKey)
+	claimsContext := value.(jwt.MapClaims)["context"].(map[string]interface{})
+	ctx := c.Request.Context()
+	data, err := x.Users.FindInfo(ctx, claimsContext["uid"].(string))
 	if err != nil {
 		return err
 	}

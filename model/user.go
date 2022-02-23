@@ -12,16 +12,16 @@ type User struct {
 	Username string `bson:"username" json:"username"`
 
 	// 密码
-	Password string `bson:"password" json:"password"`
+	Password string `bson:"password" json:"password,omitempty"`
 
 	// 权限组
-	Roles []primitive.ObjectID `bson:"roles" json:"roles"`
+	Roles []primitive.ObjectID `bson:"roles" json:"roles,omitempty"`
 
 	// 独立授权页面
-	Pages []primitive.ObjectID `bson:"pages" json:"pages"`
+	Pages []primitive.ObjectID `bson:"pages" json:"pages,omitempty"`
 
 	// 只读权限
-	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly"`
+	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly,omitempty"`
 
 	// 显示名称
 	Name string `bson:"name" json:"name"`

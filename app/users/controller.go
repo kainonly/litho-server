@@ -1,6 +1,8 @@
 package users
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type Controller struct {
 	Service *Service
@@ -23,7 +25,7 @@ func (x *Controller) HasUsername(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Controller) FindLabels(c *gin.Context) interface{} {
+func (x *Controller) Labels(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	values, err := x.Service.FindLabels(ctx)
 	if err != nil {

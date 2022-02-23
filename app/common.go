@@ -49,6 +49,8 @@ func New(
 	r.GET("/uploader", auth, route.Use(index.Uploader))
 	r.GET("/navs", auth, route.Use(index.Navs))
 	r.GET("/pages/:id", auth, route.Use(index.Dynamic))
+	r.GET("/info", auth, route.Use(index.FindInfo))
+
 	api := r.Group("/api", auth)
 	{
 		api.POST("/:model", route.Use(engine.Create))
@@ -72,12 +74,12 @@ func New(
 		_roles := api.Group("roles")
 		{
 			_roles.GET("/has-name", route.Use(roles.HasName))
-			_roles.GET("/labels", route.Use(roles.FindLabels))
+			_roles.GET("/labels", route.Use(roles.Labels))
 		}
 		_users := api.Group("users")
 		{
 			_users.GET("/has-username", route.Use(users.HasUsername))
-			_users.GET("/labels", route.Use(users.FindLabels))
+			_users.GET("/labels", route.Use(users.Labels))
 		}
 		_pictures := api.Group("pictures")
 		{
