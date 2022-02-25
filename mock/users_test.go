@@ -24,7 +24,7 @@ func TestUsers(t *testing.T) {
 	}
 	hashPwd, _ := password.Create("pass@VAN1234")
 	data := []interface{}{
-		model.NewUser("weplanx", hashPwd).
+		model.NewUser("kain", hashPwd).
 			SetRoles([]primitive.ObjectID{root.ID}),
 	}
 	if _, err := Db.Collection("users").

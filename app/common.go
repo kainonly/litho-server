@@ -1,6 +1,7 @@
 package app
 
 import (
+	"api/app/center"
 	"api/app/index"
 	"api/app/pages"
 	"api/app/pictures"
@@ -18,6 +19,7 @@ import (
 var Provides = wire.NewSet(
 	index.Provides,
 	engine.Provides,
+	center.Provides,
 	pages.Provides,
 	roles.Provides,
 	users.Provides,
@@ -32,6 +34,7 @@ func New(
 	passport *passport.Passport,
 	index *index.Controller,
 	engine *engine.Controller,
+	center *center.Controller,
 	pages *pages.Controller,
 	roles *roles.Controller,
 	users *users.Controller,
@@ -49,8 +52,10 @@ func New(
 	r.GET("/uploader", auth, route.Use(index.Uploader))
 	r.GET("/navs", auth, route.Use(index.Navs))
 	r.GET("/pages/:id", auth, route.Use(index.Dynamic))
-	r.GET("/info", auth, route.Use(index.FindInfo))
-
+	_center := r.Group("/center", auth)
+	{
+		_center.GET("/user-info", auth, route.Use(center.GetUserInfo))
+	}
 	api := r.Group("/api", auth)
 	{
 		api.POST("/:model", route.Use(engine.Create))
