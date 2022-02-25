@@ -59,3 +59,17 @@ func (x *Service) FindOneById(ctx context.Context, id string, opts ...*options.F
 	}
 	return
 }
+
+func (x *Service) UpdateOneById(ctx context.Context, id string, update interface{}) (err error) {
+	var oid primitive.ObjectID
+	if oid, err = primitive.ObjectIDFromHex(id); err != nil {
+		return
+	}
+	if _, err = x.Db.Collection("users").UpdateOne(ctx,
+		bson.M{"_id": oid},
+		update,
+	); err != nil {
+		return
+	}
+	return
+}

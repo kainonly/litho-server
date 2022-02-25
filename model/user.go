@@ -42,7 +42,7 @@ type User struct {
 	Introduction string `bson:"introduction" json:"introduction"`
 
 	// 联系电话
-	Tel []Tel `bson:"tel" json:"tel"`
+	Phone []Phone `bson:"phone" json:"phone"`
 
 	// 电子邮件
 	Email []string `bson:"email" json:"email"`
@@ -60,7 +60,7 @@ type User struct {
 	UpdateTime time.Time `bson:"update_time" json:"-"`
 }
 
-type Tel struct {
+type Phone struct {
 	Area   string `bson:"area" json:"area"`
 	Number string `bson:"number" json:"number"`
 }
