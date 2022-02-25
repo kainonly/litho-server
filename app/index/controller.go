@@ -174,14 +174,3 @@ func (x *Controller) Dynamic(c *gin.Context) interface{} {
 	}
 	return data
 }
-
-func (x *Controller) FindInfo(c *gin.Context) interface{} {
-	value, _ := c.Get(common.TokenClaimsKey)
-	claimsContext := value.(jwt.MapClaims)["context"].(map[string]interface{})
-	ctx := c.Request.Context()
-	data, err := x.Users.FindInfo(ctx, claimsContext["uid"].(string))
-	if err != nil {
-		return err
-	}
-	return data
-}
