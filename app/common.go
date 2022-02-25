@@ -54,7 +54,8 @@ func New(
 	r.GET("/pages/:id", auth, route.Use(index.Dynamic))
 	_center := r.Group("/center", auth)
 	{
-		_center.GET("/user-info", auth, route.Use(center.GetUserInfo))
+		_center.GET("/user-info", route.Use(center.GetUserInfo))
+		_center.PATCH("/user-info", route.Use(center.SetUserInfo))
 	}
 	api := r.Group("/api", auth)
 	{

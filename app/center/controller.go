@@ -20,8 +20,10 @@ func (x *Controller) GetUserInfo(c *gin.Context) interface{} {
 	value, _ := c.Get(common.TokenClaimsKey)
 	claimsContext := value.(jwt.MapClaims)["context"].(map[string]interface{})
 	ctx := c.Request.Context()
-	data, err := x.Users.FindOneById(ctx,
+	var data map[string]interface{}
+	if err := x.Users.FindOneById(ctx,
 		claimsContext["uid"].(string),
+		&data,
 		options.FindOne().SetProjection(bson.M{
 			"_id":      0,
 			"password": 0,
@@ -31,8 +33,7 @@ func (x *Controller) GetUserInfo(c *gin.Context) interface{} {
 			"labels":   0,
 			"status":   0,
 		}),
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
 	return data
@@ -42,7 +43,7 @@ type SetUserInfoDto struct {
 	Name         string        `json:"name"`
 	Avatar       string        `json:"avatar"`
 	Region       string        `json:"region"`
-	City         string        `json:"city"`
+	City         []string      `json:"city"`
 	Address      string        `json:"address"`
 	Introduction string        `json:"introduction"`
 	Phone        []model.Phone `json:"phone"`
