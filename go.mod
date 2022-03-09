@@ -16,6 +16,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/google/wire v0.5.0
 	github.com/json-iterator/go v1.1.11
+	github.com/qri-io/jsonschema v0.2.1 // indirect
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.33
 	github.com/thoas/go-funk v0.9.1
