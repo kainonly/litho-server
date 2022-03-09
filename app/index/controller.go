@@ -28,11 +28,38 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Controller) Login(c *gin.Context) interface{} {
-	var body struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
+type InstallDto struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Template string `json:"template" binding:"omitempty,url"`
+}
+
+func (x *Controller) Install(c *gin.Context) interface{} {
+	var body InstallDto
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
 	}
+	ctx := c.Request.Context()
+	if err := x.Service.Install(ctx, body); err != nil {
+		return err
+	}
+	// 载入自定义 Pages
+	if body.Template != "" {
+		if err := x.Service.SetTemplate(ctx, body.Template); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type LoginDto struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (x *Controller) Login(c *gin.Context) interface{} {
+	var body LoginDto
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
@@ -97,10 +124,12 @@ func (x *Controller) Code(c *gin.Context) interface{} {
 	return gin.H{"code": code}
 }
 
+type RefreshTokenDto struct {
+	Code string `json:"code" binding:"required"`
+}
+
 func (x *Controller) RefreshToken(c *gin.Context) interface{} {
-	var body struct {
-		Code string `json:"code" binding:"required"`
-	}
+	var body RefreshTokenDto
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
@@ -128,7 +157,8 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	var ts string
 	if ts, err = x.Service.Passport.Create(
 		jti,
-		claims["context"].(map[string]interface{}),
+		claims["context"].(map[string]interface {
+		}),
 	); err != nil {
 		return err
 	}
@@ -160,10 +190,12 @@ func (x *Controller) Navs(c *gin.Context) interface{} {
 	return navs
 }
 
+type DynamicParams struct {
+	Id string `uri:"id" binding:"required,objectId"`
+}
+
 func (x *Controller) Dynamic(c *gin.Context) interface{} {
-	var params struct {
-		Id string `uri:"id" binding:"required,objectId"`
-	}
+	var params DynamicParams
 	if err := c.ShouldBindUri(&params); err != nil {
 		return err
 	}
