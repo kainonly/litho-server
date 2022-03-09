@@ -46,7 +46,7 @@ func (x *Controller) Install(c *gin.Context) interface{} {
 	}
 	// 载入自定义 Pages
 	if body.Template != "" {
-		if err := x.Service.SetTemplate(ctx, body.Template); err != nil {
+		if err := x.Service.UseTemplate(ctx, body.Template); err != nil {
 			return err
 		}
 	}
