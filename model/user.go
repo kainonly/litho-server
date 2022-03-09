@@ -80,6 +80,11 @@ func NewUser(username string, password string) *User {
 	}
 }
 
+func (x *User) AddEmail(v string) *User {
+	x.Email = append(x.Email, v)
+	return x
+}
+
 func (x *User) SetRoles(v []primitive.ObjectID) *User {
 	x.Roles = v
 	return x
