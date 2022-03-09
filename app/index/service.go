@@ -30,6 +30,9 @@ func (x *Service) AppName() string {
 	return x.Values.Name
 }
 
+func (x *Service) Installed(ctx context.Context) {
+}
+
 func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 	// 初始化权限组
 	role := model.NewRole("超级管理员").
