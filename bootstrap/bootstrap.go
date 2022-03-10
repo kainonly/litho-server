@@ -38,21 +38,19 @@ var Provides = wire.NewSet(
 // SetValues 初始化配置
 func SetValues() (values *common.Values, err error) {
 	if _, err = os.Stat("./config/config.yml"); os.IsNotExist(err) {
-		err = errors.New("the path [./config.yml] does not have a configuration file")
+		return nil, errors.New("静态配置不存在，请检查路径 [./config/config.yml]")
+	}
+	var config []byte
+	if config, err = ioutil.ReadFile("./config/config.yml"); err != nil {
 		return
 	}
-	var b []byte
-	b, err = ioutil.ReadFile("./config/config.yml")
-	if err != nil {
-		return
-	}
-	err = yaml.Unmarshal(b, &values)
-	if err != nil {
+	if err = yaml.Unmarshal(config, &values); err != nil {
 		return
 	}
 	return
 }
 
+// UseMongoDB 初始化 Mongodb
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
@@ -60,11 +58,12 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	)
 }
 
+// UseDatabase 指向使用数据库名称
 func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
 	return client.Database(values.Database.DbName)
 }
 
-// UseRedis 初始化Redis缓存
+// UseRedis 初始化 Redis 缓存
 // 配置文档 https://github.com/go-redis/redis
 func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(values.Redis.Uri)
@@ -72,12 +71,13 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 		return
 	}
 	client = redis.NewClient(opts)
-	if err = client.Ping(context.Background()).Err(); err != nil {
+	if err = client.Ping(context.TODO()).Err(); err != nil {
 		return
 	}
 	return
 }
 
+// UsePulsar 初始化 Pulsar
 func UsePulsar(values *common.Values) (pulsar.Client, error) {
 	option := values.Pulsar
 	return pulsar.NewClient(pulsar.ClientOptions{
@@ -88,6 +88,7 @@ func UsePulsar(values *common.Values) (pulsar.Client, error) {
 	})
 }
 
+// UseEngine 初始化 Weplanx Engine
 func UseEngine(values *common.Values, client pulsar.Client) *engine.Engine {
 	return engine.New(
 		engine.SetApp(values.Name),
@@ -96,12 +97,7 @@ func UseEngine(values *common.Values, client pulsar.Client) *engine.Engine {
 	)
 }
 
-// UsePassport 创建认证
-func UsePassport(values *common.Values) *passport.Passport {
-	values.Passport.Iss = values.Name
-	return passport.New(values.Key, values.Passport)
-}
-
+// UseCipher 使用数据加密
 func UseCipher(values *common.Values) (cipher *encryption.Cipher, err error) {
 	if cipher, err = encryption.NewCipher(values.Key); err != nil {
 		return
@@ -109,11 +105,18 @@ func UseCipher(values *common.Values) (cipher *encryption.Cipher, err error) {
 	return
 }
 
+// UseIDx 使用 ID 加密
 func UseIDx(values *common.Values) (idx *encryption.IDx, err error) {
 	if idx, err = encryption.NewIDx(values.Key, hashids.DefaultAlphabet); err != nil {
 		return
 	}
 	return
+}
+
+// UsePassport 创建认证
+func UsePassport(values *common.Values) *passport.Passport {
+	values.Passport.Iss = values.Name
+	return passport.New(values.Key, values.Passport)
 }
 
 func UseCos(values *common.Values) (client *cos.Client, err error) {

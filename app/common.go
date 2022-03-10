@@ -77,7 +77,7 @@ func New(
 			_pages.DELETE("/:id", route.Use(engine.DeleteOneById, route.SetModel("pages")))
 			_pages.GET("/has-schema-key", route.Use(pages.HasSchemaKey))
 			_pages.PATCH("/sort", route.Use(pages.Sort))
-			_pages.GET("/:id/indexes", route.Use(pages.FindIndexes))
+			_pages.GET("/:id/indexes", route.Use(pages.Indexes))
 			_pages.PUT("/:id/indexes/:name", route.Use(pages.CreateIndex))
 			_pages.DELETE("/:id/indexes/:name", route.Use(pages.DeleteIndex))
 		}
