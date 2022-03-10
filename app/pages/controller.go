@@ -42,7 +42,7 @@ func (x *Controller) Sort(c *gin.Context) interface{} {
 	return result
 }
 
-func (x *Controller) FindIndexes(c *gin.Context) interface{} {
+func (x *Controller) Indexes(c *gin.Context) interface{} {
 	var params struct {
 		Id string `uri:"id" binding:"required,objectId"`
 	}
@@ -54,11 +54,11 @@ func (x *Controller) FindIndexes(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	result, err := x.Service.FindIndexes(ctx, data.Schema.Key)
+	indexes, err := x.Service.FindIndexes(ctx, data.Schema.Key)
 	if err != nil {
 		return err
 	}
-	return result
+	return indexes
 }
 
 func (x *Controller) CreateIndex(c *gin.Context) interface{} {

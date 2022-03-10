@@ -25,17 +25,18 @@ type Inject struct {
 }
 
 type Values struct {
-	Address        string                   `yaml:"address"`
-	TrustedProxies []string                 `yaml:"trusted_proxies"`
-	Name           string                   `yaml:"name"`
-	Key            string                   `yaml:"key"`
-	Cors           Cors                     `yaml:"cors"`
-	Database       Database                 `yaml:"database"`
-	Redis          Redis                    `yaml:"redis"`
-	Pulsar         Pulsar                   `yaml:"pulsar"`
-	Passport       passport.Option          `yaml:"passport"`
-	Engines        map[string]engine.Option `yaml:"engines"`
-	QCloud         QCloud                   `yaml:"qcloud"`
+	Address        string   `yaml:"address"`
+	TrustedProxies []string `yaml:"trusted_proxies"`
+	Name           string   `yaml:"name"`
+	Key            string   `yaml:"key"`
+	Cors           Cors     `yaml:"cors"`
+	Database       Database `yaml:"database"`
+	Redis          Redis    `yaml:"redis"`
+	Pulsar         Pulsar   `yaml:"pulsar"`
+
+	Passport passport.Option          `yaml:"passport"`
+	Engines  map[string]engine.Option `yaml:"engines"`
+	QCloud   QCloud                   `yaml:"qcloud"`
 }
 
 type Cors struct {

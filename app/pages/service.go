@@ -25,6 +25,7 @@ type NavDto struct {
 }
 
 func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
+	data = make([]NavDto, 0)
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").Find(ctx,
 		bson.M{"status": true},
@@ -84,17 +85,16 @@ func (x *Service) Sort(ctx context.Context, sort []primitive.ObjectID) (*mongo.B
 	return x.Db.Collection("pages").BulkWrite(ctx, models)
 }
 
-func (x *Service) FindIndexes(ctx context.Context, name string) (result []map[string]interface{}, err error) {
+func (x *Service) FindIndexes(ctx context.Context, name string) (data []map[string]interface{}, err error) {
 	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection(name).
-		Indexes().
+	if cursor, err = x.Db.Collection(name).Indexes().
 		List(ctx); err != nil {
 		return
 	}
-	if err = cursor.All(ctx, &result); err != nil {
+	data = make([]map[string]interface{}, 0)
+	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
-	result = result[1:]
 	return
 }
 
