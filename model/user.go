@@ -14,13 +14,16 @@ type User struct {
 	// 密码
 	Password string `bson:"password" json:"password,omitempty"`
 
+	// 所属部门
+	Department primitive.ObjectID `bson:"department" json:"-"`
+
 	// 权限组
 	Roles []primitive.ObjectID `bson:"roles" json:"roles,omitempty"`
 
-	// 独立授权页面
+	// 页面限制，缩小可访问的页面
 	Pages []primitive.ObjectID `bson:"pages" json:"pages,omitempty"`
 
-	// 只读权限
+	// 只读限制
 	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly,omitempty"`
 
 	// 称呼
@@ -42,10 +45,10 @@ type User struct {
 	Introduction string `bson:"introduction" json:"introduction"`
 
 	// 联系电话
-	Phone []Phone `bson:"phone" json:"phone"`
+	Phone Phone `bson:"phone" json:"phone"`
 
 	// 电子邮件
-	Email []string `bson:"email" json:"email"`
+	Email string `bson:"email" json:"email"`
 
 	// 标记
 	Labels []string `bson:"labels" json:"labels"`
@@ -72,7 +75,6 @@ func NewUser(username string, password string) *User {
 		Roles:      []primitive.ObjectID{},
 		Pages:      []primitive.ObjectID{},
 		Readonly:   []primitive.ObjectID{},
-		Email:      []string{},
 		Labels:     []string{},
 		Status:     Bool(true),
 		CreateTime: time.Now(),
@@ -80,12 +82,17 @@ func NewUser(username string, password string) *User {
 	}
 }
 
-func (x *User) AddEmail(v string) *User {
-	x.Email = append(x.Email, v)
+func (x *User) SetEmail(v string) *User {
+	x.Email = v
 	return x
 }
 
 func (x *User) SetRoles(v []primitive.ObjectID) *User {
 	x.Roles = v
+	return x
+}
+
+func (x *User) SetLabel(v string) *User {
+	x.Labels = append(x.Labels, v)
 	return x
 }
