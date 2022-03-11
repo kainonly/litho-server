@@ -1,6 +1,6 @@
 package model
 
-type Variable struct {
+type Config struct {
 	// 键名称
 	Key string `bson:"key" json:"key"`
 
@@ -13,6 +13,6 @@ type Variable struct {
 	// 系统的
 	System *bool `bson:"system" json:"-"`
 
-	// 脱敏的
+	// 加密的
 	Secret *bool `bson:"secret" json:"-"`
 }

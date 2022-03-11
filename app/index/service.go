@@ -34,7 +34,7 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 	// 初始化权限组
 	role := model.NewRole("超级管理员").
 		SetDescription("系统默认设置").
-		SetLabel("最高权限")
+		SetLabel("默认")
 	var result *mongo.InsertOneResult
 	if result, err = x.Db.Collection("roles").
 		InsertOne(ctx, role); err != nil {
@@ -54,14 +54,17 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 	); err != nil {
 		return
 	}
+	model.NewDepartment("全部")
+
 	// 初始化管理用户
 	var pwd string
 	if pwd, err = password.Create(value.Password); err != nil {
 		return
 	}
 	user := model.NewUser("kain", pwd).
-		AddEmail(value.Email).
-		SetRoles([]primitive.ObjectID{result.InsertedID.(primitive.ObjectID)})
+		SetEmail(value.Email).
+		SetRoles([]primitive.ObjectID{result.InsertedID.(primitive.ObjectID)}).
+		SetLabel("默认")
 	if _, err = x.Db.Collection("users").
 		InsertOne(ctx, user); err != nil {
 		return
