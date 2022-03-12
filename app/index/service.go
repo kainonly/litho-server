@@ -32,12 +32,13 @@ func (x *Service) AppName() string {
 
 func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 	// 初始化权限组
-	role := model.NewRole("超级管理员").
-		SetDescription("系统默认设置").
-		SetLabel("默认")
-	var result *mongo.InsertOneResult
-	if result, err = x.Db.Collection("roles").
-		InsertOne(ctx, role); err != nil {
+	var roles *mongo.InsertOneResult
+	if roles, err = x.Db.Collection("roles").
+		InsertOne(ctx,
+			model.NewRole("超级管理员").
+				SetDescription("系统默认设置").
+				SetLabel("默认"),
+		); err != nil {
 		return
 	}
 	if _, err = x.Db.Collection("roles").Indexes().CreateMany(ctx,
@@ -54,7 +55,16 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 	); err != nil {
 		return
 	}
-	model.NewDepartment("全部")
+
+	var departments *mongo.InsertOneResult
+	if departments, err = x.Db.Collection("departments").
+		InsertOne(ctx,
+			model.NewDepartment("全部").
+				SetDescription("系统默认设置").
+				SetLabel("默认"),
+		); err != nil {
+		return
+	}
 
 	// 初始化管理用户
 	var pwd string
@@ -62,8 +72,9 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 		return
 	}
 	user := model.NewUser("kain", pwd).
+		SetDepartment(departments.InsertedID.(primitive.ObjectID)).
+		SetRoles([]primitive.ObjectID{roles.InsertedID.(primitive.ObjectID)}).
 		SetEmail(value.Email).
-		SetRoles([]primitive.ObjectID{result.InsertedID.(primitive.ObjectID)}).
 		SetLabel("默认")
 	if _, err = x.Db.Collection("users").
 		InsertOne(ctx, user); err != nil {

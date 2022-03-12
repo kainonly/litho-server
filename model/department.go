@@ -40,3 +40,8 @@ func (x *Department) SetDescription(v string) *Department {
 	x.Description = v
 	return x
 }
+
+func (x *Department) SetLabel(v string) *Department {
+	x.Labels = append(x.Labels, v)
+	return x
+}

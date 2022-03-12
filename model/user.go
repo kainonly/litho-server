@@ -87,6 +87,11 @@ func (x *User) SetEmail(v string) *User {
 	return x
 }
 
+func (x *User) SetDepartment(v primitive.ObjectID) *User {
+	x.Department = v
+	return x
+}
+
 func (x *User) SetRoles(v []primitive.ObjectID) *User {
 	x.Roles = v
 	return x
