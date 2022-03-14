@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: api
-  name: api-deploy
+  name: api
 spec:
   replicas: 2
   selector:
@@ -35,7 +35,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-svc
+  name: api
 spec:
   ports:
     - port: 80
@@ -50,6 +50,7 @@ metadata:
   name: api
   annotations:
     traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: default
     traefik.ingress.kubernetes.io/router.tls.certresolver: "****"
     traefik.ingress.kubernetes.io/router.tls.domains.0.main: "****.com"
     traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.****.com"
@@ -62,6 +63,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-svc
+                name: api
                 port:
                   number: 80
