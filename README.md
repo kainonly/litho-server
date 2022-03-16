@@ -9,7 +9,7 @@
 - ghcr.io/weplanx/api:latest
 - ccr.ccs.tencentyun.com/weplanx/api:latest（国内）
 
-一般可以使用 Docker 上线，案例将使用 Kubernetes 部署编排，复制部署内容（需要根据情况做修改）：
+案例将使用 Kubernetes 部署编排，复制部署内容（根据情况修改）：
 
 1. 设置配置
 
@@ -24,18 +24,16 @@ data:
     # 不设置将无法获取到客户端 ip，也可以使用七层反向代理做上游（例如：全站加速、应用负载均衡等）
     trusted_proxies:
       - 10.42.0.0/16
-    name: <应用名称>
+    namespace: <应用名称>
     key: <32位密文>
     database:
       uri: mongodb://<username>:<password>@<host>:<port>/<database>?authSource=<authSource>
       dbName: <database>
     redis:
       uri: redis://<user>:<password>@<host>:<port>/<db_number>
-    pulsar:
-      url: http://pulsar-****:8080
-      token: <密钥>
-      topics:
-        event: persistent://<集群租户ID>/<命名空间>/
+    nats:
+      hosts: [ ]
+      nkey:
     cors:
       allowOrigins:
         - https://app.****.com
@@ -58,7 +56,7 @@ data:
         expired: 300
     engines:
       pages:
-        event: persistent://<集群租户ID>/<命名空间>/
+        event: true
       users:
         projection:
           password: 0
