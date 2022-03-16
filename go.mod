@@ -5,7 +5,6 @@ go 1.15
 replace github.com/weplanx/go v0.0.0-20211109121132-7a8d66264652 => ./library
 
 require (
-	github.com/apache/pulsar-client-go v0.7.1-0.20220210221528-5daa17b02bff
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-contrib/requestid v0.0.3
@@ -16,7 +15,9 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/google/wire v0.5.0
 	github.com/json-iterator/go v1.1.11
-	github.com/qri-io/jsonschema v0.2.1 // indirect
+	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
+	github.com/nats-io/nkeys v0.3.0
+	github.com/qri-io/jsonschema v0.2.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.33
 	github.com/thoas/go-funk v0.9.1
