@@ -27,7 +27,7 @@ type Service struct {
 }
 
 func (x *Service) AppName() string {
-	return x.Values.Name
+	return x.Values.Namespace
 }
 
 func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {

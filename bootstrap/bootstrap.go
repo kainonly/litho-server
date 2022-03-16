@@ -5,9 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nkeys"
 	"github.com/speps/go-hashids/v2"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
@@ -20,6 +21,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -27,7 +29,8 @@ var Provides = wire.NewSet(
 	UseMongoDB,
 	UseDatabase,
 	UseRedis,
-	UsePulsar,
+	UseNats,
+	UseJetStream,
 	UseEngine,
 	UsePassport,
 	UseCipher,
@@ -77,23 +80,44 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	return
 }
 
-// UsePulsar 初始化 Pulsar
-func UsePulsar(values *common.Values) (pulsar.Client, error) {
-	option := values.Pulsar
-	return pulsar.NewClient(pulsar.ClientOptions{
-		URL:               option.Url,
-		Authentication:    pulsar.NewAuthenticationToken(option.Token),
-		OperationTimeout:  30 * time.Second,
-		ConnectionTimeout: 30 * time.Second,
-	})
+func UseNats(values *common.Values) (nc *nats.Conn, err error) {
+	var kp nkeys.KeyPair
+	if kp, err = nkeys.FromSeed([]byte(values.Nats.Nkey)); err != nil {
+		return
+	}
+	defer kp.Wipe()
+	var pub string
+	if pub, err = kp.PublicKey(); err != nil {
+		return
+	}
+	if !nkeys.IsValidPublicUserKey(pub) {
+		return nil, fmt.Errorf("nkey 验证失败")
+	}
+	if nc, err = nats.Connect(
+		strings.Join(values.Nats.Hosts, ","),
+		nats.MaxReconnects(5),
+		nats.ReconnectWait(2*time.Second),
+		nats.ReconnectJitter(500*time.Millisecond, 2*time.Second),
+		nats.Nkey(pub, func(nonce []byte) ([]byte, error) {
+			sig, _ := kp.Sign(nonce)
+			return sig, nil
+		}),
+	); err != nil {
+		return
+	}
+	return
+}
+
+func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
+	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
 // UseEngine 初始化 Weplanx Engine
-func UseEngine(values *common.Values, client pulsar.Client) *engine.Engine {
+func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	return engine.New(
-		engine.SetApp(values.Name),
+		engine.SetApp(values.Namespace),
 		engine.UseStaticOptions(values.Engines),
-		engine.UsePulsar(client),
+		engine.UseEvents(js),
 	)
 }
 
@@ -115,7 +139,7 @@ func UseIDx(values *common.Values) (idx *encryption.IDx, err error) {
 
 // UsePassport 创建认证
 func UsePassport(values *common.Values) *passport.Passport {
-	values.Passport.Iss = values.Name
+	values.Passport.Iss = values.Namespace
 	return passport.New(values.Key, values.Passport)
 }
 

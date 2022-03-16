@@ -34,6 +34,14 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	conn, err := bootstrap.UseNats(value)
+	if err != nil {
+		return nil, err
+	}
+	jetStreamContext, err := bootstrap.UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
 		return nil, err
@@ -51,6 +59,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 		MongoClient: client,
 		Db:          database,
 		Redis:       redisClient,
+		Nats:        conn,
+		Js:          jetStreamContext,
 		Passport:    passport,
 		Cipher:      cipher,
 		Idx:         iDx,
@@ -70,11 +80,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Users:   usersService,
 		Pages:   pagesService,
 	}
-	pulsarClient, err := bootstrap.UsePulsar(value)
-	if err != nil {
-		return nil, err
-	}
-	engineEngine := bootstrap.UseEngine(value, pulsarClient)
+	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
 		Engine: engineEngine,
 		Db:     database,

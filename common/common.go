@@ -3,12 +3,14 @@ package common
 import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/nats-io/nats.go"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
+	"sync"
 )
 
 const TokenClaimsKey = "token-claims"
@@ -18,6 +20,8 @@ type Inject struct {
 	MongoClient *mongo.Client
 	Db          *mongo.Database
 	Redis       *redis.Client
+	Nats        *nats.Conn
+	Js          nats.JetStreamContext
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	Idx         *encryption.IDx
@@ -25,18 +29,17 @@ type Inject struct {
 }
 
 type Values struct {
-	Address        string   `yaml:"address"`
-	TrustedProxies []string `yaml:"trusted_proxies"`
-	Name           string   `yaml:"name"`
-	Key            string   `yaml:"key"`
-	Cors           Cors     `yaml:"cors"`
-	Database       Database `yaml:"database"`
-	Redis          Redis    `yaml:"redis"`
-	Pulsar         Pulsar   `yaml:"pulsar"`
-
-	Passport passport.Option          `yaml:"passport"`
-	Engines  map[string]engine.Option `yaml:"engines"`
-	QCloud   QCloud                   `yaml:"qcloud"`
+	Address        string                   `yaml:"address"`
+	TrustedProxies []string                 `yaml:"trusted_proxies"`
+	Namespace      string                   `yaml:"namespace"`
+	Key            string                   `yaml:"key"`
+	Cors           Cors                     `yaml:"cors"`
+	Database       Database                 `yaml:"database"`
+	Redis          Redis                    `yaml:"redis"`
+	Nats           Nats                     `yaml:"nats"`
+	Passport       passport.Option          `yaml:"passport"`
+	Engines        map[string]engine.Option `yaml:"engines"`
+	QCloud         QCloud                   `yaml:"qcloud"`
 }
 
 type Cors struct {
@@ -57,10 +60,9 @@ type Redis struct {
 	Uri string `yaml:"uri"`
 }
 
-type Pulsar struct {
-	Url    string            `yaml:"url"`
-	Token  string            `yaml:"token"`
-	Topics map[string]string `yaml:"topics"`
+type Nats struct {
+	Hosts []string `yaml:"hosts"`
+	Nkey  string   `yaml:"nkey"`
 }
 
 type QCloud struct {
@@ -76,5 +78,13 @@ type QCloudCos struct {
 }
 
 func (x *Values) KeyName(v ...string) string {
-	return fmt.Sprintf(`%s:%s`, x.Name, strings.Join(v, ":"))
+	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
+}
+
+func (x *Values) EventName(v string) string {
+	return fmt.Sprintf(`%s.events.%s`, x.Namespace, v)
+}
+
+type Subscriptions struct {
+	*sync.Map
 }
