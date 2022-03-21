@@ -70,7 +70,7 @@ kind: Deployment
 metadata:
   labels:
     app: api
-  name: api-deploy
+  name: api
 spec:
   replicas: 2
   selector:
@@ -106,7 +106,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-svc
+  name: api
 spec:
   ports:
     - port: 80
@@ -120,11 +120,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api
-#   annotations:
-#     traefik.ingress.kubernetes.io/router.tls: "true"
-#     traefik.ingress.kubernetes.io/router.tls.certresolver: ****
-#     traefik.ingress.kubernetes.io/router.tls.domains.0.main: ****.com
-#     traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.****.com"
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: "****"
+    traefik.ingress.kubernetes.io/router.tls.domains.0.main: "****.com"
+    traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.****.com"
 spec:
   rules:
     - host: api.****.com
@@ -134,7 +134,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-svc
+                name: api
                 port:
                   number: 80
 ```
@@ -152,8 +152,13 @@ spec:
           name: api
 ```
 
-例如：在 Github Actions
-中 `patch deployment api-deploy --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"`，国内可使用**Coding持续部署**或**云效流水线**等。
+例如：在 Github Actions 中
+
+```shell
+patch deployment api --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"
+```
+
+国内可使用 **Coding持续部署** 或 **云效流水线** 等
 
 ## License
 
