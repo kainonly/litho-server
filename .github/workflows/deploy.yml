@@ -24,7 +24,7 @@ jobs:
       - name: 安装 Golang
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: ~1.17
 
       - name: 构建应用
         run: go build -tags=jsoniter -o dist/main main.go wire_gen.go
