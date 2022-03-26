@@ -47,13 +47,13 @@ data:
     passport:
       aud: [ 'console' ]
       exp: 720
-    qcloud:
-      secret_id: <secret_id>
-      secret_key: <secret_key>
-      cos:
-        bucket: examplebucket-****
-        region: ap-guangzhou
-        expired: 300
+    ## qcloud:
+    ##   secret_id: <secret_id>
+    ##   secret_key: <secret_key>
+    ##   cos:
+    ##     bucket: examplebucket-****
+    ##     region: ap-guangzhou
+    ##     expired: 300
     engines:
       pages:
         event: true
