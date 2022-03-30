@@ -72,7 +72,7 @@ metadata:
     app: api
   name: api
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: api
@@ -109,9 +109,8 @@ metadata:
   name: api
 spec:
   ports:
-    - port: 80
+    - port: 9000
       protocol: TCP
-      targetPort: 9000
   selector:
     app: api
 
@@ -121,10 +120,7 @@ kind: Ingress
 metadata:
   name: api
   annotations:
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.certresolver: "****"
-    traefik.ingress.kubernetes.io/router.tls.domains.0.main: "****.com"
-    traefik.ingress.kubernetes.io/router.tls.domains.0.sans: "*.****.com"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
   rules:
     - host: api.****.com
@@ -136,7 +132,7 @@ spec:
               service:
                 name: api
                 port:
-                  number: 80
+                  number: 9000
 ```
 
 ## 滚动更新
