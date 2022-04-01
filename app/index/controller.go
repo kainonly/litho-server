@@ -23,7 +23,6 @@ type Controller struct {
 func (x *Controller) Index(c *gin.Context) interface{} {
 	return gin.H{
 		"name": x.Service.AppName(),
-		"ip":   c.GetHeader("X-Forwarded-For"),
 		"time": time.Now(),
 	}
 }
