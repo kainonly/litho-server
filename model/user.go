@@ -15,16 +15,10 @@ type User struct {
 	Password string `bson:"password" json:"password,omitempty"`
 
 	// 所属部门
-	Department primitive.ObjectID `bson:"department" json:"-"`
+	Department []primitive.ObjectID `bson:"department" json:"-"`
 
 	// 权限组
 	Roles []primitive.ObjectID `bson:"roles" json:"roles,omitempty"`
-
-	// 页面限制，缩小可访问的页面
-	Pages []primitive.ObjectID `bson:"pages" json:"pages,omitempty"`
-
-	// 只读限制
-	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly,omitempty"`
 
 	// 称呼
 	Name string `bson:"name" json:"name"`
@@ -73,8 +67,6 @@ func NewUser(username string, password string) *User {
 		Username:   username,
 		Password:   password,
 		Roles:      []primitive.ObjectID{},
-		Pages:      []primitive.ObjectID{},
-		Readonly:   []primitive.ObjectID{},
 		Labels:     []string{},
 		Status:     Bool(true),
 		CreateTime: time.Now(),
@@ -87,7 +79,7 @@ func (x *User) SetEmail(v string) *User {
 	return x
 }
 
-func (x *User) SetDepartment(v primitive.ObjectID) *User {
+func (x *User) SetDepartment(v []primitive.ObjectID) *User {
 	x.Department = v
 	return x
 }
