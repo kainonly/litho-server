@@ -72,7 +72,7 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 		return
 	}
 	user := model.NewUser("kain", pwd).
-		SetDepartment(departments.InsertedID.(primitive.ObjectID)).
+		SetDepartment([]primitive.ObjectID{departments.InsertedID.(primitive.ObjectID)}).
 		SetRoles([]primitive.ObjectID{roles.InsertedID.(primitive.ObjectID)}).
 		SetEmail(value.Email).
 		SetLabel("默认")
