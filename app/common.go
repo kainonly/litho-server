@@ -2,6 +2,7 @@ package app
 
 import (
 	"api/app/center"
+	"api/app/departments"
 	"api/app/index"
 	"api/app/pages"
 	"api/app/pictures"
@@ -23,6 +24,7 @@ var Provides = wire.NewSet(
 	center.Provides,
 	pages.Provides,
 	roles.Provides,
+	departments.Provides,
 	users.Provides,
 	pictures.Provides,
 	videos.Provides,
@@ -38,6 +40,7 @@ func New(
 	center *center.Controller,
 	pages *pages.Controller,
 	roles *roles.Controller,
+	departments *departments.Controller,
 	users *users.Controller,
 	pictures *pictures.Controller,
 	videos *videos.Controller,
@@ -85,6 +88,10 @@ func New(
 		{
 			_roles.GET("/has-name", route.Use(roles.HasName))
 			_roles.GET("/labels", route.Use(roles.Labels))
+		}
+		_departments := api.Group("departments")
+		{
+			_departments.GET("/sort", route.Use(departments.Sort))
 		}
 		_users := api.Group("users")
 		{

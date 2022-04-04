@@ -17,8 +17,8 @@ type Department struct {
 	// 描述
 	Description string `bson:"description" json:"description"`
 
-	// 标记
-	Labels []string `bson:"labels" json:"labels"`
+	// 排序
+	Sort int64 `bson:"sort" json:"sort"`
 
 	// 创建时间
 	CreateTime time.Time `bson:"create_time" json:"-"`
@@ -30,7 +30,7 @@ type Department struct {
 func NewDepartment(name string) *Department {
 	return &Department{
 		Name:       name,
-		Labels:     []string{},
+		Sort:       0,
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
@@ -38,10 +38,5 @@ func NewDepartment(name string) *Department {
 
 func (x *Department) SetDescription(v string) *Department {
 	x.Description = v
-	return x
-}
-
-func (x *Department) SetLabel(v string) *Department {
-	x.Labels = append(x.Labels, v)
 	return x
 }
