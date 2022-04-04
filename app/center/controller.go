@@ -3,7 +3,6 @@ package center
 import (
 	"api/app/users"
 	"api/common"
-	"api/model"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -40,14 +39,14 @@ func (x *Controller) GetUserInfo(c *gin.Context) interface{} {
 }
 
 type SetUserInfoDto struct {
-	Name         string        `json:"name"`
-	Avatar       string        `json:"avatar"`
-	Region       string        `json:"region"`
-	City         []string      `json:"city"`
-	Address      string        `json:"address"`
-	Introduction string        `json:"introduction"`
-	Phone        []model.Phone `json:"phone"`
-	Email        []string      `json:"email"`
+	Name         string `json:"name"`
+	Avatar       string `json:"avatar"`
+	Region       string `json:"region"`
+	City         string `json:"city"`
+	Address      string `json:"address"`
+	Introduction string `json:"introduction"`
+	Phone        string `json:"phone"`
+	Email        string `json:"email"`
 }
 
 // SetUserInfo 更新用户信息

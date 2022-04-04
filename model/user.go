@@ -30,7 +30,7 @@ type User struct {
 	Region string `bson:"region" json:"region"`
 
 	// 城市
-	City []string `bson:"city" json:"city"`
+	City string `bson:"city" json:"city"`
 
 	// 地址
 	Address string `bson:"address" json:"address"`
@@ -39,7 +39,7 @@ type User struct {
 	Introduction string `bson:"introduction" json:"introduction"`
 
 	// 联系电话
-	Phone Phone `bson:"phone" json:"phone"`
+	Phone string `bson:"phone" json:"phone"`
 
 	// 电子邮件
 	Email string `bson:"email" json:"email"`
@@ -55,11 +55,6 @@ type User struct {
 
 	// 更新时间
 	UpdateTime time.Time `bson:"update_time" json:"-"`
-}
-
-type Phone struct {
-	Area   string `bson:"area" json:"area"`
-	Number string `bson:"number" json:"number"`
 }
 
 func NewUser(username string, password string) *User {
