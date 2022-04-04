@@ -56,23 +56,12 @@ func (x *Service) Install(ctx context.Context, value InstallDto) (err error) {
 		return
 	}
 
-	var departments *mongo.InsertOneResult
-	if departments, err = x.Db.Collection("departments").
-		InsertOne(ctx,
-			model.NewDepartment("全部").
-				SetDescription("系统默认设置").
-				SetLabel("默认"),
-		); err != nil {
-		return
-	}
-
 	// 初始化管理用户
 	var pwd string
 	if pwd, err = password.Create(value.Password); err != nil {
 		return
 	}
 	user := model.NewUser("kain", pwd).
-		SetDepartment([]primitive.ObjectID{departments.InsertedID.(primitive.ObjectID)}).
 		SetRoles([]primitive.ObjectID{roles.InsertedID.(primitive.ObjectID)}).
 		SetEmail(value.Email).
 		SetLabel("默认")
