@@ -66,7 +66,7 @@ func New(
 	}
 	api := r.Group("/api", auth)
 	{
-		api.POST("/:model", route.Use(engine.Create))
+		api.POST("/:model", route.Use(engine.Actions))
 		api.GET("/:model", route.Use(engine.Find))
 		api.GET("/:model/:id", route.Use(engine.FindOneById))
 		api.PATCH("/:model", route.Use(engine.Update))
