@@ -9,7 +9,7 @@ type Department struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 
 	// 父节点
-	Parent interface{} `bson:"parent" json:"parent"`
+	Parent []primitive.ObjectID `bson:"parent" json:"parent"`
 
 	// 名称
 	Name string `bson:"name" json:"name"`

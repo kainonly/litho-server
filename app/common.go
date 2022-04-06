@@ -70,14 +70,14 @@ func New(
 		api.GET("/:model", route.Use(engine.Find))
 		api.GET("/:model/:id", route.Use(engine.FindOneById))
 		api.PATCH("/:model", route.Use(engine.Update))
-		api.PATCH("/:model/:id", route.Use(engine.UpdateOneById))
-		api.PUT("/:model/:id", route.Use(engine.ReplaceOneById))
-		api.DELETE("/:model/:id", route.Use(engine.DeleteOneById))
+		api.PATCH("/:model/:id", route.Use(engine.UpdateOne))
+		api.PUT("/:model/:id", route.Use(engine.ReplaceOne))
+		api.DELETE("/:model/:id", route.Use(engine.DeleteOne))
 		_pages := api.Group("pages")
 		{
 			_pages.GET("/:id", route.Use(engine.FindOneById, route.SetModel("pages")))
-			_pages.PUT("/:id", route.Use(engine.ReplaceOneById, route.SetModel("pages")))
-			_pages.DELETE("/:id", route.Use(engine.DeleteOneById, route.SetModel("pages")))
+			_pages.PUT("/:id", route.Use(engine.ReplaceOne, route.SetModel("pages")))
+			_pages.DELETE("/:id", route.Use(engine.DeleteOne, route.SetModel("pages")))
 			_pages.GET("/has-schema-key", route.Use(pages.HasSchemaKey))
 			_pages.PATCH("/sort", route.Use(pages.Sort))
 			_pages.GET("/:id/indexes", route.Use(pages.Indexes))
@@ -91,7 +91,7 @@ func New(
 		}
 		_departments := api.Group("departments")
 		{
-			_departments.GET("/sort", route.Use(departments.Sort))
+			_departments.PATCH("/sort", route.Use(departments.Sort))
 		}
 		_users := api.Group("users")
 		{
