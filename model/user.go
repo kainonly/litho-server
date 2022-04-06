@@ -15,7 +15,7 @@ type User struct {
 	Password string `bson:"password" json:"password,omitempty"`
 
 	// 所属部门
-	Department []primitive.ObjectID `bson:"department" json:"-"`
+	Departments []primitive.ObjectID `bson:"departments" json:"-"`
 
 	// 权限组
 	Roles []primitive.ObjectID `bson:"roles" json:"roles,omitempty"`
@@ -71,11 +71,6 @@ func NewUser(username string, password string) *User {
 
 func (x *User) SetEmail(v string) *User {
 	x.Email = v
-	return x
-}
-
-func (x *User) SetDepartment(v []primitive.ObjectID) *User {
-	x.Department = v
 	return x
 }
 

@@ -9,6 +9,7 @@ package main
 import (
 	"api/app"
 	"api/app/center"
+	"api/app/departments"
 	"api/app/index"
 	"api/app/pages"
 	"api/app/pictures"
@@ -105,6 +106,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	rolesController := &roles.Controller{
 		Service: rolesService,
 	}
+	departmentsService := &departments.Service{
+		Inject: inject,
+	}
+	departmentsController := &departments.Controller{
+		Service: departmentsService,
+	}
 	usersController := &users.Controller{
 		Service: usersService,
 	}
@@ -120,6 +127,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	videosController := &videos.Controller{
 		Service: videosService,
 	}
-	ginEngine := app.New(value, passport, controller, engineController, centerController, pagesController, rolesController, usersController, picturesController, videosController)
+	ginEngine := app.New(value, passport, controller, engineController, centerController, pagesController, rolesController, departmentsController, usersController, picturesController, videosController)
 	return ginEngine, nil
 }
