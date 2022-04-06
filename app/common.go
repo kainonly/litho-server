@@ -66,13 +66,7 @@ func New(
 	}
 	api := r.Group("/api", auth)
 	{
-		api.POST("/:model", route.Use(engine.Actions))
-		api.GET("/:model", route.Use(engine.Find))
-		api.GET("/:model/:id", route.Use(engine.FindOneById))
-		api.PATCH("/:model", route.Use(engine.Update))
-		api.PATCH("/:model/:id", route.Use(engine.UpdateOne))
-		api.PUT("/:model/:id", route.Use(engine.ReplaceOne))
-		api.DELETE("/:model/:id", route.Use(engine.DeleteOne))
+		route.Engine(api, engine)
 		_pages := api.Group("pages")
 		{
 			_pages.GET("/:id", route.Use(engine.FindOneById, route.SetModel("pages")))
