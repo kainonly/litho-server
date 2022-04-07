@@ -66,7 +66,7 @@ func New(
 	}
 	api := r.Group("/api", auth)
 	{
-		route.Engine(api, engine)
+		engine.DefaultRouters(api)
 		_pages := api.Group("pages")
 		{
 			_pages.GET("/:id", route.Use(engine.Get, route.SetModel("pages")))
