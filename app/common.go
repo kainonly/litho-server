@@ -69,9 +69,9 @@ func New(
 		route.Engine(api, engine)
 		_pages := api.Group("pages")
 		{
-			_pages.GET("/:id", route.Use(engine.FindOneById, route.SetModel("pages")))
-			_pages.PUT("/:id", route.Use(engine.ReplaceOne, route.SetModel("pages")))
-			_pages.DELETE("/:id", route.Use(engine.DeleteOne, route.SetModel("pages")))
+			_pages.GET("/:id", route.Use(engine.Get, route.SetModel("pages")))
+			_pages.PUT("/:id", route.Use(engine.Put, route.SetModel("pages")))
+			_pages.DELETE("/:id", route.Use(engine.Delete, route.SetModel("pages")))
 			_pages.GET("/has-schema-key", route.Use(pages.HasSchemaKey))
 			_pages.PATCH("/sort", route.Use(pages.Sort))
 			_pages.GET("/:id/indexes", route.Use(pages.Indexes))
