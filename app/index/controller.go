@@ -5,7 +5,6 @@ import (
 	"api/app/users"
 	"api/common"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
@@ -57,12 +56,9 @@ type LoginDto struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (x *Controller) Login(c *gin.Context) interface{} {
+func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	var body LoginDto
 	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	if err := validator.New().Struct(body); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
@@ -92,7 +88,7 @@ func (x *Controller) Login(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Controller) Verify(c *gin.Context) interface{} {
+func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 	ts, err := c.Cookie("access_token")
 	if err != nil {
 		c.Set("status_code", 401)
@@ -107,7 +103,7 @@ func (x *Controller) Verify(c *gin.Context) interface{} {
 	return nil
 }
 
-func (x *Controller) Code(c *gin.Context) interface{} {
+func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -127,7 +123,7 @@ type RefreshTokenDto struct {
 	Code string `json:"code" binding:"required"`
 }
 
-func (x *Controller) RefreshToken(c *gin.Context) interface{} {
+func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	var body RefreshTokenDto
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
@@ -166,7 +162,7 @@ func (x *Controller) RefreshToken(c *gin.Context) interface{} {
 	return nil
 }
 
-func (x *Controller) Logout(c *gin.Context) interface{} {
+func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	c.SetCookie("access_token", "", 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
 	return nil

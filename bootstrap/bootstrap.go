@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"api/common"
 	"context"
-	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
@@ -39,12 +38,12 @@ var Provides = wire.NewSet(
 )
 
 // SetValues 初始化配置
-func SetValues() (values *common.Values, err error) {
-	if _, err = os.Stat("./config/config.yml"); os.IsNotExist(err) {
-		return nil, errors.New("静态配置不存在，请检查路径 [./config/config.yml]")
+func SetValues(path string) (values *common.Values, err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
 	}
 	var config []byte
-	if config, err = ioutil.ReadFile("./config/config.yml"); err != nil {
+	if config, err = ioutil.ReadFile(path); err != nil {
 		return
 	}
 	if err = yaml.Unmarshal(config, &values); err != nil {

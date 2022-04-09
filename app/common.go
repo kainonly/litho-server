@@ -51,11 +51,13 @@ func New(
 		r.POST("/install", route.Use(index.Install))
 	}
 	auth := authGuard(passport)
-	r.POST("/auth", route.Use(index.Login))
-	r.HEAD("/auth", route.Use(index.Verify))
-	r.GET("/auth", auth, route.Use(index.Code))
-	r.PUT("/auth", auth, route.Use(index.RefreshToken))
-	r.DELETE("/auth", auth, route.Use(index.Logout))
+
+	r.POST("/auth", route.Use(index.AuthLogin))
+	r.HEAD("/auth", route.Use(index.AuthVerify))
+	r.GET("/auth", auth, route.Use(index.AuthCode))
+	r.PUT("/auth", auth, route.Use(index.AuthRefresh))
+	r.DELETE("/auth", auth, route.Use(index.AuthLogout))
+
 	r.GET("/uploader", auth, route.Use(index.Uploader))
 	r.GET("/navs", auth, route.Use(index.Navs))
 	r.GET("/pages/:id", auth, route.Use(index.Dynamic))
