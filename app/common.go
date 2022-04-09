@@ -15,7 +15,6 @@ import (
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/route"
-	"os"
 )
 
 var Provides = wire.NewSet(
@@ -47,9 +46,6 @@ func New(
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
 	r.GET("/", route.Use(index.Index))
-	if os.Getenv("GIN_MODE") != "release" {
-		r.POST("/install", route.Use(index.Install))
-	}
 	auth := authGuard(passport)
 
 	r.POST("/auth", route.Use(index.AuthLogin))
