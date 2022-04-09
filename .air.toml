@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
   bin = "tmp\\main.exe server"
-  cmd = "wire && go build -o ./tmp/main.exe ."
+  cmd = "wire && go build -tags=jsoniter -o ./tmp/main.exe ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = ["main.go","wire.go","wire_gen.go"]

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"api/bootstrap"
+	"api/common"
 	"fmt"
 	"github.com/gin-contrib/pprof"
 	"github.com/spf13/cobra"
@@ -31,7 +31,7 @@ func main() {
 		Use:   "server",
 		Short: "Start HTTP service",
 		Run: func(cmd *cobra.Command, args []string) {
-			values, err := bootstrap.SetValues(config)
+			values, err := common.SetValues(config)
 			if err != nil {
 				panic(err)
 			}

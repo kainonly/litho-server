@@ -16,7 +16,6 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/nats-io/nats.go v1.13.1-0.20220308171302-2f2f6968e98d
 	github.com/nats-io/nkeys v0.3.0
-	github.com/qri-io/jsonschema v0.2.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cobra v1.4.0
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.33
@@ -24,5 +23,5 @@ require (
 	github.com/weplanx/go v0.0.0-20211109121132-7a8d66264652
 	go.mongodb.org/mongo-driver v1.8.1
 	go.uber.org/zap v1.21.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v2 v2.4.0
 )
