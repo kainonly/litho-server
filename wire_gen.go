@@ -96,6 +96,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	centerController := &center.Controller{
 		Service: centerService,
 		Users:   usersService,
+		Nats:    conn,
 	}
 	pagesController := &pages.Controller{
 		Service: pagesService,
