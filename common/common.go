@@ -29,7 +29,6 @@ type Inject struct {
 }
 
 type Values struct {
-	Address        string                   `yaml:"address"`
 	TrustedProxies []string                 `yaml:"trusted_proxies"`
 	Namespace      string                   `yaml:"namespace"`
 	Key            string                   `yaml:"key"`
