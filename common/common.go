@@ -2,30 +2,27 @@ package common
 
 import (
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"github.com/nats-io/nats.go"
-	"github.com/tencentyun/cos-go-sdk-v5"
-	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
-	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 )
 
-const TokenClaimsKey = "token-claims"
-
-type Inject struct {
-	Values      *Values
-	MongoClient *mongo.Client
-	Db          *mongo.Database
-	Redis       *redis.Client
-	Nats        *nats.Conn
-	Js          nats.JetStreamContext
-	Passport    *passport.Passport
-	Cipher      *encryption.Cipher
-	Idx         *encryption.IDx
-	Cos         *cos.Client
+func SetValues(path string) (values *Values, err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
+	}
+	var config []byte
+	if config, err = ioutil.ReadFile(path); err != nil {
+		return
+	}
+	if err = yaml.Unmarshal(config, &values); err != nil {
+		return
+	}
+	return
 }
 
 type Values struct {
@@ -39,6 +36,14 @@ type Values struct {
 	Passport       passport.Option          `yaml:"passport"`
 	Engines        map[string]engine.Option `yaml:"engines"`
 	QCloud         QCloud                   `yaml:"qcloud"`
+}
+
+func (x *Values) KeyName(v ...string) string {
+	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
+}
+
+func (x *Values) EventName(v string) string {
+	return fmt.Sprintf(`%s.events.%s`, x.Namespace, v)
 }
 
 type Cors struct {
@@ -74,14 +79,6 @@ type QCloudCos struct {
 	Bucket  string `yaml:"bucket"`
 	Region  string `yaml:"region"`
 	Expired int64  `yaml:"expired"`
-}
-
-func (x *Values) KeyName(v ...string) string {
-	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
-}
-
-func (x *Values) EventName(v string) string {
-	return fmt.Sprintf(`%s.events.%s`, x.Namespace, v)
 }
 
 type Subscriptions struct {
