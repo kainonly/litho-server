@@ -30,7 +30,7 @@ var Provides = wire.NewSet(
 	UseEngine,
 	UsePassport,
 	UseCipher,
-	UseIDx,
+	UseHID,
 	UseCos,
 )
 
@@ -93,7 +93,7 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
-// UseEngine 初始化 Weplanx Engine
+// UseEngine 初始化 Engine
 func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	return engine.New(
 		engine.SetApp(values.Namespace),
@@ -102,7 +102,7 @@ func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	)
 }
 
-// UseCipher 使用数据加密
+// UseCipher 数据加密
 func UseCipher(values *common.Values) (cipher *encryption.Cipher, err error) {
 	if cipher, err = encryption.NewCipher(values.Key); err != nil {
 		return
@@ -110,8 +110,8 @@ func UseCipher(values *common.Values) (cipher *encryption.Cipher, err error) {
 	return
 }
 
-// UseIDx 使用 ID 加密
-func UseIDx(values *common.Values) (idx *encryption.IDx, err error) {
+// UseHID ID加密
+func UseHID(values *common.Values) (idx *encryption.HID, err error) {
 	if idx, err = encryption.NewIDx(values.Key, hashids.DefaultAlphabet); err != nil {
 		return
 	}

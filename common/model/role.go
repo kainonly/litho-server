@@ -1,6 +1,7 @@
 package model
 
 import (
+	"api/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -39,7 +40,7 @@ func NewRole(name string) *Role {
 		Pages:      []primitive.ObjectID{},
 		Readonly:   []primitive.ObjectID{},
 		Labels:     []string{},
-		Status:     Bool(true),
+		Status:     common.BoolToP(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}

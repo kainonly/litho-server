@@ -8,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/password"
 	"net/http"
 	"time"
 )
@@ -26,31 +25,6 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	}
 }
 
-//type InstallDto struct {
-//	Username string `json:"username" binding:"required"`
-//	Password string `json:"password" binding:"required"`
-//	Email    string `json:"email" binding:"required"`
-//	Template string `json:"template" binding:"omitempty,url"`
-//}
-//
-//func (x *Controller) Install(c *gin.Context) interface{} {
-//	var body InstallDto
-//	if err := c.ShouldBindJSON(&body); err != nil {
-//		return err
-//	}
-//	ctx := c.Request.Context()
-//	if err := x.Service.Install(ctx, body); err != nil {
-//		return err
-//	}
-//	// 载入自定义 Pages
-//	if body.Template != "" {
-//		if err := x.Service.UseTemplate(ctx, body.Template); err != nil {
-//			return err
-//		}
-//	}
-//	return nil
-//}
-
 type LoginDto struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
@@ -67,7 +41,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
-	if err := password.Verify(body.Password, data.Password); err != nil {
+	if err := helper.PasswordVerify(body.Password, data.Password); err != nil {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"api/bootstrap"
 	"api/common"
-	"fmt"
+	"context"
+	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
 	"github.com/spf13/cobra"
 	"os"
+	"time"
 )
 
 func main() {
@@ -33,11 +36,13 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			values, err := common.SetValues(config)
 			if err != nil {
-				panic(err)
+				color.Red("%s", err.Error())
+				return
 			}
 			app, err := App(values)
 			if err != nil {
-				panic(err)
+				color.Red("%s", err.Error())
+				return
 			}
 			if openpprof {
 				pprof.Register(app)
@@ -54,36 +59,53 @@ func main() {
 		"use the pprof tool",
 	)
 	rootCmd.AddCommand(serverCmd)
-	var (
-		username string
-		password string
-		schema   string
-	)
+	var install bootstrap.Install
 	installCmd := &cobra.Command{
 		Use:   "install",
 		Short: "Initialize service data, also supports importing predefined Schema",
-		Args: func(cmd *cobra.Command, args []string) error {
-			fmt.Println(args)
-			return nil
-		},
 		Run: func(cmd *cobra.Command, args []string) {
+			values, err := common.SetValues(config)
+			if err != nil {
+				color.Red("%s", err.Error())
+				return
+			}
+			client, err := bootstrap.UseMongoDB(values)
+			if err != nil {
+				color.Red("%s", err.Error())
+				return
+			}
+			install.Db = bootstrap.UseDatabase(client, values)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err = install.Basic(ctx); err != nil {
+				color.Red("%s", err.Error())
+				return
+			}
+			if install.Template == "" {
+				return
+			}
+			if err = install.UseTemplate(ctx); err != nil {
+				color.Red("%s", err.Error())
+				return
+			}
 		},
 	}
-	installCmd.Flags().StringVarP(&username,
+	installCmd.Flags().StringVarP(&install.Username,
 		"username", "u", "weplanx",
 		"set administrator username",
 	)
-	installCmd.Flags().StringVarP(&password,
+	installCmd.Flags().StringVarP(&install.Password,
 		"password", "p", "",
 		"set administrator password",
 	)
 	installCmd.MarkFlagRequired("password")
-	installCmd.Flags().StringVarP(&schema,
-		"schema", "s", "",
-		"importing predefined Schema",
+	installCmd.Flags().StringVarP(&install.Template,
+		"template", "t", "",
+		"importing predefined Template",
 	)
 	rootCmd.AddCommand(installCmd)
 	if err := rootCmd.Execute(); err != nil {
+		color.Red("%s", err.Error())
 		os.Exit(1)
 	}
 }

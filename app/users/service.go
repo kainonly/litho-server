@@ -2,7 +2,7 @@ package users
 
 import (
 	"api/common"
-	"api/model"
+	"api/common/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
