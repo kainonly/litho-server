@@ -47,7 +47,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	iDx, err := bootstrap.UseIDx(value)
+	hid, err := bootstrap.UseHID(value)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Js:          jetStreamContext,
 		Passport:    passport,
 		Cipher:      cipher,
-		Idx:         iDx,
+		HID:         hid,
 		Cos:         cosClient,
 	}
 	service := &index.Service{

@@ -2,7 +2,7 @@ package pages
 
 import (
 	"api/common"
-	"api/model"
+	"api/common/model"
 	"context"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"

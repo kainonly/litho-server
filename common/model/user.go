@@ -1,6 +1,7 @@
 package model
 
 import (
+	"api/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -63,7 +64,7 @@ func NewUser(username string, password string) *User {
 		Password:   password,
 		Roles:      []primitive.ObjectID{},
 		Labels:     []string{},
-		Status:     Bool(true),
+		Status:     common.BoolToP(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}

@@ -19,7 +19,7 @@ type Inject struct {
 	Js          nats.JetStreamContext
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
-	Idx         *encryption.IDx
+	HID         *encryption.HID
 	Cos         *cos.Client
 }
 

@@ -9,15 +9,20 @@ import (
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
 	"go.uber.org/zap"
+	"os"
 	"time"
 )
 
 func globalMiddleware(r *gin.Engine, values *common.Values) *gin.Engine {
+	if os.Getenv("GIN_MODE") == "release" {
+		logger, _ := zap.NewProduction()
+		r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+		r.Use(requestid.New())
+	} else {
+		r.Use(gin.Logger())
+	}
 	r.SetTrustedProxies(values.TrustedProxies)
-	logger, _ := zap.NewProduction()
-	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(gin.CustomRecovery(catchError))
-	r.Use(requestid.New())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     values.Cors.AllowOrigins,
 		AllowMethods:     values.Cors.AllowMethods,

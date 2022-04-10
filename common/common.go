@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -83,4 +84,15 @@ type QCloudCos struct {
 
 type Subscriptions struct {
 	*sync.Map
+}
+
+func BoolToP(v bool) *bool {
+	return &v
+}
+
+func ObjectIDToP(v interface{}) *primitive.ObjectID {
+	if id, ok := v.(primitive.ObjectID); ok {
+		return &id
+	}
+	return nil
 }
