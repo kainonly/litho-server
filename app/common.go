@@ -85,11 +85,6 @@ func New(
 		{
 			_departments.PATCH("/sort", route.Use(departments.Sort))
 		}
-		_users := api.Group("users")
-		{
-			_users.GET("/has-username", route.Use(users.HasUsername))
-			_users.GET("/labels", route.Use(users.Labels))
-		}
 		_pictures := api.Group("pictures")
 		{
 			_pictures.GET("/image-info", route.Use(pictures.ImageInfo))
