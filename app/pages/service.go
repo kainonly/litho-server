@@ -4,7 +4,6 @@ import (
 	"api/common"
 	"api/common/model"
 	"context"
-	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,26 +51,6 @@ func (x *Service) FindOneById(ctx context.Context, id string) (result model.Page
 		return
 	}
 	return
-}
-
-func (x *Service) HasSchemaKey(ctx context.Context, key string) (code string, err error) {
-	var count int64
-	if count, err = x.Db.Collection("pages").CountDocuments(ctx, bson.M{
-		"schema.key": key,
-	}); err != nil {
-		return
-	}
-	if count != 0 {
-		return "duplicated", nil
-	}
-	var colls []string
-	if colls, err = x.Db.ListCollectionNames(ctx, bson.M{}); err != nil {
-		return
-	}
-	if funk.Contains(colls, key) {
-		return "conflict", nil
-	}
-	return "", err
 }
 
 func (x *Service) Sort(ctx context.Context, sort []primitive.ObjectID) (*mongo.BulkWriteResult, error) {

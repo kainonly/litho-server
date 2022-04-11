@@ -10,23 +10,6 @@ type Controller struct {
 	Service *Service
 }
 
-func (x *Controller) HasSchemaKey(c *gin.Context) interface{} {
-	var query struct {
-		Key string `form:"key" binding:"required,key"`
-	}
-	if err := c.ShouldBindQuery(&query); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	code, err := x.Service.HasSchemaKey(ctx, query.Key)
-	if err != nil {
-		return err
-	}
-	return gin.H{
-		"status": code,
-	}
-}
-
 func (x *Controller) Sort(c *gin.Context) interface{} {
 	var body struct {
 		Sort []primitive.ObjectID `json:"sort" binding:"required"`
