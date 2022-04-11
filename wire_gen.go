@@ -13,9 +13,7 @@ import (
 	"api/app/index"
 	"api/app/pages"
 	"api/app/pictures"
-	"api/app/roles"
 	"api/app/users"
-	"api/app/videos"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -100,20 +98,11 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	rolesService := &roles.Service{
-		Inject: inject,
-	}
-	rolesController := &roles.Controller{
-		Service: rolesService,
-	}
 	departmentsService := &departments.Service{
 		Inject: inject,
 	}
 	departmentsController := &departments.Controller{
 		Service: departmentsService,
-	}
-	usersController := &users.Controller{
-		Service: usersService,
 	}
 	picturesService := &pictures.Service{
 		Inject: inject,
@@ -121,12 +110,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	picturesController := &pictures.Controller{
 		Service: picturesService,
 	}
-	videosService := &videos.Service{
-		Inject: inject,
-	}
-	videosController := &videos.Controller{
-		Service: videosService,
-	}
-	ginEngine := app.New(value, passport, controller, engineController, centerController, pagesController, rolesController, departmentsController, usersController, picturesController, videosController)
+	ginEngine := app.New(value, passport, controller, engineController, centerController, pagesController, departmentsController, picturesController)
 	return ginEngine, nil
 }
