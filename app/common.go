@@ -38,9 +38,7 @@ func New(
 	engine *engine.Controller,
 	center *center.Controller,
 	pages *pages.Controller,
-	roles *roles.Controller,
 	departments *departments.Controller,
-	users *users.Controller,
 	pictures *pictures.Controller,
 	videos *videos.Controller,
 ) *gin.Engine {
@@ -75,11 +73,6 @@ func New(
 			_pages.GET("/:id/indexes", route.Use(pages.Indexes))
 			_pages.PUT("/:id/indexes/:name", route.Use(pages.CreateIndex))
 			_pages.DELETE("/:id/indexes/:name", route.Use(pages.DeleteIndex))
-		}
-		_roles := api.Group("roles")
-		{
-			_roles.GET("/has-name", route.Use(roles.HasName))
-			_roles.GET("/labels", route.Use(roles.Labels))
 		}
 		_departments := api.Group("departments")
 		{
