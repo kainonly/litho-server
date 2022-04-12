@@ -1,4 +1,4 @@
-package index
+package system
 
 import (
 	"api/common"
@@ -10,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
@@ -48,6 +51,17 @@ func (x *Service) VerifyCode(ctx context.Context, name string, code string) (res
 // RemoveVerifyCode 移除验证码
 func (x *Service) RemoveVerifyCode(ctx context.Context, name string) error {
 	return x.Redis.Del(ctx, x.CodeKey(name)).Err()
+}
+
+func (x *Service) Sort(ctx context.Context, model string, sort []primitive.ObjectID) (*mongo.BulkWriteResult, error) {
+	var models []mongo.WriteModel
+	for i, oid := range sort {
+		models = append(models, mongo.NewUpdateOneModel().
+			SetFilter(bson.M{"_id": oid}).
+			SetUpdate(bson.M{"$set": bson.M{"sort": i}}),
+		)
+	}
+	return x.Db.Collection(model).BulkWrite(ctx, models)
 }
 
 // Uploader 上传预签名

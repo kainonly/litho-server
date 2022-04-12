@@ -1,4 +1,4 @@
-package departments
+package system
 
 import (
 	"github.com/google/wire"
