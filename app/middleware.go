@@ -7,7 +7,6 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/passport"
 	"go.uber.org/zap"
 	"os"
 	"time"
@@ -39,27 +38,4 @@ func catchError(c *gin.Context, err interface{}) {
 	c.AbortWithStatusJSON(500, gin.H{
 		"message": err,
 	})
-}
-
-func authGuard(passport *passport.Passport) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ts, err := c.Cookie("access_token")
-		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{
-				"code":    "AUTH_EXPIRED",
-				"message": common.LoginExpired.Error(),
-			})
-			return
-		}
-		claims, err := passport.Verify(ts)
-		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{
-				"code":    "AUTH_EXPIRED",
-				"message": common.LoginExpired.Error(),
-			})
-			return
-		}
-		c.Set(common.TokenClaimsKey, claims)
-		c.Next()
-	}
 }

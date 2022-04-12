@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,78 @@ type Service struct {
 
 func (x *Service) AppName() string {
 	return x.Values.Namespace
+}
+
+// GetSessions 获取所有会话
+func (x *Service) GetSessions(ctx context.Context) (values []string, err error) {
+	var cursor uint64
+	for {
+		var keys []string
+		var next uint64
+		if keys, next, err = x.Redis.Scan(ctx,
+			cursor, x.Values.KeyName("session", "*"), 1000,
+		).Result(); err != nil {
+			return
+		}
+		uids := make([]string, len(keys))
+		for k, v := range keys {
+			uids[k] = strings.Replace(v, x.Values.KeyName("session", ""), "", -1)
+		}
+		values = append(values, uids...)
+		if next == 0 {
+			break
+		}
+		cursor = next
+	}
+	return
+}
+
+// VerifySession 验证会话一致性
+func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ bool, err error) {
+	var value string
+	if value, err = x.Redis.Get(ctx, x.Values.KeyName("session", uid)).Result(); err != nil {
+		return
+	}
+	return value == jti, nil
+}
+
+// GetExpiration 获取会话有效时间
+func (x *Service) GetExpiration(ctx context.Context) (time.Duration, error) {
+	// TODO: 获取自定义过期时间
+	return time.Minute * 30, nil
+}
+
+// SetSession 设置会话
+func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err error) {
+	var expiration time.Duration
+	if expiration, err = x.GetExpiration(ctx); err != nil {
+		return
+	}
+	if err = x.Redis.Set(ctx,
+		x.Values.KeyName("session", uid), jti, expiration,
+	).Err(); err != nil {
+		return
+	}
+	return
+}
+
+// RenewSession 续约会话
+func (x *Service) RenewSession(ctx context.Context, uid string) (err error) {
+	var expiration time.Duration
+	if expiration, err = x.GetExpiration(ctx); err != nil {
+		return
+	}
+	if err = x.Redis.Expire(ctx,
+		x.Values.KeyName("session", uid), expiration,
+	).Err(); err != nil {
+		return
+	}
+	return
+}
+
+// DeleteSession 删除会话
+func (x *Service) DeleteSession(ctx context.Context, uid string) (err error) {
+	return x.Redis.Del(ctx, x.Values.KeyName("session", uid)).Err()
 }
 
 type LoginLogDto struct {
@@ -46,7 +119,6 @@ func NewLoginLogV10(data model.User, jti string) *LoginLogDto {
 }
 
 func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto) (err error) {
-
 	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, doc); err != nil {
 		return
 	}

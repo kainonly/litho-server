@@ -34,6 +34,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
+	// 用户验证
 	data, err := x.Users.FindOneByUsernameOrEmail(ctx, body.User)
 	if err != nil {
 		c.Set("code", "AUTH_INCORRECT")
@@ -43,18 +44,25 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
+	// 创建 Token
 	jti := helper.Uuid()
 	var ts string
-	if ts, err = x.Service.Passport.Create(jti, map[string]interface{}{
+	if ts, err = x.Service.Passport.Create(jti, gin.H{
 		"uid": data.ID.Hex(),
 	}); err != nil {
 		return err
 	}
-	c.SetCookie("access_token", ts, 0, "", "", true, true)
-	c.SetSameSite(http.SameSiteStrictMode)
+	// 设置会话
+	if err := x.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+		return err
+	}
+	// 写入日志
 	if err := x.WriteLoginLog(ctx, NewLoginLogV10(data, jti)); err != nil {
 		return err
 	}
+	// 返回
+	c.SetCookie("access_token", ts, 0, "", "", true, true)
+	c.SetSameSite(http.SameSiteStrictMode)
 	return gin.H{
 		"username": data.Username,
 		"email":    data.Email,
@@ -68,7 +76,7 @@ func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 	if err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
-		return common.LoginExpired
+		return common.AuthExpired
 	}
 	if _, err = x.Service.Passport.Verify(ts); err != nil {
 		c.Set("status_code", 401)
@@ -83,7 +91,7 @@ func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	if !exists {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
-		return common.LoginExpired
+		return common.AuthExpired
 	}
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := funk.RandomString(8)
@@ -105,7 +113,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	if !exists {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
-		return common.LoginExpired
+		return common.AuthExpired
 	}
 	claims := value.(jwt.MapClaims)
 	jti := claims["jti"].(string)
@@ -117,7 +125,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	if !result {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
-		return common.LoginExpired
+		return common.AuthExpired
 	}
 	if err = x.Service.RemoveVerifyCode(ctx, jti); err != nil {
 		return err
