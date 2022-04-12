@@ -1,4 +1,4 @@
-package index
+package system
 
 import (
 	"api/app/pages"
@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"time"
 )
@@ -25,13 +26,11 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	}
 }
 
-type LoginDto struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 func (x *Controller) AuthLogin(c *gin.Context) interface{} {
-	var body LoginDto
+	var body struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
@@ -93,12 +92,10 @@ func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	return gin.H{"code": code}
 }
 
-type RefreshTokenDto struct {
-	Code string `json:"code" binding:"required"`
-}
-
 func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
-	var body RefreshTokenDto
+	var body struct {
+		Code string `json:"code" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
@@ -142,6 +139,27 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
+func (x *Controller) Sort(c *gin.Context) interface{} {
+	var uri struct {
+		Model string `uri:"model"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	var body struct {
+		Sort []primitive.ObjectID `json:"sort" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	result, err := x.Service.Sort(ctx, uri.Model, body.Sort)
+	if err != nil {
+		return err
+	}
+	return result
+}
+
 func (x *Controller) Uploader(c *gin.Context) interface{} {
 	data, err := x.Service.Uploader()
 	if err != nil {
@@ -159,17 +177,15 @@ func (x *Controller) Navs(c *gin.Context) interface{} {
 	return navs
 }
 
-type DynamicParams struct {
-	Id string `uri:"id" binding:"required,objectId"`
-}
-
 func (x *Controller) Dynamic(c *gin.Context) interface{} {
-	var params DynamicParams
-	if err := c.ShouldBindUri(&params); err != nil {
+	var uri struct {
+		Id string `uri:"id" binding:"required,objectId"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Pages.FindOneById(ctx, params.Id)
+	data, err := x.Pages.FindOneById(ctx, uri.Id)
 	if err != nil {
 		return err
 	}

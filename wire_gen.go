@@ -8,11 +8,9 @@ package main
 
 import (
 	"api/app"
-	"api/app/center"
-	"api/app/departments"
-	"api/app/index"
 	"api/app/pages"
 	"api/app/pictures"
+	"api/app/system"
 	"api/app/users"
 	"api/bootstrap"
 	"api/common"
@@ -65,7 +63,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		HID:         hid,
 		Cos:         cosClient,
 	}
-	service := &index.Service{
+	service := &system.Service{
 		Inject: inject,
 	}
 	usersService := &users.Service{
@@ -74,7 +72,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesService := &pages.Service{
 		Inject: inject,
 	}
-	controller := &index.Controller{
+	controller := &system.Controller{
 		Service: service,
 		Users:   usersService,
 		Pages:   pagesService,
@@ -88,21 +86,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Engine:  engineEngine,
 		Service: engineService,
 	}
-	centerService := &center.Service{
-		Inject: inject,
-	}
-	centerController := &center.Controller{
-		Service: centerService,
-		Users:   usersService,
-	}
 	pagesController := &pages.Controller{
 		Service: pagesService,
-	}
-	departmentsService := &departments.Service{
-		Inject: inject,
-	}
-	departmentsController := &departments.Controller{
-		Service: departmentsService,
 	}
 	picturesService := &pictures.Service{
 		Inject: inject,
@@ -110,6 +95,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	picturesController := &pictures.Controller{
 		Service: picturesService,
 	}
-	ginEngine := app.New(value, passport, controller, engineController, centerController, pagesController, departmentsController, picturesController)
+	ginEngine := app.New(value, passport, controller, engineController, pagesController, picturesController)
 	return ginEngine, nil
 }

@@ -53,18 +53,7 @@ func (x *Service) FindOneById(ctx context.Context, id string) (result model.Page
 	return
 }
 
-func (x *Service) Sort(ctx context.Context, sort []primitive.ObjectID) (*mongo.BulkWriteResult, error) {
-	var models []mongo.WriteModel
-	for i, oid := range sort {
-		models = append(models, mongo.NewUpdateOneModel().
-			SetFilter(bson.M{"_id": oid}).
-			SetUpdate(bson.M{"$set": bson.M{"sort": i}}),
-		)
-	}
-	return x.Db.Collection("pages").BulkWrite(ctx, models)
-}
-
-func (x *Service) FindIndexes(ctx context.Context, name string) (data []map[string]interface{}, err error) {
+func (x *Service) Indexes(ctx context.Context, name string) (data []map[string]interface{}, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection(name).Indexes().
 		List(ctx); err != nil {
