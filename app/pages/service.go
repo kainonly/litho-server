@@ -53,7 +53,7 @@ func (x *Service) FindOneById(ctx context.Context, id string) (result model.Page
 	return
 }
 
-func (x *Service) Indexes(ctx context.Context, name string) (data []map[string]interface{}, err error) {
+func (x *Service) GetIndexes(ctx context.Context, name string) (data []map[string]interface{}, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection(name).Indexes().
 		List(ctx); err != nil {
@@ -66,7 +66,7 @@ func (x *Service) Indexes(ctx context.Context, name string) (data []map[string]i
 	return
 }
 
-func (x *Service) CreateIndex(ctx context.Context, coll string, name string, keys bson.D, unique bool) (string, error) {
+func (x *Service) SetIndex(ctx context.Context, coll string, name string, keys bson.D, unique bool) (string, error) {
 	return x.Db.Collection(coll).
 		Indexes().
 		CreateOne(ctx, mongo.IndexModel{
@@ -79,11 +79,4 @@ func (x *Service) CreateIndex(ctx context.Context, coll string, name string, key
 
 func (x *Service) DeleteIndex(ctx context.Context, coll string, name string) (bson.Raw, error) {
 	return x.Db.Collection(coll).Indexes().DropOne(ctx, name)
-}
-
-func (x *Service) UpdateValidator(ctx context.Context, coll string, validator string) error {
-	return x.Db.RunCommand(ctx, bson.D{
-		{"collMod", coll},
-		{"validator", bson.M{"$jsonSchema": validator}},
-	}).Err()
 }

@@ -9,7 +9,7 @@ type Controller struct {
 	Service *Service
 }
 
-func (x *Controller) Indexes(c *gin.Context) interface{} {
+func (x *Controller) GetIndexes(c *gin.Context) interface{} {
 	var uri struct {
 		Id string `uri:"id" binding:"required,objectId"`
 	}
@@ -21,14 +21,14 @@ func (x *Controller) Indexes(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	indexes, err := x.Service.Indexes(ctx, data.Schema.Key)
+	indexes, err := x.Service.GetIndexes(ctx, data.Schema.Key)
 	if err != nil {
 		return err
 	}
 	return indexes
 }
 
-func (x *Controller) CreateIndex(c *gin.Context) interface{} {
+func (x *Controller) SetIndex(c *gin.Context) interface{} {
 	var uri struct {
 		Id    string `uri:"id" binding:"required,objectId"`
 		Index string `uri:"index" binding:"required,key"`
@@ -48,7 +48,7 @@ func (x *Controller) CreateIndex(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if _, err = x.Service.CreateIndex(ctx, page.Schema.Key, uri.Index, body.Keys, *body.Unique); err != nil {
+	if _, err = x.Service.SetIndex(ctx, page.Schema.Key, uri.Index, body.Keys, *body.Unique); err != nil {
 		return err
 	}
 	return nil
