@@ -53,8 +53,8 @@ func New(
 		api.PATCH("/:model/sort", auth, route.Use(system.Sort))
 		_pages := api.Group("pages")
 		{
-			_pages.GET("/_indexes/:id", route.Use(pages.Indexes))
-			_pages.PUT("/_indexes/:id/:index", route.Use(pages.CreateIndex))
+			_pages.GET("/_indexes/:id", route.Use(pages.GetIndexes))
+			_pages.PUT("/_indexes/:id/:index", route.Use(pages.SetIndex))
 			_pages.DELETE("/_indexes/:id/:index", route.Use(pages.DeleteIndex))
 		}
 		_pictures := api.Group("pictures")
