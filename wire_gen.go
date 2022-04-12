@@ -21,7 +21,6 @@ import (
 // Injectors from wire.go:
 
 func App(value *common.Values) (*gin.Engine, error) {
-	passport := bootstrap.UsePassport(value)
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -42,6 +41,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	passport := bootstrap.UsePassport(value)
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
 		return nil, err
@@ -68,6 +68,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 	}
 	service := &system.Service{
 		Inject: inject,
+	}
+	middleware := &system.Middleware{
+		Service:  service,
+		Passport: passport,
 	}
 	usersService := &users.Service{
 		Inject: inject,
@@ -98,6 +102,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	picturesController := &pictures.Controller{
 		Service: picturesService,
 	}
-	ginEngine := app.New(value, passport, controller, engineController, pagesController, picturesController)
+	ginEngine := app.New(value, middleware, controller, engineController, pagesController, picturesController)
 	return ginEngine, nil
 }

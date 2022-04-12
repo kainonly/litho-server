@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
-	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/route"
 )
 
@@ -27,16 +26,16 @@ var Provides = wire.NewSet(
 
 func New(
 	values *common.Values,
-	passport *passport.Passport,
+	systemMiddleware *system.Middleware,
 	system *system.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
 	pictures *pictures.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
-	r.GET("/", route.Use(system.Index))
-	auth := authGuard(passport)
+	auth := systemMiddleware.AuthGuard()
 
+	r.GET("/", route.Use(system.Index))
 	r.POST("/auth", route.Use(system.AuthLogin))
 	r.HEAD("/auth", route.Use(system.AuthVerify))
 	r.GET("/auth", auth, route.Use(system.AuthCode))
