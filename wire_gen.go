@@ -26,7 +26,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	database := bootstrap.UseDatabase(client, value)
+	database, err := bootstrap.UseDatabase(client, value)
+	if err != nil {
+		return nil, err
+	}
 	redisClient, err := bootstrap.UseRedis(value)
 	if err != nil {
 		return nil, err

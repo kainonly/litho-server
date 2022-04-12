@@ -10,9 +10,11 @@ import (
 	"github.com/nats-io/nkeys"
 	"github.com/speps/go-hashids/v2"
 	"github.com/tencentyun/cos-go-sdk-v5"
+	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
@@ -42,9 +44,23 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	)
 }
 
-// UseDatabase 指向使用数据库名称
-func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
-	return client.Database(values.Database.DbName)
+// UseDatabase 指向数据库，并初始集合
+func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database, err error) {
+	ctx := context.Background()
+	db = client.Database(values.Database.DbName)
+	var exists []string
+	if exists, err = db.ListCollectionNames(ctx, bson.M{}); err != nil {
+		return
+	}
+	if !funk.Contains(exists, "login_logs") {
+		if err = db.CreateCollection(ctx, "login_logs",
+			options.CreateCollection().
+				SetTimeSeriesOptions(options.TimeSeries().SetTimeField("time")),
+		); err != nil {
+			return
+		}
+	}
+	return
 }
 
 // UseRedis 初始化 Redis 缓存

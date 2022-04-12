@@ -14,28 +14,27 @@ import (
 )
 
 type Controller struct {
-	Service *Service
-	Users   *users.Service
-	Pages   *pages.Service
+	*Service
+	Users *users.Service
+	Pages *pages.Service
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
 	return gin.H{
-		"name": x.Service.AppName(),
 		"time": time.Now(),
 	}
 }
 
 func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	var body struct {
-		Username string `json:"username" binding:"required"`
+		User     string `json:"user" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Users.FindOneByUsername(ctx, body.Username)
+	data, err := x.Users.FindOneByUsernameOrEmail(ctx, body.User)
 	if err != nil {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
@@ -53,11 +52,14 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
+	if err := x.WriteLoginLog(ctx, NewLoginLogV10(data, jti)); err != nil {
+		return err
+	}
 	return gin.H{
 		"username": data.Username,
+		"email":    data.Email,
 		"name":     data.Name,
 		"avatar":   data.Avatar,
-		"time":     time.Now(),
 	}
 }
 
