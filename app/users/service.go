@@ -13,11 +13,14 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) FindOneByUsername(ctx context.Context, username string) (data model.User, err error) {
+func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (data model.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
-			"username": username,
-			"status":   true,
+			"status": true,
+			"$or": bson.A{
+				bson.M{"username": value},
+				bson.M{"email": value},
+			},
 		}).
 		Decode(&data); err != nil {
 		return

@@ -2,6 +2,7 @@ package system
 
 import (
 	"api/common"
+	"api/common/model"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -22,6 +23,34 @@ type Service struct {
 
 func (x *Service) AppName() string {
 	return x.Values.Namespace
+}
+
+type LoginLogDto struct {
+	Time     time.Time          `bson:"time"`
+	V        string             `bson:"v"`
+	User     primitive.ObjectID `bson:"user"`
+	Username string             `bson:"username"`
+	Email    string             `bson:"email"`
+	TokenId  string             `bson:"token_id"`
+}
+
+func NewLoginLogV10(data model.User, jti string) *LoginLogDto {
+	return &LoginLogDto{
+		Time:     time.Now(),
+		V:        "v1.0",
+		User:     data.ID,
+		Username: data.Username,
+		Email:    data.Email,
+		TokenId:  jti,
+	}
+}
+
+func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto) (err error) {
+
+	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, doc); err != nil {
+		return
+	}
+	return
 }
 
 func (x *Service) CodeKey(name string) string {

@@ -74,7 +74,10 @@ func main() {
 				color.Red("%s", err.Error())
 				return
 			}
-			install.Db = bootstrap.UseDatabase(client, values)
+			if install.Db, err = bootstrap.UseDatabase(client, values); err != nil {
+				color.Red("%s", err.Error())
+				return
+			}
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			if err = install.Basic(ctx); err != nil {
