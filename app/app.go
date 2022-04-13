@@ -42,6 +42,7 @@ func New(
 	r.PUT("/auth", auth, route.Use(system.AuthRefresh))
 	r.DELETE("/auth", auth, route.Use(system.AuthLogout))
 	r.GET("/sessions", auth, route.Use(system.GetSessions))
+	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
 	r.GET("/uploader", auth, route.Use(system.Uploader))
 	r.GET("/navs", auth, route.Use(system.Navs))
 	r.GET("/pages/:id", auth, route.Use(system.Dynamic))
