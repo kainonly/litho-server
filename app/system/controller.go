@@ -14,9 +14,9 @@ import (
 )
 
 type Controller struct {
-	*Service
-	Users *users.Service
-	Pages *pages.Service
+	Service *Service
+	Users   *users.Service
+	Pages   *pages.Service
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
@@ -25,6 +25,7 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	}
 }
 
+// AuthLogin 登录
 func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	var body struct {
 		User     string `json:"user" binding:"required"`
@@ -53,11 +54,11 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	// 设置会话
-	if err := x.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.Service.SetSession(ctx, data.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志
-	if err := x.WriteLoginLog(ctx, NewLoginLogV10(data, jti)); err != nil {
+	if err := x.Service.WriteLoginLog(ctx, NewLoginLogV10(data, jti)); err != nil {
 		return err
 	}
 	// 返回
@@ -71,6 +72,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 }
 
+// AuthVerify 主动验证
 func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 	ts, err := c.Cookie("access_token")
 	if err != nil {
@@ -86,6 +88,7 @@ func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 	return nil
 }
 
+// AuthCode 申请刷新验证码
 func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
@@ -102,6 +105,7 @@ func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	return gin.H{"code": code}
 }
 
+// AuthRefresh 刷新认证
 func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	var body struct {
 		Code string `json:"code" binding:"required"`
@@ -109,6 +113,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
+	// 获取载荷
 	value, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -118,6 +123,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	claims := value.(jwt.MapClaims)
 	jti := claims["jti"].(string)
 	ctx := c.Request.Context()
+	// 刷新验证
 	result, err := x.Service.VerifyCode(ctx, jti, body.Code)
 	if err != nil {
 		return err
@@ -126,15 +132,15 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
+
 	}
-	if err = x.Service.RemoveVerifyCode(ctx, jti); err != nil {
+	if err = x.Service.DeleteVerifyCode(ctx, jti); err != nil {
 		return err
 	}
+	// 继承 jti 创建新 Token
 	var ts string
-	if ts, err = x.Service.Passport.Create(
-		jti,
-		claims["context"].(map[string]interface {
-		}),
+	if ts, err = x.Service.Passport.Create(jti,
+		claims["context"].(map[string]interface{}),
 	); err != nil {
 		return err
 	}
@@ -143,12 +149,24 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	return nil
 }
 
+// AuthLogout 登出
 func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	c.SetCookie("access_token", "", 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
 	return nil
 }
 
+// GetSessions 获取会话
+func (x *Controller) GetSessions(c *gin.Context) interface{} {
+	ctx := c.Request.Context()
+	values, err := x.Service.GetSessions(ctx)
+	if err != nil {
+		return err
+	}
+	return values
+}
+
+// Sort 通用排序
 func (x *Controller) Sort(c *gin.Context) interface{} {
 	var uri struct {
 		Model string `uri:"model"`
@@ -170,6 +188,7 @@ func (x *Controller) Sort(c *gin.Context) interface{} {
 	return result
 }
 
+// Uploader 上传签名
 func (x *Controller) Uploader(c *gin.Context) interface{} {
 	data, err := x.Service.Uploader()
 	if err != nil {
@@ -178,6 +197,7 @@ func (x *Controller) Uploader(c *gin.Context) interface{} {
 	return data
 }
 
+// Navs 页面导航
 func (x *Controller) Navs(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	navs, err := x.Pages.Navs(ctx)

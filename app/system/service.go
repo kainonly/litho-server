@@ -125,33 +125,29 @@ func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto) (err erro
 	return
 }
 
-func (x *Service) CodeKey(name string) string {
-	return x.Values.KeyName("verify", name)
-}
-
 func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string) error {
-	return x.Redis.Set(ctx, x.CodeKey(name), code, time.Minute).Err()
+	return x.Redis.Set(ctx, x.Values.KeyName("verify", name), code, time.Minute).Err()
 }
 
 // VerifyCode 校验验证码
 func (x *Service) VerifyCode(ctx context.Context, name string, code string) (result bool, err error) {
 	var exists int64
-	if exists, err = x.Redis.Exists(ctx, x.CodeKey(name)).Result(); err != nil {
+	if exists, err = x.Redis.Exists(ctx, x.Values.KeyName("verify", name)).Result(); err != nil {
 		return
 	}
 	if exists == 0 {
 		return false, nil
 	}
 	var value string
-	if value, err = x.Redis.Get(ctx, x.CodeKey(name)).Result(); err != nil {
+	if value, err = x.Redis.Get(ctx, x.Values.KeyName("verify", name)).Result(); err != nil {
 		return
 	}
 	return value == code, nil
 }
 
-// RemoveVerifyCode 移除验证码
-func (x *Service) RemoveVerifyCode(ctx context.Context, name string) error {
-	return x.Redis.Del(ctx, x.CodeKey(name)).Err()
+// DeleteVerifyCode 移除验证码
+func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
+	return x.Redis.Del(ctx, x.Values.KeyName("verify", name)).Err()
 }
 
 func (x *Service) Sort(ctx context.Context, model string, sort []primitive.ObjectID) (*mongo.BulkWriteResult, error) {
