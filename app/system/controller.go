@@ -166,6 +166,21 @@ func (x *Controller) GetSessions(c *gin.Context) interface{} {
 	return values
 }
 
+// DeleteSession 删除会话
+func (x *Controller) DeleteSession(c *gin.Context) interface{} {
+	var uri struct {
+		Id string `uri:"id" binding:"required,objectId"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	if err := x.Service.DeleteSession(ctx, uri.Id); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Sort 通用排序
 func (x *Controller) Sort(c *gin.Context) interface{} {
 	var uri struct {
