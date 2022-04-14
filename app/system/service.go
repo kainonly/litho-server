@@ -26,6 +26,70 @@ func (x *Service) AppName() string {
 	return x.Values.Namespace
 }
 
+// GetVars 获取指定变量
+func (x *Service) GetVars(ctx context.Context, keys []string) (values []interface{}, err error) {
+	if err = x.RefreshVars(ctx); err != nil {
+		return
+	}
+	return x.Redis.HMGet(ctx, x.Values.KeyName("vars"), keys...).Result()
+}
+
+// GetVar 获取变量
+func (x *Service) GetVar(ctx context.Context, key string) (value string, err error) {
+	if err = x.RefreshVars(ctx); err != nil {
+		return
+	}
+	return x.Redis.HGet(ctx, x.Values.KeyName("vars"), key).Result()
+}
+
+// RefreshVars 刷新变量
+func (x *Service) RefreshVars(ctx context.Context) (err error) {
+	key := x.Values.KeyName("vars")
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+		return
+	}
+	if exists == 0 {
+		var cursor *mongo.Cursor
+		if cursor, err = x.Db.Collection("vars").Find(ctx, bson.M{}); err != nil {
+			return
+		}
+		var data []map[string]interface{}
+		if err = cursor.All(ctx, &data); err != nil {
+			return
+		}
+		pipe := x.Redis.Pipeline()
+		for _, v := range data {
+			switch x := v["value"].(type) {
+			case map[string]interface{}:
+				b, _ := jsoniter.Marshal(x)
+				pipe.HSet(ctx, key, v["key"], b)
+				break
+			default:
+				pipe.HSet(ctx, key, v["key"], x)
+			}
+		}
+		if _, err = pipe.Exec(ctx); err != nil {
+			return
+		}
+	}
+	return
+}
+
+// SetVar 设置变量
+func (x *Service) SetVar(ctx context.Context, key string, value interface{}) (err error) {
+	if _, err = x.Db.Collection("vars").InsertOne(ctx, bson.M{
+		"key":   key,
+		"value": value,
+	}); err != nil {
+		return
+	}
+	if err = x.Redis.Del(ctx, x.Values.KeyName("vars")).Err(); err != nil {
+		return
+	}
+	return
+}
+
 // GetSessions 获取所有会话
 func (x *Service) GetSessions(ctx context.Context) (values []string, err error) {
 	var cursor uint64
@@ -60,9 +124,15 @@ func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ 
 }
 
 // GetExpiration 获取会话有效时间
-func (x *Service) GetExpiration(ctx context.Context) (time.Duration, error) {
-	// TODO: 获取自定义过期时间
-	return time.Minute * 30, nil
+func (x *Service) GetExpiration(ctx context.Context) (t time.Duration, err error) {
+	value, _ := x.GetVar(ctx, "user_session_expire")
+	t = time.Hour
+	if value != "" {
+		if t, err = time.ParseDuration(value); err != nil {
+			return
+		}
+	}
+	return
 }
 
 // SetSession 设置会话

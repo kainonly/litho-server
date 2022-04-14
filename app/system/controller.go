@@ -156,6 +156,59 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
+// GetVars 获取指定变量
+func (x *Controller) GetVars(c *gin.Context) interface{} {
+	var query struct {
+		Keys []string `form:"keys" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	values, err := x.Service.GetVars(ctx, query.Keys)
+	if err != nil {
+		return err
+	}
+	return values
+}
+
+// GetVar 获取变量
+func (x *Controller) GetVar(c *gin.Context) interface{} {
+	var uri struct {
+		Key string `uri:"key" binding:"required"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	value, err := x.Service.GetVar(ctx, uri.Key)
+	if err != nil {
+		return err
+	}
+	return value
+}
+
+// SetVar 设置变量
+func (x *Controller) SetVar(c *gin.Context) interface{} {
+	var uri struct {
+		Key string `uri:"key" binding:"required"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	var body struct {
+		Value interface{} `json:"value" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	if err := x.Service.SetVar(ctx, uri.Key, body.Value); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetSessions 获取会话
 func (x *Controller) GetSessions(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
