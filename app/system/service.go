@@ -27,11 +27,19 @@ func (x *Service) AppName() string {
 }
 
 // GetVars 获取指定变量
-func (x *Service) GetVars(ctx context.Context, keys []string) (values []interface{}, err error) {
+func (x *Service) GetVars(ctx context.Context, keys []string) (data map[string]interface{}, err error) {
 	if err = x.RefreshVars(ctx); err != nil {
 		return
 	}
-	return x.Redis.HMGet(ctx, x.Values.KeyName("vars"), keys...).Result()
+	var values []interface{}
+	if values, err = x.Redis.HMGet(ctx, x.Values.KeyName("vars"), keys...).Result(); err != nil {
+		return
+	}
+	data = make(map[string]interface{})
+	for k, v := range keys {
+		data[v] = values[k]
+	}
+	return
 }
 
 // GetVar 获取变量
@@ -61,7 +69,11 @@ func (x *Service) RefreshVars(ctx context.Context) (err error) {
 		pipe := x.Redis.Pipeline()
 		for _, v := range data {
 			switch x := v["value"].(type) {
-			case map[string]interface{}:
+			case primitive.A:
+				b, _ := jsoniter.Marshal(x)
+				pipe.HSet(ctx, key, v["key"], b)
+				break
+			case primitive.M:
 				b, _ := jsoniter.Marshal(x)
 				pipe.HSet(ctx, key, v["key"], b)
 				break
@@ -78,11 +90,19 @@ func (x *Service) RefreshVars(ctx context.Context) (err error) {
 
 // SetVar 设置变量
 func (x *Service) SetVar(ctx context.Context, key string, value interface{}) (err error) {
-	if _, err = x.Db.Collection("vars").InsertOne(ctx, bson.M{
-		"key":   key,
-		"value": value,
-	}); err != nil {
+	var exists int64
+	if exists, err = x.Db.Collection("vars").CountDocuments(ctx, bson.M{"key": key}); err != nil {
 		return
+	}
+	doc := bson.M{"key": key, "value": value}
+	if exists == 0 {
+		if _, err = x.Db.Collection("vars").InsertOne(ctx, doc); err != nil {
+			return
+		}
+	} else {
+		if _, err = x.Db.Collection("vars").ReplaceOne(ctx, bson.M{"key": key}, doc); err != nil {
+			return
+		}
 	}
 	if err = x.Redis.Del(ctx, x.Values.KeyName("vars")).Err(); err != nil {
 		return

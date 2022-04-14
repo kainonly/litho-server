@@ -5,7 +5,7 @@ go 1.15
 replace github.com/weplanx/go v0.0.0-20211109121132-7a8d66264652 => ./library
 
 require (
-	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/color v1.13.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-contrib/requestid v0.0.3
