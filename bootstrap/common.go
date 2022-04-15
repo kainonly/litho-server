@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,6 +34,7 @@ var Provides = wire.NewSet(
 	UsePassport,
 	UseCipher,
 	UseHID,
+	UseOpenapi,
 	UseCos,
 )
 
@@ -138,6 +140,12 @@ func UseHID(values *common.Values) (idx *encryption.HID, err error) {
 func UsePassport(values *common.Values) *passport.Passport {
 	values.Passport.Iss = values.Namespace
 	return passport.New(values.Key, values.Passport)
+}
+
+// UseOpenapi 使用开放接口
+func UseOpenapi(values *common.Values) *openapi.OpenAPI {
+	option := values.OpenAPI
+	return openapi.New(option.Url, openapi.SetCertification(option.Key, option.Secret))
 }
 
 func UseCos(values *common.Values) (client *cos.Client, err error) {

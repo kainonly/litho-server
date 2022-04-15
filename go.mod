@@ -2,7 +2,7 @@ module api
 
 go 1.15
 
-replace github.com/weplanx/go v0.0.0-20211109121132-7a8d66264652 => ./library
+replace github.com/weplanx/go v0.0.2 => ./library
 
 require (
 	github.com/fatih/color v1.13.0
@@ -22,8 +22,10 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.33
 	github.com/thoas/go-funk v0.9.1
-	github.com/weplanx/go v0.0.0-20211109121132-7a8d66264652
+	github.com/weplanx/go v0.0.2
+	github.com/weplanx/openapi v0.1.2
 	go.mongodb.org/mongo-driver v1.8.1
 	go.uber.org/zap v1.21.0
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

@@ -37,6 +37,7 @@ type Values struct {
 	Passport       passport.Option          `yaml:"passport"`
 	Engines        map[string]engine.Option `yaml:"engines"`
 	QCloud         QCloud                   `yaml:"qcloud"`
+	OpenAPI        OpenAPI                  `yaml:"openapi"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -80,6 +81,12 @@ type QCloudCos struct {
 	Bucket  string `yaml:"bucket"`
 	Region  string `yaml:"region"`
 	Expired int64  `yaml:"expired"`
+}
+
+type OpenAPI struct {
+	Url    string `yaml:"url"`
+	Key    string `yaml:"key"`
+	Secret string `yaml:"secret"`
 }
 
 type Subscriptions struct {

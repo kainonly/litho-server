@@ -7,6 +7,7 @@ import (
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/passport"
+	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,6 +21,7 @@ type Inject struct {
 	Passport    *passport.Passport
 	Cipher      *encryption.Cipher
 	HID         *encryption.HID
+	Open        *openapi.OpenAPI
 	Cos         *cos.Client
 }
 
