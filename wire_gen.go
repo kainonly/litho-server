@@ -50,6 +50,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	openAPI := bootstrap.UseOpenapi(value)
 	cosClient, err := bootstrap.UseCos(value)
 	if err != nil {
 		return nil, err
@@ -64,6 +65,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Passport:    passport,
 		Cipher:      cipher,
 		HID:         hid,
+		Open:        openAPI,
 		Cos:         cosClient,
 	}
 	service := &system.Service{

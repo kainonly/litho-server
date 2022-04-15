@@ -188,33 +188,6 @@ func (x *Service) DeleteSession(ctx context.Context, uid string) (err error) {
 	return x.Redis.Del(ctx, x.Values.KeyName("session", uid)).Err()
 }
 
-type LoginLogDto struct {
-	Time     time.Time          `bson:"time"`
-	V        string             `bson:"v"`
-	User     primitive.ObjectID `bson:"user"`
-	Username string             `bson:"username"`
-	Email    string             `bson:"email"`
-	TokenId  string             `bson:"token_id"`
-}
-
-func NewLoginLogV10(data model.User, jti string) *LoginLogDto {
-	return &LoginLogDto{
-		Time:     time.Now(),
-		V:        "v1.0",
-		User:     data.ID,
-		Username: data.Username,
-		Email:    data.Email,
-		TokenId:  jti,
-	}
-}
-
-func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto) (err error) {
-	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, doc); err != nil {
-		return
-	}
-	return
-}
-
 func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string) error {
 	return x.Redis.Set(ctx, x.Values.KeyName("verify", name), code, time.Minute).Err()
 }
@@ -238,6 +211,39 @@ func (x *Service) VerifyCode(ctx context.Context, name string, code string) (res
 // DeleteVerifyCode 移除验证码
 func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 	return x.Redis.Del(ctx, x.Values.KeyName("verify", name)).Err()
+}
+
+type LoginLogDto struct {
+	Time     time.Time          `bson:"time"`
+	V        string             `bson:"v"`
+	User     primitive.ObjectID `bson:"user"`
+	Username string             `bson:"username"`
+	Email    string             `bson:"email"`
+	TokenId  string             `bson:"token_id"`
+	Ip       string             `bson:"ip"`
+	Detail   bson.M             `bson:"detail"`
+}
+
+func NewLoginLogV10(data model.User, jti string) *LoginLogDto {
+	return &LoginLogDto{
+		Time:     time.Now(),
+		V:        "v1.0",
+		User:     data.ID,
+		Username: data.Username,
+		Email:    data.Email,
+		TokenId:  jti,
+	}
+}
+
+func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto, ip string) (err error) {
+	doc.Ip = ip
+	if doc.Detail, err = x.Open.Ip(ctx, ip); err != nil {
+		return
+	}
+	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, doc); err != nil {
+		return
+	}
+	return
 }
 
 func (x *Service) Sort(ctx context.Context, model string, sort []primitive.ObjectID) (*mongo.BulkWriteResult, error) {
