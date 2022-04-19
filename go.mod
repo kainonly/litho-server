@@ -24,6 +24,7 @@ require (
 	github.com/thoas/go-funk v0.9.1
 	github.com/weplanx/go v0.0.2
 	github.com/weplanx/openapi v0.1.2
+	github.com/weplanx/transfer v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.8.1
 	go.uber.org/zap v1.21.0
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect

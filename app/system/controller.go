@@ -58,7 +58,8 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	// 写入日志
-	if err := x.Service.WriteLoginLog(ctx, NewLoginLogV10(data, jti), c.ClientIP()); err != nil {
+	dto := NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
+	if err := x.Service.WriteLoginLog(ctx, dto); err != nil {
 		return err
 	}
 	// 返回
