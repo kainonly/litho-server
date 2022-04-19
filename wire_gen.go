@@ -25,10 +25,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	database, err := bootstrap.UseDatabase(client, value)
-	if err != nil {
-		return nil, err
-	}
+	database := bootstrap.UseDatabase(client, value)
 	redisClient, err := bootstrap.UseRedis(value)
 	if err != nil {
 		return nil, err
@@ -41,6 +38,11 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	openAPI := bootstrap.UseOpenapi(value)
 	passport := bootstrap.UsePassport(value)
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
@@ -50,7 +52,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	openAPI := bootstrap.UseOpenapi(value)
 	cosClient, err := bootstrap.UseCos(value)
 	if err != nil {
 		return nil, err
@@ -62,10 +63,11 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Redis:       redisClient,
 		Nats:        conn,
 		Js:          jetStreamContext,
+		Transfer:    transfer,
+		Open:        openAPI,
 		Passport:    passport,
 		Cipher:      cipher,
 		HID:         hid,
-		Open:        openAPI,
 		Cos:         cosClient,
 	}
 	service := &system.Service{

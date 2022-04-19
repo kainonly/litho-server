@@ -72,6 +72,14 @@ func (x *Install) Basic(ctx context.Context) (err error) {
 	); err != nil {
 		return
 	}
+
+	// 初始化日志时序集合
+	if err = x.Db.CreateCollection(ctx, "login_logs",
+		options.CreateCollection().
+			SetTimeSeriesOptions(options.TimeSeries().SetTimeField("time")),
+	); err != nil {
+		return
+	}
 	return
 }
 

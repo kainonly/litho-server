@@ -34,10 +34,10 @@ type Values struct {
 	Database       Database                 `yaml:"database"`
 	Redis          Redis                    `yaml:"redis"`
 	Nats           Nats                     `yaml:"nats"`
-	Passport       passport.Option          `yaml:"passport"`
 	Engines        map[string]engine.Option `yaml:"engines"`
-	QCloud         QCloud                   `yaml:"qcloud"`
 	OpenAPI        OpenAPI                  `yaml:"openapi"`
+	Passport       passport.Option          `yaml:"passport"`
+	QCloud         QCloud                   `yaml:"qcloud"`
 }
 
 func (x *Values) KeyName(v ...string) string {
