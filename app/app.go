@@ -33,6 +33,7 @@ func New(
 	pictures *pictures.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
+	r.Use(systemMiddleware.RequestLogging())
 	auth := systemMiddleware.AuthGuard()
 
 	r.GET("/", route.Use(system.Index))

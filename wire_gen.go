@@ -38,12 +38,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	openAPI := bootstrap.UseOpenapi(value)
-	passport := bootstrap.UsePassport(value)
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
 		return nil, err
@@ -63,9 +58,7 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Redis:       redisClient,
 		Nats:        conn,
 		Js:          jetStreamContext,
-		Transfer:    transfer,
 		Open:        openAPI,
-		Passport:    passport,
 		Cipher:      cipher,
 		HID:         hid,
 		Cos:         cosClient,
@@ -73,9 +66,15 @@ func App(value *common.Values) (*gin.Engine, error) {
 	service := &system.Service{
 		Inject: inject,
 	}
+	passport := bootstrap.UsePassport(value)
+	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
 	middleware := &system.Middleware{
 		Service:  service,
 		Passport: passport,
+		Transfer: transfer,
 	}
 	usersService := &users.Service{
 		Inject: inject,
@@ -84,9 +83,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Inject: inject,
 	}
 	controller := &system.Controller{
-		Service: service,
-		Users:   usersService,
-		Pages:   pagesService,
+		Service:  service,
+		Users:    usersService,
+		Pages:    pagesService,
+		Passport: passport,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
