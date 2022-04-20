@@ -4,19 +4,22 @@ import (
 	"api/app/pages"
 	"api/app/users"
 	"api/common"
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"time"
 )
 
 type Controller struct {
-	Service *Service
-	Users   *users.Service
-	Pages   *pages.Service
+	Service  *Service
+	Users    *users.Service
+	Pages    *pages.Service
+	Passport *passport.Passport
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
@@ -48,7 +51,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	// 创建 Token
 	jti := helper.Uuid()
 	var ts string
-	if ts, err = x.Service.Passport.Create(jti, gin.H{
+	if ts, err = x.Passport.Create(jti, gin.H{
 		"uid": data.ID.Hex(),
 	}); err != nil {
 		return err
@@ -59,9 +62,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 	// 写入日志
 	dto := NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
-	if err := x.Service.WriteLoginLog(ctx, dto); err != nil {
-		return err
-	}
+	go x.Service.WriteLoginLog(context.TODO(), dto)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
@@ -81,7 +82,7 @@ func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
 	}
-	if _, err = x.Service.Passport.Verify(ts); err != nil {
+	if _, err = x.Passport.Verify(ts); err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return err
@@ -140,7 +141,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	}
 	// 继承 jti 创建新 Token
 	var ts string
-	if ts, err = x.Service.Passport.Create(jti,
+	if ts, err = x.Passport.Create(jti,
 		claims["context"].(map[string]interface{}),
 	); err != nil {
 		return err
