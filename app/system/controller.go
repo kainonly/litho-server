@@ -221,6 +221,15 @@ func (x *Controller) GetSessions(c *gin.Context) interface{} {
 	return values
 }
 
+// DeleteSessions 删除所有会话
+func (x *Controller) DeleteSessions(c *gin.Context) interface{} {
+	ctx := c.Request.Context()
+	if err := x.Service.DeleteSessions(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 // DeleteSession 删除会话
 func (x *Controller) DeleteSession(c *gin.Context) interface{} {
 	var uri struct {
