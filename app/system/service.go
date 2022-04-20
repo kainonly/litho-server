@@ -183,6 +183,25 @@ func (x *Service) RenewSession(ctx context.Context, uid string) (err error) {
 	return
 }
 
+// DeleteSessions 删除所有会话
+func (x *Service) DeleteSessions(ctx context.Context) (err error) {
+	var cursor uint64
+	var keys []string
+	for {
+		var next uint64
+		if keys, next, err = x.Redis.Scan(ctx,
+			cursor, x.Values.KeyName("session", "*"), 1000,
+		).Result(); err != nil {
+			return
+		}
+		if next == 0 {
+			break
+		}
+		cursor = next
+	}
+	return x.Redis.Del(ctx, keys...).Err()
+}
+
 // DeleteSession 删除会话
 func (x *Service) DeleteSession(ctx context.Context, uid string) (err error) {
 	return x.Redis.Del(ctx, x.Values.KeyName("session", uid)).Err()
