@@ -61,7 +61,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	// 写入日志
-	dto := NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
+	dto := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
 	go x.Service.WriteLoginLog(context.TODO(), dto)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)

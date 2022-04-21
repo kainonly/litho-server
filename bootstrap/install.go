@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"api/common"
-	"api/common/model"
 	"context"
 	"errors"
 	jsoniter "github.com/json-iterator/go"
@@ -37,7 +36,7 @@ func (x *Install) Basic(ctx context.Context) (err error) {
 	var roles *mongo.InsertOneResult
 	if roles, err = x.Db.Collection("roles").
 		InsertOne(ctx,
-			model.NewRole("超级管理员").
+			common.NewRole("超级管理员").
 				SetDescription("系统默认设置").
 				SetLabel("默认"),
 		); err != nil {
@@ -56,7 +55,7 @@ func (x *Install) Basic(ctx context.Context) (err error) {
 
 	// 初始化管理用户
 	passwordHash, _ := helper.PasswordHash(x.Password)
-	user := model.NewUser(x.Username, passwordHash).
+	user := common.NewUser(x.Username, passwordHash).
 		SetRoles([]primitive.ObjectID{roles.InsertedID.(primitive.ObjectID)})
 	if _, err = x.Db.Collection("users").
 		InsertOne(ctx, user); err != nil {
@@ -93,7 +92,7 @@ type Content struct {
 	Name       string              `bson:"name" json:"name"`
 	Icon       string              `bson:"icon,omitempty" json:"icon,omitempty"`
 	Kind       string              `bson:"kind" json:"kind"`
-	Schema     *model.Schema       `bson:"schema,omitempty" json:"schema,omitempty"`
+	Schema     *common.Schema      `bson:"schema,omitempty" json:"schema,omitempty"`
 	Sort       int64               `bson:"sort" json:"sort"`
 	Status     *bool               `bson:"status" json:"status"`
 	CreateTime time.Time           `bson:"create_time" json:"-"`
