@@ -51,7 +51,7 @@ func main() {
 		},
 	}
 	serverCmd.Flags().StringVarP(&address,
-		"address", "a", "0.0.0.0:9000",
+		"address", "a", "0.0.0.0:3000",
 		"binding to address and port",
 	)
 	serverCmd.Flags().BoolVarP(&openpprof,

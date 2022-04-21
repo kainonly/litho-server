@@ -1,7 +1,6 @@
-package model
+package common
 
 import (
-	"api/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -48,7 +47,7 @@ func NewPage(name string, kind string) *Page {
 		Parent:     nil,
 		Kind:       kind,
 		Sort:       0,
-		Status:     common.BoolToP(true),
+		Status:     BoolToP(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
@@ -138,9 +137,9 @@ func NewField(label string, datatype string) *Field {
 	return &Field{
 		Label:    label,
 		Type:     datatype,
-		Required: common.BoolToP(false),
-		Hide:     common.BoolToP(false),
-		Modified: common.BoolToP(true),
+		Required: BoolToP(false),
+		Hide:     BoolToP(false),
+		Modified: BoolToP(true),
 		Sort:     0,
 	}
 }
@@ -161,12 +160,12 @@ func (x *Field) SetDefault(v interface{}) *Field {
 }
 
 func (x *Field) SetRequired() *Field {
-	x.Required = common.BoolToP(true)
+	x.Required = BoolToP(true)
 	return x
 }
 
 func (x *Field) SetHide() *Field {
-	x.Hide = common.BoolToP(true)
+	x.Hide = BoolToP(true)
 	return x
 }
 
@@ -196,7 +195,7 @@ type FieldSpec struct {
 	Decimal int64 `bson:"decimal,omitempty" json:"decimal,omitempty"`
 
 	// 枚举数值
-	Values []Value `bson:"values,omitempty" json:"values,omitempty"`
+	Values []FieldValue `bson:"values,omitempty" json:"values,omitempty"`
 
 	// 引用数据源
 	Reference string `bson:"reference,omitempty" json:"reference,omitempty"`
@@ -208,7 +207,7 @@ type FieldSpec struct {
 	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
 }
 
-type Value struct {
+type FieldValue struct {
 	// 名称
 	Label string `bson:"label" json:"label"`
 

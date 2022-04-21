@@ -1,6 +1,7 @@
 package app
 
 import (
+	"api/app/feishu"
 	"api/app/pages"
 	"api/app/pictures"
 	"api/app/roles"
@@ -16,6 +17,7 @@ import (
 var Provides = wire.NewSet(
 	system.Provides,
 	engine.Provides,
+	feishu.Provides,
 	pages.Provides,
 	roles.Provides,
 	users.Provides,
@@ -28,6 +30,7 @@ func New(
 	values *common.Values,
 	systemMiddleware *system.Middleware,
 	system *system.Controller,
+	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
 	pictures *pictures.Controller,
@@ -48,9 +51,17 @@ func New(
 	r.GET("/sessions", auth, route.Use(system.GetSessions))
 	r.DELETE("/sessions", auth, route.Use(system.DeleteSessions))
 	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
+
 	r.GET("/uploader", auth, route.Use(system.Uploader))
 	r.GET("/navs", auth, route.Use(system.Navs))
 	r.GET("/pages/:id", auth, route.Use(system.Dynamic))
+
+	_feishu := r.Group("/feishu")
+	{
+		_feishu.GET("", route.Use(feishu.OAuth))
+		_feishu.POST("", route.Use(feishu.Challenge))
+
+	}
 
 	api := r.Group("/api", auth)
 	{

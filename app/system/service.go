@@ -2,7 +2,6 @@ package system
 
 import (
 	"api/common"
-	"api/common/model"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -232,32 +231,7 @@ func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 	return x.Redis.Del(ctx, x.Values.KeyName("verify", name)).Err()
 }
 
-type LoginLogDto struct {
-	Time      time.Time          `bson:"time"`
-	V         string             `bson:"v"`
-	User      primitive.ObjectID `bson:"user"`
-	Username  string             `bson:"username"`
-	Email     string             `bson:"email"`
-	TokenId   string             `bson:"token_id"`
-	Ip        string             `bson:"ip"`
-	Detail    bson.M             `bson:"detail"`
-	UserAgent string             `bson:"user_agent"`
-}
-
-func NewLoginLogV10(data model.User, jti string, ip string, agent string) *LoginLogDto {
-	return &LoginLogDto{
-		Time:      time.Now(),
-		V:         "v1.0",
-		User:      data.ID,
-		Username:  data.Username,
-		Email:     data.Email,
-		TokenId:   jti,
-		Ip:        ip,
-		UserAgent: agent,
-	}
-}
-
-func (x *Service) WriteLoginLog(ctx context.Context, doc *LoginLogDto) (err error) {
+func (x *Service) WriteLoginLog(ctx context.Context, doc *common.LoginLogDto) (err error) {
 	if doc.Detail, err = x.Open.Ip(ctx, doc.Ip); err != nil {
 		return
 	}

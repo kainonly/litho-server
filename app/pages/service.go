@@ -2,7 +2,6 @@ package pages
 
 import (
 	"api/common"
-	"api/common/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -43,7 +42,7 @@ func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
 	return
 }
 
-func (x *Service) FindOneById(ctx context.Context, id string) (result model.Page, err error) {
+func (x *Service) FindOneById(ctx context.Context, id string) (result common.Page, err error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	if err = x.Db.Collection("pages").
 		FindOne(ctx, bson.M{"_id": oid}).

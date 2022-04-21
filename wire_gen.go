@@ -8,6 +8,7 @@ package main
 
 import (
 	"api/app"
+	"api/app/feishu"
 	"api/app/pages"
 	"api/app/pictures"
 	"api/app/system"
@@ -88,6 +89,13 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Pages:    pagesService,
 		Passport: passport,
 	}
+	feishuService := feishu.NewService(inject)
+	feishuController := &feishu.Controller{
+		Service:  feishuService,
+		System:   service,
+		Users:    usersService,
+		Passport: passport,
+	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
 		Engine: engineEngine,
@@ -106,6 +114,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	picturesController := &pictures.Controller{
 		Service: picturesService,
 	}
-	ginEngine := app.New(value, middleware, controller, engineController, pagesController, picturesController)
+	ginEngine := app.New(value, middleware, controller, feishuController, engineController, pagesController, picturesController)
 	return ginEngine, nil
 }
