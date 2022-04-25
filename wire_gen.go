@@ -8,9 +8,11 @@ package main
 
 import (
 	"api/app"
+	"api/app/departments"
 	"api/app/feishu"
 	"api/app/pages"
 	"api/app/pictures"
+	"api/app/roles"
 	"api/app/system"
 	"api/app/users"
 	"api/bootstrap"
@@ -80,21 +82,22 @@ func App(value *common.Values) (*gin.Engine, error) {
 	usersService := &users.Service{
 		Inject: inject,
 	}
+	rolesService := &roles.Service{
+		Inject: inject,
+	}
+	departmentsService := &departments.Service{
+		Inject: inject,
+	}
 	pagesService := &pages.Service{
 		Inject: inject,
 	}
 	controller := &system.Controller{
-		Service:  service,
-		Users:    usersService,
-		Pages:    pagesService,
-		Passport: passport,
-	}
-	feishuService := feishu.NewService(inject)
-	feishuController := &feishu.Controller{
-		Service:  feishuService,
-		System:   service,
-		Users:    usersService,
-		Passport: passport,
+		Service:     service,
+		Users:       usersService,
+		Roles:       rolesService,
+		Departments: departmentsService,
+		Pages:       pagesService,
+		Passport:    passport,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
@@ -108,12 +111,19 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
+	feishuService := feishu.NewService(inject)
+	feishuController := &feishu.Controller{
+		Service:  feishuService,
+		System:   service,
+		Users:    usersService,
+		Passport: passport,
+	}
 	picturesService := &pictures.Service{
 		Inject: inject,
 	}
 	picturesController := &pictures.Controller{
 		Service: picturesService,
 	}
-	ginEngine := app.New(value, middleware, controller, feishuController, engineController, pagesController, picturesController)
+	ginEngine := app.New(value, middleware, controller, engineController, pagesController, feishuController, picturesController)
 	return ginEngine, nil
 }

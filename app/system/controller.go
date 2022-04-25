@@ -1,7 +1,9 @@
 package system
 
 import (
+	"api/app/departments"
 	"api/app/pages"
+	"api/app/roles"
 	"api/app/users"
 	"api/common"
 	"context"
@@ -10,16 +12,19 @@ import (
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"time"
 )
 
 type Controller struct {
-	Service  *Service
-	Users    *users.Service
-	Pages    *pages.Service
-	Passport *passport.Passport
+	Service     *Service
+	Users       *users.Service
+	Roles       *roles.Service
+	Departments *departments.Service
+	Pages       *pages.Service
+	Passport    *passport.Passport
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
@@ -66,12 +71,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
-	return gin.H{
-		"username": data.Username,
-		"email":    data.Email,
-		"name":     data.Name,
-		"avatar":   data.Avatar,
-	}
+	return nil
 }
 
 // AuthVerify 主动验证
@@ -155,6 +155,66 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	c.SetCookie("access_token", "", 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
+	return nil
+}
+
+// GetUser 获取用户信息
+func (x *Controller) GetUser(c *gin.Context) interface{} {
+	claims, exists := c.Get(common.TokenClaimsKey)
+	if !exists {
+		c.Set("status_code", 401)
+		c.Set("code", "AUTH_EXPIRED")
+		return common.AuthExpired
+	}
+	ctx := c.Request.Context()
+	uid := claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string)
+	var data common.User
+	if err := x.Users.FindOneById(ctx, uid, &data); err != nil {
+		return err
+	}
+	result := gin.H{
+		"username":    data.Username,
+		"email":       data.Email,
+		"name":        data.Name,
+		"avatar":      data.Avatar,
+		"sessions":    data.Sessions,
+		"last":        data.Last,
+		"create_time": data.CreateTime,
+	}
+	var err error
+	if result["roles"], err = x.Roles.FindNamesById(ctx, data.Roles); err != nil {
+		return err
+	}
+	if data.Department != nil {
+		if result["department"], err = x.Departments.FindNameById(ctx, *data.Department); err != nil {
+			return err
+		}
+	}
+	return result
+}
+
+func (x *Controller) SetUser(c *gin.Context) interface{} {
+	var body struct {
+		Name   string `json:"name,omitempty"`
+		Avatar string `json:"avatar,omitempty"`
+		Email  string `json:"email,omitempty"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	claims, exists := c.Get(common.TokenClaimsKey)
+	if !exists {
+		c.Set("status_code", 401)
+		c.Set("code", "AUTH_EXPIRED")
+		return common.AuthExpired
+	}
+	ctx := c.Request.Context()
+	uid := claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string)
+	if err := x.Users.UpdateOneById(ctx, uid, bson.M{
+		"$set": body,
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 
