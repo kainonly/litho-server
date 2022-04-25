@@ -14,8 +14,11 @@ type User struct {
 	// 密码
 	Password string `bson:"password" json:"password,omitempty"`
 
+	// 电子邮件
+	Email string `bson:"email" json:"email"`
+
 	// 所属部门
-	Departments []primitive.ObjectID `bson:"departments" json:"-"`
+	Department *primitive.ObjectID `bson:"department" json:"-"`
 
 	// 权限组
 	Roles []primitive.ObjectID `bson:"roles" json:"roles,omitempty"`
@@ -26,29 +29,17 @@ type User struct {
 	// 头像
 	Avatar string `bson:"avatar" json:"avatar"`
 
-	// 地区
-	Region string `bson:"region" json:"region"`
-
-	// 城市
-	City string `bson:"city" json:"city"`
-
-	// 地址
-	Address string `bson:"address" json:"address"`
-
-	// 个人简介
-	Introduction string `bson:"introduction" json:"introduction"`
-
-	// 联系电话
-	Phone string `bson:"phone" json:"phone"`
-
-	// 电子邮件
-	Email string `bson:"email" json:"email"`
-
 	// 标记
 	Labels []string `bson:"labels" json:"labels"`
 
 	// 状态
 	Status *bool `bson:"status" json:"status"`
+
+	// 登录次数
+	Sessions int64 `bson:"sessions" json:"sessions"`
+
+	// 最近登录记录
+	Last string `json:"last" bson:"last"`
 
 	// 创建时间
 	CreateTime time.Time `bson:"create_time" json:"-"`

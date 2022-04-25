@@ -1,6 +1,7 @@
 package app
 
 import (
+	"api/app/departments"
 	"api/app/feishu"
 	"api/app/pages"
 	"api/app/pictures"
@@ -17,10 +18,11 @@ import (
 var Provides = wire.NewSet(
 	system.Provides,
 	engine.Provides,
-	feishu.Provides,
 	pages.Provides,
 	roles.Provides,
+	departments.Provides,
 	users.Provides,
+	feishu.Provides,
 	pictures.Provides,
 	New,
 	Subscribe,
@@ -30,9 +32,9 @@ func New(
 	values *common.Values,
 	systemMiddleware *system.Middleware,
 	system *system.Controller,
-	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
+	feishu *feishu.Controller,
 	pictures *pictures.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
@@ -45,6 +47,9 @@ func New(
 	r.GET("/auth", auth, route.Use(system.AuthCode))
 	r.PUT("/auth", auth, route.Use(system.AuthRefresh))
 	r.DELETE("/auth", auth, route.Use(system.AuthLogout))
+
+	r.GET("/user", auth, route.Use(system.GetUser))
+	r.PATCH("/user", auth, route.Use(system.SetUser))
 	r.GET("/vars", auth, route.Use(system.GetVars))
 	r.GET("/vars/:key", auth, route.Use(system.GetVar))
 	r.PUT("/vars/:key", auth, route.Use(system.SetVar))
@@ -60,7 +65,6 @@ func New(
 	{
 		_feishu.GET("", route.Use(feishu.OAuth))
 		_feishu.POST("", route.Use(feishu.Challenge))
-
 	}
 
 	api := r.Group("/api", auth)
