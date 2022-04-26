@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -158,6 +159,51 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
+// CheckUser 检查当前用户可变更属性
+func (x *Controller) CheckUser(c *gin.Context) interface{} {
+	claims, exists := c.Get(common.TokenClaimsKey)
+	if !exists {
+		c.Set("status_code", 401)
+		c.Set("code", "AUTH_EXPIRED")
+		return common.AuthExpired
+	}
+	ctx := c.Request.Context()
+	userId, _ := primitive.ObjectIDFromHex(claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string))
+	var query struct {
+		Key   string `form:"key"`
+		Value string `form:"value"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	var count int64
+	var err error
+	switch query.Key {
+	case "username":
+		count, err = x.Users.Count(ctx, bson.M{
+			"$and": bson.A{
+				bson.M{"_id": bson.M{"$ne": userId}},
+				bson.M{"username": query.Value},
+			},
+		})
+		break
+	case "email":
+		count, err = x.Users.Count(ctx, bson.M{
+			"$and": bson.A{
+				bson.M{"_id": bson.M{"$ne": userId}},
+				bson.M{"email": bson.M{"$ne": ""}},
+				bson.M{"email": query.Value},
+			},
+		})
+		break
+	}
+	if err != nil {
+		return err
+	}
+	c.Header("wpx-exists", strconv.FormatBool(count != 0))
+	return nil
+}
+
 // GetUser 获取用户信息
 func (x *Controller) GetUser(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
@@ -195,9 +241,11 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 
 func (x *Controller) SetUser(c *gin.Context) interface{} {
 	var body struct {
-		Name   string `json:"name,omitempty"`
-		Avatar string `json:"avatar,omitempty"`
-		Email  string `json:"email,omitempty"`
+		Username string `json:"username,omitempty" bson:"username,omitempty"`
+		Password string `json:"password,omitempty" bson:"password,omitempty"`
+		Email    string `json:"email,omitempty" bson:"email,omitempty"`
+		Name     string `json:"name,omitempty" bson:"name,omitempty"`
+		Avatar   string `json:"avatar,omitempty" bson:"avatar,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
@@ -210,10 +258,18 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	userId, _ := primitive.ObjectIDFromHex(claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string))
+	if body.Password != "" {
+		body.Password, _ = helper.PasswordHash(body.Password)
+	}
 	if err := x.Users.UpdateOneById(ctx, userId, bson.M{
 		"$set": body,
 	}); err != nil {
 		return err
+	}
+	if body.Username != "" {
+		if err := x.AuthLogout(c); err != nil {
+			return err
+		}
 	}
 	return nil
 }

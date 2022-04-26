@@ -48,8 +48,10 @@ func New(
 	r.PUT("/auth", auth, route.Use(system.AuthRefresh))
 	r.DELETE("/auth", auth, route.Use(system.AuthLogout))
 
+	r.HEAD("/user/_check", auth, route.Use(system.CheckUser))
 	r.GET("/user", auth, route.Use(system.GetUser))
 	r.PATCH("/user", auth, route.Use(system.SetUser))
+
 	r.GET("/vars", auth, route.Use(system.GetVars))
 	r.GET("/vars/:key", auth, route.Use(system.GetVar))
 	r.PUT("/vars/:key", auth, route.Use(system.SetVar))
