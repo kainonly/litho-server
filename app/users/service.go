@@ -39,13 +39,9 @@ func (x *Service) FindOneByFeishu(ctx context.Context, openid string) (data comm
 	return
 }
 
-func (x *Service) FindOneById(ctx context.Context, id string, data interface{}, opts ...*options.FindOneOptions) (err error) {
-	var oid primitive.ObjectID
-	if oid, err = primitive.ObjectIDFromHex(id); err != nil {
-		return
-	}
+func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID, data interface{}, opts ...*options.FindOneOptions) (err error) {
 	if err = x.Db.Collection("users").FindOne(ctx,
-		bson.M{"_id": oid},
+		bson.M{"_id": id},
 		opts...,
 	).Decode(data); err != nil {
 		return
@@ -53,13 +49,9 @@ func (x *Service) FindOneById(ctx context.Context, id string, data interface{}, 
 	return
 }
 
-func (x *Service) UpdateOneById(ctx context.Context, id string, update interface{}) (err error) {
-	var oid primitive.ObjectID
-	if oid, err = primitive.ObjectIDFromHex(id); err != nil {
-		return
-	}
+func (x *Service) UpdateOneById(ctx context.Context, id primitive.ObjectID, update interface{}) (err error) {
 	if _, err = x.Db.Collection("users").UpdateOne(ctx,
-		bson.M{"_id": oid},
+		bson.M{"_id": id},
 		update,
 	); err != nil {
 		return

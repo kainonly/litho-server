@@ -29,17 +29,20 @@ type User struct {
 	// 头像
 	Avatar string `bson:"avatar" json:"avatar"`
 
-	// 标记
-	Labels []string `bson:"labels" json:"labels"`
-
-	// 状态
-	Status *bool `bson:"status" json:"status"`
-
 	// 登录次数
 	Sessions int64 `bson:"sessions" json:"sessions"`
 
 	// 最近登录记录
 	Last string `json:"last" bson:"last"`
+
+	// 飞书 OpenID
+	Feishu string `json:"feishu" bson:"feishu"`
+
+	// 状态
+	Status *bool `bson:"status" json:"status"`
+
+	// 标记
+	Labels []string `bson:"labels" json:"labels"`
 
 	// 创建时间
 	CreateTime time.Time `bson:"create_time" json:"-"`

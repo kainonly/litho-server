@@ -66,8 +66,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 		HID:         hid,
 		Cos:         cosClient,
 	}
-	service := &system.Service{
+	service := &users.Service{
 		Inject: inject,
+	}
+	systemService := &system.Service{
+		Inject: inject,
+		Users:  service,
 	}
 	passport := bootstrap.UsePassport(value)
 	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
@@ -75,12 +79,9 @@ func App(value *common.Values) (*gin.Engine, error) {
 		return nil, err
 	}
 	middleware := &system.Middleware{
-		Service:  service,
+		Service:  systemService,
 		Passport: passport,
 		Transfer: transfer,
-	}
-	usersService := &users.Service{
-		Inject: inject,
 	}
 	rolesService := &roles.Service{
 		Inject: inject,
@@ -92,8 +93,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Inject: inject,
 	}
 	controller := &system.Controller{
-		Service:     service,
-		Users:       usersService,
+		Service:     systemService,
+		Users:       service,
 		Roles:       rolesService,
 		Departments: departmentsService,
 		Pages:       pagesService,
@@ -114,8 +115,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 	feishuService := feishu.NewService(inject)
 	feishuController := &feishu.Controller{
 		Service:  feishuService,
-		System:   service,
-		Users:    usersService,
+		System:   systemService,
+		Users:    service,
 		Passport: passport,
 	}
 	picturesService := &pictures.Service{
