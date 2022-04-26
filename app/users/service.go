@@ -58,3 +58,7 @@ func (x *Service) UpdateOneById(ctx context.Context, id primitive.ObjectID, upda
 	}
 	return
 }
+
+func (x *Service) Count(ctx context.Context, filter bson.M) (count int64, err error) {
+	return x.Db.Collection("users").CountDocuments(ctx, filter)
+}
