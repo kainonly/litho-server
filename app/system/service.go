@@ -1,6 +1,7 @@
 package system
 
 import (
+	"api/app/users"
 	"api/common"
 	"context"
 	"crypto/hmac"
@@ -19,6 +20,7 @@ import (
 
 type Service struct {
 	*common.Inject
+	Users *users.Service
 }
 
 func (x *Service) AppName() string {
@@ -234,6 +236,14 @@ func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 func (x *Service) WriteLoginLog(ctx context.Context, doc *common.LoginLogDto) (err error) {
 	if doc.Detail, err = x.Open.Ip(ctx, doc.Ip); err != nil {
 		return
+	}
+	if err = x.Users.UpdateOneById(ctx, doc.User, bson.M{
+		"$inc": bson.M{"sessions": 1},
+		"$set": bson.M{
+			"last": fmt.Sprintf(`%s %s`, doc.Detail["isp"], doc.Ip),
+		},
+	}); err != nil {
+		return err
 	}
 	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, doc); err != nil {
 		return

@@ -167,9 +167,9 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 		return common.AuthExpired
 	}
 	ctx := c.Request.Context()
-	uid := claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string)
+	userId, _ := primitive.ObjectIDFromHex(claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string))
 	var data common.User
-	if err := x.Users.FindOneById(ctx, uid, &data); err != nil {
+	if err := x.Users.FindOneById(ctx, userId, &data); err != nil {
 		return err
 	}
 	result := gin.H{
@@ -209,8 +209,8 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 		return common.AuthExpired
 	}
 	ctx := c.Request.Context()
-	uid := claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string)
-	if err := x.Users.UpdateOneById(ctx, uid, bson.M{
+	userId, _ := primitive.ObjectIDFromHex(claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string))
+	if err := x.Users.UpdateOneById(ctx, userId, bson.M{
 		"$set": body,
 	}); err != nil {
 		return err
