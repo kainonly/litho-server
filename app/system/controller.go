@@ -7,6 +7,8 @@ import (
 	"api/app/users"
 	"api/common"
 	"context"
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
@@ -14,6 +16,7 @@ import (
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strconv"
 	"time"
@@ -102,7 +105,7 @@ func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := funk.RandomString(8)
 	ctx := c.Request.Context()
-	if err := x.Service.CreateVerifyCode(ctx, jti, code); err != nil {
+	if err := x.Service.CreateCode(ctx, jti, code, time.Minute); err != nil {
 		return err
 	}
 	return gin.H{"code": code}
@@ -135,9 +138,8 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
-
 	}
-	if err = x.Service.DeleteVerifyCode(ctx, jti); err != nil {
+	if err = x.Service.DeleteCode(ctx, jti); err != nil {
 		return err
 	}
 	// 继承 jti 创建新 Token
@@ -156,6 +158,101 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	c.SetCookie("access_token", "", 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
+	return nil
+}
+
+// ForgetCaptcha 获取密码重置验证码
+func (x *Controller) ForgetCaptcha(c *gin.Context) interface{} {
+	var query struct {
+		Email string `form:"email" binding:"required,email"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	data, err := x.Users.FindOneByEmail(ctx, query.Email)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return errors.New("该用户邮箱不存在")
+		}
+		return err
+	}
+	exists, err := x.Service.ExistsCode(ctx, query.Email)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("您已获取验证码，请稍后再试~")
+	}
+	code := funk.RandomString(8)
+	if err = x.Service.CreateCode(ctx, query.Email, code, time.Minute*5); err != nil {
+		return err
+	}
+	if err = x.Service.EmailCode(data.Username, code, []string{query.Email}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ForgetVerify 验证密码重置验证码
+func (x *Controller) ForgetVerify(c *gin.Context) interface{} {
+	var body struct {
+		Email   string `json:"email" binding:"required,email"`
+		Captcha string `json:"captcha" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	result, err := x.Service.VerifyCode(ctx, body.Email, body.Captcha)
+	if err != nil {
+		return err
+	}
+	if !result {
+		return errors.New("您的验证码不正确")
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iat": time.Now().Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
+		"iss": body.Email,
+	})
+	ts, err := token.SignedString([]byte(x.Service.Values.Key))
+	if err != nil {
+		return err
+	}
+	return gin.H{
+		"token": ts,
+	}
+}
+
+// ForgetReset 重置密码
+func (x *Controller) ForgetReset(c *gin.Context) interface{} {
+	var body struct {
+		Token    string `json:"token" binding:"required,jwt"`
+		Password string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	token, err := jwt.Parse(body.Token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("验证失败，签名方式不一致")
+		}
+		return []byte(x.Service.Values.Key), nil
+	})
+	if err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	password, _ := helper.PasswordHash(body.Password)
+	email := token.Claims.(jwt.MapClaims)["iss"].(string)
+	if err = x.Users.UpdateOneByEmail(ctx, email, bson.M{
+		"$set": bson.M{
+			"password": password,
+		},
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -240,6 +337,7 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 	return result
 }
 
+// SetUser 设置用户信息
 func (x *Controller) SetUser(c *gin.Context) interface{} {
 	var headers struct {
 		Action string `header:"wpx-action"`

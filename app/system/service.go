@@ -3,17 +3,22 @@ package system
 import (
 	"api/app/users"
 	"api/common"
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jordan-wright/email"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"html/template"
+	"net/smtp"
 	"strings"
 	"time"
 )
@@ -208,19 +213,21 @@ func (x *Service) DeleteSession(ctx context.Context, uid string) (err error) {
 	return x.Redis.Del(ctx, x.Values.KeyName("session", uid)).Err()
 }
 
-func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string) error {
-	return x.Redis.Set(ctx, x.Values.KeyName("verify", name), code, time.Minute).Err()
+// CreateCode 创建验证码
+func (x *Service) CreateCode(ctx context.Context, name string, code string, ttl time.Duration) error {
+	return x.Redis.Set(ctx, x.Values.KeyName("verify", name), code, ttl).Err()
+}
+
+func (x *Service) ExistsCode(ctx context.Context, name string) (exists bool, err error) {
+	var count int64
+	if count, err = x.Redis.Exists(ctx, x.Values.KeyName("verify", name)).Result(); err != nil {
+		return
+	}
+	return count != 0, nil
 }
 
 // VerifyCode 校验验证码
 func (x *Service) VerifyCode(ctx context.Context, name string, code string) (result bool, err error) {
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, x.Values.KeyName("verify", name)).Result(); err != nil {
-		return
-	}
-	if exists == 0 {
-		return false, nil
-	}
 	var value string
 	if value, err = x.Redis.Get(ctx, x.Values.KeyName("verify", name)).Result(); err != nil {
 		return
@@ -228,9 +235,51 @@ func (x *Service) VerifyCode(ctx context.Context, name string, code string) (res
 	return value == code, nil
 }
 
-// DeleteVerifyCode 移除验证码
-func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
+// DeleteCode 移除验证码
+func (x *Service) DeleteCode(ctx context.Context, name string) error {
 	return x.Redis.Del(ctx, x.Values.KeyName("verify", name)).Err()
+}
+
+type EmailVerifyDto struct {
+	Name string
+	User string
+	Code string
+	Year int
+}
+
+// EmailCode 邮箱验证码
+func (x *Service) EmailCode(user string, code string, to []string) (err error) {
+	var tpl *template.Template
+	if tpl, err = template.ParseFiles("./templates/email_verify.gohtml"); err != nil {
+		return
+	}
+	dto := EmailVerifyDto{
+		Name: x.Values.Name,
+		User: user,
+		Code: code,
+		Year: time.Now().Year(),
+	}
+	var buf bytes.Buffer
+	if err = tpl.Execute(&buf, dto); err != nil {
+		return
+	}
+	option := x.Values.Email
+	e := &email.Email{
+		To:      to,
+		From:    fmt.Sprintf(`%s <%s>`, dto.Name, option.Username),
+		Subject: "用户密码重置验证",
+		HTML:    buf.Bytes(),
+	}
+	if err = e.SendWithTLS(
+		fmt.Sprintf(`%s:%s`, option.Host, option.Port),
+		smtp.PlainAuth("", option.Username, option.Password, option.Host),
+		&tls.Config{
+			ServerName: option.Host,
+		},
+	); err != nil {
+		panic(err)
+	}
+	return
 }
 
 func (x *Service) WriteLoginLog(ctx context.Context, doc *common.LoginLogDto) (err error) {
