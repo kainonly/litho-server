@@ -50,7 +50,7 @@ func New(
 
 	r.HEAD("/user/_check", auth, route.Use(system.CheckUser))
 	r.GET("/user", auth, route.Use(system.GetUser))
-	r.PATCH("/user", auth, route.Use(system.SetUser))
+	r.POST("/user", auth, route.Use(system.SetUser))
 
 	r.GET("/vars", auth, route.Use(system.GetVars))
 	r.GET("/vars/:key", auth, route.Use(system.GetVar))
@@ -65,6 +65,7 @@ func New(
 
 	_feishu := r.Group("/feishu")
 	{
+		_feishu.GET("_option", route.Use(feishu.Option))
 		_feishu.GET("", route.Use(feishu.OAuth))
 		_feishu.POST("", route.Use(feishu.Challenge))
 	}
