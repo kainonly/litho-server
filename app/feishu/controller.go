@@ -51,14 +51,6 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	}
 }
 
-func (x *Controller) T(c *gin.Context) interface{} {
-	token, err := x.Service.GetTenantAccessToken(c.Request.Context())
-	if err != nil {
-		return err
-	}
-	return token
-}
-
 type State struct {
 	Action string `json:"action,omitempty"`
 }
