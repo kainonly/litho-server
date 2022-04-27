@@ -1,6 +1,7 @@
 package common
 
 import (
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -36,7 +37,7 @@ type User struct {
 	Last string `json:"last" bson:"last"`
 
 	// 飞书 OpenID
-	Feishu string `json:"feishu" bson:"feishu"`
+	Feishu bson.M `json:"feishu" bson:"feishu"`
 
 	// 状态
 	Status *bool `bson:"status" json:"status"`

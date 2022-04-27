@@ -7,9 +7,13 @@ import (
 	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
 	"github.com/weplanx/go/passport"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
@@ -55,6 +59,10 @@ func (x *Controller) T(c *gin.Context) interface{} {
 	return token
 }
 
+type State struct {
+	Action string `json:"action,omitempty"`
+}
+
 func (x *Controller) OAuth(c *gin.Context) interface{} {
 	var query struct {
 		Code  string `form:"code" binding:"required"`
@@ -68,10 +76,43 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	data, err := x.Users.FindOneByFeishu(ctx, user.OpenId)
-	if err != nil {
+	var state State
+	if err := jsoniter.Unmarshal([]byte(query.State), &state); err != nil {
 		return err
 	}
+	switch state.Action {
+	case "link":
+		ts, err := c.Cookie("access_token")
+		if err != nil {
+			c.Set("status_code", 401)
+			c.Set("code", "AUTH_EXPIRED")
+			return common.AuthExpired
+		}
+		var claims jwt.MapClaims
+		if claims, err = x.Passport.Verify(ts); err != nil {
+			c.Set("status_code", 401)
+			c.Set("code", "AUTH_EXPIRED")
+			return err
+		}
+		userId, _ := primitive.ObjectIDFromHex(claims["context"].(map[string]interface{})["uid"].(string))
+		if err := x.Users.UpdateOneById(ctx, userId, bson.M{
+			"$set": bson.M{
+				"feishu": user,
+			},
+		}); err != nil {
+			return err
+		}
+		c.Redirect(302, "https://xconsole.kainonly.com:8443/#/authorized")
+		return nil
+	}
+	data, err := x.Users.FindOneByFeishu(ctx, user.OpenId)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			c.Redirect(302, "https://xconsole.kainonly.com:8443/#/unauthorize")
+		}
+		return err
+	}
+
 	// 创建 Token
 	jti := helper.Uuid()
 	var ts string
@@ -92,4 +133,14 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.Redirect(302, "https://xconsole.kainonly.com:8443/")
 	return nil
+}
+
+// Option 获取配置
+func (x *Controller) Option(c *gin.Context) interface{} {
+	feishu := x.Service.Values.Feishu
+	return gin.H{
+		"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+		"redirect": feishu.Redirect,
+		"app_id":   feishu.AppId,
+	}
 }

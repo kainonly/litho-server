@@ -120,6 +120,7 @@ type OpenAPI struct {
 }
 
 type Feishu struct {
+	Redirect          string `yaml:"redirect"`
 	AppId             string `yaml:"app_id"`
 	AppSecret         string `yaml:"app_secret"`
 	EncryptKey        string `yaml:"encrypt_key"`

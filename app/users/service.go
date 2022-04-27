@@ -30,8 +30,8 @@ func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (d
 func (x *Service) FindOneByFeishu(ctx context.Context, openid string) (data common.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
-			"status": true,
-			"feishu": openid,
+			"status":        true,
+			"feishu.openid": openid,
 		}).
 		Decode(&data); err != nil {
 		return
