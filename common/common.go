@@ -57,6 +57,7 @@ func SetValues(path string) (values *Values, err error) {
 
 type Values struct {
 	TrustedProxies []string                 `yaml:"trusted_proxies"`
+	Name           string                   `yaml:"name"`
 	Namespace      string                   `yaml:"namespace"`
 	Key            string                   `yaml:"key"`
 	Cors           Cors                     `yaml:"cors"`
@@ -68,6 +69,7 @@ type Values struct {
 	Passport       passport.Option          `yaml:"passport"`
 	QCloud         QCloud                   `yaml:"qcloud"`
 	Feishu         Feishu                   `yaml:"feishu"`
+	Email          Email                    `yaml:"email"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -125,6 +127,13 @@ type Feishu struct {
 	AppSecret         string `yaml:"app_secret"`
 	EncryptKey        string `yaml:"encrypt_key"`
 	VerificationToken string `yaml:"verification_token"`
+}
+
+type Email struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 type Subscriptions struct {

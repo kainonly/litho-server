@@ -48,6 +48,10 @@ func New(
 	r.PUT("/auth", auth, route.Use(system.AuthRefresh))
 	r.DELETE("/auth", auth, route.Use(system.AuthLogout))
 
+	r.GET("/forget-captcha", route.Use(system.ForgetCaptcha))
+	r.POST("/forget-verify", route.Use(system.ForgetVerify))
+	r.POST("/forget-reset", route.Use(system.ForgetReset))
+
 	r.HEAD("/user/_check", auth, route.Use(system.CheckUser))
 	r.GET("/user", auth, route.Use(system.GetUser))
 	r.POST("/user", auth, route.Use(system.SetUser))

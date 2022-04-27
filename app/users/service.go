@@ -27,6 +27,18 @@ func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (d
 	return
 }
 
+func (x *Service) FindOneByEmail(ctx context.Context, email string) (data common.User, err error) {
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{
+			"email":  email,
+			"status": true,
+		}).
+		Decode(&data); err != nil {
+		return
+	}
+	return
+}
+
 func (x *Service) FindOneByFeishu(ctx context.Context, openid string) (data common.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
@@ -52,6 +64,16 @@ func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID, data i
 func (x *Service) UpdateOneById(ctx context.Context, id primitive.ObjectID, update interface{}) (err error) {
 	if _, err = x.Db.Collection("users").UpdateOne(ctx,
 		bson.M{"_id": id},
+		update,
+	); err != nil {
+		return
+	}
+	return
+}
+
+func (x *Service) UpdateOneByEmail(ctx context.Context, email string, update interface{}) (err error) {
+	if _, err = x.Db.Collection("users").UpdateOne(ctx,
+		bson.M{"email": email},
 		update,
 	); err != nil {
 		return
