@@ -437,6 +437,16 @@ func (x *Controller) GetVars(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
+	for k, v := range values {
+		if common.SecretKey(k) {
+			if v == "" || v == nil {
+				values[k] = "未设置"
+			} else {
+				values[k] = "已设置"
+
+			}
+		}
+	}
 	return values
 }
 
@@ -453,6 +463,9 @@ func (x *Controller) GetVar(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
+	if common.SecretKey(uri.Key) {
+		value = "已设置"
+	}
 	return value
 }
 
@@ -465,7 +478,7 @@ func (x *Controller) SetVar(c *gin.Context) interface{} {
 		return err
 	}
 	var body struct {
-		Value interface{} `json:"value" binding:"required"`
+		Value interface{} `json:"value"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err

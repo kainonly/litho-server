@@ -68,23 +68,23 @@ func (x *Service) RefreshVars(ctx context.Context) (err error) {
 		if cursor, err = x.Db.Collection("vars").Find(ctx, bson.M{}); err != nil {
 			return
 		}
-		var data []map[string]interface{}
+		var data []common.Var
 		if err = cursor.All(ctx, &data); err != nil {
 			return
 		}
 		pipe := x.Redis.Pipeline()
 		for _, v := range data {
-			switch x := v["value"].(type) {
+			switch x := v.Value.(type) {
 			case primitive.A:
 				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v["key"], b)
+				pipe.HSet(ctx, key, v.Key, b)
 				break
 			case primitive.M:
 				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v["key"], b)
+				pipe.HSet(ctx, key, v.Key, b)
 				break
 			default:
-				pipe.HSet(ctx, key, v["key"], x)
+				pipe.HSet(ctx, key, v.Key, x)
 			}
 		}
 		if _, err = pipe.Exec(ctx); err != nil {
@@ -100,7 +100,7 @@ func (x *Service) SetVar(ctx context.Context, key string, value interface{}) (er
 	if exists, err = x.Db.Collection("vars").CountDocuments(ctx, bson.M{"key": key}); err != nil {
 		return
 	}
-	doc := bson.M{"key": key, "value": value}
+	doc := common.NewVar(key, value)
 	if exists == 0 {
 		if _, err = x.Db.Collection("vars").InsertOne(ctx, doc); err != nil {
 			return
