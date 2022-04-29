@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-resty/resty/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
@@ -37,6 +38,8 @@ type Inject struct {
 	Open        *openapi.OpenAPI
 	Cipher      *encryption.Cipher
 	HID         *encryption.HID
+	Passport    *passport.Passport
+	HC          *HttpClients
 }
 
 func SetValues(path string) (values *Values, err error) {
@@ -65,9 +68,6 @@ type Values struct {
 	Engines        map[string]engine.Option `yaml:"engines"`
 	OpenAPI        OpenAPI                  `yaml:"openapi"`
 	Passport       passport.Option          `yaml:"passport"`
-	//QCloud         QCloud                   `yaml:"qcloud"`
-	//Feishu Feishu `yaml:"feishu"`
-	Email Email `yaml:"email"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -101,37 +101,14 @@ type Nats struct {
 	Nkey  string   `yaml:"nkey"`
 }
 
-//type QCloud struct {
-//	SecretID  string    `yaml:"secret_id"`
-//	SecretKey string    `yaml:"secret_key"`
-//	Cos       QCloudCos `yaml:"cos"`
-//}
-//
-//type QCloudCos struct {
-//	Bucket  string `yaml:"bucket"`
-//	Region  string `yaml:"region"`
-//	Expired int64  `yaml:"expired"`
-//}
-
 type OpenAPI struct {
 	Url    string `yaml:"url"`
 	Key    string `yaml:"key"`
 	Secret string `yaml:"secret"`
 }
 
-//type Feishu struct {
-//	Redirect          string `yaml:"redirect"`
-//	AppId             string `yaml:"app_id"`
-//	AppSecret         string `yaml:"app_secret"`
-//	EncryptKey        string `yaml:"encrypt_key"`
-//	VerificationToken string `yaml:"verification_token"`
-//}
-
-type Email struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+type HttpClients struct {
+	Feishu *resty.Client
 }
 
 type Subscriptions struct {

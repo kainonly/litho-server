@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-resty/resty/v2"
 	"github.com/google/wire"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -32,6 +33,7 @@ var Provides = wire.NewSet(
 	UsePassport,
 	UseCipher,
 	UseHID,
+	UseHttpClients,
 )
 
 // UseMongoDB 初始化 Mongodb
@@ -141,4 +143,10 @@ func UseHID(values *common.Values) (idx *encryption.HID, err error) {
 		return
 	}
 	return
+}
+
+func UseHttpClients() *common.HttpClients {
+	return &common.HttpClients{
+		Feishu: resty.New().SetBaseURL("https://open.feishu.cn/open-apis"),
+	}
 }

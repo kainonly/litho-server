@@ -1,7 +1,7 @@
 package tencent
 
 import (
-	"api/app/vars"
+	"api/app/system"
 	"api/common"
 	"context"
 	"crypto/hmac"
@@ -19,12 +19,12 @@ import (
 
 type Service struct {
 	*common.Inject
-	Vars *vars.Service
+	System *system.Service
 }
 
 func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
 	var option map[string]interface{}
-	if option, err = x.Vars.Gets(ctx, []string{
+	if option, err = x.System.GetVars(ctx, []string{
 		"tencent_secret_id",
 		"tencent_secret_key",
 		"tencent_cos_bucket",
@@ -50,7 +50,7 @@ func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
 // CosPresigned 对象存储预签名
 func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error) {
 	var option map[string]interface{}
-	if option, err = x.Vars.Gets(ctx, []string{
+	if option, err = x.System.GetVars(ctx, []string{
 		"tencent_secret_id",
 		"tencent_secret_key",
 		"tencent_cos_bucket",

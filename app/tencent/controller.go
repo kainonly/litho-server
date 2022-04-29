@@ -3,12 +3,12 @@ package tencent
 import "github.com/gin-gonic/gin"
 
 type Controller struct {
-	Service *Service
+	Tencent *Service
 }
 
 // CosPresigned 对象存储预签名
 func (x *Controller) CosPresigned(c *gin.Context) interface{} {
-	data, err := x.Service.CosPresigned(c.Request.Context())
+	data, err := x.Tencent.CosPresigned(c.Request.Context())
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (x *Controller) ImageInfo(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	result, err := x.Service.ImageInfo(ctx, params.Url)
+	result, err := x.Tencent.ImageInfo(ctx, params.Url)
 	if err != nil {
 		return err
 	}
