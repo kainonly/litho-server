@@ -66,8 +66,8 @@ type Values struct {
 	OpenAPI        OpenAPI                  `yaml:"openapi"`
 	Passport       passport.Option          `yaml:"passport"`
 	//QCloud         QCloud                   `yaml:"qcloud"`
-	Feishu Feishu `yaml:"feishu"`
-	Email  Email  `yaml:"email"`
+	//Feishu Feishu `yaml:"feishu"`
+	Email Email `yaml:"email"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -119,13 +119,13 @@ type OpenAPI struct {
 	Secret string `yaml:"secret"`
 }
 
-type Feishu struct {
-	Redirect          string `yaml:"redirect"`
-	AppId             string `yaml:"app_id"`
-	AppSecret         string `yaml:"app_secret"`
-	EncryptKey        string `yaml:"encrypt_key"`
-	VerificationToken string `yaml:"verification_token"`
-}
+//type Feishu struct {
+//	Redirect          string `yaml:"redirect"`
+//	AppId             string `yaml:"app_id"`
+//	AppSecret         string `yaml:"app_secret"`
+//	EncryptKey        string `yaml:"encrypt_key"`
+//	VerificationToken string `yaml:"verification_token"`
+//}
 
 type Email struct {
 	Host     string `yaml:"host"`

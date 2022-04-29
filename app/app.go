@@ -85,8 +85,8 @@ func New(
 	_feishu := r.Group("/feishu")
 	{
 		_feishu.POST("", route.Use(feishu.Challenge))
+		_feishu.GET("option", route.Use(feishu.Option))
 		_feishu.GET("", route.Use(feishu.OAuth))
-		_feishu.GET("option", auth, route.Use(feishu.Option))
 	}
 
 	r.GET("/navs", auth, route.Use(pages.Navs))
