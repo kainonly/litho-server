@@ -1,12 +1,9 @@
-package user
+package system
 
 import (
 	"api/app/departments"
-	"api/app/pages"
 	"api/app/roles"
-	"api/app/sessions"
 	"api/app/users"
-	"api/app/vars"
 	"api/common"
 	"context"
 	"errors"
@@ -15,7 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,14 +21,11 @@ import (
 )
 
 type Controller struct {
-	Service     *Service
+	*common.Inject
+	System      *Service
 	Users       *users.Service
 	Roles       *roles.Service
 	Departments *departments.Service
-	Pages       *pages.Service
-	Passport    *passport.Passport
-	Sessions    *sessions.Service
-	Vars        *vars.Service
 }
 
 // AuthLogin 登录
@@ -64,12 +57,12 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	// 设置会话
-	if err := x.Sessions.Set(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.System.SetSession(ctx, data.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志
 	dto := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
-	go x.Service.WriteLoginLog(context.TODO(), dto)
+	go x.System.PushLoginLog(context.TODO(), dto)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
@@ -84,7 +77,7 @@ func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
 	}
-	if _, err = x.Passport.Verify(ts); err != nil {
+	if _, err = x.System.Passport.Verify(ts); err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return err
@@ -103,7 +96,7 @@ func (x *Controller) AuthCode(c *gin.Context) interface{} {
 	jti := claims.(jwt.MapClaims)["jti"].(string)
 	code := funk.RandomString(8)
 	ctx := c.Request.Context()
-	if err := x.Service.CreateCode(ctx, jti, code, time.Minute); err != nil {
+	if err := x.System.CreateVerifyCode(ctx, jti, code, time.Minute); err != nil {
 		return err
 	}
 	return gin.H{"code": code}
@@ -128,7 +121,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 	jti := claims["jti"].(string)
 	ctx := c.Request.Context()
 	// 刷新验证
-	result, err := x.Service.VerifyCode(ctx, jti, body.Code)
+	result, err := x.System.CheckVerifyCode(ctx, jti, body.Code)
 	if err != nil {
 		return err
 	}
@@ -137,7 +130,7 @@ func (x *Controller) AuthRefresh(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
 	}
-	if err = x.Service.DeleteCode(ctx, jti); err != nil {
+	if err = x.System.DeleteVerifyCode(ctx, jti); err != nil {
 		return err
 	}
 	// 继承 jti 创建新 Token
@@ -159,6 +152,143 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
+// GetSessions 获取会话
+func (x *Controller) GetSessions(c *gin.Context) interface{} {
+	ctx := c.Request.Context()
+	values, err := x.System.GetSessions(ctx)
+	if err != nil {
+		return err
+	}
+	return values
+}
+
+// DeleteSession 删除会话
+func (x *Controller) DeleteSession(c *gin.Context) interface{} {
+	var uri struct {
+		Id string `uri:"id" binding:"required,objectId"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	if err := x.System.DeleteSession(ctx, uri.Id); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteSessions 删除所有会话
+func (x *Controller) DeleteSessions(c *gin.Context) interface{} {
+	ctx := c.Request.Context()
+	if err := x.System.DeleteSessions(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetVars 获取指定变量
+func (x *Controller) GetVars(c *gin.Context) interface{} {
+	var query struct {
+		Keys []string `form:"keys" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	values, err := x.System.GetVars(ctx, query.Keys)
+	if err != nil {
+		return err
+	}
+	for k, v := range values {
+		if common.SecretKey(k) {
+			if v == "" || v == nil {
+				values[k] = "未设置"
+			} else {
+				values[k] = "已设置"
+
+			}
+		}
+	}
+	return values
+}
+
+// GetVar 获取变量
+func (x *Controller) GetVar(c *gin.Context) interface{} {
+	var uri struct {
+		Key string `uri:"key" binding:"required"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	value, err := x.System.GetVar(ctx, uri.Key)
+	if err != nil {
+		return err
+	}
+	if common.SecretKey(uri.Key) {
+		value = "已设置"
+	}
+	return value
+}
+
+// SetVar 设置变量
+func (x *Controller) SetVar(c *gin.Context) interface{} {
+	var uri struct {
+		Key string `uri:"key" binding:"required"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	var body struct {
+		Value interface{} `json:"value"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	if err := x.System.SetVar(ctx, uri.Key, body.Value); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (x *Controller) Options(c *gin.Context) interface{} {
+	var query struct {
+		Type string `form:"type" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	switch query.Type {
+	case "upload":
+		platform, err := x.System.GetVar(ctx, "cloud_platform")
+		if err != nil {
+			return err
+		}
+		switch platform {
+		case "tencent":
+			v, err := x.System.GetVars(ctx, []string{
+				"tencent_cos_bucket",
+				"tencent_cos_region",
+				"tencent_cos_limit",
+			})
+			if err != nil {
+				return err
+			}
+			limit, _ := strconv.Atoi(v["tencent_cos_limit"].(string))
+			return gin.H{
+				"type": "cos",
+				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
+					v["tencent_cos_bucket"], v["tencent_cos_region"],
+				),
+				"limit": limit,
+			}
+		}
+	}
+	return nil
+}
+
 // GetCaptcha 用户验证码
 func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 	var query struct {
@@ -175,7 +305,7 @@ func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 		}
 		return err
 	}
-	exists, err := x.Service.ExistsCode(ctx, query.Email)
+	exists, err := x.System.ExistsVerifyCode(ctx, query.Email)
 	if err != nil {
 		return err
 	}
@@ -183,10 +313,10 @@ func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 		return errors.New("您已获取验证码，请稍后再试~")
 	}
 	code := funk.RandomString(8)
-	if err = x.Service.CreateCode(ctx, query.Email, code, time.Minute*5); err != nil {
+	if err = x.System.CreateVerifyCode(ctx, query.Email, code, time.Minute*5); err != nil {
 		return err
 	}
-	if err = x.Service.EmailCode(data.Username, code, []string{query.Email}); err != nil {
+	if err = x.System.EmailCode(ctx, data.Username, code, []string{query.Email}); err != nil {
 		return err
 	}
 	return nil
@@ -202,7 +332,7 @@ func (x *Controller) VerifyCaptcha(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	result, err := x.Service.VerifyCode(ctx, body.Email, body.Captcha)
+	result, err := x.System.CheckVerifyCode(ctx, body.Email, body.Captcha)
 	if err != nil {
 		return err
 	}
@@ -214,7 +344,7 @@ func (x *Controller) VerifyCaptcha(c *gin.Context) interface{} {
 		"exp": time.Now().Add(time.Minute * 5).Unix(),
 		"iss": body.Email,
 	})
-	ts, err := token.SignedString([]byte(x.Service.Values.Key))
+	ts, err := token.SignedString([]byte(x.System.Values.Key))
 	if err != nil {
 		return err
 	}
@@ -224,7 +354,7 @@ func (x *Controller) VerifyCaptcha(c *gin.Context) interface{} {
 }
 
 // ResetUser 重置用户密码
-func (x *Controller) Reset(c *gin.Context) interface{} {
+func (x *Controller) ResetUser(c *gin.Context) interface{} {
 	var body struct {
 		Token    string `json:"token" binding:"required,jwt"`
 		Password string `json:"password" binding:"required"`
@@ -236,7 +366,7 @@ func (x *Controller) Reset(c *gin.Context) interface{} {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("验证失败，签名方式不一致")
 		}
-		return []byte(x.Service.Values.Key), nil
+		return []byte(x.System.Values.Key), nil
 	})
 	if err != nil {
 		return err
@@ -255,7 +385,7 @@ func (x *Controller) Reset(c *gin.Context) interface{} {
 }
 
 // ExistsUser 检查用户是否存在
-func (x *Controller) Exists(c *gin.Context) interface{} {
+func (x *Controller) ExistsUser(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -299,8 +429,8 @@ func (x *Controller) Exists(c *gin.Context) interface{} {
 	return nil
 }
 
-// Get 获取用户信息
-func (x *Controller) Get(c *gin.Context) interface{} {
+// GetUser 获取用户信息
+func (x *Controller) GetUser(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -335,8 +465,8 @@ func (x *Controller) Get(c *gin.Context) interface{} {
 	return result
 }
 
-// Set 设置用户信息
-func (x *Controller) Set(c *gin.Context) interface{} {
+// SetUser 设置用户信息
+func (x *Controller) SetUser(c *gin.Context) interface{} {
 	var headers struct {
 		Action string `header:"wpx-action"`
 	}

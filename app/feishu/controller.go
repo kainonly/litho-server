@@ -1,10 +1,8 @@
 package feishu
 
 import (
-	"api/app/sessions"
-	"api/app/user"
+	"api/app/system"
 	"api/app/users"
-	"api/app/vars"
 	"api/common"
 	"context"
 	"errors"
@@ -12,7 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,12 +17,10 @@ import (
 )
 
 type Controller struct {
-	Service  *Service
-	Sessions *sessions.Service
-	User     *user.Service
-	Users    *users.Service
-	Vars     *vars.Service
-	Passport *passport.Passport
+	*common.Inject
+	Feishu *Service
+	System *system.Service
+	Users  *users.Service
 }
 
 func (x *Controller) Challenge(c *gin.Context) interface{} {
@@ -36,11 +31,11 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	option, err := x.Vars.Gets(ctx, []string{"feishu_encrypt_key", "feishu_verification_token"})
+	option, err := x.System.GetVars(ctx, []string{"feishu_encrypt_key", "feishu_verification_token"})
 	if err != nil {
 		return err
 	}
-	content, err := x.Service.Decrypt(body.Encrypt, option["feishu_encrypt_key"].(string))
+	content, err := x.Feishu.Decrypt(body.Encrypt, option["feishu_encrypt_key"].(string))
 	if err != nil {
 		return err
 	}
@@ -73,7 +68,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	userData, err := x.Service.GetAccessToken(ctx, query.Code)
+	userData, err := x.Feishu.GetAccessToken(ctx, query.Code)
 	if err != nil {
 		return err
 	}
@@ -123,12 +118,12 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	// 设置会话
-	if err := x.Sessions.Set(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.System.SetSession(ctx, data.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志
 	logData := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
-	go x.User.WriteLoginLog(context.TODO(), logData)
+	go x.System.PushLoginLog(context.TODO(), logData)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
@@ -139,7 +134,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 // Option 获取配置
 func (x *Controller) Option(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	option, err := x.Vars.Gets(ctx, []string{"redirect_url", "feishu_app_id"})
+	option, err := x.System.GetVars(ctx, []string{"redirect_url", "feishu_app_id"})
 	if err != nil {
 		return err
 	}

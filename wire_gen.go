@@ -12,11 +12,9 @@ import (
 	"api/app/feishu"
 	"api/app/pages"
 	"api/app/roles"
-	"api/app/sessions"
+	"api/app/system"
 	"api/app/tencent"
-	"api/app/user"
 	"api/app/users"
-	"api/app/vars"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -26,25 +24,20 @@ import (
 // Injectors from wire.go:
 
 func App(value *common.Values) (*gin.Engine, error) {
-	conn, err := bootstrap.UseNats(value)
-	if err != nil {
-		return nil, err
-	}
-	jetStreamContext, err := bootstrap.UseJetStream(conn)
-	if err != nil {
-		return nil, err
-	}
-	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
-	passport := bootstrap.UsePassport(value)
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
 	}
 	database := bootstrap.UseDatabase(client, value)
 	redisClient, err := bootstrap.UseRedis(value)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := bootstrap.UseNats(value)
+	if err != nil {
+		return nil, err
+	}
+	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +50,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	passport := bootstrap.UsePassport(value)
+	httpClients := bootstrap.UseHttpClients()
 	inject := &common.Inject{
 		Values:      value,
 		MongoClient: client,
@@ -67,27 +62,25 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Open:        openAPI,
 		Cipher:      cipher,
 		HID:         hid,
+		Passport:    passport,
+		HC:          httpClients,
 	}
-	service := &vars.Service{
+	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	service := &users.Service{
 		Inject: inject,
 	}
-	sessionsService := &sessions.Service{
+	systemService := &system.Service{
 		Inject: inject,
-		Vars:   service,
+		Users:  service,
 	}
 	middleware := &app.Middleware{
+		Inject:   inject,
 		Values:   value,
 		Transfer: transfer,
-		Passport: passport,
-		Sessions: sessionsService,
-	}
-	usersService := &users.Service{
-		Inject: inject,
-	}
-	userService := &user.Service{
-		Inject: inject,
-		Vars:   service,
-		Users:  usersService,
+		System:   systemService,
 	}
 	rolesService := &roles.Service{
 		Inject: inject,
@@ -95,40 +88,29 @@ func App(value *common.Values) (*gin.Engine, error) {
 	departmentsService := &departments.Service{
 		Inject: inject,
 	}
-	pagesService := &pages.Service{
-		Inject: inject,
-	}
-	controller := &user.Controller{
-		Service:     userService,
-		Users:       usersService,
+	controller := &system.Controller{
+		Inject:      inject,
+		System:      systemService,
+		Users:       service,
 		Roles:       rolesService,
 		Departments: departmentsService,
-		Pages:       pagesService,
-		Passport:    passport,
-		Sessions:    sessionsService,
-		Vars:        service,
-	}
-	varsController := &vars.Controller{
-		Service: service,
-	}
-	sessionsController := sessions.Controller{
-		Service: sessionsService,
 	}
 	tencentService := &tencent.Service{
 		Inject: inject,
-		Vars:   service,
+		System: systemService,
 	}
 	tencentController := &tencent.Controller{
-		Service: tencentService,
+		Tencent: tencentService,
 	}
-	feishuService := feishu.NewService(inject, service)
+	feishuService := &feishu.Service{
+		Inject: inject,
+		System: systemService,
+	}
 	feishuController := &feishu.Controller{
-		Service:  feishuService,
-		Sessions: sessionsService,
-		User:     userService,
-		Users:    usersService,
-		Vars:     service,
-		Passport: passport,
+		Inject: inject,
+		Feishu: feishuService,
+		System: systemService,
+		Users:  service,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
@@ -139,9 +121,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Engine:  engineEngine,
 		Service: engineService,
 	}
+	pagesService := &pages.Service{
+		Inject: inject,
+	}
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	ginEngine := app.New(middleware, controller, varsController, sessionsController, tencentController, feishuController, engineController, pagesController)
+	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController)
 	return ginEngine, nil
 }

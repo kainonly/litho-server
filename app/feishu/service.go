@@ -1,7 +1,7 @@
 package feishu
 
 import (
-	"api/app/vars"
+	"api/app/system"
 	"api/common"
 	"context"
 	"crypto/aes"
@@ -10,23 +10,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"strings"
 	"time"
 )
 
 type Service struct {
 	*common.Inject
-	Vars   *vars.Service
-	client *resty.Client
-}
-
-func NewService(i *common.Inject, vars *vars.Service) *Service {
-	return &Service{
-		Inject: i,
-		Vars:   vars,
-		client: resty.New().SetBaseURL("https://open.feishu.cn/open-apis"),
-	}
+	System *system.Service
 }
 
 func (x *Service) Decrypt(encrypt string, key string) (string, error) {
@@ -69,11 +59,11 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 	}
 	if exists == 0 {
 		var option map[string]interface{}
-		if option, err = x.Vars.Gets(ctx, []string{"feishu_app_id", "feishu_app_secret"}); err != nil {
+		if option, err = x.System.GetVars(ctx, []string{"feishu_app_id", "feishu_app_secret"}); err != nil {
 			return
 		}
 		var body map[string]interface{}
-		if _, err = x.client.R().
+		if _, err = x.HC.Feishu.R().
 			SetBody(map[string]interface{}{
 				"app_id":     option["feishu_app_id"],
 				"app_secret": option["feishu_app_secret"],
@@ -118,7 +108,7 @@ func (x *Service) GetAccessToken(ctx context.Context, code string) (_ UserDto, e
 		Msg  string  `json:"msg"`
 		Data UserDto `json:"data"`
 	}
-	if _, err = x.client.R().
+	if _, err = x.HC.Feishu.R().
 		SetAuthToken(token).
 		SetBody(map[string]interface{}{
 			"grant_type": "authorization_code",

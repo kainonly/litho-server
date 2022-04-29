@@ -1,7 +1,7 @@
 package app
 
 import (
-	"api/app/sessions"
+	"api/app/system"
 	"api/common"
 	"bytes"
 	"github.com/gin-contrib/cors"
@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/passport"
 	"github.com/weplanx/transfer"
 	"go.uber.org/zap"
 	"io"
@@ -20,10 +19,10 @@ import (
 )
 
 type Middleware struct {
+	*common.Inject
 	Values   *common.Values
 	Transfer *transfer.Transfer
-	Passport *passport.Passport
-	Sessions *sessions.Service
+	System   *system.Service
 }
 
 func (x *Middleware) Global() *gin.Engine {
@@ -121,7 +120,7 @@ func (x *Middleware) AuthGuard() gin.HandlerFunc {
 		}
 		ctx := c.Request.Context()
 		uid := claims["context"].(map[string]interface{})["uid"].(string)
-		ok, err := x.Sessions.Verify(ctx, uid, claims["jti"].(string))
+		ok, err := x.System.VerifySession(ctx, uid, claims["jti"].(string))
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{
 				"code":    "AUTH_CONFLICT",
@@ -136,7 +135,7 @@ func (x *Middleware) AuthGuard() gin.HandlerFunc {
 			})
 			return
 		}
-		if err = x.Sessions.Renew(ctx, uid); err != nil {
+		if err = x.System.RenewSession(ctx, uid); err != nil {
 			c.AbortWithStatusJSON(500, gin.H{
 				"message": err.Error(),
 			})

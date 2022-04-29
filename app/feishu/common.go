@@ -6,5 +6,5 @@ import (
 
 var Provides = wire.NewSet(
 	wire.Struct(new(Controller), "*"),
-	NewService,
+	wire.Struct(new(Service), "*"),
 )
