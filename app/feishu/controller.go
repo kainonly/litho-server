@@ -1,7 +1,8 @@
 package feishu
 
 import (
-	"api/app/system"
+	"api/app/sessions"
+	"api/app/user"
 	"api/app/users"
 	"api/common"
 	"context"
@@ -19,7 +20,8 @@ import (
 
 type Controller struct {
 	Service  *Service
-	System   *system.Service
+	Sessions *sessions.Service
+	System   *user.Service
 	Users    *users.Service
 	Passport *passport.Passport
 }
@@ -114,7 +116,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	// 设置会话
-	if err := x.System.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.Sessions.Set(ctx, data.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志

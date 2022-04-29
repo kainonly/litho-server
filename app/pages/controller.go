@@ -9,6 +9,31 @@ type Controller struct {
 	Service *Service
 }
 
+// Navs 页面导航
+func (x *Controller) Navs(c *gin.Context) interface{} {
+	ctx := c.Request.Context()
+	navs, err := x.Service.Navs(ctx)
+	if err != nil {
+		return err
+	}
+	return navs
+}
+
+func (x *Controller) Dynamic(c *gin.Context) interface{} {
+	var uri struct {
+		Id string `uri:"id" binding:"required,objectId"`
+	}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		return err
+	}
+	ctx := c.Request.Context()
+	data, err := x.Service.FindOneById(ctx, uri.Id)
+	if err != nil {
+		return err
+	}
+	return data
+}
+
 func (x *Controller) GetIndexes(c *gin.Context) interface{} {
 	var uri struct {
 		Id string `uri:"id" binding:"required,objectId"`

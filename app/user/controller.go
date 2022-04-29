@@ -1,9 +1,10 @@
-package system
+package user
 
 import (
 	"api/app/departments"
 	"api/app/pages"
 	"api/app/roles"
+	"api/app/sessions"
 	"api/app/users"
 	"api/app/vars"
 	"api/common"
@@ -30,13 +31,8 @@ type Controller struct {
 	Departments *departments.Service
 	Pages       *pages.Service
 	Passport    *passport.Passport
+	Sessions    *sessions.Service
 	Vars        *vars.Service
-}
-
-func (x *Controller) Index(c *gin.Context) interface{} {
-	return gin.H{
-		"time": time.Now(),
-	}
 }
 
 // AuthLogin 登录
@@ -68,7 +64,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		return err
 	}
 	// 设置会话
-	if err := x.Service.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.Sessions.Set(ctx, data.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志
@@ -163,8 +159,8 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
-// CaptchaUser 用户验证码
-func (x *Controller) CaptchaUser(c *gin.Context) interface{} {
+// GetCaptcha 用户验证码
+func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 	var query struct {
 		Email string `form:"email" binding:"required,email"`
 	}
@@ -196,8 +192,8 @@ func (x *Controller) CaptchaUser(c *gin.Context) interface{} {
 	return nil
 }
 
-// VerifyUser 校验验证码
-func (x *Controller) VerifyUser(c *gin.Context) interface{} {
+// VerifyCaptcha 校验验证码
+func (x *Controller) VerifyCaptcha(c *gin.Context) interface{} {
 	var body struct {
 		Email   string `json:"email" binding:"required,email"`
 		Captcha string `json:"captcha" binding:"required"`
@@ -228,7 +224,7 @@ func (x *Controller) VerifyUser(c *gin.Context) interface{} {
 }
 
 // ResetUser 重置用户密码
-func (x *Controller) ResetUser(c *gin.Context) interface{} {
+func (x *Controller) Reset(c *gin.Context) interface{} {
 	var body struct {
 		Token    string `json:"token" binding:"required,jwt"`
 		Password string `json:"password" binding:"required"`
@@ -258,8 +254,8 @@ func (x *Controller) ResetUser(c *gin.Context) interface{} {
 	return nil
 }
 
-// CheckUser 检查当前用户可变更属性
-func (x *Controller) CheckUser(c *gin.Context) interface{} {
+// ExistsUser 检查用户是否存在
+func (x *Controller) Exists(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -303,8 +299,8 @@ func (x *Controller) CheckUser(c *gin.Context) interface{} {
 	return nil
 }
 
-// GetUser 获取用户信息
-func (x *Controller) GetUser(c *gin.Context) interface{} {
+// Get 获取用户信息
+func (x *Controller) Get(c *gin.Context) interface{} {
 	claims, exists := c.Get(common.TokenClaimsKey)
 	if !exists {
 		c.Set("status_code", 401)
@@ -339,8 +335,8 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 	return result
 }
 
-// SetUser 设置用户信息
-func (x *Controller) SetUser(c *gin.Context) interface{} {
+// Set 设置用户信息
+func (x *Controller) Set(c *gin.Context) interface{} {
 	var headers struct {
 		Action string `header:"wpx-action"`
 	}
@@ -424,85 +420,4 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 		}
 	}
 	return nil
-}
-
-// GetSessions 获取会话
-func (x *Controller) GetSessions(c *gin.Context) interface{} {
-	ctx := c.Request.Context()
-	values, err := x.Service.GetSessions(ctx)
-	if err != nil {
-		return err
-	}
-	return values
-}
-
-// DeleteSessions 删除所有会话
-func (x *Controller) DeleteSessions(c *gin.Context) interface{} {
-	ctx := c.Request.Context()
-	if err := x.Service.DeleteSessions(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-// DeleteSession 删除会话
-func (x *Controller) DeleteSession(c *gin.Context) interface{} {
-	var uri struct {
-		Id string `uri:"id" binding:"required,objectId"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	if err := x.Service.DeleteSession(ctx, uri.Id); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Sort 通用排序
-func (x *Controller) Sort(c *gin.Context) interface{} {
-	var uri struct {
-		Model string `uri:"model"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	var body struct {
-		Sort []primitive.ObjectID `json:"sort" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	result, err := x.Service.Sort(ctx, uri.Model, body.Sort)
-	if err != nil {
-		return err
-	}
-	return result
-}
-
-// Navs 页面导航
-func (x *Controller) Navs(c *gin.Context) interface{} {
-	ctx := c.Request.Context()
-	navs, err := x.Pages.Navs(ctx)
-	if err != nil {
-		return err
-	}
-	return navs
-}
-
-func (x *Controller) Dynamic(c *gin.Context) interface{} {
-	var uri struct {
-		Id string `uri:"id" binding:"required,objectId"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	data, err := x.Pages.FindOneById(ctx, uri.Id)
-	if err != nil {
-		return err
-	}
-	return data
 }
