@@ -77,7 +77,7 @@ func (x *Controller) Set(c *gin.Context) interface{} {
 	return nil
 }
 
-func (x *Controller) Option(c *gin.Context) interface{} {
+func (x *Controller) Options(c *gin.Context) interface{} {
 	var query struct {
 		Type string `form:"type" binding:"required"`
 	}

@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strconv"
+	"time"
 )
 
 type Service struct {
@@ -105,7 +106,7 @@ type UploadDto struct {
 	Limit int    `json:"limit"`
 }
 
-func (x *Service) Upload(ctx context.Context) (data *UploadDto, err error) {
+func (x *Service) GetUpload(ctx context.Context) (data *UploadDto, err error) {
 	var platform string
 	if platform, err = x.Get(ctx, "cloud_platform"); err != nil {
 		return
@@ -129,6 +130,17 @@ func (x *Service) Upload(ctx context.Context) (data *UploadDto, err error) {
 			Limit: limit,
 		}
 		break
+	}
+	return
+}
+
+// GetExpiration 获取会话有效时间
+func (x *Service) GetExpiration(ctx context.Context) (t time.Duration) {
+	value, _ := x.Get(ctx, "user_session_expire")
+	if value != "" {
+		t, _ = time.ParseDuration(value)
+	} else {
+		t = time.Hour
 	}
 	return
 }
