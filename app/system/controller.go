@@ -5,6 +5,7 @@ import (
 	"api/app/pages"
 	"api/app/roles"
 	"api/app/users"
+	"api/app/vars"
 	"api/common"
 	"context"
 	"errors"
@@ -29,6 +30,7 @@ type Controller struct {
 	Departments *departments.Service
 	Pages       *pages.Service
 	Passport    *passport.Passport
+	Vars        *vars.Service
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
@@ -161,8 +163,8 @@ func (x *Controller) AuthLogout(c *gin.Context) interface{} {
 	return nil
 }
 
-// ForgetCaptcha 获取密码重置验证码
-func (x *Controller) ForgetCaptcha(c *gin.Context) interface{} {
+// CaptchaUser 用户验证码
+func (x *Controller) CaptchaUser(c *gin.Context) interface{} {
 	var query struct {
 		Email string `form:"email" binding:"required,email"`
 	}
@@ -194,8 +196,8 @@ func (x *Controller) ForgetCaptcha(c *gin.Context) interface{} {
 	return nil
 }
 
-// ForgetVerify 验证密码重置验证码
-func (x *Controller) ForgetVerify(c *gin.Context) interface{} {
+// VerifyUser 校验验证码
+func (x *Controller) VerifyUser(c *gin.Context) interface{} {
 	var body struct {
 		Email   string `json:"email" binding:"required,email"`
 		Captcha string `json:"captcha" binding:"required"`
@@ -225,8 +227,8 @@ func (x *Controller) ForgetVerify(c *gin.Context) interface{} {
 	}
 }
 
-// ForgetReset 重置密码
-func (x *Controller) ForgetReset(c *gin.Context) interface{} {
+// ResetUser 重置用户密码
+func (x *Controller) ResetUser(c *gin.Context) interface{} {
 	var body struct {
 		Token    string `json:"token" binding:"required,jwt"`
 		Password string `json:"password" binding:"required"`
@@ -424,72 +426,6 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 	return nil
 }
 
-// GetVars 获取指定变量
-func (x *Controller) GetVars(c *gin.Context) interface{} {
-	var query struct {
-		Keys []string `form:"keys" binding:"required"`
-	}
-	if err := c.ShouldBindQuery(&query); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	values, err := x.Service.GetVars(ctx, query.Keys)
-	if err != nil {
-		return err
-	}
-	for k, v := range values {
-		if common.SecretKey(k) {
-			if v == "" || v == nil {
-				values[k] = "未设置"
-			} else {
-				values[k] = "已设置"
-
-			}
-		}
-	}
-	return values
-}
-
-// GetVar 获取变量
-func (x *Controller) GetVar(c *gin.Context) interface{} {
-	var uri struct {
-		Key string `uri:"key" binding:"required"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	value, err := x.Service.GetVar(ctx, uri.Key)
-	if err != nil {
-		return err
-	}
-	if common.SecretKey(uri.Key) {
-		value = "已设置"
-	}
-	return value
-}
-
-// SetVar 设置变量
-func (x *Controller) SetVar(c *gin.Context) interface{} {
-	var uri struct {
-		Key string `uri:"key" binding:"required"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	var body struct {
-		Value interface{} `json:"value"`
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	if err := x.Service.SetVar(ctx, uri.Key, body.Value); err != nil {
-		return err
-	}
-	return nil
-}
-
 // GetSessions 获取会话
 func (x *Controller) GetSessions(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
@@ -544,15 +480,6 @@ func (x *Controller) Sort(c *gin.Context) interface{} {
 		return err
 	}
 	return result
-}
-
-// Uploader 上传签名
-func (x *Controller) Uploader(c *gin.Context) interface{} {
-	data, err := x.Service.Uploader()
-	if err != nil {
-		return err
-	}
-	return data
 }
 
 // Navs 页面导航

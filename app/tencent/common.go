@@ -1,4 +1,4 @@
-package pictures
+package tencent
 
 import (
 	"github.com/google/wire"

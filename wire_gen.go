@@ -11,10 +11,11 @@ import (
 	"api/app/departments"
 	"api/app/feishu"
 	"api/app/pages"
-	"api/app/pictures"
 	"api/app/roles"
 	"api/app/system"
+	"api/app/tencent"
 	"api/app/users"
+	"api/app/vars"
 	"api/bootstrap"
 	"api/common"
 	"github.com/gin-gonic/gin"
@@ -50,10 +51,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	cosClient, err := bootstrap.UseCos(value)
-	if err != nil {
-		return nil, err
-	}
 	inject := &common.Inject{
 		Values:      value,
 		MongoClient: client,
@@ -64,14 +61,17 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Open:        openAPI,
 		Cipher:      cipher,
 		HID:         hid,
-		Cos:         cosClient,
 	}
-	service := &users.Service{
+	service := &vars.Service{
+		Inject: inject,
+	}
+	usersService := &users.Service{
 		Inject: inject,
 	}
 	systemService := &system.Service{
 		Inject: inject,
-		Users:  service,
+		Vars:   service,
+		Users:  usersService,
 	}
 	passport := bootstrap.UsePassport(value)
 	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
@@ -94,11 +94,15 @@ func App(value *common.Values) (*gin.Engine, error) {
 	}
 	controller := &system.Controller{
 		Service:     systemService,
-		Users:       service,
+		Users:       usersService,
 		Roles:       rolesService,
 		Departments: departmentsService,
 		Pages:       pagesService,
 		Passport:    passport,
+		Vars:        service,
+	}
+	varsController := &vars.Controller{
+		Service: service,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
@@ -112,19 +116,20 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
+	tencentService := &tencent.Service{
+		Inject: inject,
+		Vars:   service,
+	}
+	tencentController := &tencent.Controller{
+		Service: tencentService,
+	}
 	feishuService := feishu.NewService(inject)
 	feishuController := &feishu.Controller{
 		Service:  feishuService,
 		System:   systemService,
-		Users:    service,
+		Users:    usersService,
 		Passport: passport,
 	}
-	picturesService := &pictures.Service{
-		Inject: inject,
-	}
-	picturesController := &pictures.Controller{
-		Service: picturesService,
-	}
-	ginEngine := app.New(value, middleware, controller, engineController, pagesController, feishuController, picturesController)
+	ginEngine := app.New(value, middleware, controller, varsController, engineController, pagesController, tencentController, feishuController)
 	return ginEngine, nil
 }

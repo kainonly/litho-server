@@ -1,11 +1,18 @@
-package pictures
+package tencent
 
-import (
-	"github.com/gin-gonic/gin"
-)
+import "github.com/gin-gonic/gin"
 
 type Controller struct {
 	Service *Service
+}
+
+// CosPresigned 对象存储预签名
+func (x *Controller) CosPresigned(c *gin.Context) interface{} {
+	data, err := x.Service.CosPresigned(c.Request.Context())
+	if err != nil {
+		return err
+	}
+	return data
 }
 
 func (x *Controller) ImageInfo(c *gin.Context) interface{} {
