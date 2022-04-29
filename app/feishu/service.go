@@ -1,6 +1,7 @@
 package feishu
 
 import (
+	"api/app/vars"
 	"api/common"
 	"context"
 	"crypto/aes"
@@ -16,12 +17,14 @@ import (
 
 type Service struct {
 	*common.Inject
+	Vars   *vars.Service
 	client *resty.Client
 }
 
-func NewService(i *common.Inject) *Service {
+func NewService(i *common.Inject, vars *vars.Service) *Service {
 	return &Service{
 		Inject: i,
+		Vars:   vars,
 		client: resty.New().SetBaseURL("https://open.feishu.cn/open-apis"),
 	}
 }
@@ -65,11 +68,15 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		return
 	}
 	if exists == 0 {
+		var option map[string]interface{}
+		if option, err = x.Vars.Gets(ctx, []string{"feishu_app_id", "feishu_app_secret"}); err != nil {
+			return
+		}
 		var body map[string]interface{}
 		if _, err = x.client.R().
 			SetBody(map[string]interface{}{
-				"app_id":     x.Values.Feishu.AppId,
-				"app_secret": x.Values.Feishu.AppSecret,
+				"app_id":     option["feishu_app_id"],
+				"app_secret": option["feishu_app_secret"],
 			}).
 			SetResult(&body).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {

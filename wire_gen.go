@@ -121,12 +121,13 @@ func App(value *common.Values) (*gin.Engine, error) {
 	tencentController := &tencent.Controller{
 		Service: tencentService,
 	}
-	feishuService := feishu.NewService(inject)
+	feishuService := feishu.NewService(inject, service)
 	feishuController := &feishu.Controller{
 		Service:  feishuService,
 		Sessions: sessionsService,
-		System:   userService,
+		User:     userService,
 		Users:    usersService,
+		Vars:     service,
 		Passport: passport,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)

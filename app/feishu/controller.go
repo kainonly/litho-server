@@ -4,6 +4,7 @@ import (
 	"api/app/sessions"
 	"api/app/user"
 	"api/app/users"
+	"api/app/vars"
 	"api/common"
 	"context"
 	"errors"
@@ -21,8 +22,9 @@ import (
 type Controller struct {
 	Service  *Service
 	Sessions *sessions.Service
-	System   *user.Service
+	User     *user.Service
 	Users    *users.Service
+	Vars     *vars.Service
 	Passport *passport.Passport
 }
 
@@ -33,7 +35,12 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	content, err := x.Service.Decrypt(body.Encrypt, x.Service.Values.Feishu.EncryptKey)
+	ctx := c.Request.Context()
+	option, err := x.Vars.Gets(ctx, []string{"feishu_encrypt_key", "feishu_verification_token"})
+	if err != nil {
+		return err
+	}
+	content, err := x.Service.Decrypt(body.Encrypt, option["feishu_encrypt_key"].(string))
 	if err != nil {
 		return err
 	}
@@ -45,7 +52,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err = jsoniter.Unmarshal([]byte(content), &dto); err != nil {
 		return err
 	}
-	if dto.Token != x.Service.Values.Feishu.VerificationToken {
+	if dto.Token != option["feishu_verification_token"] {
 		return errors.New("验证令牌不一致")
 	}
 	return gin.H{
@@ -66,12 +73,12 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	user, err := x.Service.GetAccessToken(ctx, query.Code)
+	userData, err := x.Service.GetAccessToken(ctx, query.Code)
 	if err != nil {
 		return err
 	}
 	var state State
-	if err := jsoniter.Unmarshal([]byte(query.State), &state); err != nil {
+	if err = jsoniter.Unmarshal([]byte(query.State), &state); err != nil {
 		return err
 	}
 	switch state.Action {
@@ -91,7 +98,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		userId, _ := primitive.ObjectIDFromHex(claims["context"].(map[string]interface{})["uid"].(string))
 		if err := x.Users.UpdateOneById(ctx, userId, bson.M{
 			"$set": bson.M{
-				"feishu": user,
+				"feishu": userData,
 			},
 		}); err != nil {
 			return err
@@ -99,7 +106,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		c.Redirect(302, "https://xconsole.kainonly.com:8443/#/authorized")
 		return nil
 	}
-	data, err := x.Users.FindOneByFeishu(ctx, user.OpenId)
+	data, err := x.Users.FindOneByFeishu(ctx, userData.OpenId)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			c.Redirect(302, "https://xconsole.kainonly.com:8443/#/unauthorize")
@@ -120,8 +127,8 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	// 写入日志
-	dto := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
-	go x.System.WriteLoginLog(context.TODO(), dto)
+	logData := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
+	go x.User.WriteLoginLog(context.TODO(), logData)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
@@ -131,10 +138,14 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 
 // Option 获取配置
 func (x *Controller) Option(c *gin.Context) interface{} {
-	feishu := x.Service.Values.Feishu
+	ctx := c.Request.Context()
+	option, err := x.Vars.Gets(ctx, []string{"redirect_url", "feishu_app_id"})
+	if err != nil {
+		return err
+	}
 	return gin.H{
 		"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
-		"redirect": feishu.Redirect,
-		"app_id":   feishu.AppId,
+		"redirect": option["redirect_url"],
+		"app_id":   option["feishu_app_id"],
 	}
 }
