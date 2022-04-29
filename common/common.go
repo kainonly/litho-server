@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
-	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
@@ -38,7 +37,6 @@ type Inject struct {
 	Open        *openapi.OpenAPI
 	Cipher      *encryption.Cipher
 	HID         *encryption.HID
-	Cos         *cos.Client
 }
 
 func SetValues(path string) (values *Values, err error) {
@@ -67,9 +65,9 @@ type Values struct {
 	Engines        map[string]engine.Option `yaml:"engines"`
 	OpenAPI        OpenAPI                  `yaml:"openapi"`
 	Passport       passport.Option          `yaml:"passport"`
-	QCloud         QCloud                   `yaml:"qcloud"`
-	Feishu         Feishu                   `yaml:"feishu"`
-	Email          Email                    `yaml:"email"`
+	//QCloud         QCloud                   `yaml:"qcloud"`
+	Feishu Feishu `yaml:"feishu"`
+	Email  Email  `yaml:"email"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -103,17 +101,17 @@ type Nats struct {
 	Nkey  string   `yaml:"nkey"`
 }
 
-type QCloud struct {
-	SecretID  string    `yaml:"secret_id"`
-	SecretKey string    `yaml:"secret_key"`
-	Cos       QCloudCos `yaml:"cos"`
-}
-
-type QCloudCos struct {
-	Bucket  string `yaml:"bucket"`
-	Region  string `yaml:"region"`
-	Expired int64  `yaml:"expired"`
-}
+//type QCloud struct {
+//	SecretID  string    `yaml:"secret_id"`
+//	SecretKey string    `yaml:"secret_key"`
+//	Cos       QCloudCos `yaml:"cos"`
+//}
+//
+//type QCloudCos struct {
+//	Bucket  string `yaml:"bucket"`
+//	Region  string `yaml:"region"`
+//	Expired int64  `yaml:"expired"`
+//}
 
 type OpenAPI struct {
 	Url    string `yaml:"url"`

@@ -4,10 +4,11 @@ import (
 	"api/app/departments"
 	"api/app/feishu"
 	"api/app/pages"
-	"api/app/pictures"
 	"api/app/roles"
 	"api/app/system"
+	"api/app/tencent"
 	"api/app/users"
+	"api/app/vars"
 	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -22,8 +23,9 @@ var Provides = wire.NewSet(
 	roles.Provides,
 	departments.Provides,
 	users.Provides,
+	tencent.Provides,
 	feishu.Provides,
-	pictures.Provides,
+	vars.Provides,
 	New,
 	Subscribe,
 )
@@ -32,10 +34,11 @@ func New(
 	values *common.Values,
 	systemMiddleware *system.Middleware,
 	system *system.Controller,
+	vars *vars.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
+	tencent *tencent.Controller,
 	feishu *feishu.Controller,
-	pictures *pictures.Controller,
 ) *gin.Engine {
 	r := globalMiddleware(gin.New(), values)
 	r.Use(systemMiddleware.RequestLogging())
@@ -48,24 +51,38 @@ func New(
 	r.PUT("/auth", auth, route.Use(system.AuthRefresh))
 	r.DELETE("/auth", auth, route.Use(system.AuthLogout))
 
-	r.GET("/forget-captcha", route.Use(system.ForgetCaptcha))
-	r.POST("/forget-verify", route.Use(system.ForgetVerify))
-	r.POST("/forget-reset", route.Use(system.ForgetReset))
+	_user := r.Group("/user")
+	{
+		_user.GET("/captcha", route.Use(system.CaptchaUser))
+		_user.POST("/verify", route.Use(system.VerifyUser))
+		_user.POST("/reset", route.Use(system.ResetUser))
+		_user.HEAD("", auth, route.Use(system.CheckUser))
+		_user.GET("", auth, route.Use(system.GetUser))
+		_user.POST("", auth, route.Use(system.SetUser))
+	}
 
-	r.HEAD("/user/_check", auth, route.Use(system.CheckUser))
-	r.GET("/user", auth, route.Use(system.GetUser))
-	r.POST("/user", auth, route.Use(system.SetUser))
+	_vars := r.Group("/vars")
+	{
+		_vars.GET("", auth, route.Use(vars.Gets))
+		_vars.GET("/_option", auth, route.Use(vars.Option))
+		_vars.GET("/:key", auth, route.Use(vars.Get))
+		_vars.PUT("/:key", auth, route.Use(vars.Set))
+	}
 
-	r.GET("/vars", auth, route.Use(system.GetVars))
-	r.GET("/vars/:key", auth, route.Use(system.GetVar))
-	r.PUT("/vars/:key", auth, route.Use(system.SetVar))
 	r.GET("/sessions", auth, route.Use(system.GetSessions))
 	r.DELETE("/sessions", auth, route.Use(system.DeleteSessions))
 	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
 
-	r.GET("/uploader", auth, route.Use(system.Uploader))
+	r.GET("/upload", auth, route.Use(system.Upload))
+
 	r.GET("/navs", auth, route.Use(system.Navs))
 	r.GET("/pages/:id", auth, route.Use(system.Dynamic))
+
+	_tencent := r.Group("/tencent")
+	{
+		_tencent.GET("cos/presigned", auth, route.Use(tencent.CosPresigned))
+		_tencent.GET("cos/image-info", auth, route.Use(tencent.ImageInfo))
+	}
 
 	_feishu := r.Group("/feishu")
 	{
@@ -83,10 +100,6 @@ func New(
 			_pages.GET("/_indexes/:id", route.Use(pages.GetIndexes))
 			_pages.PUT("/_indexes/:id/:index", route.Use(pages.SetIndex))
 			_pages.DELETE("/_indexes/:id/:index", route.Use(pages.DeleteIndex))
-		}
-		_pictures := api.Group("pictures")
-		{
-			_pictures.GET("/image-info", route.Use(pictures.ImageInfo))
 		}
 	}
 	return r

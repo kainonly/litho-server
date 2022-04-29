@@ -2,18 +2,13 @@ package system
 
 import (
 	"api/app/users"
+	"api/app/vars"
 	"api/common"
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha1"
 	"crypto/tls"
-	"encoding/hex"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/jordan-wright/email"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/weplanx/go/helper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,95 +20,12 @@ import (
 
 type Service struct {
 	*common.Inject
+	Vars  *vars.Service
 	Users *users.Service
 }
 
 func (x *Service) AppName() string {
 	return x.Values.Namespace
-}
-
-// GetVars 获取指定变量
-func (x *Service) GetVars(ctx context.Context, keys []string) (data map[string]interface{}, err error) {
-	if err = x.RefreshVars(ctx); err != nil {
-		return
-	}
-	var values []interface{}
-	if values, err = x.Redis.HMGet(ctx, x.Values.KeyName("vars"), keys...).Result(); err != nil {
-		return
-	}
-	data = make(map[string]interface{})
-	for k, v := range keys {
-		data[v] = values[k]
-	}
-	return
-}
-
-// GetVar 获取变量
-func (x *Service) GetVar(ctx context.Context, key string) (value string, err error) {
-	if err = x.RefreshVars(ctx); err != nil {
-		return
-	}
-	return x.Redis.HGet(ctx, x.Values.KeyName("vars"), key).Result()
-}
-
-// RefreshVars 刷新变量
-func (x *Service) RefreshVars(ctx context.Context) (err error) {
-	key := x.Values.KeyName("vars")
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
-		return
-	}
-	if exists == 0 {
-		var cursor *mongo.Cursor
-		if cursor, err = x.Db.Collection("vars").Find(ctx, bson.M{}); err != nil {
-			return
-		}
-		var data []common.Var
-		if err = cursor.All(ctx, &data); err != nil {
-			return
-		}
-		pipe := x.Redis.Pipeline()
-		for _, v := range data {
-			switch x := v.Value.(type) {
-			case primitive.A:
-				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v.Key, b)
-				break
-			case primitive.M:
-				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v.Key, b)
-				break
-			default:
-				pipe.HSet(ctx, key, v.Key, x)
-			}
-		}
-		if _, err = pipe.Exec(ctx); err != nil {
-			return
-		}
-	}
-	return
-}
-
-// SetVar 设置变量
-func (x *Service) SetVar(ctx context.Context, key string, value interface{}) (err error) {
-	var exists int64
-	if exists, err = x.Db.Collection("vars").CountDocuments(ctx, bson.M{"key": key}); err != nil {
-		return
-	}
-	doc := common.NewVar(key, value)
-	if exists == 0 {
-		if _, err = x.Db.Collection("vars").InsertOne(ctx, doc); err != nil {
-			return
-		}
-	} else {
-		if _, err = x.Db.Collection("vars").ReplaceOne(ctx, bson.M{"key": key}, doc); err != nil {
-			return
-		}
-	}
-	if err = x.Redis.Del(ctx, x.Values.KeyName("vars")).Err(); err != nil {
-		return
-	}
-	return
 }
 
 // GetSessions 获取所有会话
@@ -151,7 +63,7 @@ func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ 
 
 // GetExpiration 获取会话有效时间
 func (x *Service) GetExpiration(ctx context.Context) (t time.Duration, err error) {
-	value, _ := x.GetVar(ctx, "user_session_expire")
+	value, _ := x.Vars.Get(ctx, "user_session_expire")
 	t = time.Hour
 	if value != "" {
 		if t, err = time.ParseDuration(value); err != nil {
@@ -309,48 +221,4 @@ func (x *Service) Sort(ctx context.Context, model string, sort []primitive.Objec
 		)
 	}
 	return x.Db.Collection(model).BulkWrite(ctx, models)
-}
-
-// Uploader 上传预签名
-func (x *Service) Uploader() (data interface{}, err error) {
-	option := x.Values.QCloud
-	expired := time.Second * time.Duration(option.Cos.Expired)
-	date := time.Now()
-	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), date.Add(expired).Unix())
-	key := fmt.Sprintf(`%s/%s/%s`,
-		x.AppName(),
-		date.Format("20060102"),
-		helper.Uuid(),
-	)
-	policy := map[string]interface{}{
-		"expiration": date.Add(expired).Format("2006-01-02T15:04:05.000Z"),
-		"conditions": []interface{}{
-			map[string]interface{}{"bucket": option.Cos.Bucket},
-			[]interface{}{"starts-with", "$key", key},
-			map[string]interface{}{"q-sign-algorithm": "sha1"},
-			map[string]interface{}{"q-ak": option.SecretID},
-			map[string]interface{}{"q-sign-time": keyTime},
-		},
-	}
-	var policyText []byte
-	if policyText, err = jsoniter.Marshal(policy); err != nil {
-		return
-	}
-	signKeyHash := hmac.New(sha1.New, []byte(option.SecretKey))
-	signKeyHash.Write([]byte(keyTime))
-	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
-	stringToSignHash := sha1.New()
-	stringToSignHash.Write(policyText)
-	stringToSign := hex.EncodeToString(stringToSignHash.Sum(nil))
-	signatureHash := hmac.New(sha1.New, []byte(signKey))
-	signatureHash.Write([]byte(stringToSign))
-	signature := hex.EncodeToString(signatureHash.Sum(nil))
-	return gin.H{
-		"key":              key,
-		"policy":           policyText,
-		"q-sign-algorithm": "sha1",
-		"q-ak":             option.SecretID,
-		"q-key-time":       keyTime,
-		"q-signature":      signature,
-	}, nil
 }
