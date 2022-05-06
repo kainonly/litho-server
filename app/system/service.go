@@ -195,24 +195,6 @@ func (x *Service) GetExpiration(ctx context.Context) (t time.Duration) {
 	return
 }
 
-//type FeishuDto struct {
-//	Url      string
-//	Redirect string
-//	AppId    string
-//}
-//
-//func (x *Service) GetFeishu(ctx context.Context) (dto *FeishuDto, err error) {
-//	var options map[string]interface{}
-//	if options, err = x.Gets(ctx, []string{"redirect_url", "feishu_app_id"}); err != nil {
-//		return
-//	}
-//	return &FeishuDto{
-//		Url:      "https://open.feishu.cn/open-apis/authen/v1/index",
-//		Redirect: options["redirect_url"].(string),
-//		AppId:    options["feishu_app_id"].(string),
-//	}, nil
-//}
-
 // CreateVerifyCode 创建验证码
 func (x *Service) CreateVerifyCode(ctx context.Context, name string, code string, ttl time.Duration) error {
 	return x.Redis.Set(ctx, x.Values.KeyName("verify", name), code, ttl).Err()

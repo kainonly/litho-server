@@ -21,7 +21,6 @@ metadata:
 data:
   config.yml: |
     address: ":9000"
-    # 不设置将无法获取到客户端 ip，也可以使用七层反向代理做上游（例如：全站加速、应用负载均衡等）
     trusted_proxies:
       - 10.42.0.0/16
     namespace: <应用名称>
