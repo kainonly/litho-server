@@ -9,7 +9,6 @@ import (
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
-	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -35,7 +34,6 @@ type Inject struct {
 	Redis       *redis.Client
 	Nats        *nats.Conn
 	Js          nats.JetStreamContext
-	Open        *openapi.OpenAPI
 	Cipher      *encryption.Cipher
 	HID         *encryption.HID
 	Passport    *passport.Passport

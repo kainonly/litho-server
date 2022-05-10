@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/jordan-wright/email"
 	jsoniter "github.com/json-iterator/go"
+	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -223,9 +224,33 @@ func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 	return x.Redis.Del(ctx, x.Values.KeyName("verify", name)).Err()
 }
 
+// OpenAPI 开放服务客户端
+func (x *Service) OpenAPI(ctx context.Context) (client *openapi.OpenAPI, err error) {
+	var option map[string]interface{}
+	if option, err = x.GetVars(ctx, []string{
+		"openapi_url",
+		"openapi_key",
+		"openapi_secret",
+	}); err != nil {
+		return
+	}
+	client = openapi.New(
+		option["openapi_url"].(string),
+		openapi.SetCertification(
+			option["openapi_key"].(string),
+			option["openapi_secret"].(string),
+		),
+	)
+	return
+}
+
 // PushLoginLog 推送登录日志
 func (x *Service) PushLoginLog(ctx context.Context, doc *common.LoginLogDto) (err error) {
-	if doc.Detail, err = x.Open.Ip(ctx, doc.Ip); err != nil {
+	var client *openapi.OpenAPI
+	if client, err = x.OpenAPI(ctx); err != nil {
+		return
+	}
+	if doc.Detail, err = client.Ip(ctx, doc.Ip); err != nil {
 		return
 	}
 	if err = x.Users.UpdateOneById(ctx, doc.User, bson.M{

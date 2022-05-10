@@ -41,7 +41,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	openAPI := bootstrap.UseOpenapi(value)
 	cipher, err := bootstrap.UseCipher(value)
 	if err != nil {
 		return nil, err
@@ -59,7 +58,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Redis:       redisClient,
 		Nats:        conn,
 		Js:          jetStreamContext,
-		Open:        openAPI,
 		Cipher:      cipher,
 		HID:         hid,
 		Passport:    passport,
