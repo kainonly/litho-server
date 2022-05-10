@@ -13,7 +13,6 @@ import (
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
-	openapi "github.com/weplanx/openapi/client"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,7 +28,6 @@ var Provides = wire.NewSet(
 	UseJetStream,
 	UseEngine,
 	UseTransfer,
-	UseOpenapi,
 	UsePassport,
 	UseCipher,
 	UseHID,
@@ -115,12 +113,6 @@ func UseTransfer(values *common.Values, js nats.JetStreamContext) (client *trans
 		return
 	}
 	return
-}
-
-// UseOpenapi 使用开放接口
-func UseOpenapi(values *common.Values) *openapi.OpenAPI {
-	option := values.OpenAPI
-	return openapi.New(option.Url, openapi.SetCertification(option.Key, option.Secret))
 }
 
 // UsePassport 创建认证
