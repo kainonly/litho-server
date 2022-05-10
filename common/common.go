@@ -64,8 +64,6 @@ type Values struct {
 	Redis          Redis                    `yaml:"redis"`
 	Nats           Nats                     `yaml:"nats"`
 	Engines        map[string]engine.Option `yaml:"engines"`
-	OpenAPI        OpenAPI                  `yaml:"openapi"`
-	Passport       passport.Option          `yaml:"passport"`
 }
 
 func (x *Values) KeyName(v ...string) string {
@@ -97,12 +95,6 @@ type Redis struct {
 type Nats struct {
 	Hosts []string `yaml:"hosts"`
 	Nkey  string   `yaml:"nkey"`
-}
-
-type OpenAPI struct {
-	Url    string `yaml:"url"`
-	Key    string `yaml:"key"`
-	Secret string `yaml:"secret"`
 }
 
 type HttpClients struct {

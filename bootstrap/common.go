@@ -117,8 +117,11 @@ func UseTransfer(values *common.Values, js nats.JetStreamContext) (client *trans
 
 // UsePassport 创建认证
 func UsePassport(values *common.Values) *passport.Passport {
-	values.Passport.Iss = values.Namespace
-	return passport.New(values.Key, values.Passport)
+	return passport.New(values.Key, passport.Option{
+		Iss: values.Namespace,
+		Aud: []string{"console"},
+		Exp: 720,
+	})
 }
 
 // UseCipher 数据加密
