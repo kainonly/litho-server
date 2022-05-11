@@ -1,7 +1,6 @@
 package common
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -19,20 +18,19 @@ type Page struct {
 	Icon string `bson:"icon,omitempty" json:"icon,omitempty"`
 
 	// 种类
-	// "default" => 作为数据源，包含数据列表与数据填充等功能
-	// "form" => 独立的数据填充页面
-	// "dashboard" => 数据分析处理、结果展示功能，如数据汇总、趋势分析
-	// "group" => 导航中将其他种类分组显示
 	Kind string `bson:"kind" json:"kind"`
+
+	// 形式
+	Manifest string `bson:"manifest,omitempty" json:"manifest,omitempty"`
 
 	// Schema 定义
 	Schema *Schema `bson:"schema,omitempty" json:"schema,omitempty"`
 
+	// 数据源
+	Source *Source `bson:"source,omitempty" json:"source,omitempty"`
+
 	// 排序
 	Sort int64 `bson:"sort" json:"sort"`
-
-	// 状态
-	Status *bool `bson:"status" json:"status"`
 
 	// 创建时间
 	CreateTime time.Time `bson:"create_time" json:"-"`
@@ -41,65 +39,21 @@ type Page struct {
 	UpdateTime time.Time `bson:"update_time" json:"-"`
 }
 
-func NewPage(name string, kind string) *Page {
-	return &Page{
-		Name:       name,
-		Parent:     nil,
-		Kind:       kind,
-		Sort:       0,
-		Status:     BoolToP(true),
-		CreateTime: time.Now(),
-		UpdateTime: time.Now(),
-	}
-}
-
-func (x *Page) SetID(v primitive.ObjectID) *Page {
-	x.ID = v
-	return x
-}
-
-func (x *Page) SetParent(v primitive.ObjectID) *Page {
-	x.Parent = v
-	return x
-}
-
-func (x *Page) SetIcon(v string) *Page {
-	x.Icon = v
-	return x
-}
-
-func (x *Page) SetSchema(v *Schema) *Page {
-	x.Schema = v
-	return x
-}
-
 type Schema struct {
-	// 集合命名
+	// 命名
 	Key string `bson:"key" json:"key"`
 
-	// 字段定义
+	// 字段
 	Fields SchemaFields `bson:"fields" json:"fields"`
 
-	// 规则
+	// 搜索规则
 	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
 
-	// 验证器
-	Validator bson.M `bson:"validator,omitempty" json:"validator,omitempty"`
+	// 启用事务补偿
+	Event *bool `bson:"event,omitempty" json:"event,omitempty"`
 }
 
 type SchemaFields map[string]*Field
-
-func NewSchema(key string, fields SchemaFields) *Schema {
-	return &Schema{
-		Key:    key,
-		Fields: fields,
-	}
-}
-
-func (x *Schema) SetRules(v []interface{}) *Schema {
-	x.Rules = v
-	return x
-}
 
 type Field struct {
 	// 显示名称
@@ -123,68 +77,17 @@ type Field struct {
 	// 隐藏字段
 	Hide *bool `bson:"hide,omitempty" json:"hide,omitempty"`
 
-	// 可编辑
-	Modified *bool `bson:"modified,omitempty" json:"modified,omitempty"`
+	// 只读
+	Readonly *bool `bson:"readonly,omitempty" json:"readonly,omitempty"`
 
 	// 排序
 	Sort int64 `bson:"sort" json:"sort"`
 
-	// 规格
-	Spec *FieldSpec `bson:"spec" json:"spec"`
+	// 配置
+	Option *FieldOption `bson:"option,omitempty" json:"option,omitempty"`
 }
 
-func NewField(label string, datatype string) *Field {
-	return &Field{
-		Label:    label,
-		Type:     datatype,
-		Required: BoolToP(false),
-		Hide:     BoolToP(false),
-		Modified: BoolToP(true),
-		Sort:     0,
-	}
-}
-
-func (x *Field) SetDescription(v string) *Field {
-	x.Description = v
-	return x
-}
-
-func (x *Field) SetPlaceholder(v string) *Field {
-	x.Placeholder = v
-	return x
-}
-
-func (x *Field) SetDefault(v interface{}) *Field {
-	x.Default = v
-	return x
-}
-
-func (x *Field) SetRequired() *Field {
-	x.Required = BoolToP(true)
-	return x
-}
-
-func (x *Field) SetHide() *Field {
-	x.Hide = BoolToP(true)
-	return x
-}
-
-func (x *Field) SetModified(v *bool) *Field {
-	x.Modified = v
-	return x
-}
-
-func (x *Field) SetSort(v int64) *Field {
-	x.Sort = v
-	return x
-}
-
-func (x *Field) SetSpec(v *FieldSpec) *Field {
-	x.Spec = v
-	return x
-}
-
-type FieldSpec struct {
+type FieldOption struct {
 	// 最大值
 	Max int64 `bson:"max,omitempty" json:"max,omitempty"`
 
@@ -193,6 +96,9 @@ type FieldSpec struct {
 
 	// 保留小数
 	Decimal int64 `bson:"decimal,omitempty" json:"decimal,omitempty"`
+
+	// 包含时间
+	Time *bool `bson:"time,omitempty" json:"time,omitempty"`
 
 	// 枚举数值
 	Values []FieldValue `bson:"values,omitempty" json:"values,omitempty"`
@@ -213,4 +119,23 @@ type FieldValue struct {
 
 	// 数值
 	Value interface{} `bson:"value" json:"value"`
+}
+
+type Source struct {
+	// 布局
+	Layout string `bson:"layout" json:"layout"`
+
+	// 图表
+	Panels []Panel `bson:"panels" json:"panels"`
+}
+
+type Panel struct {
+	// 模式
+	Query string `bson:"query" json:"query"`
+
+	// 映射
+	Mappings map[string]string `bson:"mappings" json:"mappings"`
+
+	// 样式
+	Style map[string]interface{} `bson:"style,omitempty" json:"style,omitempty"`
 }
