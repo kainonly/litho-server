@@ -23,19 +23,12 @@ type NavDto struct {
 }
 
 func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
-	data = make([]NavDto, 0)
 	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection("pages").Find(ctx,
-		bson.M{"status": true},
-		options.Find().SetProjection(bson.M{
-			"schema":      0,
-			"status":      0,
-			"create_time": 0,
-			"update_time": 0,
-		}),
-	); err != nil {
+	if cursor, err = x.Db.Collection("pages").
+		Find(ctx, bson.M{}); err != nil {
 		return
 	}
+	data = make([]NavDto, 0)
 	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
