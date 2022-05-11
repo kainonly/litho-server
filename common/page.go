@@ -32,11 +32,14 @@ type Page struct {
 	// 排序
 	Sort int64 `bson:"sort" json:"sort"`
 
+	// 状态
+	Status *bool `bson:"status" json:"status"`
+
 	// 创建时间
-	CreateTime time.Time `bson:"create_time" json:"-"`
+	CreateTime time.Time `bson:"create_time" json:"create_time"`
 
 	// 更新时间
-	UpdateTime time.Time `bson:"update_time" json:"-"`
+	UpdateTime time.Time `bson:"update_time" json:"update_time"`
 }
 
 type Schema struct {
@@ -46,8 +49,11 @@ type Schema struct {
 	// 字段
 	Fields SchemaFields `bson:"fields" json:"fields"`
 
-	// 搜索规则
+	// 显隐规则
 	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
+
+	// 搜索设置
+	Search []interface{} `bson:"search,omitempty" json:"search,omitempty"`
 
 	// 启用事务补偿
 	Event *bool `bson:"event,omitempty" json:"event,omitempty"`

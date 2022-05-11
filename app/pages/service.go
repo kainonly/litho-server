@@ -25,7 +25,7 @@ type NavDto struct {
 func (x *Service) Navs(ctx context.Context) (data []NavDto, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").
-		Find(ctx, bson.M{}); err != nil {
+		Find(ctx, bson.M{"status": true}); err != nil {
 		return
 	}
 	data = make([]NavDto, 0)
