@@ -52,16 +52,13 @@ type Schema struct {
 	// 显隐规则
 	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
 
-	// 搜索设置
-	Search []interface{} `bson:"search,omitempty" json:"search,omitempty"`
-
 	// 启用事务补偿
 	Event *bool `bson:"event,omitempty" json:"event,omitempty"`
 }
 
-type SchemaFields map[string]*Field
+type SchemaFields map[string]*SchemaField
 
-type Field struct {
+type SchemaField struct {
 	// 显示名称
 	Label string `bson:"label" json:"label"`
 
@@ -86,14 +83,17 @@ type Field struct {
 	// 只读
 	Readonly *bool `bson:"readonly,omitempty" json:"readonly,omitempty"`
 
+	// 投影
+	Projection *int64 `bson:"projection,omitempty" json:"projection,omitempty"`
+
 	// 排序
-	Sort int64 `bson:"sort" json:"sort"`
+	Sort *int64 `bson:"sort" json:"sort"`
 
 	// 配置
-	Option *FieldOption `bson:"option,omitempty" json:"option,omitempty"`
+	Option *SchemaFieldOption `bson:"option,omitempty" json:"option,omitempty"`
 }
 
-type FieldOption struct {
+type SchemaFieldOption struct {
 	// 最大值
 	Max int64 `bson:"max,omitempty" json:"max,omitempty"`
 
@@ -107,21 +107,43 @@ type FieldOption struct {
 	Time *bool `bson:"time,omitempty" json:"time,omitempty"`
 
 	// 枚举数值
-	Values []FieldValue `bson:"values,omitempty" json:"values,omitempty"`
+	Values []Value `bson:"values,omitempty" json:"values,omitempty"`
 
-	// 引用数据源
+	// 引用模型
 	Reference string `bson:"reference,omitempty" json:"reference,omitempty"`
 
-	// 引用目标
+	// 目标字段
 	Target string `bson:"target,omitempty" json:"target,omitempty"`
 
 	// 是否多选
 	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
 }
 
-type FieldValue struct {
+type Value struct {
 	// 名称
 	Label string `bson:"label" json:"label"`
+
+	// 数值
+	Value interface{} `bson:"value" json:"value"`
+}
+
+type SchemaRule struct {
+	// 逻辑
+	Logic string `bson:"logic" json:"logic"`
+
+	// 显示字段
+	Display []string `bson:"display" json:"display"`
+
+	// 条件
+	Conditions []SchemaRuleCondition `bson:"conditions" json:"conditions"`
+}
+
+type SchemaRuleCondition struct {
+	// 字段
+	Field string `bson:"field" json:"field"`
+
+	// 操作符
+	Operate string `bson:"operate" json:"operate"`
 
 	// 数值
 	Value interface{} `bson:"value" json:"value"`
