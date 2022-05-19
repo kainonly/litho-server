@@ -19,6 +19,7 @@ import (
 	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/engine"
+	"github.com/weplanx/go/vars"
 )
 
 // Injectors from wire.go:
@@ -67,12 +68,17 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &users.Service{
+	service := &vars.Service{
+		Db:    database,
+		Redis: redisClient,
+	}
+	usersService := &users.Service{
 		Inject: inject,
 	}
 	systemService := &system.Service{
 		Inject: inject,
-		Users:  service,
+		Vars:   service,
+		Users:  usersService,
 	}
 	middleware := &app.Middleware{
 		Inject:   inject,
@@ -89,26 +95,27 @@ func App(value *common.Values) (*gin.Engine, error) {
 	controller := &system.Controller{
 		Inject:      inject,
 		System:      systemService,
-		Users:       service,
+		Users:       usersService,
 		Roles:       rolesService,
 		Departments: departmentsService,
 	}
 	tencentService := &tencent.Service{
 		Inject: inject,
-		System: systemService,
+		Vars:   service,
 	}
 	tencentController := &tencent.Controller{
 		Tencent: tencentService,
 	}
 	feishuService := &feishu.Service{
 		Inject: inject,
-		System: systemService,
+		Vars:   service,
 	}
 	feishuController := &feishu.Controller{
 		Inject: inject,
 		Feishu: feishuService,
+		Vars:   service,
+		Users:  usersService,
 		System: systemService,
-		Users:  service,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
@@ -125,6 +132,9 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController)
+	varsController := &vars.Controller{
+		Vars: service,
+	}
+	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, varsController)
 	return ginEngine, nil
 }

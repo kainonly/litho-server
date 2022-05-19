@@ -1,7 +1,6 @@
 package tencent
 
 import (
-	"api/app/system"
 	"api/common"
 	"context"
 	"crypto/hmac"
@@ -12,6 +11,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/vars"
 	"net/http"
 	"net/url"
 	"time"
@@ -19,29 +19,36 @@ import (
 
 type Service struct {
 	*common.Inject
-	System *system.Service
+	Vars *vars.Service
 }
 
 func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
-	var option map[string]interface{}
-	if option, err = x.System.GetVars(ctx, []string{
-		"tencent_secret_id",
-		"tencent_secret_key",
-		"tencent_cos_bucket",
-		"tencent_cos_region",
-	}); err != nil {
+	secretId, err := x.Vars.GetTencentSecretId(ctx)
+	if err != nil {
+		return
+	}
+	secretKey, err := x.Vars.GetTencentSecretKey(ctx)
+	if err != nil {
+		return
+	}
+	bucket, err := x.Vars.GetTencentCosBucket(ctx)
+	if err != nil {
+		return
+	}
+	region, err := x.Vars.GetTencentCosRegion(ctx)
+	if err != nil {
 		return
 	}
 	var u *url.URL
 	if u, err = url.Parse(
-		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`, option["tencent_cos_bucket"], option["tencent_cos_region"]),
+		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`, bucket, region),
 	); err != nil {
 		return
 	}
 	client = cos.NewClient(&cos.BaseURL{BucketURL: u}, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  option["tencent_secret_id"].(string),
-			SecretKey: option["tencent_secret_key"].(string),
+			SecretID:  secretId,
+			SecretKey: secretKey,
 		},
 	})
 	return
@@ -49,17 +56,22 @@ func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
 
 // CosPresigned 对象存储预签名
 func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error) {
-	var option map[string]interface{}
-	if option, err = x.System.GetVars(ctx, []string{
-		"tencent_secret_id",
-		"tencent_secret_key",
-		"tencent_cos_bucket",
-		"tencent_cos_region",
-		"tencent_cos_expired",
-	}); err != nil {
+	secretId, err := x.Vars.GetTencentSecretId(ctx)
+	if err != nil {
 		return
 	}
-	expired, _ := time.ParseDuration(fmt.Sprintf("%ss", option["tencent_cos_expired"]))
+	secretKey, err := x.Vars.GetTencentSecretKey(ctx)
+	if err != nil {
+		return
+	}
+	bucket, err := x.Vars.GetTencentCosBucket(ctx)
+	if err != nil {
+		return
+	}
+	expired, err := x.Vars.GetTencentCosExpired(ctx)
+	if err != nil {
+		return
+	}
 	date := time.Now()
 	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), date.Add(expired).Unix())
 	key := fmt.Sprintf(`%s/%s/%s`,
@@ -70,10 +82,10 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 	policy := map[string]interface{}{
 		"expiration": date.Add(expired).Format("2006-01-02T15:04:05.000Z"),
 		"conditions": []interface{}{
-			map[string]interface{}{"bucket": option["tencent_cos_bucket"]},
+			map[string]interface{}{"bucket": bucket},
 			[]interface{}{"starts-with", "$key", key},
 			map[string]interface{}{"q-sign-algorithm": "sha1"},
-			map[string]interface{}{"q-ak": option["tencent_secret_id"]},
+			map[string]interface{}{"q-ak": secretId},
 			map[string]interface{}{"q-sign-time": keyTime},
 		},
 	}
@@ -81,7 +93,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 	if policyText, err = jsoniter.Marshal(policy); err != nil {
 		return
 	}
-	signKeyHash := hmac.New(sha1.New, []byte(option["tencent_secret_key"].(string)))
+	signKeyHash := hmac.New(sha1.New, []byte(secretKey))
 	signKeyHash.Write([]byte(keyTime))
 	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
 	stringToSignHash := sha1.New()
@@ -94,7 +106,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 		"key":              key,
 		"policy":           policyText,
 		"q-sign-algorithm": "sha1",
-		"q-ak":             option["tencent_secret_id"],
+		"q-ak":             secretId,
 		"q-key-time":       keyTime,
 		"q-signature":      signature,
 	}, nil

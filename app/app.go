@@ -12,6 +12,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/route"
+	"github.com/weplanx/go/vars"
 )
 
 var Provides = wire.NewSet(
@@ -24,6 +25,7 @@ var Provides = wire.NewSet(
 	roles.Provides,
 	departments.Provides,
 	users.Provides,
+	vars.Provides,
 	New,
 	Subscribe,
 )
@@ -35,6 +37,7 @@ func New(
 	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
+	vars *vars.Controller,
 ) *gin.Engine {
 	r := middleware.Global()
 	auth := middleware.AuthGuard()
@@ -50,13 +53,17 @@ func New(
 	r.GET("/user", auth, route.Use(system.GetUser))
 	r.POST("/user", auth, route.Use(system.SetUser))
 	r.POST("/user/reset", route.Use(system.ResetUser))
-	r.GET("/options", auth, route.Use(system.Options))
-	r.GET("/vars", auth, route.Use(system.GetVars))
-	r.GET("/vars/:key", auth, route.Use(system.GetVar))
-	r.PUT("/vars/:key", auth, route.Use(system.SetVar))
 	r.GET("/sessions", auth, route.Use(system.GetSessions))
 	r.DELETE("/sessions", auth, route.Use(system.DeleteSessions))
 	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
+
+	r.GET("/options", auth, route.Use(vars.Options))
+	_vars := r.Group("/vars", auth)
+	{
+		_vars.GET("/", route.Use(vars.Gets))
+		_vars.GET("/:key", route.Use(vars.Get))
+		_vars.PUT("/:key", route.Use(vars.Set))
+	}
 
 	_tencent := r.Group("/tencent", auth)
 	{
@@ -67,7 +74,6 @@ func New(
 	_feishu := r.Group("/feishu")
 	{
 		_feishu.POST("", route.Use(feishu.Challenge))
-		_feishu.GET("option", route.Use(feishu.Option))
 		_feishu.GET("", route.Use(feishu.OAuth))
 	}
 

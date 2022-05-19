@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/vars"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,8 +20,9 @@ import (
 type Controller struct {
 	*common.Inject
 	Feishu *Service
-	System *system.Service
+	Vars   *vars.Service
 	Users  *users.Service
+	System *system.Service
 }
 
 func (x *Controller) Challenge(c *gin.Context) interface{} {
@@ -31,11 +33,16 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	option, err := x.System.GetVars(ctx, []string{"feishu_encrypt_key", "feishu_verification_token"})
+
+	encryptKey, err := x.Vars.GetFeishuEncryptKey(ctx)
 	if err != nil {
 		return err
 	}
-	content, err := x.Feishu.Decrypt(body.Encrypt, option["feishu_encrypt_key"].(string))
+	token, err := x.Vars.GetFeishuVerificationToken(ctx)
+	if err != nil {
+		return err
+	}
+	content, err := x.Feishu.Decrypt(body.Encrypt, encryptKey)
 	if err != nil {
 		return err
 	}
@@ -47,7 +54,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err = jsoniter.Unmarshal([]byte(content), &dto); err != nil {
 		return err
 	}
-	if dto.Token != option["feishu_verification_token"] {
+	if dto.Token != token {
 		return errors.New("验证令牌不一致")
 	}
 	return gin.H{
@@ -129,18 +136,4 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.Redirect(302, "https://xconsole.kainonly.com:8443/")
 	return nil
-}
-
-// Option 获取配置
-func (x *Controller) Option(c *gin.Context) interface{} {
-	ctx := c.Request.Context()
-	option, err := x.System.GetVars(ctx, []string{"redirect_url", "feishu_app_id"})
-	if err != nil {
-		return err
-	}
-	return gin.H{
-		"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
-		"redirect": option["redirect_url"],
-		"app_id":   option["feishu_app_id"],
-	}
 }
