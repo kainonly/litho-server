@@ -44,8 +44,15 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
+	uid := data.ID.Hex()
+	if err = x.System.CheckLockForUser(ctx, uid); err != nil {
+		return err
+	}
 	if err := helper.PasswordVerify(body.Password, data.Password); err != nil {
 		c.Set("code", "AUTH_INCORRECT")
+		if err = x.System.IncLockForUser(ctx, uid); err != nil {
+			return err
+		}
 		return err
 	}
 	// 创建 Token
@@ -56,8 +63,9 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}); err != nil {
 		return err
 	}
+
 	// 设置会话
-	if err := x.System.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.System.SetSession(ctx, uid, jti); err != nil {
 		return err
 	}
 	// 写入日志
@@ -182,109 +190,6 @@ func (x *Controller) DeleteSessions(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
 	if err := x.System.DeleteSessions(ctx); err != nil {
 		return err
-	}
-	return nil
-}
-
-// GetVars 获取指定变量
-func (x *Controller) GetVars(c *gin.Context) interface{} {
-	var query struct {
-		Keys []string `form:"keys" binding:"required"`
-	}
-	if err := c.ShouldBindQuery(&query); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	values, err := x.System.GetVars(ctx, query.Keys)
-	if err != nil {
-		return err
-	}
-	for k, v := range values {
-		if common.SecretKey(k) {
-			if v == "" || v == nil {
-				values[k] = "未设置"
-			} else {
-				values[k] = "已设置"
-
-			}
-		}
-	}
-	return values
-}
-
-// GetVar 获取变量
-func (x *Controller) GetVar(c *gin.Context) interface{} {
-	var uri struct {
-		Key string `uri:"key" binding:"required"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	value, err := x.System.GetVar(ctx, uri.Key)
-	if err != nil {
-		return err
-	}
-	if common.SecretKey(uri.Key) {
-		value = "已设置"
-	}
-	return value
-}
-
-// SetVar 设置变量
-func (x *Controller) SetVar(c *gin.Context) interface{} {
-	var uri struct {
-		Key string `uri:"key" binding:"required"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		return err
-	}
-	var body struct {
-		Value interface{} `json:"value"`
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	if err := x.System.SetVar(ctx, uri.Key, body.Value); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (x *Controller) Options(c *gin.Context) interface{} {
-	var query struct {
-		Type string `form:"type" binding:"required"`
-	}
-	if err := c.ShouldBindQuery(&query); err != nil {
-		return err
-	}
-	ctx := c.Request.Context()
-	switch query.Type {
-	case "upload":
-		platform, err := x.System.GetVar(ctx, "cloud_platform")
-		if err != nil {
-			return err
-		}
-		switch platform {
-		case "tencent":
-			v, err := x.System.GetVars(ctx, []string{
-				"tencent_cos_bucket",
-				"tencent_cos_region",
-				"tencent_cos_limit",
-			})
-			if err != nil {
-				return err
-			}
-			limit, _ := strconv.Atoi(v["tencent_cos_limit"].(string))
-			return gin.H{
-				"type": "cos",
-				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
-					v["tencent_cos_bucket"], v["tencent_cos_region"],
-				),
-				"limit": limit,
-			}
-		}
 	}
 	return nil
 }

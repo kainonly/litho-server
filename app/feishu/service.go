@@ -1,7 +1,6 @@
 package feishu
 
 import (
-	"api/app/system"
 	"api/common"
 	"context"
 	"crypto/aes"
@@ -10,13 +9,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/weplanx/go/vars"
 	"strings"
 	"time"
 )
 
 type Service struct {
 	*common.Inject
-	System *system.Service
+	Vars *vars.Service
 }
 
 func (x *Service) Decrypt(encrypt string, key string) (string, error) {
@@ -58,15 +58,19 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		return
 	}
 	if exists == 0 {
-		var option map[string]interface{}
-		if option, err = x.System.GetVars(ctx, []string{"feishu_app_id", "feishu_app_secret"}); err != nil {
+		var id string
+		if id, err = x.Vars.GetFeishuAppId(ctx); err != nil {
+			return
+		}
+		var secret string
+		if secret, err = x.Vars.GetFeishuAppSecret(ctx); err != nil {
 			return
 		}
 		var body map[string]interface{}
 		if _, err = x.HC.Feishu.R().
 			SetBody(map[string]interface{}{
-				"app_id":     option["feishu_app_id"],
-				"app_secret": option["feishu_app_secret"],
+				"app_id":     id,
+				"app_secret": secret,
 			}).
 			SetResult(&body).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {

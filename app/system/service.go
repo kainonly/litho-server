@@ -6,13 +6,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"github.com/jordan-wright/email"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/weplanx/go/vars"
 	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"html/template"
 	"net/smtp"
 	"strings"
@@ -21,6 +20,7 @@ import (
 
 type Service struct {
 	*common.Inject
+	Vars  *vars.Service
 	Users *users.Service
 }
 
@@ -59,8 +59,11 @@ func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ 
 
 // SetSession 设置会话
 func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err error) {
-	expiration := x.GetExpiration(ctx)
-	if err = x.Redis.Set(ctx, x.Values.KeyName("sessions", uid), jti, expiration).Err(); err != nil {
+	exp, err := x.Vars.GetUserSessionExpire(ctx)
+	if err != nil {
+		return
+	}
+	if err = x.Redis.Set(ctx, x.Values.KeyName("sessions", uid), jti, exp).Err(); err != nil {
 		return
 	}
 	return
@@ -68,10 +71,11 @@ func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err e
 
 // RenewSession 续约会话
 func (x *Service) RenewSession(ctx context.Context, uid string) (err error) {
-	expiration := x.GetExpiration(ctx)
-	if err = x.Redis.Expire(ctx,
-		x.Values.KeyName("sessions", uid), expiration,
-	).Err(); err != nil {
+	exp, err := x.Vars.GetUserSessionExpire(ctx)
+	if err != nil {
+		return
+	}
+	if err = x.Redis.Expire(ctx, x.Values.KeyName("sessions", uid), exp).Err(); err != nil {
 		return
 	}
 	return
@@ -101,97 +105,44 @@ func (x *Service) DeleteSessions(ctx context.Context) (err error) {
 	return x.Redis.Del(ctx, keys...).Err()
 }
 
-// GetVar 获取变量
-func (x *Service) GetVar(ctx context.Context, key string) (value string, err error) {
-	if err = x.RefreshVars(ctx); err != nil {
+// CheckLockForUser 判断用户是否锁定
+func (x *Service) CheckLockForUser(ctx context.Context, uid string) (err error) {
+	key := x.Values.KeyName("lock", uid)
+	var count int64
+	if count, err = x.Redis.Exists(ctx, key).Result(); err != nil {
 		return
 	}
-	return x.Redis.HGet(ctx, x.Values.KeyName("vars"), key).Result()
-}
-
-// GetVars 获取指定变量
-func (x *Service) GetVars(ctx context.Context, keys []string) (values map[string]interface{}, err error) {
-	if err = x.RefreshVars(ctx); err != nil {
+	if count == 0 {
 		return
 	}
-	var result []interface{}
-	if result, err = x.Redis.HMGet(ctx, x.Values.KeyName("vars"), keys...).Result(); err != nil {
+	times, err := x.Redis.Get(ctx, key).Int()
+	if err != nil {
 		return
 	}
-	values = make(map[string]interface{})
-	for k, v := range keys {
-		values[v] = result[k]
+	userLoginFailedTimes, err := x.Vars.GetUserLoginFailedTimes(ctx)
+	if err != nil {
+		return
+	}
+	userLockTime, err := x.Vars.GetUserLockTime(ctx)
+	if err != nil {
+		return
+	}
+	// 用户连续登录失败已超出最大次数
+	if times > userLoginFailedTimes {
+		// 针对锁定缓存延长锁定时效
+		if err = x.Redis.Expire(ctx, key, userLockTime).Err(); err != nil {
+			return
+		}
+		return errors.New("用户连续登录失败已超出最大次数")
 	}
 	return
 }
 
-// RefreshVars 刷新变量
-func (x *Service) RefreshVars(ctx context.Context) (err error) {
-	key := x.Values.KeyName("vars")
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+// IncLockForUser 增加锁定次数
+func (x *Service) IncLockForUser(ctx context.Context, uid string) (err error) {
+	key := x.Values.KeyName("lock", uid)
+	if err = x.Redis.Incr(ctx, key).Err(); err != nil {
 		return
-	}
-	if exists == 0 {
-		var cursor *mongo.Cursor
-		if cursor, err = x.Db.Collection("vars").Find(ctx, bson.M{}); err != nil {
-			return
-		}
-		var data []common.Var
-		if err = cursor.All(ctx, &data); err != nil {
-			return
-		}
-		pipe := x.Redis.Pipeline()
-		for _, v := range data {
-			switch x := v.Value.(type) {
-			case primitive.A:
-				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v.Key, b)
-				break
-			case primitive.M:
-				b, _ := jsoniter.Marshal(x)
-				pipe.HSet(ctx, key, v.Key, b)
-				break
-			default:
-				pipe.HSet(ctx, key, v.Key, x)
-			}
-		}
-		if _, err = pipe.Exec(ctx); err != nil {
-			return
-		}
-	}
-	return
-}
-
-// SetVar 设置变量
-func (x *Service) SetVar(ctx context.Context, key string, value interface{}) (err error) {
-	var exists int64
-	if exists, err = x.Db.Collection("vars").CountDocuments(ctx, bson.M{"key": key}); err != nil {
-		return
-	}
-	doc := common.NewVar(key, value)
-	if exists == 0 {
-		if _, err = x.Db.Collection("vars").InsertOne(ctx, doc); err != nil {
-			return
-		}
-	} else {
-		if _, err = x.Db.Collection("vars").ReplaceOne(ctx, bson.M{"key": key}, doc); err != nil {
-			return
-		}
-	}
-	if err = x.Redis.Del(ctx, x.Values.KeyName("vars")).Err(); err != nil {
-		return
-	}
-	return
-}
-
-// GetExpiration 获取会话有效时间
-func (x *Service) GetExpiration(ctx context.Context) (t time.Duration) {
-	value, _ := x.GetVar(ctx, "user_session_expire")
-	if value != "" {
-		t, _ = time.ParseDuration(value)
-	} else {
-		t = time.Hour
 	}
 	return
 }
@@ -225,23 +176,20 @@ func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 }
 
 // OpenAPI 开放服务客户端
-func (x *Service) OpenAPI(ctx context.Context) (client *openapi.OpenAPI, err error) {
-	var option map[string]interface{}
-	if option, err = x.GetVars(ctx, []string{
-		"openapi_url",
-		"openapi_key",
-		"openapi_secret",
-	}); err != nil {
+func (x *Service) OpenAPI(ctx context.Context) (_ *openapi.OpenAPI, err error) {
+	url, err := x.Vars.GetOpenapiUrl(ctx)
+	if err != nil {
 		return
 	}
-	client = openapi.New(
-		option["openapi_url"].(string),
-		openapi.SetCertification(
-			option["openapi_key"].(string),
-			option["openapi_secret"].(string),
-		),
-	)
-	return
+	key, err := x.Vars.GetOpenapiKey(ctx)
+	if err != nil {
+		return
+	}
+	secret, err := x.Vars.GetOpenapiSecret(ctx)
+	if err != nil {
+		return
+	}
+	return openapi.New(url, openapi.SetCertification(key, secret)), nil
 }
 
 // PushLoginLog 推送登录日志
@@ -268,30 +216,37 @@ func (x *Service) PushLoginLog(ctx context.Context, doc *common.LoginLogDto) (er
 }
 
 func (x *Service) SendEmail(ctx context.Context, to []string, name string, subject string, html []byte) (err error) {
-	var option map[string]interface{}
-	if option, err = x.GetVars(ctx, []string{
-		"email_host",
-		"email_port",
-		"email_username",
-		"email_password",
-	}); err != nil {
+	host, err := x.Vars.GetEmailHost(ctx)
+	if err != nil {
+		return
+	}
+	port, err := x.Vars.GetEmailPort(ctx)
+	if err != nil {
+		return
+	}
+	username, err := x.Vars.GetEmailUsername(ctx)
+	if err != nil {
+		return
+	}
+	password, err := x.Vars.GetEmailPassword(ctx)
+	if err != nil {
 		return
 	}
 	e := &email.Email{
 		To:      to,
-		From:    fmt.Sprintf(`%s <%s>`, name, option["email_username"]),
+		From:    fmt.Sprintf(`%s <%s>`, name, username),
 		Subject: subject,
 		HTML:    html,
 	}
 	if err = e.SendWithTLS(
-		fmt.Sprintf(`%s:%s`, option["email_host"], option["email_port"]),
+		fmt.Sprintf(`%s:%s`, host, port),
 		smtp.PlainAuth("",
-			option["email_username"].(string),
-			option["email_password"].(string),
-			option["email_host"].(string),
+			username,
+			password,
+			host,
 		),
 		&tls.Config{
-			ServerName: option["email_host"].(string),
+			ServerName: host,
 		},
 	); err != nil {
 		panic(err)
