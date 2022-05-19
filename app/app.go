@@ -57,7 +57,7 @@ func New(
 	r.DELETE("/sessions", auth, route.Use(system.DeleteSessions))
 	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
 
-	r.GET("/options", auth, route.Use(vars.Options))
+	r.GET("/options", route.Use(vars.Options))
 	_vars := r.Group("/vars", auth)
 	{
 		_vars.GET("/", route.Use(vars.Gets))
