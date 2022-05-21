@@ -39,7 +39,7 @@ func NewRole(name string) *Role {
 		Pages:      []primitive.ObjectID{},
 		Readonly:   []primitive.ObjectID{},
 		Labels:     []string{},
-		Status:     BoolToP(true),
+		Status:     BoolP(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}

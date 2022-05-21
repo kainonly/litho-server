@@ -154,19 +154,23 @@ func (x *Install) validateTemplate(ctx context.Context, schema string, data inte
 func (x *Install) setTemplate(ctx context.Context, parent *primitive.ObjectID, contents []Content) (err error) {
 	var keys []int
 	var data []interface{}
-	for k, v := range contents {
-		if len(v.Children) != 0 {
-			keys = append(keys, k)
+	for key, value := range contents {
+		if len(value.Children) != 0 {
+			keys = append(keys, key)
 		}
 		if parent != nil {
-			v.Parent = parent
+			value.Parent = parent
 		}
-		if v.Status == nil {
-			v.Status = common.BoolToP(true)
+		for _, v := range value.Schema.Fields {
+			v.Sort = common.Int64P(0)
 		}
-		v.CreateTime = time.Now()
-		v.UpdateTime = time.Now()
-		data = append(data, v)
+		value.Sort = int64(key)
+		if value.Status == nil {
+			value.Status = common.BoolP(true)
+		}
+		value.CreateTime = time.Now()
+		value.UpdateTime = time.Now()
+		data = append(data, value)
 	}
 	var result *mongo.InsertManyResult
 	if result, err = x.Db.Collection("pages").
@@ -175,7 +179,7 @@ func (x *Install) setTemplate(ctx context.Context, parent *primitive.ObjectID, c
 	}
 	for _, v := range keys {
 		if err = x.setTemplate(ctx,
-			common.ObjectIDToP(result.InsertedIDs[v]),
+			common.ObjectIDP(result.InsertedIDs[v]),
 			contents[v].Children,
 		); err != nil {
 			return
