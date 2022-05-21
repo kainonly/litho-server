@@ -48,11 +48,9 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	if err = x.System.CheckLockForUser(ctx, uid); err != nil {
 		return err
 	}
-	if err := helper.PasswordVerify(body.Password, data.Password); err != nil {
+	if err = helper.PasswordVerify(body.Password, data.Password); err != nil {
+		go x.System.IncLockForUser(context.TODO(), uid)
 		c.Set("code", "AUTH_INCORRECT")
-		if err = x.System.IncLockForUser(ctx, uid); err != nil {
-			return err
-		}
 		return err
 	}
 	// 创建 Token
@@ -63,9 +61,12 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}); err != nil {
 		return err
 	}
-
+	// 清除锁定缓存
+	if err = x.System.ClearLockForUser(ctx, uid); err != nil {
+		return err
+	}
 	// 设置会话
-	if err := x.System.SetSession(ctx, uid, jti); err != nil {
+	if err = x.System.SetSession(ctx, uid, jti); err != nil {
 		return err
 	}
 	// 写入日志
