@@ -141,10 +141,23 @@ func (x *Service) CheckLockForUser(ctx context.Context, uid string) (err error) 
 // IncLockForUser 增加锁定次数
 func (x *Service) IncLockForUser(ctx context.Context, uid string) (err error) {
 	key := x.Values.KeyName("lock", uid)
+	userLockTime, err := x.Vars.GetUserLockTime(ctx)
+	if err != nil {
+		return
+	}
 	if err = x.Redis.Incr(ctx, key).Err(); err != nil {
 		return
 	}
+	if err = x.Redis.Expire(ctx, key, userLockTime).Err(); err != nil {
+		return
+	}
 	return
+}
+
+// ClearLockForUser 清除锁定
+func (x *Service) ClearLockForUser(ctx context.Context, uid string) (err error) {
+	key := x.Values.KeyName("lock", uid)
+	return x.Redis.Del(ctx, key).Err()
 }
 
 // CreateVerifyCode 创建验证码
