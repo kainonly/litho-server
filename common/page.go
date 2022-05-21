@@ -47,18 +47,19 @@ type Schema struct {
 	Key string `bson:"key" json:"key"`
 
 	// 字段
-	Fields SchemaFields `bson:"fields" json:"fields"`
+	Fields []*SchemaField `bson:"fields" json:"fields"`
 
 	// 显隐规则
-	Rules []interface{} `bson:"rules,omitempty" json:"rules,omitempty"`
+	Rules []*SchemaRule `bson:"rules,omitempty" json:"rules,omitempty"`
 
 	// 启用事务补偿
 	Event *bool `bson:"event,omitempty" json:"event,omitempty"`
 }
 
-type SchemaFields map[string]*SchemaField
-
 type SchemaField struct {
+	// 命名
+	Key string `bson:"key"`
+
 	// 显示名称
 	Label string `bson:"label" json:"label"`
 
@@ -131,11 +132,11 @@ type SchemaRule struct {
 	// 逻辑
 	Logic string `bson:"logic" json:"logic"`
 
+	// 条件
+	Conditions []*SchemaRuleCondition `bson:"conditions" json:"conditions"`
+
 	// 显示字段
 	Display []string `bson:"display" json:"display"`
-
-	// 条件
-	Conditions []SchemaRuleCondition `bson:"conditions" json:"conditions"`
 }
 
 type SchemaRuleCondition struct {
@@ -154,7 +155,7 @@ type Source struct {
 	Layout string `bson:"layout" json:"layout"`
 
 	// 图表
-	Panels []Panel `bson:"panels" json:"panels"`
+	Panels []*Panel `bson:"panels" json:"panels"`
 }
 
 type Panel struct {

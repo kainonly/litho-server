@@ -58,7 +58,7 @@ func NewUser(username string, password string) *User {
 		Password:   password,
 		Roles:      []primitive.ObjectID{},
 		Labels:     []string{},
-		Status:     BoolToP(true),
+		Status:     BoolP(true),
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}

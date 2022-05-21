@@ -105,11 +105,15 @@ type Subscriptions struct {
 	*sync.Map
 }
 
-func BoolToP(v bool) *bool {
+func Int64P(v int64) *int64 {
 	return &v
 }
 
-func ObjectIDToP(v interface{}) *primitive.ObjectID {
+func BoolP(v bool) *bool {
+	return &v
+}
+
+func ObjectIDP(v interface{}) *primitive.ObjectID {
 	if id, ok := v.(primitive.ObjectID); ok {
 		return &id
 	}
