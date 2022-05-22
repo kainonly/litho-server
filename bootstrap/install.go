@@ -161,8 +161,8 @@ func (x *Install) setTemplate(ctx context.Context, parent *primitive.ObjectID, c
 		if parent != nil {
 			value.Parent = parent
 		}
-		for _, v := range value.Schema.Fields {
-			v.Sort = common.Int64P(0)
+		for k, v := range value.Schema.Fields {
+			v.Sort = common.Int64P(int64(k))
 		}
 		value.Sort = int64(key)
 		if value.Status == nil {
