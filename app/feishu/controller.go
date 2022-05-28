@@ -6,6 +6,7 @@ import (
 	"api/common"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
@@ -105,13 +106,13 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		}); err != nil {
 			return err
 		}
-		c.Redirect(302, "https://xconsole.kainonly.com:8443/#/authorized")
+		c.Redirect(302, fmt.Sprintf(`%s/#/authorized`, x.Values.Console))
 		return nil
 	}
 	data, err := x.Users.FindOneByFeishu(ctx, userData.OpenId)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			c.Redirect(302, "https://xconsole.kainonly.com:8443/#/unauthorize")
+			c.Redirect(302, fmt.Sprintf(`%s/#/unauthorize`, x.Values.Console))
 		}
 		return err
 	}
@@ -134,6 +135,6 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.Redirect(302, "https://xconsole.kainonly.com:8443/")
+	c.Redirect(302, fmt.Sprintf(`%s/`, x.Values.Console))
 	return nil
 }

@@ -59,6 +59,7 @@ type Values struct {
 	Name           string                   `yaml:"name"`
 	Namespace      string                   `yaml:"namespace"`
 	Key            string                   `yaml:"key"`
+	Console        string                   `yaml:"console"`
 	Cors           Cors                     `yaml:"cors"`
 	Database       Database                 `yaml:"database"`
 	Redis          Redis                    `yaml:"redis"`
