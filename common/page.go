@@ -58,7 +58,7 @@ type Schema struct {
 
 type SchemaField struct {
 	// 命名
-	Key string `bson:"key"`
+	Key string `bson:"key" json:"key"`
 
 	// 显示名称
 	Label string `bson:"label" json:"label"`
