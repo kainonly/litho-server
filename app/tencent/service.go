@@ -75,7 +75,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 	date := time.Now()
 	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), date.Add(expired).Unix())
 	key := fmt.Sprintf(`%s/%s/%s`,
-		x.Values.Key,
+		x.Values.Namespace,
 		date.Format("20060102"),
 		helper.Uuid(),
 	)

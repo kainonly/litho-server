@@ -391,8 +391,8 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 	case "profile":
 		var body struct {
 			Username string `json:"username,omitempty" bson:"username,omitempty"`
-			Name     string `json:"name" binding:"required"`
-			Avatar   string `json:"avatar" binding:"required"`
+			Name     string `json:"name" bson:"name,omitempty"`
+			Avatar   string `json:"avatar" bson:"avatar,omitempty"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			return err
