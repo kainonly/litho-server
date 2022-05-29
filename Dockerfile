@@ -7,4 +7,4 @@ WORKDIR /app
 
 EXPOSE 3000
 
-CMD [ "./main" ]
+CMD [ "./main", "server" ]
