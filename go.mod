@@ -26,10 +26,10 @@ require (
 	github.com/thoas/go-funk v0.9.2
 	github.com/weplanx/go v0.0.2
 	github.com/weplanx/openapi v0.1.2
-	github.com/weplanx/transfer v1.2.1
+	github.com/weplanx/transfer v1.2.2
 	go.mongodb.org/mongo-driver v1.9.0
 	go.uber.org/zap v1.21.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -72,4 +72,5 @@ require (
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
