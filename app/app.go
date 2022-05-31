@@ -41,6 +41,7 @@ func New(
 ) *gin.Engine {
 	r := middleware.Global()
 	auth := middleware.AuthGuard()
+	r.GET("/", route.Use(system.Index))
 
 	r.POST("/auth", route.Use(system.AuthLogin))
 	r.HEAD("/auth", route.Use(system.AuthVerify))
