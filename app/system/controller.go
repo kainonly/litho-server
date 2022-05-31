@@ -28,6 +28,13 @@ type Controller struct {
 	Departments *departments.Service
 }
 
+func (x *Controller) Index(c *gin.Context) interface{} {
+	return gin.H{
+		"time": time.Now(),
+		"ip":   c.ClientIP(),
+	}
+}
+
 // AuthLogin 登录
 func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	var body struct {
