@@ -130,7 +130,8 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		return err
 	}
 	// 写入日志
-	logData := common.NewLoginLogV10(data, jti, c.ClientIP(), c.Request.UserAgent())
+	ip := c.GetHeader("X-Forwarded-For")
+	logData := common.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
 	go x.System.PushLoginLog(context.TODO(), logData)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
