@@ -75,6 +75,9 @@ type SchemaField struct {
 	// 默认值
 	Default interface{} `bson:"default,omitempty" json:"default,omitempty"`
 
+	// 关键词
+	Keyword *bool `bson:"keyword,omitempty" json:"keyword,omitempty"`
+
 	// 是否必须
 	Required *bool `bson:"required,omitempty" json:"required,omitempty"`
 
