@@ -147,7 +147,7 @@ type SchemaRule struct {
 
 type SchemaRuleCondition struct {
 	// 字段
-	Field string `bson:"field" json:"field"`
+	Key string `bson:"key" json:"key"`
 
 	// 操作符
 	Operate string `bson:"operate" json:"operate"`
