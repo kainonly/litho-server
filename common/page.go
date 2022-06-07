@@ -142,7 +142,7 @@ type SchemaRule struct {
 	Conditions []*SchemaRuleCondition `bson:"conditions" json:"conditions"`
 
 	// 显示字段
-	Keys []string `bson:"keys" json:"keys"`
+	Display []string `bson:"display" json:"display"`
 }
 
 type SchemaRuleCondition struct {
