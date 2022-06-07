@@ -54,6 +54,9 @@ type Schema struct {
 
 	// 启用事务补偿
 	Event *bool `bson:"event,omitempty" json:"event,omitempty"`
+
+	// 启用详情
+	Detail *bool `bson:"detail,omitempty" json:"detail,omitempty"`
 }
 
 type SchemaField struct {
@@ -113,13 +116,13 @@ type SchemaFieldOption struct {
 	// 枚举数值
 	Values []Value `bson:"values,omitempty" json:"values,omitempty"`
 
-	// 引用模型
+	// 引用类型，模型
 	Reference string `bson:"reference,omitempty" json:"reference,omitempty"`
 
-	// 目标字段
+	// 引用类型，目标字段
 	Target string `bson:"target,omitempty" json:"target,omitempty"`
 
-	// 是否多选
+	// 多选
 	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
 }
 
@@ -139,7 +142,7 @@ type SchemaRule struct {
 	Conditions []*SchemaRuleCondition `bson:"conditions" json:"conditions"`
 
 	// 显示字段
-	Display []string `bson:"display" json:"display"`
+	Keys []string `bson:"keys" json:"keys"`
 }
 
 type SchemaRuleCondition struct {
