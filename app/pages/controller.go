@@ -46,7 +46,7 @@ func (x *Controller) GetIndexes(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	indexes, err := x.Service.GetIndexes(ctx, data.Schema.Key)
+	indexes, err := x.Service.GetIndexes(ctx, data.Schema.Model)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (x *Controller) SetIndex(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if _, err = x.Service.SetIndex(ctx, page.Schema.Key, uri.Index, body.Keys, *body.Unique); err != nil {
+	if _, err = x.Service.SetIndex(ctx, page.Schema.Model, uri.Index, body.Keys, *body.Unique); err != nil {
 		return err
 	}
 	return nil
@@ -92,7 +92,7 @@ func (x *Controller) DeleteIndex(c *gin.Context) interface{} {
 	if err != nil {
 		return err
 	}
-	if _, err = x.Service.DeleteIndex(ctx, page.Schema.Key, uri.Index); err != nil {
+	if _, err = x.Service.DeleteIndex(ctx, page.Schema.Model, uri.Index); err != nil {
 		return err
 	}
 	return nil

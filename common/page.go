@@ -43,8 +43,8 @@ type Page struct {
 }
 
 type Schema struct {
-	// 命名
-	Key string `bson:"key" json:"key"`
+	// 模型命名
+	Model string `bson:"model" json:"model"`
 
 	// 字段
 	Fields []*SchemaField `bson:"fields" json:"fields"`
@@ -60,8 +60,8 @@ type Schema struct {
 }
 
 type SchemaField struct {
-	// 命名
-	Key string `bson:"key" json:"key"`
+	// 字段命名
+	Field string `bson:"field" json:"field"`
 
 	// 显示名称
 	Label string `bson:"label" json:"label"`
@@ -142,7 +142,7 @@ type SchemaRule struct {
 	Conditions []*SchemaRuleCondition `bson:"conditions" json:"conditions"`
 
 	// 显示字段
-	Keys []string `bson:"keys" json:"keys"`
+	Fields []string `bson:"fields" json:"fields"`
 }
 
 type SchemaRuleCondition struct {
