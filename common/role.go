@@ -15,10 +15,7 @@ type Role struct {
 	Description string `bson:"description" json:"description"`
 
 	// 授权页面
-	Pages []primitive.ObjectID `bson:"pages" json:"pages"`
-
-	// 只读权限
-	Readonly []primitive.ObjectID `bson:"readonly" json:"readonly"`
+	Pages map[string]*int64 `bson:"pages" json:"pages"`
 
 	// 标记
 	Labels []string `bson:"labels" json:"labels"`
@@ -36,8 +33,7 @@ type Role struct {
 func NewRole(name string) *Role {
 	return &Role{
 		Name:       name,
-		Pages:      []primitive.ObjectID{},
-		Readonly:   []primitive.ObjectID{},
+		Pages:      map[string]*int64{},
 		Labels:     []string{},
 		Status:     BoolP(true),
 		CreateTime: time.Now(),
@@ -50,13 +46,8 @@ func (x *Role) SetDescription(v string) *Role {
 	return x
 }
 
-func (x *Role) SetPages(v []primitive.ObjectID) *Role {
+func (x *Role) SetPages(v map[string]*int64) *Role {
 	x.Pages = v
-	return x
-}
-
-func (x *Role) SetReadonly(v []primitive.ObjectID) *Role {
-	x.Readonly = v
 	return x
 }
 
