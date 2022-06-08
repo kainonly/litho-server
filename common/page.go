@@ -124,6 +124,9 @@ type SchemaFieldOption struct {
 
 	// 多选
 	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
+
+	// 作用域
+	Scope string `bson:"scope,omitempty" json:"scope,omitempty"`
 }
 
 type Value struct {
