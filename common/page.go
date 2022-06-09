@@ -23,11 +23,14 @@ type Page struct {
 	// 形式
 	Manifest string `bson:"manifest,omitempty" json:"manifest,omitempty"`
 
-	// Schema 定义
+	// Schema 模型，数据集时存在
 	Schema *Schema `bson:"schema,omitempty" json:"schema,omitempty"`
 
-	// 数据源
+	// 数据源，数据聚合时存在
 	Source *Source `bson:"source,omitempty" json:"source,omitempty"`
+
+	// 自定义，自定义种类时存在
+	Manual *Manual `bson:"manual,omitempty" json:"manual,omitempty"`
 
 	// 排序
 	Sort int64 `bson:"sort" json:"sort"`
@@ -125,8 +128,8 @@ type SchemaFieldOption struct {
 	// 多选
 	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
 
-	// 作用域
-	Scope string `bson:"scope,omitempty" json:"scope,omitempty"`
+	// 组件标识
+	Component string `bson:"component,omitempty" json:"component,omitempty"`
 }
 
 type Value struct {
@@ -176,4 +179,12 @@ type Panel struct {
 
 	// 样式
 	Style map[string]interface{} `bson:"style,omitempty" json:"style,omitempty"`
+}
+
+type Manual struct {
+	// 页面标识，自定义页面接入命名
+	Scope string `bson:"scope" json:"scope"`
+
+	// 权限细粒化
+	Policies map[string]string `bson:"policies" json:"policies"`
 }
