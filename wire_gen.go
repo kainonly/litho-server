@@ -19,26 +19,35 @@ import (
 	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/engine"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/go/vars"
 )
 
 // Injectors from wire.go:
 
 func App(value *common.Values) (*gin.Engine, error) {
+	conn, err := bootstrap.UseNats(value)
+	if err != nil {
+		return nil, err
+	}
+	jetStreamContext, err := bootstrap.UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
+	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	valuesValues, err := bootstrap.UseDynamicValues(objectStore)
+	if err != nil {
+		return nil, err
+	}
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
 	}
 	database := bootstrap.UseDatabase(client, value)
 	redisClient, err := bootstrap.UseRedis(value)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := bootstrap.UseNats(value)
-	if err != nil {
-		return nil, err
-	}
-	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -53,16 +62,17 @@ func App(value *common.Values) (*gin.Engine, error) {
 	passport := bootstrap.UsePassport(value)
 	httpClients := bootstrap.UseHttpClients()
 	inject := &common.Inject{
-		Values:      value,
-		MongoClient: client,
-		Db:          database,
-		Redis:       redisClient,
-		Nats:        conn,
-		Js:          jetStreamContext,
-		Cipher:      cipher,
-		HID:         hid,
-		Passport:    passport,
-		HC:          httpClients,
+		Values:        value,
+		DynamicValues: valuesValues,
+		MongoClient:   client,
+		Db:            database,
+		Redis:         redisClient,
+		Nats:          conn,
+		Js:            jetStreamContext,
+		Cipher:        cipher,
+		HID:           hid,
+		Passport:      passport,
+		HC:            httpClients,
 	}
 	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
 	if err != nil {
@@ -135,6 +145,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	varsController := &vars.Controller{
 		Vars: service,
 	}
-	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, varsController)
+	valuesService := &values.Service{
+		Object: objectStore,
+	}
+	valuesController := &values.Controller{
+		Service: valuesService,
+	}
+	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, varsController, valuesController)
 	return ginEngine, nil
 }
