@@ -32,7 +32,6 @@ func (x *Controller) Index(c *gin.Context) interface{} {
 	return gin.H{
 		"time": time.Now(),
 		"ip":   c.GetHeader("X-Forwarded-For"),
-		"dv":   x.DynamicValues,
 	}
 }
 
