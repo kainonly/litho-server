@@ -12,6 +12,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/route"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/go/vars"
 )
 
@@ -26,6 +27,7 @@ var Provides = wire.NewSet(
 	departments.Provides,
 	users.Provides,
 	vars.Provides,
+	values.Provides,
 	New,
 	Subscribe,
 )
@@ -38,9 +40,11 @@ func New(
 	engine *engine.Controller,
 	pages *pages.Controller,
 	vars *vars.Controller,
+	values *values.Controller,
 ) *gin.Engine {
 	r := middleware.Global()
 	auth := middleware.AuthGuard()
+
 	r.GET("/", route.Use(system.Index))
 
 	r.POST("/auth", route.Use(system.AuthLogin))
@@ -61,6 +65,9 @@ func New(
 	r.GET("/options", route.Use(vars.Options))
 	r.GET("/vars", auth, route.Use(vars.Get))
 	r.PUT("/vars/:key", auth, route.Use(vars.Set))
+
+	r.GET("/values", route.Use(values.Get))
+	r.PATCH("/values", route.Use(values.Set))
 
 	_tencent := r.Group("/tencent", auth)
 	{

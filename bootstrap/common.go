@@ -13,6 +13,7 @@ import (
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,6 +27,8 @@ var Provides = wire.NewSet(
 	UseRedis,
 	UseNats,
 	UseJetStream,
+	UseStore,
+	UseDynamicValues,
 	UseEngine,
 	UseTransfer,
 	UsePassport,
@@ -34,7 +37,8 @@ var Provides = wire.NewSet(
 	UseHttpClients,
 )
 
-// UseMongoDB 初始化 Mongodb
+// UseMongoDB 初始化 MongoDB
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
@@ -42,12 +46,12 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	)
 }
 
-// UseDatabase 指向数据库，并初始集合
+// UseDatabase 初始化数据库
 func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
 	return client.Database(values.Database.DbName)
 }
 
-// UseRedis 初始化 Redis 缓存
+// UseRedis 初始化 Redis
 // 配置文档 https://github.com/go-redis/redis
 func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(values.Redis.Uri)
@@ -61,6 +65,9 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	return
 }
 
+// UseNats 初始化 Nats
+// 配置文档 https://docs.nats.io/using-nats/developer
+// SDK https://github.com/nats-io/nats.go
 func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 	var kp nkeys.KeyPair
 	if kp, err = nkeys.FromSeed([]byte(values.Nats.Nkey)); err != nil {
@@ -89,11 +96,28 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 	return
 }
 
+// UseJetStream 初始化流
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
-// UseEngine 初始化 Engine
+// UseStore 初始化分布存储
+func UseStore(values *common.Values, js nats.JetStreamContext) (nats.ObjectStore, error) {
+	return js.CreateObjectStore(&nats.ObjectStoreConfig{
+		Bucket: values.Namespace,
+	})
+}
+
+// UseDynamicValues 初始化动态配置
+func UseDynamicValues(object nats.ObjectStore) (dv *values.Values, err error) {
+	if dv, err = values.SetValues(object); err != nil {
+		return
+	}
+	go values.WatchValues(object, dv)
+	return
+}
+
+// UseEngine 初始化 Engine API
 func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	return engine.New(
 		engine.SetApp(values.Namespace),
@@ -102,6 +126,7 @@ func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 	)
 }
 
+// UseTransfer 初始化日志传输
 func UseTransfer(values *common.Values, js nats.JetStreamContext) (client *transfer.Transfer, err error) {
 	if client, err = transfer.New(values.Namespace, js); err != nil {
 		return nil, err
@@ -140,6 +165,7 @@ func UseHID(values *common.Values) (idx *encryption.HID, err error) {
 	return
 }
 
+// UseHttpClients 创建请求客户端
 func UseHttpClients() *common.HttpClients {
 	return &common.HttpClients{
 		Feishu: resty.New().SetBaseURL("https://open.feishu.cn/open-apis"),
