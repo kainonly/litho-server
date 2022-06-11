@@ -9,16 +9,15 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/weplanx/go/vars"
 	"strings"
 	"time"
 )
 
 type Service struct {
 	*common.Inject
-	Vars *vars.Service
 }
 
+// Decrypt 解密
 func (x *Service) Decrypt(encrypt string, key string) (string, error) {
 	buf, err := base64.StdEncoding.DecodeString(encrypt)
 	if err != nil {
@@ -51,6 +50,7 @@ func (x *Service) Decrypt(encrypt string, key string) (string, error) {
 	return string(buf[n : m+1]), nil
 }
 
+// GetTenantAccessToken 获取 TenantAccessToken
 func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err error) {
 	key := x.Values.KeyName("feishu", "tenant_access_token")
 	var exists int64
@@ -58,19 +58,11 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		return
 	}
 	if exists == 0 {
-		var id string
-		if id, err = x.Vars.GetFeishuAppId(ctx); err != nil {
-			return
-		}
-		var secret string
-		if secret, err = x.Vars.GetFeishuAppSecret(ctx); err != nil {
-			return
-		}
 		var body map[string]interface{}
 		if _, err = x.HC.Feishu.R().
 			SetBody(map[string]interface{}{
-				"app_id":     id,
-				"app_secret": secret,
+				"app_id":     x.DynamicValues.FeishuAppId,
+				"app_secret": x.DynamicValues.FeishuAppSecret,
 			}).
 			SetResult(&body).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {
@@ -102,6 +94,7 @@ type UserDto struct {
 	TokenType        string `json:"token_type"`
 }
 
+// GetAccessToken 获取 AccessToken
 func (x *Service) GetAccessToken(ctx context.Context, code string) (_ UserDto, err error) {
 	var token string
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {

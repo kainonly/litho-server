@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jordan-wright/email"
-	"github.com/weplanx/go/vars"
 	openapi "github.com/weplanx/openapi/client"
 	"go.mongodb.org/mongo-driver/bson"
 	"html/template"
@@ -20,7 +19,6 @@ import (
 
 type Service struct {
 	*common.Inject
-	Vars  *vars.Service
 	Users *users.Service
 }
 
@@ -59,11 +57,9 @@ func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ 
 
 // SetSession 设置会话
 func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err error) {
-	exp, err := x.Vars.GetUserSessionExpire(ctx)
-	if err != nil {
-		return
-	}
-	if err = x.Redis.Set(ctx, x.Values.KeyName("sessions", uid), jti, exp).Err(); err != nil {
+	if err = x.Redis.Set(ctx,
+		x.Values.KeyName("sessions", uid), jti, x.DynamicValues.UserSessionExpire,
+	).Err(); err != nil {
 		return
 	}
 	return
@@ -71,11 +67,9 @@ func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err e
 
 // RenewSession 续约会话
 func (x *Service) RenewSession(ctx context.Context, uid string) (err error) {
-	exp, err := x.Vars.GetUserSessionExpire(ctx)
-	if err != nil {
-		return
-	}
-	if err = x.Redis.Expire(ctx, x.Values.KeyName("sessions", uid), exp).Err(); err != nil {
+	if err = x.Redis.Expire(ctx,
+		x.Values.KeyName("sessions", uid), x.DynamicValues.UserSessionExpire,
+	).Err(); err != nil {
 		return
 	}
 	return
@@ -119,18 +113,10 @@ func (x *Service) CheckLockForUser(ctx context.Context, uid string) (err error) 
 	if err != nil {
 		return
 	}
-	userLoginFailedTimes, err := x.Vars.GetUserLoginFailedTimes(ctx)
-	if err != nil {
-		return
-	}
-	userLockTime, err := x.Vars.GetUserLockTime(ctx)
-	if err != nil {
-		return
-	}
 	// 用户连续登录失败已超出最大次数
-	if times > userLoginFailedTimes {
+	if times > int(x.DynamicValues.UserLoginFailedTimes) {
 		// 针对锁定缓存延长锁定时效
-		if err = x.Redis.Expire(ctx, key, userLockTime).Err(); err != nil {
+		if err = x.Redis.Expire(ctx, key, x.DynamicValues.UserLockTime).Err(); err != nil {
 			return
 		}
 		return errors.New("用户连续登录失败已超出最大次数")
@@ -141,14 +127,10 @@ func (x *Service) CheckLockForUser(ctx context.Context, uid string) (err error) 
 // IncLockForUser 增加锁定次数
 func (x *Service) IncLockForUser(ctx context.Context, uid string) (err error) {
 	key := x.Values.KeyName("lock", uid)
-	userLockTime, err := x.Vars.GetUserLockTime(ctx)
-	if err != nil {
-		return
-	}
 	if err = x.Redis.Incr(ctx, key).Err(); err != nil {
 		return
 	}
-	if err = x.Redis.Expire(ctx, key, userLockTime).Err(); err != nil {
+	if err = x.Redis.Expire(ctx, key, x.DynamicValues.UserLockTime).Err(); err != nil {
 		return
 	}
 	return
@@ -190,19 +172,13 @@ func (x *Service) DeleteVerifyCode(ctx context.Context, name string) error {
 
 // OpenAPI 开放服务客户端
 func (x *Service) OpenAPI(ctx context.Context) (_ *openapi.OpenAPI, err error) {
-	url, err := x.Vars.GetOpenapiUrl(ctx)
 	if err != nil {
 		return
 	}
-	key, err := x.Vars.GetOpenapiKey(ctx)
-	if err != nil {
-		return
-	}
-	secret, err := x.Vars.GetOpenapiSecret(ctx)
-	if err != nil {
-		return
-	}
-	return openapi.New(url, openapi.SetCertification(key, secret)), nil
+	return openapi.New(
+		x.DynamicValues.OpenapiUrl,
+		openapi.SetCertification(x.DynamicValues.OpenapiKey, x.DynamicValues.OpenapiSecret),
+	), nil
 }
 
 // PushLoginLog 推送登录日志
@@ -229,37 +205,21 @@ func (x *Service) PushLoginLog(ctx context.Context, doc *common.LoginLogDto) (er
 }
 
 func (x *Service) SendEmail(ctx context.Context, to []string, name string, subject string, html []byte) (err error) {
-	host, err := x.Vars.GetEmailHost(ctx)
-	if err != nil {
-		return
-	}
-	port, err := x.Vars.GetEmailPort(ctx)
-	if err != nil {
-		return
-	}
-	username, err := x.Vars.GetEmailUsername(ctx)
-	if err != nil {
-		return
-	}
-	password, err := x.Vars.GetEmailPassword(ctx)
-	if err != nil {
-		return
-	}
 	e := &email.Email{
 		To:      to,
-		From:    fmt.Sprintf(`%s <%s>`, name, username),
+		From:    fmt.Sprintf(`%s <%s>`, name, x.DynamicValues.EmailUsername),
 		Subject: subject,
 		HTML:    html,
 	}
 	if err = e.SendWithTLS(
-		fmt.Sprintf(`%s:%s`, host, port),
+		fmt.Sprintf(`%s:%s`, x.DynamicValues.EmailHost, x.DynamicValues.EmailPort),
 		smtp.PlainAuth("",
-			username,
-			password,
-			host,
+			x.DynamicValues.EmailUsername,
+			x.DynamicValues.EmailPassword,
+			x.DynamicValues.EmailHost,
 		),
 		&tls.Config{
-			ServerName: host,
+			ServerName: x.DynamicValues.EmailHost,
 		},
 	); err != nil {
 		panic(err)

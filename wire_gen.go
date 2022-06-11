@@ -20,7 +20,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/values"
-	"github.com/weplanx/go/vars"
 )
 
 // Injectors from wire.go:
@@ -78,17 +77,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &vars.Service{
-		Db:    database,
-		Redis: redisClient,
-	}
-	usersService := &users.Service{
+	service := &users.Service{
 		Inject: inject,
 	}
 	systemService := &system.Service{
 		Inject: inject,
-		Vars:   service,
-		Users:  usersService,
+		Users:  service,
 	}
 	middleware := &app.Middleware{
 		Inject:   inject,
@@ -105,26 +99,23 @@ func App(value *common.Values) (*gin.Engine, error) {
 	controller := &system.Controller{
 		Inject:      inject,
 		System:      systemService,
-		Users:       usersService,
+		Users:       service,
 		Roles:       rolesService,
 		Departments: departmentsService,
 	}
 	tencentService := &tencent.Service{
 		Inject: inject,
-		Vars:   service,
 	}
 	tencentController := &tencent.Controller{
 		Tencent: tencentService,
 	}
 	feishuService := &feishu.Service{
 		Inject: inject,
-		Vars:   service,
 	}
 	feishuController := &feishu.Controller{
 		Inject: inject,
 		Feishu: feishuService,
-		Vars:   service,
-		Users:  usersService,
+		Users:  service,
 		System: systemService,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
@@ -142,15 +133,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	varsController := &vars.Controller{
-		Vars: service,
-	}
 	valuesService := &values.Service{
 		Object: objectStore,
 	}
 	valuesController := &values.Controller{
 		Service: valuesService,
 	}
-	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, varsController, valuesController)
+	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, valuesController)
 	return ginEngine, nil
 }

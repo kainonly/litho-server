@@ -13,7 +13,6 @@ import (
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/route"
 	"github.com/weplanx/go/values"
-	"github.com/weplanx/go/vars"
 )
 
 var Provides = wire.NewSet(
@@ -26,7 +25,6 @@ var Provides = wire.NewSet(
 	roles.Provides,
 	departments.Provides,
 	users.Provides,
-	vars.Provides,
 	values.Provides,
 	New,
 	Subscribe,
@@ -39,7 +37,6 @@ func New(
 	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
-	vars *vars.Controller,
 	values *values.Controller,
 ) *gin.Engine {
 	r := middleware.Global()
@@ -62,12 +59,9 @@ func New(
 	r.DELETE("/sessions", auth, route.Use(system.DeleteSessions))
 	r.DELETE("/sessions/:id", auth, route.Use(system.DeleteSession))
 
-	r.GET("/options", route.Use(vars.Options))
-	r.GET("/vars", auth, route.Use(vars.Get))
-	r.PUT("/vars/:key", auth, route.Use(vars.Set))
-
-	r.GET("/values", route.Use(values.Get))
-	r.PATCH("/values", route.Use(values.Set))
+	r.GET("/options", route.Use(system.Options))
+	r.GET("/values", auth, route.Use(values.Get))
+	r.PATCH("/values", auth, route.Use(values.Set))
 
 	_tencent := r.Group("/tencent", auth)
 	{

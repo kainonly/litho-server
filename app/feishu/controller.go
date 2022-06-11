@@ -11,7 +11,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/vars"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,11 +20,11 @@ import (
 type Controller struct {
 	*common.Inject
 	Feishu *Service
-	Vars   *vars.Service
 	Users  *users.Service
 	System *system.Service
 }
 
+// Challenge 事件订阅
 func (x *Controller) Challenge(c *gin.Context) interface{} {
 	var body struct {
 		Encrypt string `json:"encrypt"`
@@ -33,17 +32,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	ctx := c.Request.Context()
-
-	encryptKey, err := x.Vars.GetFeishuEncryptKey(ctx)
-	if err != nil {
-		return err
-	}
-	token, err := x.Vars.GetFeishuVerificationToken(ctx)
-	if err != nil {
-		return err
-	}
-	content, err := x.Feishu.Decrypt(body.Encrypt, encryptKey)
+	content, err := x.Feishu.Decrypt(body.Encrypt, x.DynamicValues.FeishuEncryptKey)
 	if err != nil {
 		return err
 	}
@@ -55,7 +44,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err = jsoniter.Unmarshal([]byte(content), &dto); err != nil {
 		return err
 	}
-	if dto.Token != token {
+	if dto.Token != x.DynamicValues.FeishuVerificationToken {
 		return errors.New("验证令牌不一致")
 	}
 	return gin.H{
@@ -67,6 +56,7 @@ type State struct {
 	Action string `json:"action,omitempty"`
 }
 
+// OAuth 第三方登录与关联
 func (x *Controller) OAuth(c *gin.Context) interface{} {
 	var query struct {
 		Code  string `form:"code" binding:"required"`
