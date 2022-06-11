@@ -4,11 +4,9 @@ import (
 	"api/bootstrap"
 	"api/common"
 	"context"
-	"fmt"
 	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
 	"github.com/spf13/cobra"
-	"github.com/weplanx/go/vars"
 	"os"
 	"time"
 )
@@ -41,7 +39,6 @@ func main() {
 				color.Red("%s", err.Error())
 				return
 			}
-			vars.Key = fmt.Sprintf("%s:vars", values.Namespace)
 			app, err := App(values)
 			if err != nil {
 				color.Red("%s", err.Error())

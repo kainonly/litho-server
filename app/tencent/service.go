@@ -11,7 +11,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/go/helper"
-	"github.com/weplanx/go/vars"
 	"net/http"
 	"net/url"
 	"time"
@@ -19,36 +18,22 @@ import (
 
 type Service struct {
 	*common.Inject
-	Vars *vars.Service
 }
 
-func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
-	secretId, err := x.Vars.GetTencentSecretId(ctx)
-	if err != nil {
-		return
-	}
-	secretKey, err := x.Vars.GetTencentSecretKey(ctx)
-	if err != nil {
-		return
-	}
-	bucket, err := x.Vars.GetTencentCosBucket(ctx)
-	if err != nil {
-		return
-	}
-	region, err := x.Vars.GetTencentCosRegion(ctx)
-	if err != nil {
-		return
-	}
+// CosClient Cos 对象存储客户端
+func (x *Service) CosClient(ctx context.Context) (client *cos.Client, err error) {
 	var u *url.URL
 	if u, err = url.Parse(
-		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`, bucket, region),
+		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
+			x.DynamicValues.TencentCosBucket, x.DynamicValues.TencentCosRegion,
+		),
 	); err != nil {
 		return
 	}
 	client = cos.NewClient(&cos.BaseURL{BucketURL: u}, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  secretId,
-			SecretKey: secretKey,
+			SecretID:  x.DynamicValues.TencentSecretId,
+			SecretKey: x.DynamicValues.TencentSecretKey,
 		},
 	})
 	return
@@ -56,36 +41,22 @@ func (x *Service) Client(ctx context.Context) (client *cos.Client, err error) {
 
 // CosPresigned 对象存储预签名
 func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error) {
-	secretId, err := x.Vars.GetTencentSecretId(ctx)
-	if err != nil {
-		return
-	}
-	secretKey, err := x.Vars.GetTencentSecretKey(ctx)
-	if err != nil {
-		return
-	}
-	bucket, err := x.Vars.GetTencentCosBucket(ctx)
-	if err != nil {
-		return
-	}
-	expired, err := x.Vars.GetTencentCosExpired(ctx)
-	if err != nil {
-		return
-	}
 	date := time.Now()
-	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), date.Add(expired).Unix())
+	keyTime := fmt.Sprintf(`%d;%d`,
+		date.Unix(), date.Add(x.DynamicValues.TencentCosExpired).Unix(),
+	)
 	key := fmt.Sprintf(`%s/%s/%s`,
 		x.Values.Namespace,
 		date.Format("20060102"),
 		helper.Uuid(),
 	)
 	policy := map[string]interface{}{
-		"expiration": date.Add(expired).Format("2006-01-02T15:04:05.000Z"),
+		"expiration": date.Add(x.DynamicValues.TencentCosExpired).Format("2006-01-02T15:04:05.000Z"),
 		"conditions": []interface{}{
-			map[string]interface{}{"bucket": bucket},
+			map[string]interface{}{"bucket": x.DynamicValues.TencentCosBucket},
 			[]interface{}{"starts-with", "$key", key},
 			map[string]interface{}{"q-sign-algorithm": "sha1"},
-			map[string]interface{}{"q-ak": secretId},
+			map[string]interface{}{"q-ak": x.DynamicValues.TencentSecretId},
 			map[string]interface{}{"q-sign-time": keyTime},
 		},
 	}
@@ -93,7 +64,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 	if policyText, err = jsoniter.Marshal(policy); err != nil {
 		return
 	}
-	signKeyHash := hmac.New(sha1.New, []byte(secretKey))
+	signKeyHash := hmac.New(sha1.New, []byte(x.DynamicValues.TencentSecretKey))
 	signKeyHash.Write([]byte(keyTime))
 	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
 	stringToSignHash := sha1.New()
@@ -106,15 +77,16 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 		"key":              key,
 		"policy":           policyText,
 		"q-sign-algorithm": "sha1",
-		"q-ak":             secretId,
+		"q-ak":             x.DynamicValues.TencentSecretId,
 		"q-key-time":       keyTime,
 		"q-signature":      signature,
 	}, nil
 }
 
+// ImageInfo 图片信息
 func (x *Service) ImageInfo(ctx context.Context, url string) (result map[string]interface{}, err error) {
 	var client *cos.Client
-	if client, err = x.Client(ctx); err != nil {
+	if client, err = x.CosClient(ctx); err != nil {
 		return
 	}
 	var response *cos.Response

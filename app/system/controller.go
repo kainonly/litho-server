@@ -465,3 +465,36 @@ func (x *Controller) SetUser(c *gin.Context) interface{} {
 	}
 	return nil
 }
+
+// Options 返回通用配置
+func (x *Controller) Options(c *gin.Context) interface{} {
+	var query struct {
+		Type string `form:"type" binding:"required"`
+	}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return err
+	}
+	switch query.Type {
+	case "upload":
+		switch x.DynamicValues.CloudPlatform {
+		case "tencent":
+			return gin.H{
+				"type": "cos",
+				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
+					x.DynamicValues.TencentCosBucket, x.DynamicValues.TencentCosRegion,
+				),
+				"limit": x.DynamicValues.TencentCosLimit,
+			}
+		}
+	case "office":
+		switch x.DynamicValues.OfficePlatform {
+		case "feishu":
+			return gin.H{
+				"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+				"redirect": x.DynamicValues.RedirectUrl,
+				"app_id":   x.DynamicValues.FeishuAppId,
+			}
+		}
+	}
+	return nil
+}

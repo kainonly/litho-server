@@ -15,6 +15,7 @@ func (x *Controller) CosPresigned(c *gin.Context) interface{} {
 	return data
 }
 
+// ImageInfo 获取图片信息
 func (x *Controller) ImageInfo(c *gin.Context) interface{} {
 	var params struct {
 		Url string `form:"url" binding:"required"`
