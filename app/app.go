@@ -62,6 +62,7 @@ func New(
 	r.GET("/options", route.Use(system.Options))
 	r.GET("/values", auth, route.Use(values.Get))
 	r.PATCH("/values", auth, route.Use(values.Set))
+	r.DELETE("/values/:key", auth, route.Use(values.Del))
 
 	_tencent := r.Group("/tencent", auth)
 	{
