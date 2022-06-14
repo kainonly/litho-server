@@ -5,6 +5,7 @@ import (
 	"api/app/feishu"
 	"api/app/pages"
 	"api/app/roles"
+	"api/app/schedules"
 	"api/app/system"
 	"api/app/tencent"
 	"api/app/users"
@@ -17,6 +18,8 @@ import (
 
 var Provides = wire.NewSet(
 	wire.Struct(new(Middleware), "*"),
+	values.Provides,
+	schedules.Provides,
 	system.Provides,
 	engine.Provides,
 	tencent.Provides,
@@ -25,7 +28,6 @@ var Provides = wire.NewSet(
 	roles.Provides,
 	departments.Provides,
 	users.Provides,
-	values.Provides,
 	New,
 	Subscribe,
 )
@@ -33,11 +35,12 @@ var Provides = wire.NewSet(
 func New(
 	middleware *Middleware,
 	system *system.Controller,
+	values *values.Controller,
+	schedules *schedules.Controller,
 	tencent *tencent.Controller,
 	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
-	values *values.Controller,
 ) *gin.Engine {
 	r := middleware.Global()
 	auth := middleware.AuthGuard()

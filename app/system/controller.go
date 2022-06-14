@@ -13,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +28,7 @@ type Controller struct {
 	Users       *users.Service
 	Roles       *roles.Service
 	Departments *departments.Service
+	Passport    *passport.Passport
 }
 
 func (x *Controller) Index(c *gin.Context) interface{} {
@@ -95,7 +97,7 @@ func (x *Controller) AuthVerify(c *gin.Context) interface{} {
 		c.Set("code", "AUTH_EXPIRED")
 		return common.AuthExpired
 	}
-	if _, err = x.System.Passport.Verify(ts); err != nil {
+	if _, err = x.Passport.Verify(ts); err != nil {
 		c.Set("status_code", 401)
 		c.Set("code", "AUTH_EXPIRED")
 		return err

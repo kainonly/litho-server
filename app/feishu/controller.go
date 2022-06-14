@@ -12,6 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,9 +21,10 @@ import (
 
 type Controller struct {
 	*common.Inject
-	Feishu *Service
-	Users  *users.Service
-	System *system.Service
+	Feishu   *Service
+	Users    *users.Service
+	System   *system.Service
+	Passport *passport.Passport
 }
 
 // Challenge 事件订阅
