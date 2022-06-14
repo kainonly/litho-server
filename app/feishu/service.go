@@ -61,8 +61,8 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		var body map[string]interface{}
 		if _, err = x.HC.Feishu.R().
 			SetBody(map[string]interface{}{
-				"app_id":     x.DynamicValues.FeishuAppId,
-				"app_secret": x.DynamicValues.FeishuAppSecret,
+				"app_id":     x.Values.FeishuAppId,
+				"app_secret": x.Values.FeishuAppSecret,
 			}).
 			SetResult(&body).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {

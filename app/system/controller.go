@@ -5,6 +5,7 @@ import (
 	"api/app/roles"
 	"api/app/users"
 	"api/common"
+	"api/model"
 	"context"
 	"errors"
 	"fmt"
@@ -78,7 +79,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 	// 写入日志
 	ip := c.GetHeader("X-Forwarded-For")
-	dto := common.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
+	dto := model.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
 	go x.System.PushLoginLog(context.TODO(), dto)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
@@ -353,7 +354,7 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	userId, _ := primitive.ObjectIDFromHex(claims.(jwt.MapClaims)["context"].(map[string]interface{})["uid"].(string))
-	var data common.User
+	var data model.User
 	if err := x.Users.FindOneById(ctx, userId, &data); err != nil {
 		return err
 	}
@@ -476,23 +477,23 @@ func (x *Controller) Options(c *gin.Context) interface{} {
 	}
 	switch query.Type {
 	case "upload":
-		switch x.DynamicValues.CloudPlatform {
+		switch x.Values.CloudPlatform {
 		case "tencent":
 			return gin.H{
 				"type": "cos",
 				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
-					x.DynamicValues.TencentCosBucket, x.DynamicValues.TencentCosRegion,
+					x.Values.TencentCosBucket, x.Values.TencentCosRegion,
 				),
-				"limit": x.DynamicValues.TencentCosLimit,
+				"limit": x.Values.TencentCosLimit,
 			}
 		}
 	case "office":
-		switch x.DynamicValues.OfficePlatform {
+		switch x.Values.OfficePlatform {
 		case "feishu":
 			return gin.H{
 				"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
-				"redirect": x.DynamicValues.RedirectUrl,
-				"app_id":   x.DynamicValues.FeishuAppId,
+				"redirect": x.Values.RedirectUrl,
+				"app_id":   x.Values.FeishuAppId,
 			}
 		}
 	}

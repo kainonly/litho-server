@@ -25,15 +25,15 @@ func (x *Service) CosClient(ctx context.Context) (client *cos.Client, err error)
 	var u *url.URL
 	if u, err = url.Parse(
 		fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
-			x.DynamicValues.TencentCosBucket, x.DynamicValues.TencentCosRegion,
+			x.Values.TencentCosBucket, x.Values.TencentCosRegion,
 		),
 	); err != nil {
 		return
 	}
 	client = cos.NewClient(&cos.BaseURL{BucketURL: u}, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  x.DynamicValues.TencentSecretId,
-			SecretKey: x.DynamicValues.TencentSecretKey,
+			SecretID:  x.Values.TencentSecretId,
+			SecretKey: x.Values.TencentSecretKey,
 		},
 	})
 	return
@@ -43,7 +43,7 @@ func (x *Service) CosClient(ctx context.Context) (client *cos.Client, err error)
 func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error) {
 	date := time.Now()
 	keyTime := fmt.Sprintf(`%d;%d`,
-		date.Unix(), date.Add(x.DynamicValues.TencentCosExpired).Unix(),
+		date.Unix(), date.Add(x.Values.TencentCosExpired).Unix(),
 	)
 	key := fmt.Sprintf(`%s/%s/%s`,
 		x.Values.Namespace,
@@ -51,12 +51,12 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 		helper.Uuid(),
 	)
 	policy := map[string]interface{}{
-		"expiration": date.Add(x.DynamicValues.TencentCosExpired).Format("2006-01-02T15:04:05.000Z"),
+		"expiration": date.Add(x.Values.TencentCosExpired).Format("2006-01-02T15:04:05.000Z"),
 		"conditions": []interface{}{
-			map[string]interface{}{"bucket": x.DynamicValues.TencentCosBucket},
+			map[string]interface{}{"bucket": x.Values.TencentCosBucket},
 			[]interface{}{"starts-with", "$key", key},
 			map[string]interface{}{"q-sign-algorithm": "sha1"},
-			map[string]interface{}{"q-ak": x.DynamicValues.TencentSecretId},
+			map[string]interface{}{"q-ak": x.Values.TencentSecretId},
 			map[string]interface{}{"q-sign-time": keyTime},
 		},
 	}
@@ -64,7 +64,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 	if policyText, err = jsoniter.Marshal(policy); err != nil {
 		return
 	}
-	signKeyHash := hmac.New(sha1.New, []byte(x.DynamicValues.TencentSecretKey))
+	signKeyHash := hmac.New(sha1.New, []byte(x.Values.TencentSecretKey))
 	signKeyHash.Write([]byte(keyTime))
 	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
 	stringToSignHash := sha1.New()
@@ -77,7 +77,7 @@ func (x *Service) CosPresigned(ctx context.Context) (data interface{}, err error
 		"key":              key,
 		"policy":           policyText,
 		"q-sign-algorithm": "sha1",
-		"q-ak":             x.DynamicValues.TencentSecretId,
+		"q-ak":             x.Values.TencentSecretId,
 		"q-key-time":       keyTime,
 		"q-signature":      signature,
 	}, nil

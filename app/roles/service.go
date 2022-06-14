@@ -2,6 +2,7 @@ package roles
 
 import (
 	"api/common"
+	"api/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,7 +20,7 @@ func (x *Service) FindNamesById(ctx context.Context, ids []primitive.ObjectID) (
 	}); err != nil {
 		return
 	}
-	var data []common.Role
+	var data []model.Role
 	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}

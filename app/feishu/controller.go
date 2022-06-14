@@ -4,6 +4,7 @@ import (
 	"api/app/system"
 	"api/app/users"
 	"api/common"
+	"api/model"
 	"context"
 	"errors"
 	"fmt"
@@ -32,7 +33,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		return err
 	}
-	content, err := x.Feishu.Decrypt(body.Encrypt, x.DynamicValues.FeishuEncryptKey)
+	content, err := x.Feishu.Decrypt(body.Encrypt, x.Values.FeishuEncryptKey)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (x *Controller) Challenge(c *gin.Context) interface{} {
 	if err = jsoniter.Unmarshal([]byte(content), &dto); err != nil {
 		return err
 	}
-	if dto.Token != x.DynamicValues.FeishuVerificationToken {
+	if dto.Token != x.Values.FeishuVerificationToken {
 		return errors.New("验证令牌不一致")
 	}
 	return gin.H{
@@ -121,7 +122,7 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	}
 	// 写入日志
 	ip := c.GetHeader("X-Forwarded-For")
-	logData := common.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
+	logData := model.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
 	go x.System.PushLoginLog(context.TODO(), logData)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
