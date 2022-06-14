@@ -12,6 +12,7 @@ import (
 	"api/app/feishu"
 	"api/app/pages"
 	"api/app/roles"
+	"api/app/schedules"
 	"api/app/system"
 	"api/app/tencent"
 	"api/app/users"
@@ -34,6 +35,12 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
+	inject := &common.Inject{
+		Values:      value,
+		MongoClient: client,
+		Db:          database,
+		Redis:       redisClient,
+	}
 	conn, err := bootstrap.UseNats(value)
 	if err != nil {
 		return nil, err
@@ -41,28 +48,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
 		return nil, err
-	}
-	cipher, err := bootstrap.UseCipher(value)
-	if err != nil {
-		return nil, err
-	}
-	hid, err := bootstrap.UseHID(value)
-	if err != nil {
-		return nil, err
-	}
-	passport := bootstrap.UsePassport(value)
-	httpClients := bootstrap.UseHttpClients()
-	inject := &common.Inject{
-		Values:      value,
-		MongoClient: client,
-		Db:          database,
-		Redis:       redisClient,
-		Nats:        conn,
-		Js:          jetStreamContext,
-		Cipher:      cipher,
-		HID:         hid,
-		Passport:    passport,
-		HC:          httpClients,
 	}
 	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
 	if err != nil {
@@ -75,11 +60,13 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Inject: inject,
 		Users:  service,
 	}
+	passport := bootstrap.UsePassport(value)
 	middleware := &app.Middleware{
 		Inject:   inject,
 		Values:   value,
 		Transfer: transfer,
 		System:   systemService,
+		Passport: passport,
 	}
 	rolesService := &roles.Service{
 		Inject: inject,
@@ -93,6 +80,28 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Users:       service,
 		Roles:       rolesService,
 		Departments: departmentsService,
+		Passport:    passport,
+	}
+	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	valuesService := &values.Service{
+		Store: objectStore,
+	}
+	valuesController := &values.Controller{
+		Service: valuesService,
+	}
+	schedule, err := bootstrap.UseSchedule(value, conn, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	schedulesService := &schedules.Service{
+		Inject: inject,
+		Client: schedule,
+	}
+	schedulesController := &schedules.Controller{
+		Service: schedulesService,
 	}
 	tencentService := &tencent.Service{
 		Inject: inject,
@@ -100,14 +109,17 @@ func App(value *common.Values) (*gin.Engine, error) {
 	tencentController := &tencent.Controller{
 		Tencent: tencentService,
 	}
+	httpClients := bootstrap.UseHttpClients()
 	feishuService := &feishu.Service{
 		Inject: inject,
+		HC:     httpClients,
 	}
 	feishuController := &feishu.Controller{
-		Inject: inject,
-		Feishu: feishuService,
-		Users:  service,
-		System: systemService,
+		Inject:   inject,
+		Feishu:   feishuService,
+		Users:    service,
+		System:   systemService,
+		Passport: passport,
 	}
 	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
 	engineService := &engine.Service{
@@ -124,16 +136,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
-	valuesService := &values.Service{
-		Store: objectStore,
-	}
-	valuesController := &values.Controller{
-		Service: valuesService,
-	}
-	ginEngine := app.New(middleware, controller, tencentController, feishuController, engineController, pagesController, valuesController)
+	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController)
 	return ginEngine, nil
 }

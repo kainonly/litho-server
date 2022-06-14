@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
+	"github.com/weplanx/schedule/client"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,6 +30,7 @@ var Provides = wire.NewSet(
 	UseJetStream,
 	UseStore,
 	UseEngine,
+	UseSchedule,
 	UseTransfer,
 	UsePassport,
 	UseCipher,
@@ -172,6 +174,11 @@ func UseEngine(values *common.Values, js nats.JetStreamContext) *engine.Engine {
 		engine.UseStaticOptions(values.Engines),
 		engine.UseEvents(js),
 	)
+}
+
+// UseSchedule 初始化定时调度
+func UseSchedule(values *common.Values, nc *nats.Conn, js nats.JetStreamContext) (*client.Schedule, error) {
+	return client.New(values.Namespace, nc, js)
 }
 
 // UseTransfer 初始化日志传输

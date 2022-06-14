@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/weplanx/go/helper"
+	"github.com/weplanx/go/passport"
 	"github.com/weplanx/transfer"
 	"go.uber.org/zap"
 	"io"
@@ -23,6 +24,7 @@ type Middleware struct {
 	Values   *common.Values
 	Transfer *transfer.Transfer
 	System   *system.Service
+	Passport *passport.Passport
 }
 
 func (x *Middleware) Global() *gin.Engine {
