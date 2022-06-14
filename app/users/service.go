@@ -2,6 +2,7 @@ package users
 
 import (
 	"api/common"
+	"api/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,7 +13,7 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (data common.User, err error) {
+func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (data model.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
 			"status": true,
@@ -27,7 +28,7 @@ func (x *Service) FindOneByUsernameOrEmail(ctx context.Context, value string) (d
 	return
 }
 
-func (x *Service) FindOneByEmail(ctx context.Context, email string) (data common.User, err error) {
+func (x *Service) FindOneByEmail(ctx context.Context, email string) (data model.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
 			"email":  email,
@@ -39,7 +40,7 @@ func (x *Service) FindOneByEmail(ctx context.Context, email string) (data common
 	return
 }
 
-func (x *Service) FindOneByFeishu(ctx context.Context, openid string) (data common.User, err error) {
+func (x *Service) FindOneByFeishu(ctx context.Context, openid string) (data model.User, err error) {
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
 			"status":        true,

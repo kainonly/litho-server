@@ -7,13 +7,13 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/wire"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/speps/go-hashids/v2"
 	"github.com/weplanx/go/encryption"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/go/values"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,7 +28,6 @@ var Provides = wire.NewSet(
 	UseNats,
 	UseJetStream,
 	UseStore,
-	UseDynamicValues,
 	UseEngine,
 	UseTransfer,
 	UsePassport,
@@ -102,18 +101,67 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 }
 
 // UseStore 初始化分布存储
-func UseStore(values *common.Values, js nats.JetStreamContext) (nats.ObjectStore, error) {
-	return js.CreateObjectStore(&nats.ObjectStoreConfig{
+func UseStore(values *common.Values, js nats.JetStreamContext) (store nats.ObjectStore, err error) {
+	if store, err = js.CreateObjectStore(&nats.ObjectStoreConfig{
 		Bucket: values.Namespace,
-	})
-}
-
-// UseDynamicValues 初始化动态配置
-func UseDynamicValues(object nats.ObjectStore) (dv *values.Values, err error) {
-	if dv, err = values.SetValues(object); err != nil {
+	}); err != nil {
 		return
 	}
-	go values.WatchValues(object, dv)
+	// 初始化动态配置
+	var b []byte
+	if b, err = store.GetBytes("values"); err != nil {
+		if err == nats.ErrObjectNotFound {
+			dv := &common.DynamicValues{
+				UserSessionExpire:    time.Hour,
+				UserLoginFailedTimes: 5,
+				UserLockTime:         time.Minute * 15,
+				IpLoginFailedTimes:   10,
+				IpWhitelist:          []string{},
+				IpBlacklist:          []string{},
+				PasswordStrength:     1,
+				PasswordExpire:       365,
+				TencentCosExpired:    time.Second * 300,
+				TencentCosLimit:      5120,
+				EmailPort:            "465",
+			}
+			if b, err = jsoniter.Marshal(dv); err != nil {
+				return
+			}
+			if _, err = store.PutBytes("values", b); err != nil {
+				return
+			}
+			return
+		} else {
+			return
+		}
+	}
+	if err = jsoniter.Unmarshal(b, &values.DynamicValues); err != nil {
+		return
+	}
+	// 监听配置
+	go func() {
+		var watch nats.ObjectWatcher
+		if watch, err = store.Watch(); err != nil {
+			return
+		}
+		current := time.Now()
+		for o := range watch.Updates() {
+			if o == nil || o.ModTime.Unix() < current.Unix() {
+				continue
+			}
+			if o.Name == "values" {
+				var b []byte
+				b, err = store.GetBytes("values")
+				if err != nil {
+					return
+				}
+				if err = jsoniter.Unmarshal(b, &values.DynamicValues); err != nil {
+					// TODO: 发送异常提示
+					return
+				}
+			}
+		}
+	}()
 	return
 }
 

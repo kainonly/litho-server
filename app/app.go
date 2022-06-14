@@ -8,11 +8,11 @@ import (
 	"api/app/system"
 	"api/app/tencent"
 	"api/app/users"
+	"api/app/values"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/route"
-	"github.com/weplanx/go/values"
 )
 
 var Provides = wire.NewSet(
@@ -62,7 +62,7 @@ func New(
 	r.GET("/options", route.Use(system.Options))
 	r.GET("/values", auth, route.Use(values.Get))
 	r.PATCH("/values", auth, route.Use(values.Set))
-	r.DELETE("/values/:key", auth, route.Use(values.Del))
+	r.DELETE("/values/:key", auth, route.Use(values.Delete))
 
 	_tencent := r.Group("/tencent", auth)
 	{

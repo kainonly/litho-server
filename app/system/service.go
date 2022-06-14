@@ -3,6 +3,7 @@ package system
 import (
 	"api/app/users"
 	"api/common"
+	"api/model"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -58,7 +59,7 @@ func (x *Service) VerifySession(ctx context.Context, uid string, jti string) (_ 
 // SetSession 设置会话
 func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err error) {
 	if err = x.Redis.Set(ctx,
-		x.Values.KeyName("sessions", uid), jti, x.DynamicValues.UserSessionExpire,
+		x.Values.KeyName("sessions", uid), jti, x.Values.UserSessionExpire,
 	).Err(); err != nil {
 		return
 	}
@@ -68,7 +69,7 @@ func (x *Service) SetSession(ctx context.Context, uid string, jti string) (err e
 // RenewSession 续约会话
 func (x *Service) RenewSession(ctx context.Context, uid string) (err error) {
 	if err = x.Redis.Expire(ctx,
-		x.Values.KeyName("sessions", uid), x.DynamicValues.UserSessionExpire,
+		x.Values.KeyName("sessions", uid), x.Values.UserSessionExpire,
 	).Err(); err != nil {
 		return
 	}
@@ -114,9 +115,9 @@ func (x *Service) CheckLockForUser(ctx context.Context, uid string) (err error) 
 		return
 	}
 	// 用户连续登录失败已超出最大次数
-	if times > int(x.DynamicValues.UserLoginFailedTimes) {
+	if times > int(x.Values.UserLoginFailedTimes) {
 		// 针对锁定缓存延长锁定时效
-		if err = x.Redis.Expire(ctx, key, x.DynamicValues.UserLockTime).Err(); err != nil {
+		if err = x.Redis.Expire(ctx, key, x.Values.UserLockTime).Err(); err != nil {
 			return
 		}
 		return errors.New("用户连续登录失败已超出最大次数")
@@ -130,7 +131,7 @@ func (x *Service) IncLockForUser(ctx context.Context, uid string) (err error) {
 	if err = x.Redis.Incr(ctx, key).Err(); err != nil {
 		return
 	}
-	if err = x.Redis.Expire(ctx, key, x.DynamicValues.UserLockTime).Err(); err != nil {
+	if err = x.Redis.Expire(ctx, key, x.Values.UserLockTime).Err(); err != nil {
 		return
 	}
 	return
@@ -176,13 +177,13 @@ func (x *Service) OpenAPI(ctx context.Context) (_ *openapi.OpenAPI, err error) {
 		return
 	}
 	return openapi.New(
-		x.DynamicValues.OpenapiUrl,
-		openapi.SetCertification(x.DynamicValues.OpenapiKey, x.DynamicValues.OpenapiSecret),
+		x.Values.OpenapiUrl,
+		openapi.SetCertification(x.Values.OpenapiKey, x.Values.OpenapiSecret),
 	), nil
 }
 
 // PushLoginLog 推送登录日志
-func (x *Service) PushLoginLog(ctx context.Context, doc *common.LoginLogDto) (err error) {
+func (x *Service) PushLoginLog(ctx context.Context, doc *model.LoginLogDto) (err error) {
 	var client *openapi.OpenAPI
 	if client, err = x.OpenAPI(ctx); err != nil {
 		return
@@ -207,19 +208,19 @@ func (x *Service) PushLoginLog(ctx context.Context, doc *common.LoginLogDto) (er
 func (x *Service) SendEmail(ctx context.Context, to []string, name string, subject string, html []byte) (err error) {
 	e := &email.Email{
 		To:      to,
-		From:    fmt.Sprintf(`%s <%s>`, name, x.DynamicValues.EmailUsername),
+		From:    fmt.Sprintf(`%s <%s>`, name, x.Values.EmailUsername),
 		Subject: subject,
 		HTML:    html,
 	}
 	if err = e.SendWithTLS(
-		fmt.Sprintf(`%s:%s`, x.DynamicValues.EmailHost, x.DynamicValues.EmailPort),
+		fmt.Sprintf(`%s:%s`, x.Values.EmailHost, x.Values.EmailPort),
 		smtp.PlainAuth("",
-			x.DynamicValues.EmailUsername,
-			x.DynamicValues.EmailPassword,
-			x.DynamicValues.EmailHost,
+			x.Values.EmailUsername,
+			x.Values.EmailPassword,
+			x.Values.EmailHost,
 		),
 		&tls.Config{
-			ServerName: x.DynamicValues.EmailHost,
+			ServerName: x.Values.EmailHost,
 		},
 	); err != nil {
 		panic(err)
