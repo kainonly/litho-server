@@ -17,7 +17,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/json-iterator/go v1.1.11
-	github.com/nats-io/nats.go v1.15.0
+	github.com/nats-io/nats.go v1.16.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/speps/go-hashids/v2 v2.0.1
@@ -26,6 +26,7 @@ require (
 	github.com/thoas/go-funk v0.9.2
 	github.com/weplanx/go v0.0.2
 	github.com/weplanx/openapi v0.1.2
+	github.com/weplanx/schedule v1.1.0
 	github.com/weplanx/transfer v1.2.2
 	go.mongodb.org/mongo-driver v1.9.0
 	go.uber.org/zap v1.21.0
@@ -56,12 +57,10 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/qri-io/jsonpointer v0.1.1 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/weplanx/schedule v1.1.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect
