@@ -78,9 +78,14 @@ func (x *Values) KeyName(v ...string) string {
 	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
 
-// EventName 生成事务命名
+// EventName 生成事务补偿主题
 func (x *Values) EventName(v string) string {
 	return fmt.Sprintf(`%s.events.%s`, x.Namespace, v)
+}
+
+// EventQueueName 生成事务补偿队列
+func (x *Values) EventQueueName(v string) string {
+	return fmt.Sprintf(`%s:events:%s`, x.Namespace, v)
 }
 
 type DynamicValues struct {

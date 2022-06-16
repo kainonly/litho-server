@@ -14,10 +14,8 @@ type Inject struct {
 	Redis       *redis.Client
 }
 
+type Jobs = sync.Map
+
 type HttpClients struct {
 	Feishu *resty.Client
-}
-
-type Subscriptions struct {
-	*sync.Map
 }

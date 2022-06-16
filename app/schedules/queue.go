@@ -13,16 +13,16 @@ type Queue struct {
 	Service *Service
 }
 
-func (x *Queue) Event(subs *common.Subscriptions) (err error) {
+func (x *Queue) Event(jobs *common.Jobs) (err error) {
 	subj := x.Values.EventName("schedules")
-	queue := x.Values.KeyName("schedules")
+	queue := x.Values.EventQueueName("schedules")
 	var sub *nats.Subscription
-	if sub, err = x.Js.QueueSubscribe(subj, queue, func(msg *nats.Msg) {
+	if _, err = x.Js.QueueSubscribe(subj, queue, func(msg *nats.Msg) {
 		fmt.Printf(string(msg.Data))
 		msg.Ack()
 	}, nats.ManualAck()); err != nil {
 		return
 	}
-	subs.Store("schedules", sub)
+	jobs.Store("schedules", sub)
 	return
 }

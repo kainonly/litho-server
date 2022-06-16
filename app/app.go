@@ -10,6 +10,7 @@ import (
 	"api/app/tencent"
 	"api/app/users"
 	"api/app/values"
+	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
@@ -29,7 +30,7 @@ var Provides = wire.NewSet(
 	departments.Provides,
 	users.Provides,
 	New,
-	Subscribe,
+	SetJobs,
 )
 
 func New(
@@ -41,6 +42,7 @@ func New(
 	feishu *feishu.Controller,
 	engine *engine.Controller,
 	pages *pages.Controller,
+	_ *common.Jobs,
 ) *gin.Engine {
 	r := middleware.Global()
 	auth := middleware.AuthGuard()

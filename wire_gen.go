@@ -136,6 +136,15 @@ func App(value *common.Values) (*gin.Engine, error) {
 	pagesController := &pages.Controller{
 		Service: pagesService,
 	}
-	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController)
+	queue := schedules.Queue{
+		Inject:  inject,
+		Js:      jetStreamContext,
+		Service: schedulesService,
+	}
+	jobs, err := app.SetJobs(queue)
+	if err != nil {
+		return nil, err
+	}
+	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController, jobs)
 	return ginEngine, nil
 }
