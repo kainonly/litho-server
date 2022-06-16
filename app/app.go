@@ -69,6 +69,24 @@ func New(
 	r.PATCH("/values", auth, route.Use(values.Set))
 	r.DELETE("/values/:key", auth, route.Use(values.Delete))
 
+	r.GET("/navs", auth, route.Use(pages.Navs))
+
+	_pages := r.Group("pages", auth)
+	{
+		// TODO: 未使用 DSL 的原因是要适配为缓存，暂不处理
+		_pages.GET("/:id", route.Use(pages.Dynamic))
+
+		// 索引管理
+		_pages.GET("/indexes/:id", route.Use(pages.GetIndexes))
+		_pages.PUT("/indexes/:id/:index", route.Use(pages.SetIndex))
+		_pages.DELETE("/indexes/:id/:index", route.Use(pages.DeleteIndex))
+	}
+
+	_schedules := r.Group("schedules")
+	{
+		_schedules.GET("keys", route.Use(schedules.GetKeys))
+	}
+
 	_tencent := r.Group("/tencent", auth)
 	{
 		_tencent.GET("cos-presigned", route.Use(tencent.CosPresigned))
@@ -81,18 +99,7 @@ func New(
 		_feishu.GET("", route.Use(feishu.OAuth))
 	}
 
-	r.GET("/navs", auth, route.Use(pages.Navs))
-	r.GET("/pages/:id", auth, route.Use(pages.Dynamic))
-
-	api := r.Group("/api", auth)
-	{
-		engine.DefaultRouters(api)
-		_pages := api.Group("pages")
-		{
-			_pages.GET("/_indexes/:id", route.Use(pages.GetIndexes))
-			_pages.PUT("/_indexes/:id/:index", route.Use(pages.SetIndex))
-			_pages.DELETE("/_indexes/:id/:index", route.Use(pages.DeleteIndex))
-		}
-	}
+	// 设置 Query DSL 路由
+	engine.SetRouters(r.Group("/dsl", auth))
 	return r
 }

@@ -26,7 +26,7 @@ require (
 	github.com/thoas/go-funk v0.9.2
 	github.com/weplanx/go v0.0.2
 	github.com/weplanx/openapi v0.1.2
-	github.com/weplanx/schedule v1.1.0
+	github.com/weplanx/schedule v1.1.2
 	github.com/weplanx/transfer v1.2.2
 	go.mongodb.org/mongo-driver v1.9.0
 	go.uber.org/zap v1.21.0
