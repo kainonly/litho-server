@@ -187,8 +187,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/weplanx/openapi v0.1.2 h1:O5H9QMiulb7SP3W4xSNhLwJkSdI4M9OVC3Qo/44wFmk=
 github.com/weplanx/openapi v0.1.2/go.mod h1:77P3+7gWMWpvUyMq+GLt7xIo/NRJ6SQR3h1CBbR1nhM=
-github.com/weplanx/schedule v1.1.0 h1:60QSxKgCaasHBCFq3wrOZrQxUMb7oml7qn64uM45rM4=
-github.com/weplanx/schedule v1.1.0/go.mod h1:Vb/LmpltmFrg1yp0e7YVMG0WMVJuYaZFBgF2L/avzOE=
+github.com/weplanx/schedule v1.1.2 h1:sTgMVl8dEAobgi/iIcUwT+0LGA73WNtUYlP9TXKk96s=
+github.com/weplanx/schedule v1.1.2/go.mod h1:IWJUBhpNdGO32laylgjf0kePqVmwI9P/zEhI1FPqOq8=
 github.com/weplanx/transfer v1.2.2 h1:lUrsZxxaQT1SMhXR3OoDdRws4bXo5u6QMriGvVqt+H0=
 github.com/weplanx/transfer v1.2.2/go.mod h1:pbPn2X4b4aDsgX5EpUQJNFIXRv61sYabS5aNw5kAmi0=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
