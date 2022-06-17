@@ -84,7 +84,9 @@ func New(
 
 	_schedules := r.Group("schedules")
 	{
-		_schedules.GET("keys", route.Use(schedules.GetKeys))
+		_schedules.GET("/", route.Use(schedules.List))
+		_schedules.GET("/:key", route.Use(schedules.Get))
+		_schedules.POST("/sync", route.Use(schedules.SetSync))
 	}
 
 	_tencent := r.Group("/tencent", auth)
