@@ -21,8 +21,8 @@ func (x *Service) List() (keys []string, err error) {
 }
 
 // Get 获取指定服务配置与运行状态
-func (x *Service) Get(key string) ([]scheduleCommon.Job, error) {
-	return x.Client.Get(key)
+func (x *Service) Get(id string) ([]scheduleCommon.Job, error) {
+	return x.Client.Get(id)
 }
 
 // Sync 同步服务
@@ -45,4 +45,9 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 		return
 	}
 	return
+}
+
+// Delete 删除服务
+func (x *Service) Delete(id string) (err error) {
+	return x.Client.Remove(id)
 }
