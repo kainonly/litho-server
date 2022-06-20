@@ -35,12 +35,6 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	inject := &common.Inject{
-		Values:      value,
-		MongoClient: client,
-		Db:          database,
-		Redis:       redisClient,
-	}
 	conn, err := bootstrap.UseNats(value)
 	if err != nil {
 		return nil, err
@@ -48,6 +42,19 @@ func App(value *common.Values) (*gin.Engine, error) {
 	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
 		return nil, err
+	}
+	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	httpClients := bootstrap.UseHttpClients()
+	inject := &common.Inject{
+		Values:      value,
+		MongoClient: client,
+		Db:          database,
+		Redis:       redisClient,
+		Store:       objectStore,
+		HC:          httpClients,
 	}
 	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
 	if err != nil {
@@ -82,12 +89,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Departments: departmentsService,
 		Passport:    passport,
 	}
-	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	valuesService := &values.Service{
-		Store: objectStore,
+		Inject: inject,
 	}
 	valuesController := &values.Controller{
 		Service: valuesService,
@@ -109,10 +112,8 @@ func App(value *common.Values) (*gin.Engine, error) {
 	tencentController := &tencent.Controller{
 		Tencent: tencentService,
 	}
-	httpClients := bootstrap.UseHttpClients()
 	feishuService := &feishu.Service{
 		Inject: inject,
-		HC:     httpClients,
 	}
 	feishuController := &feishu.Controller{
 		Inject:   inject,
@@ -141,10 +142,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Js:      jetStreamContext,
 		Service: schedulesService,
 	}
-	jobs, err := app.SetJobs(queue)
+	syncMap, err := app.SetJobs(queue)
 	if err != nil {
 		return nil, err
 	}
-	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController, jobs)
+	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController, syncMap)
 	return ginEngine, nil
 }
