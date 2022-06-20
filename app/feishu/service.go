@@ -15,7 +15,6 @@ import (
 
 type Service struct {
 	*common.Inject
-	HC *common.HttpClients
 }
 
 // Decrypt 解密

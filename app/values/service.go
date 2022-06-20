@@ -1,6 +1,7 @@
 package values
 
 import (
+	"api/common"
 	"context"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
@@ -8,7 +9,7 @@ import (
 )
 
 type Service struct {
-	Store nats.ObjectStore
+	*common.Inject
 }
 
 // Get 获取配置
