@@ -102,8 +102,8 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 		c.Redirect(302, fmt.Sprintf(`%s/#/authorized`, x.Values.Console))
 		return nil
 	}
-	data, err := x.Users.FindOneByFeishu(ctx, userData.OpenId)
-	if err != nil {
+	var user model.User
+	if err := x.Users.FindOneByFeishu(ctx, userData.OpenId, &user); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			c.Redirect(302, fmt.Sprintf(`%s/#/unauthorize`, x.Values.Console))
 		}
@@ -114,17 +114,17 @@ func (x *Controller) OAuth(c *gin.Context) interface{} {
 	jti := helper.Uuid()
 	var ts string
 	if ts, err = x.Passport.Create(jti, gin.H{
-		"uid": data.ID.Hex(),
+		"uid": user.ID.Hex(),
 	}); err != nil {
 		return err
 	}
 	// 设置会话
-	if err := x.System.SetSession(ctx, data.ID.Hex(), jti); err != nil {
+	if err := x.System.SetSession(ctx, user.ID.Hex(), jti); err != nil {
 		return err
 	}
 	// 写入日志
 	ip := c.GetHeader("X-Forwarded-For")
-	logData := model.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
+	logData := model.NewLoginLogV10(user, jti, ip, c.Request.UserAgent())
 	go x.System.PushLoginLog(context.TODO(), logData)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
