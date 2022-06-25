@@ -135,7 +135,10 @@ func App(value *common.Values) (*gin.Engine, error) {
 		Inject: inject,
 	}
 	pagesController := &pages.Controller{
-		Service: pagesService,
+		Pages:    pagesService,
+		Users:    service,
+		Roles:    rolesService,
+		Passport: passport,
 	}
 	queue := schedules.Queue{
 		Inject:  inject,

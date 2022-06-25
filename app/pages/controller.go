@@ -1,18 +1,41 @@
 package pages
 
 import (
+	"api/app/roles"
+	"api/app/users"
+	"api/common"
+	"api/model"
 	"github.com/gin-gonic/gin"
+	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Controller struct {
-	Service *Service
+	Pages    *Service
+	Users    *users.Service
+	Roles    *roles.Service
+	Passport *passport.Passport
 }
 
 // Navs 页面导航
 func (x *Controller) Navs(c *gin.Context) interface{} {
 	ctx := c.Request.Context()
-	navs, err := x.Service.Navs(ctx)
+	claims, err := x.Passport.GetClaims(c, common.TokenClaimsKey)
+	if err != nil {
+		return err
+	}
+	uid := claims.Context["uid"].(string)
+	id, _ := primitive.ObjectIDFromHex(uid)
+	var user model.User
+	if err = x.Users.FindOneById(ctx, id, &user); err != nil {
+		return err
+	}
+	var rolesList []model.Role
+	if err = x.Roles.FindByIds(ctx, user.Roles, &rolesList); err != nil {
+		return err
+	}
+	navs, err := x.Pages.Navs(ctx, rolesList)
 	if err != nil {
 		return err
 	}
@@ -27,11 +50,12 @@ func (x *Controller) Dynamic(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Service.FindOneById(ctx, uri.Id)
-	if err != nil {
+	id, _ := primitive.ObjectIDFromHex(uri.Id)
+	var page model.Page
+	if err := x.Pages.FindOneById(ctx, id, &page); err != nil {
 		return err
 	}
-	return data
+	return page
 }
 
 func (x *Controller) GetIndexes(c *gin.Context) interface{} {
@@ -42,11 +66,12 @@ func (x *Controller) GetIndexes(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Service.FindOneById(ctx, uri.Id)
-	if err != nil {
+	id, _ := primitive.ObjectIDFromHex(uri.Id)
+	var page model.Page
+	if err := x.Pages.FindOneById(ctx, id, &page); err != nil {
 		return err
 	}
-	indexes, err := x.Service.GetIndexes(ctx, data.Schema.Key)
+	indexes, err := x.Pages.GetIndexes(ctx, page.Schema.Key)
 	if err != nil {
 		return err
 	}
@@ -69,11 +94,12 @@ func (x *Controller) SetIndex(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	page, err := x.Service.FindOneById(ctx, uri.Id)
-	if err != nil {
+	id, _ := primitive.ObjectIDFromHex(uri.Id)
+	var page model.Page
+	if err := x.Pages.FindOneById(ctx, id, &page); err != nil {
 		return err
 	}
-	if _, err = x.Service.SetIndex(ctx, page.Schema.Key, uri.Index, body.Keys, *body.Unique); err != nil {
+	if _, err := x.Pages.SetIndex(ctx, page.Schema.Key, uri.Index, body.Keys, *body.Unique); err != nil {
 		return err
 	}
 	return nil
@@ -88,11 +114,12 @@ func (x *Controller) DeleteIndex(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	page, err := x.Service.FindOneById(ctx, uri.Id)
-	if err != nil {
+	id, _ := primitive.ObjectIDFromHex(uri.Id)
+	var page model.Page
+	if err := x.Pages.FindOneById(ctx, id, &page); err != nil {
 		return err
 	}
-	if _, err = x.Service.DeleteIndex(ctx, page.Schema.Key, uri.Index); err != nil {
+	if _, err := x.Pages.DeleteIndex(ctx, page.Schema.Key, uri.Index); err != nil {
 		return err
 	}
 	return nil

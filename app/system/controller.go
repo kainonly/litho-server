@@ -49,26 +49,26 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 	ctx := c.Request.Context()
 	// 用户验证
-	data, err := x.Users.FindOneByUsernameOrEmail(ctx, body.User)
-	if err != nil {
+	var user model.User
+	if err := x.Users.FindOneByUsernameOrEmail(ctx, body.User, &user); err != nil {
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
-	uid := data.ID.Hex()
-	if err = x.System.CheckLockForUser(ctx, uid); err != nil {
+	uid := user.ID.Hex()
+	if err := x.System.CheckLockForUser(ctx, uid); err != nil {
 		return err
 	}
-	if err = helper.PasswordVerify(body.Password, data.Password); err != nil {
+	if err := helper.PasswordVerify(body.Password, user.Password); err != nil {
 		go x.System.IncLockForUser(context.TODO(), uid)
 		c.Set("code", "AUTH_INCORRECT")
 		return err
 	}
 	// 创建 Token
 	jti := helper.Uuid()
-	var ts string
-	if ts, err = x.Passport.Create(jti, gin.H{
-		"uid": data.ID.Hex(),
-	}); err != nil {
+	ts, err := x.Passport.Create(jti, gin.H{
+		"uid": user.ID.Hex(),
+	})
+	if err != nil {
 		return err
 	}
 	// 清除锁定缓存
@@ -81,7 +81,7 @@ func (x *Controller) AuthLogin(c *gin.Context) interface{} {
 	}
 	// 写入日志
 	ip := c.GetHeader("X-Forwarded-For")
-	dto := model.NewLoginLogV10(data, jti, ip, c.Request.UserAgent())
+	dto := model.NewLoginLogV10(user, jti, ip, c.Request.UserAgent())
 	go x.System.PushLoginLog(context.TODO(), dto)
 	// 返回
 	c.SetCookie("access_token", ts, 0, "", "", true, true)
@@ -215,8 +215,8 @@ func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 		return err
 	}
 	ctx := c.Request.Context()
-	data, err := x.Users.FindOneByEmail(ctx, query.Email)
-	if err != nil {
+	var user model.User
+	if err := x.Users.FindOneByEmail(ctx, query.Email, &user); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return errors.New("该用户邮箱不存在")
 		}
@@ -233,7 +233,7 @@ func (x *Controller) GetCaptcha(c *gin.Context) interface{} {
 	if err = x.System.CreateVerifyCode(ctx, query.Email, code, time.Minute*5); err != nil {
 		return err
 	}
-	if err = x.System.EmailCode(ctx, data.Username, code, []string{query.Email}); err != nil {
+	if err = x.System.EmailCode(ctx, user.Username, code, []string{query.Email}); err != nil {
 		return err
 	}
 	return nil
@@ -371,7 +371,7 @@ func (x *Controller) GetUser(c *gin.Context) interface{} {
 		"create_time": data.CreateTime,
 	}
 	var err error
-	if result["roles"], err = x.Roles.FindNamesById(ctx, data.Roles); err != nil {
+	if result["roles"], err = x.Roles.FindNamesByIds(ctx, data.Roles); err != nil {
 		return err
 	}
 	if data.Department != nil {

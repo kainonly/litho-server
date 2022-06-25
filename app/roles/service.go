@@ -13,11 +13,19 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) FindNamesById(ctx context.Context, ids []primitive.ObjectID) (names []string, err error) {
+func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID, data interface{}) (err error) {
+	if err = x.Db.Collection("roles").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(data); err != nil {
+		return
+	}
+	return
+}
+
+func (x *Service) FindNamesByIds(ctx context.Context, ids []primitive.ObjectID) (names []string, err error) {
 	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection("roles").Find(ctx, bson.M{
-		"_id": bson.M{"$in": ids},
-	}); err != nil {
+	if cursor, err = x.Db.Collection("roles").
+		Find(ctx, bson.M{"_id": bson.M{"$in": ids}}); err != nil {
 		return
 	}
 	var data []model.Role
@@ -27,6 +35,18 @@ func (x *Service) FindNamesById(ctx context.Context, ids []primitive.ObjectID) (
 	names = make([]string, len(data))
 	for k, v := range data {
 		names[k] = v.Name
+	}
+	return
+}
+
+func (x *Service) FindByIds(ctx context.Context, ids []primitive.ObjectID, data interface{}) (err error) {
+	var cursor *mongo.Cursor
+	if cursor, err = x.Db.Collection("roles").
+		Find(ctx, bson.M{"_id": bson.M{"$in": ids}}); err != nil {
+		return
+	}
+	if err = cursor.All(ctx, data); err != nil {
+		return
 	}
 	return
 }
