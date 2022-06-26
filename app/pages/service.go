@@ -53,7 +53,6 @@ func (x *Service) Navs(ctx context.Context, roles []model.Role) (navs []NavDto, 
 		}); err != nil {
 		return
 	}
-	navs = make([]NavDto, 0)
 	if err = cursor.All(ctx, &navs); err != nil {
 		return
 	}

@@ -25,15 +25,8 @@ func TestService_FindOneById(t *testing.T) {
 
 func TestService_Navs(t *testing.T) {
 	ctx := context.Background()
-	var user model.User
-	if err := i.Db.Collection("users").
-		FindOne(ctx, bson.M{}).
-		Decode(&user); err != nil {
-		t.Error(err)
-	}
-	assert.NotEmpty(t, user)
 	cursor, err := i.Db.Collection("roles").
-		Find(ctx, bson.M{"_id": bson.M{"$in": user.Roles}})
+		Find(ctx, bson.M{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -42,8 +35,8 @@ func TestService_Navs(t *testing.T) {
 		t.Error(err)
 	}
 	assert.NotEmpty(t, roles)
-	var navs []NavDto
-	if navs, err = service.Navs(ctx, roles); err != nil {
+	navs, err := service.Navs(ctx, []model.Role{})
+	if err != nil {
 		t.Error(err)
 	}
 	t.Log(navs)
