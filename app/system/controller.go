@@ -1,11 +1,6 @@
 package system
 
 import (
-	"api/app/departments"
-	"api/app/roles"
-	"api/app/users"
-	"api/common"
-	"api/model"
 	"context"
 	"errors"
 	"fmt"
@@ -18,6 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
+	"server/app/departments"
+	"server/app/roles"
+	"server/app/users"
+	"server/common"
+	"server/model"
 	"strconv"
 	"time"
 )

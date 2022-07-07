@@ -1,12 +1,12 @@
 package roles
 
 import (
-	"api/common"
-	"api/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"server/common"
+	"server/model"
 )
 
 type Service struct {

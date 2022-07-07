@@ -4,11 +4,11 @@
 package main
 
 import (
-	"api/app"
-	"api/bootstrap"
-	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"server/app"
+	"server/bootstrap"
+	"server/common"
 )
 
 func App(value *common.Values) (*gin.Engine, error) {

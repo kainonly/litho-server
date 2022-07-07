@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"api/common"
-	"api/model"
 	"context"
 	"errors"
 	jsoniter "github.com/json-iterator/go"
@@ -13,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"server/common"
+	"server/model"
 	"time"
 )
 

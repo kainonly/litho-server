@@ -1,7 +1,6 @@
 package feishu
 
 import (
-	"api/common"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
@@ -9,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"server/common"
 	"strings"
 	"time"
 )

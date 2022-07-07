@@ -1,9 +1,9 @@
 package model
 
 import (
-	"api/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"server/common"
 	"time"
 )
 

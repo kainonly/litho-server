@@ -1,9 +1,9 @@
 package schedules
 
 import (
-	"api/common"
-	"api/test"
 	"os"
+	"server/common"
+	"server/test"
 	"testing"
 )
 

@@ -1,7 +1,6 @@
 package tencent
 
 import (
-	"api/common"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -13,6 +12,7 @@ import (
 	"github.com/weplanx/go/helper"
 	"net/http"
 	"net/url"
+	"server/common"
 	"time"
 )
 

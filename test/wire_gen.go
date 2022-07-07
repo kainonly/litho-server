@@ -7,8 +7,8 @@
 package test
 
 import (
-	"api/bootstrap"
-	"api/common"
+	"server/bootstrap"
+	"server/common"
 )
 
 // Injectors from wire.go:

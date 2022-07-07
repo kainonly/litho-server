@@ -1,11 +1,11 @@
 package users
 
 import (
-	"api/common"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"server/common"
 )
 
 type Service struct {
