@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"api/model"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
+	"server/model"
 	"testing"
 )
 

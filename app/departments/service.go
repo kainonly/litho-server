@@ -1,11 +1,11 @@
 package departments
 
 import (
-	"api/common"
-	"api/model"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"server/common"
+	"server/model"
 )
 
 type Service struct {

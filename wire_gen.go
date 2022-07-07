@@ -7,20 +7,20 @@
 package main
 
 import (
-	"api/app"
-	"api/app/departments"
-	"api/app/feishu"
-	"api/app/pages"
-	"api/app/roles"
-	"api/app/schedules"
-	"api/app/system"
-	"api/app/tencent"
-	"api/app/users"
-	"api/app/values"
-	"api/bootstrap"
-	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/engine"
+	"server/app"
+	"server/app/departments"
+	"server/app/feishu"
+	"server/app/pages"
+	"server/app/roles"
+	"server/app/schedules"
+	"server/app/system"
+	"server/app/tencent"
+	"server/app/users"
+	"server/app/values"
+	"server/bootstrap"
+	"server/common"
 )
 
 // Injectors from wire.go:

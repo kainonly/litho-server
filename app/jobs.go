@@ -1,8 +1,8 @@
 package app
 
 import (
-	"api/app/schedules"
-	"api/common"
+	"server/app/schedules"
+	"server/common"
 	"sync"
 )
 

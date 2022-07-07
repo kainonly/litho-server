@@ -1,14 +1,14 @@
 package pages
 
 import (
-	"api/app/roles"
-	"api/app/users"
-	"api/common"
-	"api/model"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"server/app/roles"
+	"server/app/users"
+	"server/common"
+	"server/model"
 )
 
 type Controller struct {

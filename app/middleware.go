@@ -1,8 +1,6 @@
 package app
 
 import (
-	"api/app/system"
-	"api/common"
 	"bytes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/requestid"
@@ -16,6 +14,8 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"server/app/system"
+	"server/common"
 	"time"
 )
 

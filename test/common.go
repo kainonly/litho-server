@@ -1,7 +1,7 @@
 package test
 
 import (
-	"api/common"
+	"server/common"
 )
 
 func Bed() (*common.Inject, error) {

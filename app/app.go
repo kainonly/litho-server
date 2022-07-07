@@ -1,20 +1,20 @@
 package app
 
 import (
-	"api/app/departments"
-	"api/app/feishu"
-	"api/app/pages"
-	"api/app/roles"
-	"api/app/schedules"
-	"api/app/system"
-	"api/app/tencent"
-	"api/app/users"
-	"api/app/values"
-	"api/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/weplanx/go/engine"
 	"github.com/weplanx/go/route"
+	"server/app/departments"
+	"server/app/feishu"
+	"server/app/pages"
+	"server/app/roles"
+	"server/app/schedules"
+	"server/app/system"
+	"server/app/tencent"
+	"server/app/users"
+	"server/app/values"
+	"server/common"
 )
 
 var Provides = wire.NewSet(

@@ -1,9 +1,6 @@
 package system
 
 import (
-	"api/app/users"
-	"api/common"
-	"api/model"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -14,6 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"html/template"
 	"net/smtp"
+	"server/app/users"
+	"server/common"
+	"server/model"
 	"strings"
 	"time"
 )

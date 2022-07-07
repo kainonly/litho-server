@@ -1,9 +1,9 @@
 package roles
 
 import (
-	"api/common"
-	"api/test"
 	"os"
+	"server/common"
+	"server/test"
 	"testing"
 )
 

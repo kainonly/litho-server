@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"api/common"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
@@ -18,6 +17,7 @@ import (
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"server/common"
 	"strings"
 	"time"
 )

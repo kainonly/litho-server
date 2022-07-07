@@ -1,11 +1,11 @@
 package roles
 
 import (
-	"api/model"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"server/model"
 	"testing"
 )
 

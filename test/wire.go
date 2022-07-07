@@ -4,9 +4,9 @@
 package test
 
 import (
-	"api/bootstrap"
-	"api/common"
 	"github.com/google/wire"
+	"server/bootstrap"
+	"server/common"
 )
 
 func Injectable(value *common.Values) (*common.Inject, error) {

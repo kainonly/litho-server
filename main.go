@@ -1,13 +1,13 @@
 package main
 
 import (
-	"api/bootstrap"
-	"api/common"
 	"context"
 	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
 	"github.com/spf13/cobra"
 	"os"
+	"server/bootstrap"
+	"server/common"
 	"time"
 )
 
