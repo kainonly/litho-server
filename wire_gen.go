@@ -8,24 +8,18 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/weplanx/go/engine"
-	"server/app"
-	"server/app/departments"
-	"server/app/feishu"
-	"server/app/pages"
-	"server/app/roles"
-	"server/app/schedules"
-	"server/app/system"
-	"server/app/tencent"
-	"server/app/users"
-	"server/app/values"
-	"server/bootstrap"
-	"server/common"
+	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/app"
+	"github.com/weplanx/server/bootstrap"
+	"github.com/weplanx/server/common"
 )
 
 // Injectors from wire.go:
 
-func App(value *common.Values) (*gin.Engine, error) {
+func OkLetsGo(value *common.Values) (*gin.Engine, error) {
+	apiAPI := &api.API{
+		Values: value,
+	}
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -35,120 +29,18 @@ func App(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn, err := bootstrap.UseNats(value)
-	if err != nil {
-		return nil, err
-	}
-	jetStreamContext, err := bootstrap.UseJetStream(conn)
-	if err != nil {
-		return nil, err
-	}
-	objectStore, err := bootstrap.UseStore(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
-	httpClients := bootstrap.UseHttpClients()
 	inject := &common.Inject{
-		Values:      value,
-		MongoClient: client,
-		Db:          database,
-		Redis:       redisClient,
-		Store:       objectStore,
-		HC:          httpClients,
-	}
-	transfer, err := bootstrap.UseTransfer(value, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
-	service := &users.Service{
-		Inject: inject,
-	}
-	systemService := &system.Service{
-		Inject: inject,
-		Users:  service,
-	}
-	passport := bootstrap.UsePassport(value)
-	middleware := &app.Middleware{
-		Inject:   inject,
-		Values:   value,
-		Transfer: transfer,
-		System:   systemService,
-		Passport: passport,
-	}
-	rolesService := &roles.Service{
-		Inject: inject,
-	}
-	departmentsService := &departments.Service{
-		Inject: inject,
-	}
-	controller := &system.Controller{
-		Inject:      inject,
-		System:      systemService,
-		Users:       service,
-		Roles:       rolesService,
-		Departments: departmentsService,
-		Passport:    passport,
-	}
-	valuesService := &values.Service{
-		Inject: inject,
-	}
-	valuesController := &values.Controller{
-		Service: valuesService,
-	}
-	schedule, err := bootstrap.UseSchedule(value, conn, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
-	schedulesService := &schedules.Service{
-		Inject: inject,
-		Client: schedule,
-	}
-	schedulesController := &schedules.Controller{
-		Service: schedulesService,
-	}
-	tencentService := &tencent.Service{
-		Inject: inject,
-	}
-	tencentController := &tencent.Controller{
-		Tencent: tencentService,
-	}
-	feishuService := &feishu.Service{
-		Inject: inject,
-	}
-	feishuController := &feishu.Controller{
-		Inject:   inject,
-		Feishu:   feishuService,
-		Users:    service,
-		System:   systemService,
-		Passport: passport,
-	}
-	engineEngine := bootstrap.UseEngine(value, jetStreamContext)
-	engineService := &engine.Service{
-		Engine: engineEngine,
+		Values: value,
+		Mongo:  client,
 		Db:     database,
+		Redis:  redisClient,
 	}
-	engineController := &engine.Controller{
-		Engine:  engineEngine,
-		Service: engineService,
-	}
-	pagesService := &pages.Service{
+	service := &app.Service{
 		Inject: inject,
 	}
-	pagesController := &pages.Controller{
-		Pages:    pagesService,
-		Users:    service,
-		Roles:    rolesService,
-		Passport: passport,
+	controller := &app.Controller{
+		AppService: service,
 	}
-	queue := schedules.Queue{
-		Inject:  inject,
-		Js:      jetStreamContext,
-		Service: schedulesService,
-	}
-	syncMap, err := app.SetJobs(queue)
-	if err != nil {
-		return nil, err
-	}
-	ginEngine := app.New(middleware, controller, valuesController, schedulesController, tencentController, feishuController, engineController, pagesController, syncMap)
-	return ginEngine, nil
+	engine := api.Routes(apiAPI, controller)
+	return engine, nil
 }
