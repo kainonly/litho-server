@@ -1,19 +1,19 @@
 package app
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/errors"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
 type Service struct {
-	*common.Inject
+	Values *common.Values
+	Mongo  *mongo.Client
+	Db     *mongo.Database
+	Redis  *redis.Client
 }
 
 func (x *Service) Index() time.Time {
 	return time.Now()
-}
-
-func (x *Service) Test() error {
-	return errors.NewPublic(1001, "错误啦")
 }
