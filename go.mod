@@ -3,6 +3,7 @@ module github.com/weplanx/server
 go 1.16
 
 require (
+	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387 // indirect
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/requestid v0.0.5
 	github.com/gin-contrib/zap v0.0.2

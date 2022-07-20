@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/app"
+	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
 )
@@ -29,18 +30,22 @@ func OkLetsGo(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	inject := &common.Inject{
+	service := &app.Service{
 		Values: value,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
 	}
-	service := &app.Service{
-		Inject: inject,
-	}
 	controller := &app.Controller{
 		AppService: service,
 	}
-	engine := api.Routes(apiAPI, controller)
+	dslService := &dsl.Service{
+		Mongo: client,
+		Db:    database,
+	}
+	dslController := &dsl.Controller{
+		DslService: dslService,
+	}
+	engine := api.Routes(apiAPI, controller, dslController)
 	return engine, nil
 }

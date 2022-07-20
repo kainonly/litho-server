@@ -1,4 +1,4 @@
-package errors
+package errorx
 
 import (
 	"github.com/gin-gonic/gin"
@@ -26,10 +26,7 @@ func Handler() gin.HandlerFunc {
 			})
 			break
 		case Public:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    any.Code,
-				"message": any.Message,
-			})
+			c.JSON(http.StatusBadRequest, any)
 		default:
 			c.Status(http.StatusInternalServerError)
 		}
@@ -37,8 +34,8 @@ func Handler() gin.HandlerFunc {
 }
 
 type Public struct {
-	Code    int
-	Message string
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message"`
 }
 
 func (x Public) Error() string {

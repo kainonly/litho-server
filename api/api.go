@@ -6,7 +6,7 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/errors"
+	"github.com/weplanx/server/utils/errorx"
 	"go.uber.org/zap"
 	"os"
 	"strings"
@@ -43,7 +43,7 @@ func (x *API) Engine() *gin.Engine {
 		AllowCredentials: x.Values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(x.Values.Cors.MaxAge) * time.Second,
 	}))
-	r.Use(errors.Handler())
+	r.Use(errorx.Handler())
 
 	return r
 }

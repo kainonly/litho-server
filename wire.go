@@ -13,7 +13,6 @@ import (
 
 func OkLetsGo(value *common.Values) (*gin.Engine, error) {
 	wire.Build(
-		wire.Struct(new(common.Inject), "*"),
 		bootstrap.Provides,
 		api.Provides,
 	)
