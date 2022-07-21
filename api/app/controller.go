@@ -10,8 +10,8 @@ type Controller struct {
 }
 
 func (x *Controller) In(r *gin.RouterGroup) {
-	r.GET("/", x.Index)
-	r.POST("/auth", x.AuthLogin)
+	r.GET("", x.Index)
+	r.POST("auth", x.AuthLogin)
 }
 
 func (x *Controller) Index(c *gin.Context) {
