@@ -3,7 +3,7 @@ package dsl
 import (
 	"context"
 	"errors"
-	"github.com/weplanx/server/utils/errorx"
+	"github.com/weplanx/server/utils/errs"
 	"github.com/weplanx/server/utils/passlib"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,12 +13,11 @@ import (
 )
 
 type Service struct {
-	Mongo *mongo.Client
-	Db    *mongo.Database
+	Db *mongo.Database
 }
 
-// Format 格式转换
-func (x *Service) Format(data M, rules []string) (err error) {
+// Transform 格式转换
+func (x *Service) Transform(data M, rules []string) (err error) {
 	for _, rule := range rules {
 		spec := strings.Split(rule, ":")
 		keys, cursor := strings.Split(spec[0], "."), data
@@ -60,7 +59,7 @@ func (x *Service) Format(data M, rules []string) (err error) {
 			// 密码类型，转换为 Argon2id
 			if cursor[key], err = passlib.Hash(cursor[key].(string)); err != nil {
 				if errors.Is(err, passlib.ErrNotMatch) {
-					return errorx.NewPublic(0, err.Error())
+					return errs.NewPublic(0, err.Error())
 				}
 				return
 			}
@@ -72,7 +71,7 @@ func (x *Service) Format(data M, rules []string) (err error) {
 
 // Create 创建文档
 func (x *Service) Create(ctx context.Context, model string, doc M, xdoc []string) (_ interface{}, err error) {
-	if err = x.Format(doc, xdoc); err != nil {
+	if err = x.Transform(doc, xdoc); err != nil {
 		return
 	}
 	doc["create_time"] = time.Now()
@@ -84,7 +83,7 @@ func (x *Service) Create(ctx context.Context, model string, doc M, xdoc []string
 func (x *Service) BulkCreate(ctx context.Context, model string, docs []M, xdoc []string) (_ interface{}, err error) {
 	data := make([]interface{}, len(docs))
 	for i, doc := range docs {
-		if err = x.Format(doc, xdoc); err != nil {
+		if err = x.Transform(doc, xdoc); err != nil {
 			return
 		}
 		doc["create_time"] = time.Now()
@@ -99,7 +98,7 @@ func (x *Service) Size(ctx context.Context, model string, filter M, xfilter []st
 	if len(filter) == 0 {
 		return x.Db.Collection(model).EstimatedDocumentCount(ctx)
 	}
-	if err = x.Format(filter, xfilter); err != nil {
+	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
 	return x.Db.Collection(model).CountDocuments(ctx, filter)
@@ -107,7 +106,7 @@ func (x *Service) Size(ctx context.Context, model string, filter M, xfilter []st
 
 // Find 获取匹配文档
 func (x *Service) Find(ctx context.Context, model string, filter M, xfilter []string, opt FindOption) (data []M, err error) {
-	if err = x.Format(filter, xfilter); err != nil {
+	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
 
@@ -150,7 +149,7 @@ func (x *Service) Find(ctx context.Context, model string, filter M, xfilter []st
 
 // FindOne 获取单个文档
 func (x *Service) FindOne(ctx context.Context, model string, filter M, xfilter []string, opt FindOption) (data M, err error) {
-	if err = x.Format(filter, xfilter); err != nil {
+	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
 
@@ -173,10 +172,10 @@ func (x *Service) FindById(ctx context.Context, model string, id string, opt Fin
 
 // Update 局部更新多个匹配文档
 func (x *Service) Update(ctx context.Context, model string, filter M, xfilter []string, update M, xdoc []string) (_ interface{}, err error) {
-	if err = x.Format(filter, xfilter); err != nil {
+	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
-	if err = x.Format(update, xdoc); err != nil {
+	if err = x.Transform(update, xdoc); err != nil {
 		return
 	}
 	if _, ok := update["$set"]; !ok {
@@ -189,7 +188,7 @@ func (x *Service) Update(ctx context.Context, model string, filter M, xfilter []
 // UpdateById 局部更新指定 Id 的文档
 func (x *Service) UpdateById(ctx context.Context, model string, id string, update M, xdoc []string) (_ interface{}, err error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
-	if err = x.Format(update, xdoc); err != nil {
+	if err = x.Transform(update, xdoc); err != nil {
 		return
 	}
 	if _, ok := update["$set"]; !ok {
@@ -202,7 +201,7 @@ func (x *Service) UpdateById(ctx context.Context, model string, id string, updat
 // Replace 替换指定 Id 的文档
 func (x *Service) Replace(ctx context.Context, model string, id string, doc M, xdoc []string) (_ interface{}, err error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
-	if err = x.Format(doc, xdoc); err != nil {
+	if err = x.Transform(doc, xdoc); err != nil {
 		return
 	}
 	doc["update_time"] = time.Now()
@@ -217,7 +216,7 @@ func (x *Service) Delete(ctx context.Context, model string, id string) (_ interf
 
 // BulkDelete 批量删除匹配文档
 func (x *Service) BulkDelete(ctx context.Context, model string, filter M, xfilter []string) (_ interface{}, err error) {
-	if err = x.Format(filter, xfilter); err != nil {
+	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
 	return x.Db.Collection(model).DeleteMany(ctx, filter)

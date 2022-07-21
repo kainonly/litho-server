@@ -19,13 +19,16 @@ var Provides = wire.NewSet(
 func Routes(
 	api *API,
 	app *app.Controller,
+	values *values.Controller,
 	dsl *dsl.Controller,
-) *gin.Engine {
-	r := api.Engine()
+) (r *gin.Engine, err error) {
+	if r, err = api.Engine(); err != nil {
+		return
+	}
 
-	app.In(r.Group("/"))
+	app.In(r.Group(""))
+	values.In(r.Group("values"))
+	dsl.In(r.Group("dsl/:model"))
 
-	dsl.In(r.Group("/dsl/:model"))
-
-	return r
+	return
 }

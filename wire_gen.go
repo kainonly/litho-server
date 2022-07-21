@@ -11,6 +11,7 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/app"
 	"github.com/weplanx/server/api/dsl"
+	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
 )
@@ -18,9 +19,6 @@ import (
 // Injectors from wire.go:
 
 func OkLetsGo(value *common.Values) (*gin.Engine, error) {
-	apiAPI := &api.API{
-		Values: value,
-	}
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -30,22 +28,41 @@ func OkLetsGo(value *common.Values) (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &app.Service{
+	conn, err := bootstrap.UseNats(value)
+	if err != nil {
+		return nil, err
+	}
+	service := &values.Service{
+		Values: value,
+		Db:     database,
+		Redis:  redisClient,
+		Nats:   conn,
+	}
+	apiAPI := &api.API{
+		Values:        value,
+		ValuesService: service,
+	}
+	appService := &app.Service{
 		Values: value,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
 	}
 	controller := &app.Controller{
-		AppService: service,
+		AppService: appService,
+	}
+	valuesController := &values.Controller{
+		ValuesService: service,
 	}
 	dslService := &dsl.Service{
-		Mongo: client,
-		Db:    database,
+		Db: database,
 	}
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
-	engine := api.Routes(apiAPI, controller, dslController)
+	engine, err := api.Routes(apiAPI, controller, valuesController, dslController)
+	if err != nil {
+		return nil, err
+	}
 	return engine, nil
 }

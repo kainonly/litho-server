@@ -2,13 +2,10 @@ package dsl
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"github.com/goccy/go-json"
-	"github.com/weplanx/server/utils/errorx"
+	"github.com/weplanx/server/utils/helper"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type Controller struct {
@@ -16,20 +13,20 @@ type Controller struct {
 }
 
 func (x *Controller) In(r *gin.RouterGroup) {
-	r.POST("/", x.Create)
-	r.POST("/bulk-create", x.BulkCreate)
-	r.HEAD("/_size", x.Size)
-	r.HEAD("/_exists", x.Exists)
-	r.GET("/", x.Find)
-	r.GET("/_pages", x.FindPages)
-	r.GET("/_one", x.FindOne)
-	r.GET("/:id", x.FindById)
-	r.PATCH("/", x.Update)
-	r.PATCH("/:id", x.UpdateById)
-	r.PUT("/:id", x.Replace)
-	r.DELETE("/:id", x.Delete)
-	r.POST("/bulk-delete", x.BulkDelete)
-	r.POST("/sort", x.Sort)
+	r.POST("", x.Create)
+	r.POST("bulk-create", x.BulkCreate)
+	r.HEAD("_size", x.Size)
+	r.HEAD("_exists", x.Exists)
+	r.GET("", x.Find)
+	r.GET("_pages", x.FindPages)
+	r.GET("_one", x.FindOne)
+	r.GET(":id", x.FindById)
+	r.PATCH("", x.Update)
+	r.PATCH(":id", x.UpdateById)
+	r.PUT(":id", x.Replace)
+	r.DELETE(":id", x.Delete)
+	r.POST("bulk-delete", x.BulkDelete)
+	r.POST("sort", x.Sort)
 }
 
 // Create 创建文档
@@ -51,16 +48,11 @@ func (x *Controller) Create(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xdoc := strings.Split(header.Doc, ",")
+	xdoc := helper.ParseArray(header.Doc)
 
 	var body M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "文档不能是空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -93,16 +85,11 @@ func (x *Controller) BulkCreate(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xdoc := strings.Split(header.Doc, ",")
+	xdoc := helper.ParseArray(header.Doc)
 
 	var body []M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0,dive,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "批量文档不能存在空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0,dive,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -135,7 +122,7 @@ func (x *Controller) Size(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var query struct {
 		// 筛选字段
@@ -176,7 +163,7 @@ func (x *Controller) Exists(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var query struct {
 		// 筛选字段
@@ -217,7 +204,7 @@ func (x *Controller) Find(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var query struct {
 		// 筛选字段
@@ -270,7 +257,7 @@ func (x *Controller) FindPages(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var query struct {
 		// 筛选字段
@@ -333,7 +320,7 @@ func (x *Controller) FindOne(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var query struct {
 		// 筛选字段
@@ -413,8 +400,8 @@ func (x *Controller) Update(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
-	xdoc := strings.Split(header.Doc, ",")
+	xfilter := helper.ParseArray(header.Filter)
+	xdoc := helper.ParseArray(header.Doc)
 
 	var query struct {
 		// 筛选字段
@@ -426,13 +413,8 @@ func (x *Controller) Update(c *gin.Context) {
 	}
 
 	var body M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "更新文档不能存在空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -467,16 +449,11 @@ func (x *Controller) UpdateById(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xdoc := strings.Split(header.Doc, ",")
+	xdoc := helper.ParseArray(header.Doc)
 
 	var body M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "更新文档不能是空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -511,16 +488,11 @@ func (x *Controller) Replace(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xdoc := strings.Split(header.Doc, ",")
+	xdoc := helper.ParseArray(header.Doc)
 
 	var body M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "替换文档不能是空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 
@@ -578,15 +550,10 @@ func (x *Controller) BulkDelete(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	xfilter := strings.Split(header.Filter, ",")
+	xfilter := helper.ParseArray(header.Filter)
 
 	var body M
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0`); err != nil {
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0`); err != nil {
 		c.Error(err)
 		return
 	}
@@ -613,13 +580,8 @@ func (x *Controller) Sort(c *gin.Context) {
 	}
 
 	var body []primitive.ObjectID
-	if err := json.NewDecoder(c.Request.Body).
-		Decode(&body); err != nil {
-		c.Error(errorx.NewPublic(0, "格式必须为 application/json"))
-		return
-	}
-	if err := validator.New().Var(body, `required,gt=0,dive,gt=0`); err != nil {
-		c.Error(errorx.NewPublic(0, "文档 ID 集合不能是空数据"))
+	if err := helper.BindAndValidate(c.Request.Body, &body, `required,gt=0,dive,gt=0`); err != nil {
+		c.Error(err)
 		return
 	}
 

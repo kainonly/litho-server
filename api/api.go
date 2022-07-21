@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/requestid"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/errorx"
+	"github.com/weplanx/server/utils/errs"
 	"go.uber.org/zap"
 	"os"
 	"strings"
@@ -14,12 +16,13 @@ import (
 )
 
 type API struct {
-	Values *common.Values
+	Values        *common.Values
+	ValuesService *values.Service
 }
 
 // Engine 创建服务
-func (x *API) Engine() *gin.Engine {
-	r := gin.New()
+func (x *API) Engine() (r *gin.Engine, err error) {
+	r = gin.New()
 
 	// 全局中间件
 	if os.Getenv("GIN_MODE") == "release" {
@@ -43,7 +46,12 @@ func (x *API) Engine() *gin.Engine {
 		AllowCredentials: x.Values.Cors.AllowCredentials,
 		MaxAge:           time.Duration(x.Values.Cors.MaxAge) * time.Second,
 	}))
-	r.Use(errorx.Handler())
+	r.Use(errs.Handler())
 
-	return r
+	// 订阅动态配置
+	if err = x.ValuesService.Sync(context.TODO()); err != nil {
+		return
+	}
+
+	return
 }
