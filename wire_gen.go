@@ -7,7 +7,7 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/app"
 	"github.com/weplanx/server/api/dsl"
@@ -18,7 +18,7 @@ import (
 
 // Injectors from wire.go:
 
-func OkLetsGo(value *common.Values) (*gin.Engine, error) {
+func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 	client, err := bootstrap.UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -60,9 +60,9 @@ func OkLetsGo(value *common.Values) (*gin.Engine, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
-	engine, err := api.Routes(apiAPI, controller, valuesController, dslController)
+	hertz, err := api.Routes(apiAPI, controller, valuesController, dslController)
 	if err != nil {
 		return nil, err
 	}
-	return engine, nil
+	return hertz, nil
 }
