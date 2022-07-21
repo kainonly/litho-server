@@ -3,8 +3,8 @@ package values
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"github.com/go-redis/redis/v8"
-	"github.com/goccy/go-json"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
@@ -31,7 +31,7 @@ func (x *Service) Load(ctx context.Context) (err error) {
 		return
 	}
 
-	if err = json.Unmarshal(b, &x.Values.DynamicValues); err != nil {
+	if err = sonic.Unmarshal(b, &x.Values.DynamicValues); err != nil {
 		return
 	}
 
@@ -103,7 +103,7 @@ func (x *Service) Remove(ctx context.Context, key string) (err error) {
 // Update 更新配置
 func (x *Service) Update(ctx context.Context) (err error) {
 	var b []byte
-	if b, err = json.Marshal(x.Values.DynamicValues); err != nil {
+	if b, err = sonic.Marshal(x.Values.DynamicValues); err != nil {
 		return
 	}
 	if err = x.Redis.Set(ctx, x.Key(), b, 0).Err(); err != nil {

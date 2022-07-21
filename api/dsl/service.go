@@ -3,7 +3,6 @@ package dsl
 import (
 	"context"
 	"errors"
-	"github.com/weplanx/server/utils/errs"
 	"github.com/weplanx/server/utils/passlib"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -59,7 +58,8 @@ func (x *Service) Transform(data M, rules []string) (err error) {
 			// 密码类型，转换为 Argon2id
 			if cursor[key], err = passlib.Hash(cursor[key].(string)); err != nil {
 				if errors.Is(err, passlib.ErrNotMatch) {
-					return errs.NewPublic(0, err.Error())
+					//return errs.NewPublic(0, err.Error())
+					return
 				}
 				return
 			}
