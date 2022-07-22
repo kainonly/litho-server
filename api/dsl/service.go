@@ -16,10 +16,9 @@ type Service struct {
 }
 
 // Transform 格式转换
-func (x *Service) Transform(data M, rules []string) (err error) {
-	for _, rule := range rules {
-		spec := strings.Split(rule, ":")
-		keys, cursor := strings.Split(spec[0], "."), data
+func (x *Service) Transform(data M, format M) (err error) {
+	for path, spec := range format {
+		keys, cursor := strings.Split(path, "."), data
 		n := len(keys) - 1
 		for _, key := range keys[:n] {
 			if v, ok := cursor[key].(M); ok {
@@ -30,7 +29,7 @@ func (x *Service) Transform(data M, rules []string) (err error) {
 		if cursor[key] == nil {
 			continue
 		}
-		switch spec[1] {
+		switch spec {
 		case "oid":
 			// 转换为 ObjectId
 			if cursor[key], err = primitive.ObjectIDFromHex(cursor[key].(string)); err != nil {
@@ -70,7 +69,7 @@ func (x *Service) Transform(data M, rules []string) (err error) {
 }
 
 // Create 创建文档
-func (x *Service) Create(ctx context.Context, model string, doc M, xdoc []string) (_ interface{}, err error) {
+func (x *Service) Create(ctx context.Context, model string, doc M, xdoc M) (_ interface{}, err error) {
 	if err = x.Transform(doc, xdoc); err != nil {
 		return
 	}
@@ -80,7 +79,7 @@ func (x *Service) Create(ctx context.Context, model string, doc M, xdoc []string
 }
 
 // BulkCreate 批量创建文档
-func (x *Service) BulkCreate(ctx context.Context, model string, docs []M, xdoc []string) (_ interface{}, err error) {
+func (x *Service) BulkCreate(ctx context.Context, model string, docs []M, xdoc M) (_ interface{}, err error) {
 	data := make([]interface{}, len(docs))
 	for i, doc := range docs {
 		if err = x.Transform(doc, xdoc); err != nil {
@@ -94,7 +93,7 @@ func (x *Service) BulkCreate(ctx context.Context, model string, docs []M, xdoc [
 }
 
 // Size 获取文档总数
-func (x *Service) Size(ctx context.Context, model string, filter M, xfilter []string) (_ int64, err error) {
+func (x *Service) Size(ctx context.Context, model string, filter M, xfilter M) (_ int64, err error) {
 	if len(filter) == 0 {
 		return x.Db.Collection(model).EstimatedDocumentCount(ctx)
 	}
@@ -105,7 +104,7 @@ func (x *Service) Size(ctx context.Context, model string, filter M, xfilter []st
 }
 
 // Find 获取匹配文档
-func (x *Service) Find(ctx context.Context, model string, filter M, xfilter []string, opt FindOption) (data []M, err error) {
+func (x *Service) Find(ctx context.Context, model string, filter M, xfilter M, opt FindOption) (data []M, err error) {
 	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
@@ -148,7 +147,7 @@ func (x *Service) Find(ctx context.Context, model string, filter M, xfilter []st
 }
 
 // FindOne 获取单个文档
-func (x *Service) FindOne(ctx context.Context, model string, filter M, xfilter []string, opt FindOption) (data M, err error) {
+func (x *Service) FindOne(ctx context.Context, model string, filter M, xfilter M, opt FindOption) (data M, err error) {
 	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
@@ -171,7 +170,7 @@ func (x *Service) FindById(ctx context.Context, model string, id string, opt Fin
 }
 
 // Update 局部更新多个匹配文档
-func (x *Service) Update(ctx context.Context, model string, filter M, xfilter []string, update M, xdoc []string) (_ interface{}, err error) {
+func (x *Service) Update(ctx context.Context, model string, filter M, xfilter M, update M, xdoc M) (_ interface{}, err error) {
 	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
@@ -186,7 +185,7 @@ func (x *Service) Update(ctx context.Context, model string, filter M, xfilter []
 }
 
 // UpdateById 局部更新指定 Id 的文档
-func (x *Service) UpdateById(ctx context.Context, model string, id string, update M, xdoc []string) (_ interface{}, err error) {
+func (x *Service) UpdateById(ctx context.Context, model string, id string, update M, xdoc M) (_ interface{}, err error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	if err = x.Transform(update, xdoc); err != nil {
 		return
@@ -199,7 +198,7 @@ func (x *Service) UpdateById(ctx context.Context, model string, id string, updat
 }
 
 // Replace 替换指定 Id 的文档
-func (x *Service) Replace(ctx context.Context, model string, id string, doc M, xdoc []string) (_ interface{}, err error) {
+func (x *Service) Replace(ctx context.Context, model string, id string, doc M, xdoc M) (_ interface{}, err error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	if err = x.Transform(doc, xdoc); err != nil {
 		return
@@ -215,7 +214,7 @@ func (x *Service) Delete(ctx context.Context, model string, id string) (_ interf
 }
 
 // BulkDelete 批量删除匹配文档
-func (x *Service) BulkDelete(ctx context.Context, model string, filter M, xfilter []string) (_ interface{}, err error) {
+func (x *Service) BulkDelete(ctx context.Context, model string, filter M, xfilter M) (_ interface{}, err error) {
 	if err = x.Transform(filter, xfilter); err != nil {
 		return
 	}
