@@ -39,7 +39,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		// 文档数据
 		Data M `json:"data,required" vd:"len($)>0;msg:'文档不能为空数据'"`
 		// 文档字段格式转换
-		Format []string `json:"format"`
+		Format M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -64,7 +64,7 @@ func (x *Controller) BulkCreate(ctx context.Context, c *app.RequestContext) {
 		// 批量文档数据
 		Data []M `json:"data,required" vd:"len($)>0 && range($,len(#v)>0);msg:'批量文档不能存在空数据'"`
 		// 文档字段格式转换
-		Format []string `json:"format"`
+		Format M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -89,7 +89,7 @@ func (x *Controller) Size(ctx context.Context, c *app.RequestContext) {
 		// 筛选条件
 		Filter M `query:"filter"`
 		// 筛选条件格式转换
-		Format []string `query:"format"`
+		Format M `query:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -114,7 +114,7 @@ func (x *Controller) Exists(ctx context.Context, c *app.RequestContext) {
 		// 筛选条件
 		Filter M `query:"filter,required" vd:"len($)>0;msg:'筛选条件不能为空'"`
 		// 筛选字段格式转换
-		Format []string `query:"format"`
+		Format M `query:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -146,8 +146,8 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 		Limit int64 `query:"limit" vd:"$>=0 && $<=1000;msg:'最大返回数量必须在 1~1000 之间'"`
 		// 跳过数量
 		Skip int64 `query:"skip" vd:"$>=0;msg:'跳过数量必须大于 0'"`
-		// 筛选字段格式转换
-		Format []string `query:"format"`
+		// 筛选条件格式转换
+		Format M `query:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -165,7 +165,9 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	c.JSON(http.StatusOK, utils.H{
+		"data": data,
+	})
 }
 
 // FindPages 获取匹配分页文档
@@ -185,7 +187,7 @@ func (x *Controller) FindPages(ctx context.Context, c *app.RequestContext) {
 		// 分页页码
 		Page int64 `query:"page" vd:"$>=0;msg:'分页页码必须大于 0'"`
 		// 筛选条件格式转换
-		Format []string `query:"format"`
+		Format M `query:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -225,8 +227,8 @@ func (x *Controller) FindOne(ctx context.Context, c *app.RequestContext) {
 		Filter M `query:"filter,required" vd:"len($)>0;msg:'筛选条件不能为空'"`
 		// 投影规则
 		Keys M `query:"keys" vd:"range($,in(#v,0,1));msg:'投影规则不规范'"`
-		// 筛选字段格式转换
-		Format []string `query:"format"`
+		// 筛选条件格式转换
+		Format M `query:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -284,11 +286,11 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 		// 筛选条件
 		Filter M `query:"filter,required" vd:"len($)>0;msg:'筛选条件不能为空'"`
 		// 筛选条件格式转换
-		FFormat []string `query:"format"`
+		FFormat M `query:"format"`
 		// 更新数据
 		Data M `json:"data,required" vd:"len($)>0;msg:'更新数据不能为空'"`
 		// 文档字段格式转换
-		DFormat []string `json:"format"`
+		DFormat M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -315,7 +317,7 @@ func (x *Controller) UpdateById(ctx context.Context, c *app.RequestContext) {
 		// 更新数据
 		Data M `json:"data,required" vd:"len($)>0;msg:'更新数据不能为空'"`
 		// 文档字段格式转换
-		Format []string `json:"format"`
+		Format M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -342,7 +344,7 @@ func (x *Controller) Replace(ctx context.Context, c *app.RequestContext) {
 		// 文档数据
 		Data M `json:"data,required" vd:"len($)>0;msg:'文档数据不能为空'"`
 		// 文档字段格式转换
-		Format []string `json:"format"`
+		Format M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -390,7 +392,7 @@ func (x *Controller) BulkDelete(ctx context.Context, c *app.RequestContext) {
 		// 筛选条件
 		Data M `json:"data,required" vd:"len($)>0;msg:'筛选条件不能为空'"`
 		// 筛选条件格式转换
-		Format []string `json:"format"`
+		Format M `json:"format"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)

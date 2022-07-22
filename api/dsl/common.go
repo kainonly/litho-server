@@ -11,7 +11,6 @@ var Provides = wire.NewSet(
 )
 
 type M = map[string]interface{}
-
 type FindOption struct {
 	// 排序规则
 	Sort M
@@ -25,6 +24,7 @@ type FindOption struct {
 	Page int64
 }
 
+// GetSort 返回排序数组
 func (x *FindOption) GetSort() (data bson.D) {
 	for key, value := range x.Sort {
 		data = append(data, bson.E{Key: key, Value: value})
