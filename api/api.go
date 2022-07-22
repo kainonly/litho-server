@@ -2,11 +2,19 @@ package api
 
 import (
 	"context"
+	"github.com/bytedance/go-tagexpr/v2/binding"
+	"github.com/bytedance/go-tagexpr/v2/validator"
+	"github.com/bytedance/gopkg/util/logger"
+	"github.com/bytedance/sonic/decoder"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/cors"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
+	"net/http"
 	"os"
 	"time"
 )
@@ -36,7 +44,7 @@ func (x *API) Engine() (h *server.Hertz, err error) {
 		ExposeHeaders:    x.Values.Cors.ExposeHeaders,
 		MaxAge:           time.Duration(x.Values.Cors.MaxAge) * time.Second,
 	}))
-	//r.Use(errs.Handler())
+	h.Use(x.ErrHandler())
 
 	// 订阅动态配置
 	if err = x.ValuesService.Sync(context.TODO()); err != nil {
@@ -44,4 +52,43 @@ func (x *API) Engine() (h *server.Hertz, err error) {
 	}
 
 	return
+}
+
+func (x *API) ErrHandler() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		c.Next(ctx)
+		err := c.Errors.Last()
+		if err == nil {
+			return
+		}
+
+		if err.IsType(errors.ErrorTypePublic) {
+			c.JSON(http.StatusBadRequest, utils.H{
+				"code":    err.Meta.(map[string]interface{})["code"],
+				"message": err.Error(),
+			})
+			return
+		}
+
+		switch any := err.Err.(type) {
+		case decoder.SyntaxError:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": any.Description(),
+			})
+			break
+		case *binding.Error:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": any.Error(),
+			})
+			break
+		case *validator.Error:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": any.Error(),
+			})
+			break
+		default:
+			logger.Error(err)
+			c.Status(http.StatusInternalServerError)
+		}
+	}
 }

@@ -19,32 +19,34 @@ func (x *Controller) In(r *route.RouterGroup) {
 }
 
 // Get 获取动态配置
+// @router /values [GET]
 func (x *Controller) Get(ctx context.Context, c *app.RequestContext) {
-	var query struct {
+	var dto struct {
 		// 动态配置键
 		Keys []string `query:"keys"`
 	}
-	if err := c.BindAndValidate(&query); err != nil {
+	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	data := x.ValuesService.Get(query.Keys...)
+	data := x.ValuesService.Get(dto.Keys...)
 
 	c.JSON(http.StatusOK, utils.H{"data": data})
 }
 
 // Set 设置动态配置
+// @router /values [PATCH]
 func (x *Controller) Set(ctx context.Context, c *app.RequestContext) {
-	var body struct {
-		Data map[string]interface{} `json:"data,required" vd:"len($)>0"`
+	var dto struct {
+		Data map[string]interface{} `json:"data,required" vd:"len($)>0;msg:'配置数据不能为空'"`
 	}
-	if err := c.BindAndValidate(&body); err != nil {
+	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	if err := x.ValuesService.Set(ctx, body.Data); err != nil {
+	if err := x.ValuesService.Set(ctx, dto.Data); err != nil {
 		c.Error(err)
 		return
 	}
@@ -53,16 +55,17 @@ func (x *Controller) Set(ctx context.Context, c *app.RequestContext) {
 }
 
 // Remove 移除动态配置
+// @router /values/:id [DELETE]
 func (x *Controller) Remove(ctx context.Context, c *app.RequestContext) {
-	var params struct {
+	var dto struct {
 		Key string `path:"key,required"`
 	}
-	if err := c.BindAndValidate(&params); err != nil {
+	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	if err := x.ValuesService.Remove(ctx, params.Key); err != nil {
+	if err := x.ValuesService.Remove(ctx, dto.Key); err != nil {
 		c.Error(err)
 		return
 	}

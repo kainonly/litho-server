@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
+	github.com/bytedance/go-tagexpr/v2 v2.9.2
+	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
 	github.com/bytedance/sonic v1.3.0
 	github.com/cloudwego/hertz v0.1.0
 	github.com/go-redis/redis/v8 v8.11.5
