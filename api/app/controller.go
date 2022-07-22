@@ -25,12 +25,11 @@ func (x *Controller) Index(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) AuthLogin(ctx context.Context, c *app.RequestContext) {
-	var body struct {
-		Identity string `json:"identity" binding:"required"`
-		Password string `json:"password" binding:"required"`
+	var dto struct {
+		Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
+		Password string `json:"password,required" vd:"len($)>=8"`
 	}
-
-	if err := c.BindAndValidate(&body); err != nil {
+	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}

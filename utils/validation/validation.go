@@ -1,17 +1,19 @@
 package validation
 
-//func Extend() {
-//	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-//		v.RegisterValidation("objectId", func(fl validator.FieldLevel) bool {
-//			return primitive.IsValidObjectID(fl.Field().String())
-//		})
-//		v.RegisterValidation("key", func(fl validator.FieldLevel) bool {
-//			matched, _ := regexp.MatchString(`^[a-z_]+$`, fl.Field().String())
-//			return matched
-//		})
-//		v.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
-//			matched, _ := regexp.MatchString(`^[a-z_]+\.(1|-1)$`, fl.Field().String())
-//			return matched
-//		})
-//	}
-//}
+import (
+	"fmt"
+	"github.com/cloudwego/hertz/pkg/app/server/binding"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+func Extend() {
+	binding.MustRegValidateFunc("mongoId", func(args ...interface{}) error {
+		if len(args) != 1 {
+			return fmt.Errorf("the args must be one")
+		}
+		if !primitive.IsValidObjectID(args[0].(string)) {
+			return primitive.ErrInvalidHex
+		}
+		return nil
+	})
+}

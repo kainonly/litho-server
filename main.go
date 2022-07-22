@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/utils/validation"
 )
 
 func main() {
@@ -10,7 +11,7 @@ func main() {
 		panic(err)
 	}
 
-	//validation.Extend()
+	validation.Extend()
 
 	server, err := OkLetsGo(values)
 	if err != nil {
