@@ -63,10 +63,13 @@ func (x *API) ErrHandler() app.HandlerFunc {
 		}
 
 		if err.IsType(errors.ErrorTypePublic) {
-			c.JSON(http.StatusBadRequest, utils.H{
-				"code":    err.Meta.(map[string]interface{})["code"],
-				"message": err.Error(),
-			})
+			result := utils.H{"message": err.Error()}
+			if meta, ok := err.Meta.(map[string]interface{}); ok {
+				if meta["code"] != nil {
+					result["code"] = meta["code"]
+				}
+			}
+			c.JSON(http.StatusBadRequest, result)
 			return
 		}
 
