@@ -4,7 +4,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/app"
+	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
+	"github.com/weplanx/server/api/pages"
+	"github.com/weplanx/server/api/roles"
+	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 )
 
@@ -13,6 +17,10 @@ var Provides = wire.NewSet(
 	app.Provides,
 	values.Provides,
 	dsl.Provides,
+	pages.Provides,
+	users.Provides,
+	roles.Provides,
+	departments.Provides,
 	Routes,
 )
 
