@@ -1,4 +1,4 @@
-package app
+package index
 
 import (
 	"github.com/google/wire"

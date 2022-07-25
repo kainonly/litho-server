@@ -12,8 +12,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/jwt"
+	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/model"
 	"net/http"
 	"os"
 	"time"
@@ -22,6 +26,8 @@ import (
 type API struct {
 	Values        *common.Values
 	ValuesService *values.Service
+	IndexService  *index.Service
+	UsersService  *users.Service
 }
 
 // Engine 创建服务
@@ -54,6 +60,63 @@ func (x *API) Engine() (h *server.Hertz, err error) {
 	return
 }
 
+// Auth 认证守护
+func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
+	return jwt.New(&jwt.HertzJWTMiddleware{
+		Realm:             x.Values.App.Namespace,
+		Key:               []byte(x.Values.App.Key),
+		IdentityKey:       "uid",
+		SendAuthorization: false,
+		SendCookie:        true,
+		CookieMaxAge:      -1,
+		SecureCookie:      true,
+		CookieHTTPOnly:    true,
+		CookieName:        "access_token",
+		CookieSameSite:    http.SameSiteStrictMode,
+		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
+			var dto struct {
+				Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
+				Password string `json:"password,required" vd:"len($)>=8"`
+			}
+			if err = c.BindAndValidate(&dto); err != nil {
+				c.Error(err)
+				return
+			}
+			return x.IndexService.Login(ctx, dto.Identity, dto.Password)
+		},
+		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
+			// TODO: Add Jti...
+			claims = make(jwt.MapClaims)
+			if user, ok := data.(model.User); ok {
+				claims["uid"] = user.ID.Hex()
+			}
+			return
+		},
+		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
+			c.Status(http.StatusNoContent)
+		},
+		MaxRefresh: time.Hour,
+		RefreshResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
+			c.Status(http.StatusNoContent)
+		},
+		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
+			c.Error(errors.NewPublic(message).
+				SetMeta(map[string]interface{}{
+					"statusCode": http.StatusUnauthorized,
+				}),
+			)
+		},
+		TokenLookup: "cookie: access_token",
+		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
+			// TODO: Redis RBAC
+			return true
+		},
+		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
+			c.Status(http.StatusNoContent)
+		},
+	})
+}
+
 func (x *API) ErrHandler() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		c.Next(ctx)
@@ -63,13 +126,17 @@ func (x *API) ErrHandler() app.HandlerFunc {
 		}
 
 		if err.IsType(errors.ErrorTypePublic) {
+			statusCode := http.StatusBadRequest
 			result := utils.H{"message": err.Error()}
 			if meta, ok := err.Meta.(map[string]interface{}); ok {
+				if meta["statusCode"] != nil {
+					statusCode = meta["statusCode"].(int)
+				}
 				if meta["code"] != nil {
 					result["code"] = meta["code"]
 				}
 			}
-			c.JSON(http.StatusBadRequest, result)
+			c.JSON(statusCode, result)
 			return
 		}
 
