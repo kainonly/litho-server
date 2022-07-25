@@ -14,6 +14,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf
+	github.com/hertz-contrib/jwt v1.0.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/nats-io/nats-server/v2 v2.8.2 // indirect
