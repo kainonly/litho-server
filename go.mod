@@ -14,7 +14,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf
-	github.com/hertz-contrib/jwt v1.0.0 // indirect
+	github.com/hertz-contrib/jwt v1.0.0
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/nats-io/nats-server/v2 v2.8.2 // indirect
@@ -26,7 +26,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1
 )
