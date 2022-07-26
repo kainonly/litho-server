@@ -4,11 +4,14 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/google/wire"
 	"github.com/hertz-contrib/jwt"
+	"github.com/weplanx/server/api/captcha"
 	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/locker"
 	"github.com/weplanx/server/api/pages"
 	"github.com/weplanx/server/api/roles"
+	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 )
@@ -17,6 +20,9 @@ var Provides = wire.NewSet(
 	wire.Struct(new(API), "*"),
 	index.Provides,
 	values.Provides,
+	sessions.Provides,
+	locker.Provides,
+	captcha.Provides,
 	dsl.Provides,
 	pages.Provides,
 	users.Provides,
@@ -29,6 +35,7 @@ func Routes(
 	api *API,
 	index *index.Controller,
 	values *values.Controller,
+	sessions *sessions.Controller,
 	dsl *dsl.Controller,
 ) (h *server.Hertz, err error) {
 	if h, err = api.Engine(); err != nil {
@@ -51,6 +58,7 @@ func Routes(
 		app.PATCH("user", index.SetUser)
 
 		values.In(app.Group("values"))
+		sessions.In(app.Group("sessions"))
 		dsl.In(app.Group("dsl/:model"))
 	}
 

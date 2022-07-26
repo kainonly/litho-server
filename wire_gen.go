@@ -9,8 +9,10 @@ package main
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/api/app"
 	"github.com/weplanx/server/api/dsl"
+	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/sessions"
+	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
@@ -38,21 +40,35 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 		Redis:  redisClient,
 		Nats:   conn,
 	}
-	apiAPI := &api.API{
-		Values:        value,
-		ValuesService: service,
+	usersService := &users.Service{
+		Db:    database,
+		Redis: redisClient,
 	}
-	appService := &app.Service{
+	indexService := &index.Service{
 		Values: value,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
+		Users:  usersService,
 	}
-	controller := &app.Controller{
-		AppService: appService,
+	apiAPI := &api.API{
+		Values:        value,
+		ValuesService: service,
+		IndexService:  indexService,
+		UsersService:  usersService,
+	}
+	controller := &index.Controller{
+		AppService: indexService,
 	}
 	valuesController := &values.Controller{
 		ValuesService: service,
+	}
+	sessionsService := &sessions.Service{
+		Values: value,
+		Redis:  redisClient,
+	}
+	sessionsController := &sessions.Controller{
+		SessionsService: sessionsService,
 	}
 	dslService := &dsl.Service{
 		Db: database,
@@ -60,7 +76,7 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
-	hertz, err := api.Routes(apiAPI, controller, valuesController, dslController)
+	hertz, err := api.Routes(apiAPI, controller, valuesController, sessionsController, dslController)
 	if err != nil {
 		return nil, err
 	}
