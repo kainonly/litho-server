@@ -19,6 +19,11 @@ type Service struct {
 	SessionService *sessions.Service
 }
 
+func (x *Service) Navs(ctx context.Context, uid string) (data map[string]interface{}, err error) {
+
+	return
+}
+
 // Login 登录
 func (x *Service) Login(ctx context.Context, identity string, password string) (_ common.Active, err error) {
 	var user model.User
@@ -115,14 +120,27 @@ func (x *Service) ExistsCaptcha(ctx context.Context, name string) (_ bool, err e
 }
 
 // VerifyCaptcha 校验验证码
-func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (_ bool, err error) {
+func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (err error) {
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, x.Captcha(name)).Result(); err != nil {
+		return
+	}
+
+	if exists == 0 {
+		return errors.NewPublic("验证码不存在")
+	}
+
 	var value string
 	if value, err = x.Redis.
 		Get(ctx, x.Captcha(name)).
 		Result(); err != nil {
 		return
 	}
-	return value == code, nil
+	if value != code {
+		return errors.NewPublic("验证码不一致")
+	}
+
+	return
 }
 
 // DeleteCaptcha 移除验证码

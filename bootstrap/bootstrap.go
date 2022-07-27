@@ -10,6 +10,9 @@ import (
 	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 )
@@ -21,6 +24,21 @@ var Provides = wire.NewSet(
 	UseNats,
 	UseJetStream,
 )
+
+// LoadStaticValues 加载静态配置
+func LoadStaticValues(path string) (values *common.Values, err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
+	}
+	var b []byte
+	if b, err = ioutil.ReadFile(path); err != nil {
+		return
+	}
+	if err = yaml.Unmarshal(b, &values); err != nil {
+		return
+	}
+	return
+}
 
 // UseMongoDB 初始化 MongoDB
 // 配置文档 https://www.mongodb.com/docs/drivers/go/current/
