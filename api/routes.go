@@ -4,11 +4,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/google/wire"
 	"github.com/hertz-contrib/jwt"
-	"github.com/weplanx/server/api/captcha"
 	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/locker"
 	"github.com/weplanx/server/api/pages"
 	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
@@ -21,8 +19,6 @@ var Provides = wire.NewSet(
 	index.Provides,
 	values.Provides,
 	sessions.Provides,
-	locker.Provides,
-	captcha.Provides,
 	dsl.Provides,
 	pages.Provides,
 	users.Provides,
@@ -46,16 +42,17 @@ func Routes(
 		return
 	}
 
-	h.GET("/", index.Index)
 	h.POST("login", auth.LoginHandler)
 
 	app := h.Group("", auth.MiddlewareFunc())
 	{
-		app.DELETE("auth", auth.LogoutHandler)
-		app.GET("refresh_code")
-		app.GET("refresh_token", auth.RefreshHandler)
+		app.GET("", index.Index)
+		app.GET("code", index.GetRefreshCode)
+		app.POST("refresh_token", index.VerifyRefreshCode, auth.RefreshHandler)
+
 		app.GET("user", index.GetUser)
 		app.PATCH("user", index.SetUser)
+		app.DELETE("user", auth.LogoutHandler)
 
 		values.In(app.Group("values"))
 		sessions.In(app.Group("sessions"))

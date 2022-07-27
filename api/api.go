@@ -17,7 +17,6 @@ import (
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/model"
 	"net/http"
 	"os"
 	"time"
@@ -60,12 +59,12 @@ func (x *API) Engine() (h *server.Hertz, err error) {
 	return
 }
 
-// Auth 认证守护
+// Auth 认证
 func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 	return jwt.New(&jwt.HertzJWTMiddleware{
 		Realm:             x.Values.App.Namespace,
 		Key:               []byte(x.Values.App.Key),
-		IdentityKey:       "uid",
+		Timeout:           time.Hour,
 		SendAuthorization: false,
 		SendCookie:        true,
 		CookieMaxAge:      -1,
@@ -82,17 +81,29 @@ func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 				c.Error(err)
 				return
 			}
-			return x.IndexService.Login(ctx, dto.Identity, dto.Password)
+
+			data, err := x.IndexService.Login(ctx, dto.Identity, dto.Password)
+			if err != nil {
+				c.Error(err)
+				return
+			}
+
+			c.Set("identity", data)
+			return data, nil
 		},
 		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
-			// TODO: Add Jti...
-			claims = make(jwt.MapClaims)
-			if user, ok := data.(model.User); ok {
-				claims["uid"] = user.ID.Hex()
+			v := data.(common.Active)
+			return jwt.MapClaims{
+				"uid": v.UID,
+				"jti": v.JTI,
 			}
-			return
 		},
 		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
+			data := common.GetActive(c)
+			if err := x.IndexService.LoginSession(ctx, data.UID, data.JTI); err != nil {
+				c.Error(err)
+				return
+			}
 			c.Status(http.StatusNoContent)
 		},
 		MaxRefresh: time.Hour,
@@ -107,16 +118,33 @@ func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 			)
 		},
 		TokenLookup: "cookie: access_token",
+		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
+			data := jwt.ExtractClaims(ctx, c)
+			return common.Active{
+				JTI: data["jti"].(string),
+				UID: data["uid"].(string),
+			}
+		},
 		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
-			// TODO: Redis RBAC
+			identity := data.(common.Active)
+			if err := x.IndexService.AuthVerify(ctx, identity.UID, identity.JTI); err != nil {
+				c.Error(err)
+				return false
+			}
 			return true
 		},
 		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
+			data := common.GetActive(c)
+			if err := x.IndexService.LogoutSession(ctx, data.UID); err != nil {
+				c.Error(err)
+				return
+			}
 			c.Status(http.StatusNoContent)
 		},
 	})
 }
 
+// ErrHandler 错误处理
 func (x *API) ErrHandler() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		c.Next(ctx)

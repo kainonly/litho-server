@@ -21,10 +21,7 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 
-/tmp
-/node_modules
-/package-lock.json
-/.env
-config-map.yml
+/vendor
 config.yml
+config-map.yml
 deployment.yml

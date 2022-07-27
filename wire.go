@@ -13,6 +13,7 @@ import (
 
 func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 	wire.Build(
+		wire.Struct(new(common.Inject), "*"),
 		bootstrap.Provides,
 		api.Provides,
 	)

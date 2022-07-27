@@ -2,14 +2,12 @@ package sessions
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"github.com/weplanx/server/common"
 	"strings"
 )
 
 type Service struct {
-	Values *common.Values
-	Redis  *redis.Client
+	*common.Inject
 }
 
 func (x *Service) Key(uid string) string {

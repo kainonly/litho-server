@@ -2,6 +2,7 @@ package dsl
 
 import (
 	"context"
+	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -9,7 +10,7 @@ import (
 )
 
 type Service struct {
-	Db *mongo.Database
+	*common.Inject
 }
 
 // Create 新增资源
