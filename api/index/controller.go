@@ -3,15 +3,17 @@ package index
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	gonanoid "github.com/matoous/go-nanoid"
+	"github.com/weplanx/server/api/pages"
+	"github.com/weplanx/server/common"
 	"net/http"
 	"time"
 )
 
 type Controller struct {
 	IndexService *Service
+	PagesService *pages.Service
 }
 
 // Index 获取导航
@@ -23,9 +25,9 @@ func (x *Controller) Index(ctx context.Context, c *app.RequestContext) {
 // GetRefreshCode 获取刷新令牌验证码
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
-	uid := c.GetString("uid")
+	active := common.GetActive(c)
 	code, _ := gonanoid.Nanoid()
-	if err := x.IndexService.CreateCaptcha(ctx, uid, code, 15*time.Second); err != nil {
+	if err := x.IndexService.CreateCaptcha(ctx, active.UID, code, 15*time.Second); err != nil {
 		c.Error(err)
 		return
 	}
@@ -46,14 +48,9 @@ func (x *Controller) VerifyRefreshCode(ctx context.Context, c *app.RequestContex
 		return
 	}
 
-	uid := c.GetString("uid")
-	right, err := x.IndexService.VerifyCaptcha(ctx, uid, dto.Code)
-	if err != nil {
+	active := common.GetActive(c)
+	if err := x.IndexService.VerifyCaptcha(ctx, active.UID, dto.Code); err != nil {
 		c.Error(err)
-		return
-	}
-	if !right {
-		c.Error(errors.NewPublic("刷新令牌验证码不匹配"))
 		return
 	}
 

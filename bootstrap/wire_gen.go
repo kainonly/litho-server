@@ -4,33 +4,33 @@
 //go:build !wireinject
 // +build !wireinject
 
-package main
+package bootstrap
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/pages"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
-	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
 )
 
 // Injectors from wire.go:
 
 func OkLetsGo(value *common.Values) (*server.Hertz, error) {
-	client, err := bootstrap.UseMongoDB(value)
+	client, err := UseMongoDB(value)
 	if err != nil {
 		return nil, err
 	}
-	database := bootstrap.UseDatabase(client, value)
-	redisClient, err := bootstrap.UseRedis(value)
+	database := UseDatabase(client, value)
+	redisClient, err := UseRedis(value)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := bootstrap.UseNats(value)
+	conn, err := UseNats(value)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +61,12 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 		IndexService:  indexService,
 		UsersService:  usersService,
 	}
+	pagesService := &pages.Service{
+		Inject: inject,
+	}
 	controller := &index.Controller{
 		IndexService: indexService,
+		PagesService: pagesService,
 	}
 	valuesController := &values.Controller{
 		ValuesService: service,
