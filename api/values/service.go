@@ -4,19 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/bytedance/sonic"
-	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
-	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
 type Service struct {
-	Values *common.Values
-	Db     *mongo.Database
-	Redis  *redis.Client
-	Nats   *nats.Conn
+	*common.Inject
 }
 
 // Key 命名

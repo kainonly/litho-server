@@ -86,25 +86,25 @@ type DynamicValues map[string]interface{}
 // GetSessionTTL  会话周期（秒）
 // 用户在 1 小时 内没有操作，将结束会话。
 func (x DynamicValues) GetSessionTTL() time.Duration {
-	return time.Second * time.Duration(x["session_ttl"].(int64))
+	return time.Second * time.Duration(x["session_ttl"].(float64))
 }
 
 // GetLoginTTL 登录锁定时间
 // 锁定 15 分钟。
 func (x DynamicValues) GetLoginTTL() time.Duration {
-	return time.Second * time.Duration(x["login_ttl"].(int64))
+	return time.Second * time.Duration(x["login_ttl"].(float64))
 }
 
 // GetLoginFailures 用户最大登录失败次数
 // 有限时间（锁定时间）内连续登录失败 5 次，锁定帐号。
 func (x DynamicValues) GetLoginFailures() int64 {
-	return x["login_failures"].(int64)
+	return int64(x["login_failures"].(float64))
 }
 
 // GetIpLoginFailures IP 最大登录失败次数
 // 同 IP 连续 10 次登录失败后，锁定 IP（周期为锁定时间）。
 func (x DynamicValues) GetIpLoginFailures() int64 {
-	return x["ip_login_failures"].(int64)
+	return int64(x["ip_login_failures"].(float64))
 }
 
 // GetIpWhitelist  IP 白名单
@@ -125,14 +125,14 @@ func (x DynamicValues) GetIpBlacklist() []string {
 // 2：需要大小写字母、数字；
 // 3：需要大小写字母、数字、特殊字符
 func (x DynamicValues) GetPwdStrategy() int64 {
-	return x["pwd_strategy"].(int64)
+	return int64(x["pwd_strategy"].(float64))
 }
 
 // GetPwdTTL 密码有效期（天）
 // 密码有效期（天）
 // 密码过期后强制要求修改密码，0：永久有效
 func (x DynamicValues) GetPwdTTL() time.Duration {
-	return 24 * time.Hour * time.Duration(x["pwd_ttl"].(int64))
+	return 24 * time.Hour * time.Duration(x["pwd_ttl"].(float64))
 }
 
 // GetCloud 云平台
@@ -165,12 +165,12 @@ func (x DynamicValues) GetTencentCosRegion() string {
 
 // GetTencentCosExpired 腾讯云 COS 对象存储预签名有效期，单位：秒
 func (x DynamicValues) GetTencentCosExpired() time.Duration {
-	return time.Second * time.Duration(x["login_ttl"].(int64))
+	return time.Second * time.Duration(x["login_ttl"].(float64))
 }
 
 // GetTencentCosLimit 腾讯云 COS 对象存储上传大小限制，单位：KB
 func (x DynamicValues) GetTencentCosLimit() int64 {
-	return x["tencent_cos_limit"].(int64)
+	return int64(x["tencent_cos_limit"].(float64))
 }
 
 // GetOffice 办公平台

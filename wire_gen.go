@@ -34,22 +34,26 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &values.Service{
-		Values: value,
-		Db:     database,
-		Redis:  redisClient,
-		Nats:   conn,
-	}
-	usersService := &users.Service{
-		Db:    database,
-		Redis: redisClient,
-	}
-	indexService := &index.Service{
+	inject := &common.Inject{
 		Values: value,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
-		Users:  usersService,
+		Nats:   conn,
+	}
+	service := &values.Service{
+		Inject: inject,
+	}
+	usersService := &users.Service{
+		Inject: inject,
+	}
+	sessionsService := &sessions.Service{
+		Inject: inject,
+	}
+	indexService := &index.Service{
+		Inject:         inject,
+		UsersService:   usersService,
+		SessionService: sessionsService,
 	}
 	apiAPI := &api.API{
 		Values:        value,
@@ -58,20 +62,16 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 		UsersService:  usersService,
 	}
 	controller := &index.Controller{
-		AppService: indexService,
+		IndexService: indexService,
 	}
 	valuesController := &values.Controller{
 		ValuesService: service,
-	}
-	sessionsService := &sessions.Service{
-		Values: value,
-		Redis:  redisClient,
 	}
 	sessionsController := &sessions.Controller{
 		SessionsService: sessionsService,
 	}
 	dslService := &dsl.Service{
-		Db: database,
+		Inject: inject,
 	}
 	dslController := &dsl.Controller{
 		DslService: dslService,
