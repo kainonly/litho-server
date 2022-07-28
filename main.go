@@ -7,12 +7,7 @@ import (
 )
 
 func main() {
-	values, err := bootstrap.LoadStaticValues("./config/config.yml")
-	if err != nil {
-		panic(err)
-	}
-
-	api, err := bootstrap.SetAPI(values)
+	api, err := bootstrap.NewAPI()
 	if err != nil {
 		panic(err)
 	}

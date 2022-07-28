@@ -19,35 +19,36 @@ import (
 
 // Injectors from wire.go:
 
-func SetAPI(value *common.Values) (*api.API, error) {
-	hertz, err := UseHertz(value)
+func NewAPI() (*api.API, error) {
+	commonValues, err := LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseMongoDB(value)
+	client, err := UseMongoDB(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(client, value)
-	redisClient, err := UseRedis(value)
+	database := UseDatabase(client, commonValues)
+	redisClient, err := UseRedis(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(value)
+	conn, err := UseNats(commonValues)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values: value,
+		Values: commonValues,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
 		Nats:   conn,
 	}
-	service := &values.Service{
-		Inject: inject,
+	hertz, err := UseHertz(commonValues)
+	if err != nil {
+		return nil, err
 	}
-	usersService := &users.Service{
+	service := &users.Service{
 		Inject: inject,
 	}
 	sessionsService := &sessions.Service{
@@ -55,7 +56,7 @@ func SetAPI(value *common.Values) (*api.API, error) {
 	}
 	indexService := &index.Service{
 		Inject:         inject,
-		UsersService:   usersService,
+		UsersService:   service,
 		SessionService: sessionsService,
 	}
 	pagesService := &pages.Service{
@@ -65,8 +66,11 @@ func SetAPI(value *common.Values) (*api.API, error) {
 		IndexService: indexService,
 		PagesService: pagesService,
 	}
+	valuesService := &values.Service{
+		Inject: inject,
+	}
 	valuesController := &values.Controller{
-		ValuesService: service,
+		ValuesService: valuesService,
 	}
 	sessionsController := &sessions.Controller{
 		SessionsService: sessionsService,
@@ -78,12 +82,12 @@ func SetAPI(value *common.Values) (*api.API, error) {
 		DslService: dslService,
 	}
 	apiAPI := &api.API{
-		Hertz:             hertz,
 		Inject:            inject,
-		ValuesService:     service,
-		IndexService:      indexService,
+		Hertz:             hertz,
 		IndexController:   controller,
+		IndexService:      indexService,
 		ValuesController:  valuesController,
+		ValuesService:     valuesService,
 		SessionController: sessionsController,
 		DslController:     dslController,
 	}

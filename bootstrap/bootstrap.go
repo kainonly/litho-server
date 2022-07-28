@@ -13,6 +13,7 @@ import (
 	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
@@ -21,6 +22,7 @@ import (
 )
 
 var Provides = wire.NewSet(
+	LoadStaticValues,
 	UseMongoDB,
 	UseDatabase,
 	UseRedis,
@@ -30,7 +32,8 @@ var Provides = wire.NewSet(
 )
 
 // LoadStaticValues 加载静态配置
-func LoadStaticValues(path string) (values *common.Values, err error) {
+func LoadStaticValues() (values *common.Values, err error) {
+	path := "./config/config.yml"
 	if _, err = os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
 	}
@@ -55,7 +58,9 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 
 // UseDatabase 初始化数据库
 func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
-	return client.Database(values.Database.Db)
+	option := options.Database().
+		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
+	return client.Database(values.Database.Db, option)
 }
 
 // UseRedis 初始化 Redis
