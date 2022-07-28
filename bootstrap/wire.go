@@ -9,7 +9,7 @@ import (
 	"github.com/weplanx/server/common"
 )
 
-func SetAPI(value *common.Values) (*api.API, error) {
+func NewAPI() (*api.API, error) {
 	wire.Build(
 		wire.Struct(new(api.API), "*"),
 		wire.Struct(new(common.Inject), "*"),

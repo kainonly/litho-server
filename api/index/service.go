@@ -20,7 +20,6 @@ type Service struct {
 }
 
 func (x *Service) Navs(ctx context.Context, uid string) (data map[string]interface{}, err error) {
-
 	return
 }
 
@@ -119,6 +118,11 @@ func (x *Service) ExistsCaptcha(ctx context.Context, name string) (_ bool, err e
 	return exists != 0, nil
 }
 
+var (
+	ErrCaptchaNotExists    = errors.NewPublic("验证码不存在")
+	ErrCaptchaInconsistent = errors.NewPublic("无效的验证码")
+)
+
 // VerifyCaptcha 校验验证码
 func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (err error) {
 	var exists int64
@@ -127,7 +131,7 @@ func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (
 	}
 
 	if exists == 0 {
-		return errors.NewPublic("验证码不存在")
+		return ErrCaptchaNotExists
 	}
 
 	var value string
@@ -137,7 +141,7 @@ func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (
 		return
 	}
 	if value != code {
-		return errors.NewPublic("验证码不一致")
+		return ErrCaptchaInconsistent
 	}
 
 	return
