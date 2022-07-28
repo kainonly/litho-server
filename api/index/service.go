@@ -7,8 +7,8 @@ import (
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/common/passlib"
 	"github.com/weplanx/server/model"
-	"github.com/weplanx/server/utils/passlib"
 	"time"
 )
 

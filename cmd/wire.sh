@@ -1,1 +1,0 @@
-cd ../bootstrap && wire

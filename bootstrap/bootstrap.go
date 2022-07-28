@@ -3,8 +3,11 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
+	"github.com/hertz-contrib/cors"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/server/common"
@@ -23,6 +26,7 @@ var Provides = wire.NewSet(
 	UseRedis,
 	UseNats,
 	UseJetStream,
+	UseHertz,
 )
 
 // LoadStaticValues 加载静态配置
@@ -102,4 +106,29 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 // UseJetStream 初始化流
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
+}
+
+// UseHertz 使用 Hertz
+func UseHertz(values *common.Values) (h *server.Hertz, err error) {
+	opts := []config.Option{
+		server.WithHostPorts(":3000"),
+	}
+
+	if os.Getenv("MODE") != "release" {
+		opts = append(opts, server.WithExitWaitTime(0))
+	}
+
+	h = server.Default(opts...)
+
+	// 全局中间件
+	h.Use(cors.New(cors.Config{
+		AllowOrigins:     values.Cors.AllowOrigins,
+		AllowMethods:     values.Cors.AllowMethods,
+		AllowHeaders:     values.Cors.AllowHeaders,
+		AllowCredentials: values.Cors.AllowCredentials,
+		ExposeHeaders:    values.Cors.ExposeHeaders,
+		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
+	}))
+
+	return
 }

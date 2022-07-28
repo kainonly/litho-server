@@ -7,7 +7,6 @@
 package bootstrap
 
 import (
-	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
@@ -20,7 +19,11 @@ import (
 
 // Injectors from wire.go:
 
-func OkLetsGo(value *common.Values) (*server.Hertz, error) {
+func SetAPI(value *common.Values) (*api.API, error) {
+	hertz, err := UseHertz(value)
+	if err != nil {
+		return nil, err
+	}
 	client, err := UseMongoDB(value)
 	if err != nil {
 		return nil, err
@@ -55,12 +58,6 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 		UsersService:   usersService,
 		SessionService: sessionsService,
 	}
-	apiAPI := &api.API{
-		Values:        value,
-		ValuesService: service,
-		IndexService:  indexService,
-		UsersService:  usersService,
-	}
 	pagesService := &pages.Service{
 		Inject: inject,
 	}
@@ -80,9 +77,15 @@ func OkLetsGo(value *common.Values) (*server.Hertz, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
-	hertz, err := api.Routes(apiAPI, controller, valuesController, sessionsController, dslController)
-	if err != nil {
-		return nil, err
+	apiAPI := &api.API{
+		Hertz:             hertz,
+		Inject:            inject,
+		ValuesService:     service,
+		IndexService:      indexService,
+		IndexController:   controller,
+		ValuesController:  valuesController,
+		SessionController: sessionsController,
+		DslController:     dslController,
 	}
-	return hertz, nil
+	return apiAPI, nil
 }

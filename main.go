@@ -1,8 +1,9 @@
 package main
 
 import (
+	"context"
 	"github.com/weplanx/server/bootstrap"
-	"github.com/weplanx/server/utils/validation"
+	"time"
 )
 
 func main() {
@@ -11,12 +12,22 @@ func main() {
 		panic(err)
 	}
 
-	validation.Extend()
-
-	server, err := bootstrap.OkLetsGo(values)
+	api, err := bootstrap.SetAPI(values)
 	if err != nil {
 		panic(err)
 	}
 
-	server.Spin()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	if err = api.Initialize(ctx); err != nil {
+		panic(err)
+	}
+
+	h, err := api.Routes()
+	if err != nil {
+		panic(err)
+	}
+
+	h.Spin()
 }
