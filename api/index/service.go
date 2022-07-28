@@ -19,10 +19,6 @@ type Service struct {
 	SessionService *sessions.Service
 }
 
-func (x *Service) Navs(ctx context.Context, uid string) (data map[string]interface{}, err error) {
-	return
-}
-
 // Login 登录
 func (x *Service) Login(ctx context.Context, identity string, password string) (_ common.Active, err error) {
 	var user model.User
@@ -125,12 +121,11 @@ var (
 
 // VerifyCaptcha 校验验证码
 func (x *Service) VerifyCaptcha(ctx context.Context, name string, code string) (err error) {
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, x.Captcha(name)).Result(); err != nil {
+	var exists bool
+	if exists, err = x.ExistsCaptcha(ctx, name); err != nil {
 		return
 	}
-
-	if exists == 0 {
+	if !exists {
 		return ErrCaptchaNotExists
 	}
 

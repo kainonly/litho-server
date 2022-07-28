@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"github.com/bytedance/sonic"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -43,19 +44,19 @@ func (x *Service) GetActived(ctx context.Context, id string) (data model.User, e
 			return
 		}
 
-		values := make(map[string]interface{})
+		values := make(map[string]string)
 		for cursor.Next(ctx) {
-			var user map[string]interface{}
+			var user model.User
 			if err = cursor.Decode(&user); err != nil {
 				return
 			}
 
-			//var value string
-			//if value, err = sonic.MarshalString(user); err != nil {
-			//	return
-			//}
+			var value string
+			if value, err = sonic.MarshalString(user); err != nil {
+				return
+			}
 
-			values[user["_id"].(string)] = user
+			values[user.ID.Hex()] = value
 		}
 		if err = cursor.Err(); err != nil {
 			return
@@ -66,7 +67,11 @@ func (x *Service) GetActived(ctx context.Context, id string) (data model.User, e
 		}
 	}
 
-	if err = x.Redis.HGet(ctx, key, id).Scan(&data); err != nil {
+	var result string
+	if result, err = x.Redis.HGet(ctx, key, id).Result(); err != nil {
+		return
+	}
+	if err = sonic.UnmarshalString(result, &data); err != nil {
 		return
 	}
 

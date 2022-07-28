@@ -81,6 +81,9 @@ func NewAPI() (*api.API, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
+	usersController := &users.Controller{
+		UsersService: service,
+	}
 	apiAPI := &api.API{
 		Inject:            inject,
 		Hertz:             hertz,
@@ -89,7 +92,11 @@ func NewAPI() (*api.API, error) {
 		ValuesController:  valuesController,
 		ValuesService:     valuesService,
 		SessionController: sessionsController,
+		SessionService:    sessionsService,
 		DslController:     dslController,
+		DslService:        dslService,
+		UsersController:   usersController,
+		UsersService:      service,
 	}
 	return apiAPI, nil
 }
