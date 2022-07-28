@@ -8,52 +8,72 @@ import (
 	"github.com/bytedance/sonic/decoder"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/hertz-contrib/cors"
+	"github.com/google/wire"
 	"github.com/hertz-contrib/jwt"
+	"github.com/weplanx/server/api/departments"
+	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/pages"
+	"github.com/weplanx/server/api/roles"
+	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/common/validation"
 	"net/http"
-	"os"
 	"time"
 )
 
+var Provides = wire.NewSet(
+	index.Provides,
+	values.Provides,
+	sessions.Provides,
+	dsl.Provides,
+	pages.Provides,
+	users.Provides,
+	roles.Provides,
+	departments.Provides,
+)
+
 type API struct {
-	Values        *common.Values
-	ValuesService *values.Service
-	IndexService  *index.Service
-	UsersService  *users.Service
+	*common.Inject
+
+	Hertz *server.Hertz
+
+	IndexController   *index.Controller
+	IndexService      *index.Service
+	ValuesController  *values.Controller
+	ValuesService     *values.Service
+	SessionController *sessions.Controller
+	DslController     *dsl.Controller
 }
 
-// Engine 创建服务
-func (x *API) Engine() (h *server.Hertz, err error) {
-	opts := []config.Option{
-		server.WithHostPorts(":3000"),
-	}
-
-	if os.Getenv("MODE") != "release" {
-		opts = append(opts, server.WithExitWaitTime(0))
-	}
-
-	h = server.Default(opts...)
-	// 全局中间件
-	h.Use(cors.New(cors.Config{
-		AllowOrigins:     x.Values.Cors.AllowOrigins,
-		AllowMethods:     x.Values.Cors.AllowMethods,
-		AllowHeaders:     x.Values.Cors.AllowHeaders,
-		AllowCredentials: x.Values.Cors.AllowCredentials,
-		ExposeHeaders:    x.Values.Cors.ExposeHeaders,
-		MaxAge:           time.Duration(x.Values.Cors.MaxAge) * time.Second,
-	}))
+func (x *API) Routes() (h *server.Hertz, err error) {
+	h = x.Hertz
 	h.Use(x.ErrHandler())
 
-	// 订阅动态配置
-	if err = x.ValuesService.Sync(context.TODO()); err != nil {
+	var auth *jwt.HertzJWTMiddleware
+	if auth, err = x.Auth(); err != nil {
 		return
+	}
+
+	h.POST("login", auth.LoginHandler)
+
+	api := h.Group("", auth.MiddlewareFunc())
+	{
+		api.GET("", x.IndexController.Index)
+		api.GET("code", x.IndexController.GetRefreshCode)
+		api.POST("refresh_token", x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
+
+		api.GET("user", x.IndexController.GetUser)
+		api.PATCH("user", x.IndexController.SetUser)
+		api.DELETE("user", auth.LogoutHandler)
+
+		x.ValuesController.In(api.Group("values"))
+		x.SessionController.In(api.Group("sessions"))
+		x.DslController.In(api.Group("dsl/:model"))
 	}
 
 	return
@@ -189,4 +209,17 @@ func (x *API) ErrHandler() app.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 		}
 	}
+}
+
+// Initialize 初始化
+func (x *API) Initialize(ctx context.Context) (err error) {
+	// 加载自定义验证
+	validation.Extend()
+
+	// 订阅动态配置
+	if err = x.ValuesService.Sync(ctx); err != nil {
+		return
+	}
+
+	return
 }
