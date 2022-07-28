@@ -47,7 +47,11 @@ type API struct {
 	ValuesController  *values.Controller
 	ValuesService     *values.Service
 	SessionController *sessions.Controller
+	SessionService    *sessions.Service
 	DslController     *dsl.Controller
+	DslService        *dsl.Service
+	UsersController   *users.Controller
+	UsersService      *users.Service
 }
 
 func (x *API) Routes() (h *server.Hertz, err error) {
