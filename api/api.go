@@ -71,6 +71,7 @@ func (x *API) Routes() (h *server.Hertz, err error) {
 		api.GET("navs", x.IndexController.GetNavs)
 		api.GET("code", x.IndexController.GetRefreshCode)
 		api.POST("refresh_token", x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
+		api.GET("options", x.IndexController.GetOptions)
 
 		api.GET("user", x.IndexController.GetUser)
 		api.PATCH("user", x.IndexController.SetUser)
@@ -100,7 +101,9 @@ func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 		CookieSameSite:    http.SameSiteStrictMode,
 		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
 			var dto struct {
+				// 唯一标识，用户名或电子邮件
 				Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
+				// 密码
 				Password string `json:"password,required" vd:"len($)>=8"`
 			}
 			if err = c.BindAndValidate(&dto); err != nil {

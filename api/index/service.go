@@ -2,7 +2,9 @@ package index
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/pages"
@@ -25,16 +27,6 @@ type Service struct {
 	UsersService       *users.Service
 	RolesService       *roles.Service
 	DepartmentsService *departments.Service
-}
-
-func (x *Service) GetNavs(ctx context.Context, uid string) (_ []pages.Nav, err error) {
-	// TODO: 权限过滤...
-	//var user model.User
-	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
-	//	return
-	//}
-
-	return x.PagesService.FindNavs(ctx)
 }
 
 // Login 登录
@@ -109,6 +101,49 @@ func (x *Service) LogoutSession(ctx context.Context, uid string) (err error) {
 	return x.SessionService.Remove(ctx, uid)
 }
 
+// GetNavs 导航数据
+func (x *Service) GetNavs(ctx context.Context, uid string) (_ []pages.Nav, err error) {
+	// TODO: 权限过滤...
+	//var user model.User
+	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+	//	return
+	//}
+
+	return x.PagesService.FindNavs(ctx)
+}
+
+// GetOptions 返回通用配置
+func (x *Service) GetOptions(class string) utils.H {
+	switch class {
+	// 上传类
+	case "upload":
+		switch x.Values.GetCloud() {
+		// 腾讯云
+		case "tencent":
+			// Cos 对象存储
+			return utils.H{
+				"type": "cos",
+				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
+					x.Values.GetTencentCosBucket(), x.Values.GetTencentCosRegion(),
+				),
+				"limit": x.Values.GetTencentCosLimit(),
+			}
+		}
+	// 企业平台类
+	case "office":
+		switch x.Values.GetOffice() {
+		// 飞书
+		case "feishu":
+			return utils.H{
+				"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+				"redirect": x.Values.GetRedirectUrl(),
+				"app_id":   x.Values.GetFeishuAppId(),
+			}
+		}
+	}
+	return nil
+}
+
 // GetUser 获取授权用户信息
 func (x *Service) GetUser(ctx context.Context, uid string) (data map[string]interface{}, err error) {
 	var user model.User
@@ -150,9 +185,13 @@ func (x *Service) SetUser(ctx context.Context, id string, data interface{}) (int
 }
 
 // UnsetUser 取消授权用户信息
-func (x *Service) UnsetUser(ctx context.Context, id string, value string) (interface{}, error) {
+func (x *Service) UnsetUser(ctx context.Context, id string, mate string) (interface{}, error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
-	return x.UsersService.UpdateOneById(ctx, oid, bson.M{"$unset": bson.M{value: ""}})
+	update := bson.M{
+		"$set":   bson.M{"update_time": time.Now()},
+		"$unset": bson.M{mate: ""},
+	}
+	return x.UsersService.UpdateOneById(ctx, oid, update)
 }
 
 // Captcha 验证命名
