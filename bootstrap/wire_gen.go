@@ -8,9 +8,11 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/pages"
+	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
@@ -48,23 +50,33 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &users.Service{
+	service := &sessions.Service{
 		Inject: inject,
-	}
-	sessionsService := &sessions.Service{
-		Inject: inject,
-	}
-	indexService := &index.Service{
-		Inject:         inject,
-		UsersService:   service,
-		SessionService: sessionsService,
 	}
 	pagesService := &pages.Service{
 		Inject: inject,
 	}
+	rolesService := &roles.Service{
+		Inject: inject,
+	}
+	departmentsService := &departments.Service{
+		Inject: inject,
+	}
+	usersService := &users.Service{
+		Inject:             inject,
+		RolesService:       rolesService,
+		DepartmentsService: departmentsService,
+	}
+	indexService := &index.Service{
+		Inject:             inject,
+		SessionService:     service,
+		PagesService:       pagesService,
+		UsersService:       usersService,
+		RolesService:       rolesService,
+		DepartmentsService: departmentsService,
+	}
 	controller := &index.Controller{
 		IndexService: indexService,
-		PagesService: pagesService,
 	}
 	valuesService := &values.Service{
 		Inject: inject,
@@ -73,7 +85,7 @@ func NewAPI() (*api.API, error) {
 		ValuesService: valuesService,
 	}
 	sessionsController := &sessions.Controller{
-		SessionsService: sessionsService,
+		SessionsService: service,
 	}
 	dslService := &dsl.Service{
 		Inject: inject,
@@ -82,7 +94,7 @@ func NewAPI() (*api.API, error) {
 		DslService: dslService,
 	}
 	usersController := &users.Controller{
-		UsersService: service,
+		UsersService: usersService,
 	}
 	apiAPI := &api.API{
 		Inject:            inject,
@@ -92,11 +104,11 @@ func NewAPI() (*api.API, error) {
 		ValuesController:  valuesController,
 		ValuesService:     valuesService,
 		SessionController: sessionsController,
-		SessionService:    sessionsService,
+		SessionService:    service,
 		DslController:     dslController,
 		DslService:        dslService,
 		UsersController:   usersController,
-		UsersService:      service,
+		UsersService:      usersService,
 	}
 	return apiAPI, nil
 }

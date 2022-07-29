@@ -3,15 +3,22 @@ package users
 import (
 	"context"
 	"github.com/bytedance/sonic"
+	"github.com/weplanx/server/api/departments"
+	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type Service struct {
 	*common.Inject
+
+	RolesService       *roles.Service
+	DepartmentsService *departments.Service
 }
 
 // FindByIdentity 从用户名或电子邮件获取用户
@@ -76,4 +83,13 @@ func (x *Service) GetActived(ctx context.Context, id string) (data model.User, e
 	}
 
 	return
+}
+
+// UpdateOneById 通过 ID 更新
+func (x *Service) UpdateOneById(ctx context.Context, id primitive.ObjectID, update bson.M) (*mongo.UpdateResult, error) {
+	if update["$set"] == nil {
+		update["$set"] = bson.M{}
+	}
+	update["$set"].(bson.M)["update_time"] = time.Now()
+	return x.Db.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, update)
 }

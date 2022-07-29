@@ -4,19 +4,37 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	gonanoid "github.com/matoous/go-nanoid"
+	"github.com/weplanx/server/api/departments"
+	"github.com/weplanx/server/api/pages"
+	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/common/passlib"
 	"github.com/weplanx/server/model"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 type Service struct {
 	*common.Inject
 
-	UsersService   *users.Service
-	SessionService *sessions.Service
+	SessionService     *sessions.Service
+	PagesService       *pages.Service
+	UsersService       *users.Service
+	RolesService       *roles.Service
+	DepartmentsService *departments.Service
+}
+
+func (x *Service) GetNavs(ctx context.Context, uid string) (_ []pages.Nav, err error) {
+	// TODO: 权限过滤...
+	//var user model.User
+	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+	//	return
+	//}
+
+	return x.PagesService.FindNavs(ctx)
 }
 
 // Login 登录
@@ -89,6 +107,52 @@ func (x *Service) AuthVerify(ctx context.Context, uid string, jti string) (err e
 // LogoutSession 注销登录会话
 func (x *Service) LogoutSession(ctx context.Context, uid string) (err error) {
 	return x.SessionService.Remove(ctx, uid)
+}
+
+// GetUser 获取授权用户信息
+func (x *Service) GetUser(ctx context.Context, uid string) (data map[string]interface{}, err error) {
+	var user model.User
+	if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+		return
+	}
+
+	data = map[string]interface{}{
+		"username":    user.Username,
+		"email":       user.Email,
+		"name":        user.Name,
+		"avatar":      user.Avatar,
+		"sessions":    user.Sessions,
+		"last":        user.Last,
+		"create_time": user.CreateTime,
+	}
+
+	// 权限组名称
+	if data["roles"], err = x.RolesService.FindNamesByIds(ctx, user.Roles); err != nil {
+		return
+	}
+
+	// 部门名称
+	if user.Department != nil {
+		var department model.Department
+		if department, err = x.DepartmentsService.FindOneById(ctx, *user.Department); err != nil {
+			return
+		}
+		data["department"] = department.Name
+	}
+
+	return
+}
+
+// SetUser 设置授权用户信息
+func (x *Service) SetUser(ctx context.Context, id string, data interface{}) (interface{}, error) {
+	oid, _ := primitive.ObjectIDFromHex(id)
+	return x.UsersService.UpdateOneById(ctx, oid, bson.M{"$set": data})
+}
+
+// UnsetUser 取消授权用户信息
+func (x *Service) UnsetUser(ctx context.Context, id string, value string) (interface{}, error) {
+	oid, _ := primitive.ObjectIDFromHex(id)
+	return x.UsersService.UpdateOneById(ctx, oid, bson.M{"$unset": bson.M{value: ""}})
 }
 
 // Captcha 验证命名

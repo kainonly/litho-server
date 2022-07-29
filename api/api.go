@@ -63,16 +63,18 @@ func (x *API) Routes() (h *server.Hertz, err error) {
 		return
 	}
 
+	h.GET("", x.IndexController.Index)
 	h.POST("login", auth.LoginHandler)
 
 	api := h.Group("", auth.MiddlewareFunc())
 	{
-		api.GET("", x.IndexController.Index)
+		api.GET("navs", x.IndexController.GetNavs)
 		api.GET("code", x.IndexController.GetRefreshCode)
 		api.POST("refresh_token", x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
 
 		api.GET("user", x.IndexController.GetUser)
 		api.PATCH("user", x.IndexController.SetUser)
+		api.POST("unset-user", x.IndexController.UnsetUser)
 		api.DELETE("user", auth.LogoutHandler)
 
 		x.ValuesController.In(api.Group("values"))
