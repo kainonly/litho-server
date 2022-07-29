@@ -32,6 +32,7 @@ var Provides = wire.NewSet(
 )
 
 // LoadStaticValues 加载静态配置
+// 默认配置路径 ./config/config.yml
 func LoadStaticValues() (values *common.Values, err error) {
 	path := "./config/config.yml"
 	if _, err = os.Stat(path); os.IsNotExist(err) {
@@ -49,6 +50,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 
 // UseMongoDB 初始化 MongoDB
 // 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
@@ -57,6 +59,8 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 }
 
 // UseDatabase 初始化数据库
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
 func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
 	option := options.Database().
 		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
@@ -109,11 +113,13 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 }
 
 // UseJetStream 初始化流
+// 说明 https://docs.nats.io/using-nats/developer/develop_jetstream
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
 // UseHertz 使用 Hertz
+// 配置文档 https://www.cloudwego.io/zh/docs/hertz/reference/config
 func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 	opts := []config.Option{
 		server.WithHostPorts(":3000"),

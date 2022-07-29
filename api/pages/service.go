@@ -3,7 +3,6 @@ package pages
 import (
 	"context"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,8 +12,8 @@ type Service struct {
 	*common.Inject
 }
 
-type NavDto struct {
-	ID     primitive.ObjectID `json:"_id"`
+type Nav struct {
+	ID     primitive.ObjectID `bson:"_id" json:"_id"`
 	Parent interface{}        `json:"parent"`
 	Name   string             `json:"name"`
 	Icon   string             `json:"icon"`
@@ -22,28 +21,14 @@ type NavDto struct {
 	Sort   int64              `json:"sort"`
 }
 
-func (x *Service) Navs(ctx context.Context, roles []model.Role) (navs []NavDto, err error) {
-	pageIds := make([]primitive.ObjectID, 0)
-	pageSet := make(map[string]bool)
-	for _, role := range roles {
-		for k := range role.Pages {
-			if pageSet[k] {
-				continue
-			}
-			id, _ := primitive.ObjectIDFromHex(k)
-			pageIds = append(pageIds, id)
-			pageSet[k] = true
-		}
-	}
+// FindNavs 筛选导航数据
+func (x *Service) FindNavs(ctx context.Context) (data []Nav, err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").
-		Find(ctx, bson.M{
-			"_id":    bson.M{"$in": pageIds},
-			"status": true,
-		}); err != nil {
+		Find(ctx, bson.M{"status": true}); err != nil {
 		return
 	}
-	if err = cursor.All(ctx, &navs); err != nil {
+	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
 	return
