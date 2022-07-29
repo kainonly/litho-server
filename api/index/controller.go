@@ -74,6 +74,27 @@ func (x *Controller) VerifyRefreshCode(ctx context.Context, c *app.RequestContex
 	c.Next(ctx)
 }
 
+// GetOptions 返回通用配置
+// @router /options [GET]
+func (x *Controller) GetOptions(ctx context.Context, c *app.RequestContext) {
+	var dto struct {
+		// 类
+		Class string `query:"class,required"`
+	}
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	data := x.IndexService.GetOptions(dto.Class)
+	if data == nil {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
+}
+
 // GetUser 获取授权用户信息
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
@@ -94,23 +115,26 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		// 用户名
 		Username string `json:"username,omitempty" bson:"username,omitempty"`
 		// 电子邮件
-		Email string `json:"email,omitempty" vd:"$='' || email($)"`
+		Email string `json:"email,omitempty" bson:"email,omitempty" vd:"$=='' || email($)"`
 		// 称呼
 		Name string `json:"name" bson:"name,omitempty"`
 		// 头像
 		Avatar string `json:"avatar" bson:"avatar,omitempty"`
 		// 密码
-		Password string `json:"password,omitempty" bson:"avatar,omitempty"`
+		Password string `json:"password,omitempty" bson:"password,omitempty"`
+		// 更新时间
+		UpdateTime time.Time `json:"-" bson:"update_time"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	// 密码不为空转散列
+	// 密码转散列
 	if dto.Password != "" {
 		dto.Password, _ = passlib.Hash(dto.Password)
 	}
+	dto.UpdateTime = time.Now()
 
 	active := common.GetActive(c)
 	if _, err := x.IndexService.SetUser(ctx, active.UID, dto); err != nil {
@@ -138,8 +162,8 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 // @router /unset-user [POST]
 func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
-		// 用户名
-		Type string `json:"type,required"`
+		// 属性
+		Mate string `json:"mate,required" vd:"in($, 'feishu')"`
 	}
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -147,7 +171,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	active := common.GetActive(c)
-	if _, err := x.IndexService.UnsetUser(ctx, active.UID, dto.Type); err != nil {
+	if _, err := x.IndexService.UnsetUser(ctx, active.UID, dto.Mate); err != nil {
 		c.Error(err)
 		return
 	}

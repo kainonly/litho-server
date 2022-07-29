@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type Service struct {
@@ -87,9 +86,5 @@ func (x *Service) GetActived(ctx context.Context, id string) (data model.User, e
 
 // UpdateOneById 通过 ID 更新
 func (x *Service) UpdateOneById(ctx context.Context, id primitive.ObjectID, update bson.M) (*mongo.UpdateResult, error) {
-	if update["$set"] == nil {
-		update["$set"] = bson.M{}
-	}
-	update["$set"].(bson.M)["update_time"] = time.Now()
 	return x.Db.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, update)
 }
