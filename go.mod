@@ -22,9 +22,10 @@ require (
 	github.com/nats-io/nats.go v1.16.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
+	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/stretchr/testify v1.8.0
 	go.mongodb.org/mongo-driver v1.9.0
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

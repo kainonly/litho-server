@@ -21,42 +21,53 @@ type Inject struct {
 // Values 配置
 type Values struct {
 	// 应用设置
-	App struct {
-		// 命名空间
-		Namespace string `yaml:"namespace"`
-		// 密钥
-		Key string `yaml:"key"`
-	} `yaml:"app"`
+	App `yaml:"app"`
 
 	// 跨域设置
-	Cors struct {
-		AllowOrigins     []string `yaml:"allowOrigins"`
-		AllowMethods     []string `yaml:"allowMethods"`
-		AllowHeaders     []string `yaml:"allowHeaders"`
-		ExposeHeaders    []string `yaml:"exposeHeaders"`
-		AllowCredentials bool     `yaml:"allowCredentials"`
-		MaxAge           int      `yaml:"maxAge"`
-	} `yaml:"cors"`
+	Cors `yaml:"cors"`
 
 	// MongoDB 配置
-	Database struct {
-		Uri string `yaml:"uri"`
-		Db  string `yaml:"db"`
-	} `yaml:"database"`
+	Database `yaml:"database"`
 
 	// Redis 配置
-	Redis struct {
-		Uri string `yaml:"uri"`
-	} `yaml:"redis"`
+	Redis `yaml:"redis"`
 
 	// NATS 配置
-	Nats struct {
-		Hosts []string `yaml:"hosts"`
-		Nkey  string   `yaml:"nkey"`
-	} `yaml:"nats"`
+	Nats `yaml:"nats"`
 
 	// 动态配置
 	DynamicValues `yaml:"-"`
+}
+
+type App struct {
+	// 命名空间
+	Namespace string `yaml:"namespace"`
+	// 密钥
+	Key string `yaml:"key"`
+}
+
+type Cors struct {
+	AllowOrigins     []string `yaml:"allowOrigins"`
+	AllowMethods     []string `yaml:"allowMethods"`
+	AllowHeaders     []string `yaml:"allowHeaders"`
+	ExposeHeaders    []string `yaml:"exposeHeaders"`
+	AllowCredentials bool     `yaml:"allowCredentials"`
+	MaxAge           int      `yaml:"maxAge"`
+}
+
+type Database struct {
+	Uri string `yaml:"uri"`
+	Db  string `yaml:"db"`
+}
+
+// Redis 配置
+type Redis struct {
+	Uri string `yaml:"uri"`
+}
+
+type Nats struct {
+	Hosts []string `yaml:"hosts"`
+	Nkey  string   `yaml:"nkey"`
 }
 
 // Key 空间命名

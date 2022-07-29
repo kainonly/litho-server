@@ -5,7 +5,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
-	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/common/passlib"
 	"net/http"
@@ -43,8 +42,8 @@ func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
 	active := common.GetActive(c)
-	code, _ := gonanoid.Nanoid()
-	if err := x.IndexService.CreateCaptcha(ctx, active.UID, code, 15*time.Second); err != nil {
+	code, err := x.IndexService.GetRefreshCode(ctx, active.UID)
+	if err != nil {
 		c.Error(err)
 		return
 	}
@@ -66,7 +65,7 @@ func (x *Controller) VerifyRefreshCode(ctx context.Context, c *app.RequestContex
 	}
 
 	active := common.GetActive(c)
-	if err := x.IndexService.VerifyCaptcha(ctx, active.UID, dto.Code); err != nil {
+	if err := x.IndexService.Captcha.Verify(ctx, active.UID, dto.Code); err != nil {
 		c.Error(err)
 		return
 	}

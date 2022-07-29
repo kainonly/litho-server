@@ -11,6 +11,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/common/captcha"
+	"github.com/weplanx/server/common/locker"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -29,6 +31,8 @@ var Provides = wire.NewSet(
 	UseNats,
 	UseJetStream,
 	UseHertz,
+	wire.Struct(new(captcha.Captcha), "*"),
+	wire.Struct(new(locker.Locker), "*"),
 )
 
 // LoadStaticValues 加载静态配置
