@@ -24,10 +24,10 @@ jobs:
       - name: 安装 Golang
         uses: actions/setup-go@v3
         with:
-          go-version: ~1.17
+          go-version: ^1.18
 
       - name: 构建应用
-        run: go build -tags=jsoniter -o dist/main main.go wire_gen.go
+        run: go build -o dist/main
         env:
           CGO_ENABLED: 0
           GO111MODULE: on
@@ -77,4 +77,4 @@ jobs:
         with:
           config: ${{ secrets.KUBE_CONFIG }}
           version: v1.23.1
-          command: patch deployment api --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"
+          command: patch deployment server --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"

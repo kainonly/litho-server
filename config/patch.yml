@@ -2,5 +2,5 @@ spec:
   template:
     spec:
       containers:
-        - image: ccr.ccs.tencentyun.com/weplanx/api:${tag}
-          name: api
+        - image: ccr.ccs.tencentyun.com/weplanx/server:${tag}
+          name: server
