@@ -58,13 +58,13 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	dto.Data["create_time"] = time.Now()
 	dto.Data["update_time"] = time.Now()
 
-	any, err := x.DslService.Create(ctx, dto.Model, dto.Data)
+	r, err := x.DslService.Create(ctx, dto.Model, dto.Data)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, any)
+	c.JSON(http.StatusCreated, r)
 }
 
 // BulkCreate 批量新增资源
@@ -95,13 +95,13 @@ func (x *Controller) BulkCreate(ctx context.Context, c *app.RequestContext) {
 		docs[i] = doc
 	}
 
-	any, err := x.DslService.BulkCreate(ctx, dto.Model, docs)
+	r, err := x.DslService.BulkCreate(ctx, dto.Model, docs)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, any)
+	c.JSON(http.StatusCreated, r)
 }
 
 // Size 获取资源总数
@@ -304,13 +304,13 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	}
 	dto.Data["$set"].(M)["update_time"] = time.Now()
 
-	any, err := x.DslService.Update(ctx, dto.Model, dto.Filter, dto.Data)
+	r, err := x.DslService.Update(ctx, dto.Model, dto.Filter, dto.Data)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, any)
+	c.JSON(http.StatusOK, r)
 }
 
 // UpdateById 局部更新指定 ID 的资源
@@ -342,13 +342,13 @@ func (x *Controller) UpdateById(ctx context.Context, c *app.RequestContext) {
 	dto.Data["$set"].(M)["update_time"] = time.Now()
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	any, err := x.DslService.UpdateById(ctx, dto.Model, id, dto.Data)
+	r, err := x.DslService.UpdateById(ctx, dto.Model, id, dto.Data)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, any)
+	c.JSON(http.StatusOK, r)
 }
 
 // Replace 替换指定 ID 的资源
@@ -378,13 +378,13 @@ func (x *Controller) Replace(ctx context.Context, c *app.RequestContext) {
 	dto.Data["update_time"] = time.Now()
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	any, err := x.DslService.Replace(ctx, dto.Model, id, dto.Data)
+	r, err := x.DslService.Replace(ctx, dto.Model, id, dto.Data)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, any)
+	c.JSON(http.StatusOK, r)
 }
 
 // Delete 删除指定 ID 的资源
@@ -402,13 +402,13 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	any, err := x.DslService.Delete(ctx, dto.Model, id)
+	r, err := x.DslService.Delete(ctx, dto.Model, id)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, any)
+	c.JSON(http.StatusOK, r)
 }
 
 // BulkDelete 批量删除匹配资源
@@ -433,13 +433,13 @@ func (x *Controller) BulkDelete(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	any, err := x.DslService.BulkDelete(ctx, dto.Model, dto.Data)
+	r, err := x.DslService.BulkDelete(ctx, dto.Model, dto.Data)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, any)
+	c.JSON(http.StatusOK, r)
 }
 
 // Sort 排序资源
