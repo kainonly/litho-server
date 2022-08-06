@@ -4,18 +4,11 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/cloudwego/hertz/pkg/route"
 	"net/http"
 )
 
 type Controller struct {
 	ValuesService *Service
-}
-
-func (x *Controller) In(r *route.RouterGroup) {
-	r.GET("", x.Get)
-	r.PATCH("", x.Set)
-	r.DELETE(":key", x.Remove)
 }
 
 // Get 获取动态配置
