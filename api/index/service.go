@@ -114,7 +114,7 @@ func (x *Service) GetNavs(ctx context.Context, uid string) (_ []pages.Nav, err e
 	//	return
 	//}
 
-	return x.PagesService.FindNavs(ctx)
+	return x.PagesService.GetNavs(ctx)
 }
 
 // GetRefreshCode 获取刷新令牌验证码
@@ -129,8 +129,8 @@ func (x *Service) GetRefreshCode(ctx context.Context, uid string) (code string, 
 }
 
 // GetOptions 返回通用配置
-func (x *Service) GetOptions(class string) utils.H {
-	switch class {
+func (x *Service) GetOptions(v string) utils.H {
+	switch v {
 	// 上传类
 	case "upload":
 		switch x.Values.GetCloud() {

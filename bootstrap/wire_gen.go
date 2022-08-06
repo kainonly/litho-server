@@ -105,6 +105,9 @@ func NewAPI() (*api.API, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
+	pagesController := &pages.Controller{
+		PagesService: pagesService,
+	}
 	usersController := &users.Controller{
 		UsersService: usersService,
 	}
@@ -119,6 +122,8 @@ func NewAPI() (*api.API, error) {
 		SessionService:    service,
 		DslController:     dslController,
 		DslService:        dslService,
+		PagesController:   pagesController,
+		PagesService:      pagesService,
 		UsersController:   usersController,
 		UsersService:      usersService,
 	}

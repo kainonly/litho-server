@@ -3,18 +3,11 @@ package sessions
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/route"
 	"net/http"
 )
 
 type Controller struct {
 	SessionsService *Service
-}
-
-func (x *Controller) In(r *route.RouterGroup) {
-	r.GET("", x.Lists)
-	r.DELETE(":uid", x.Remove)
-	r.DELETE("", x.Clear)
 }
 
 // Lists 列出所有会话用户 ID
