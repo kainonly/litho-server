@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/hertz-contrib/jwt"
@@ -58,6 +59,7 @@ type API struct {
 
 func (x *API) Routes() (h *server.Hertz, err error) {
 	h = x.Hertz
+	h.Use(x.AccessLog())
 	h.Use(x.ErrHandler())
 
 	var auth *jwt.HertzJWTMiddleware
@@ -97,6 +99,7 @@ func (x *API) Routes() (h *server.Hertz, err error) {
 
 		_pages := api.Group("pages")
 		{
+			_pages.GET(":id", x.PagesController.GetOne)
 			_pages.GET(":id/indexes", x.PagesController.GetIndexes)
 			_pages.PUT(":id/indexes/:index", x.PagesController.SetIndex)
 			_pages.DELETE(":id/indexes/:index", x.PagesController.DeleteIndex)
@@ -207,6 +210,19 @@ func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 			c.Status(http.StatusNoContent)
 		},
 	})
+}
+
+// AccessLog 日志
+func (x *API) AccessLog() app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		start := time.Now()
+		ctx.Next(c)
+		end := time.Now()
+		latency := end.Sub(start).Microseconds
+		hlog.CtxTracef(c, "status=%d cost=%d method=%s full_path=%s client_ip=%s host=%s",
+			ctx.Response.StatusCode(), latency,
+			ctx.Request.Header.Method(), ctx.Request.URI().PathOriginal(), ctx.ClientIP(), ctx.Request.Host())
+	}
 }
 
 // ErrHandler 错误处理

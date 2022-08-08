@@ -37,6 +37,7 @@ func (x *Service) Find(ctx context.Context, model string, filter M, option *opti
 	if cursor, err = x.Db.Collection(model).Find(ctx, filter, option); err != nil {
 		return
 	}
+	data = make([]M, 0)
 	if err = cursor.All(ctx, &data); err != nil {
 		return
 	}
