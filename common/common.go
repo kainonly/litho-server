@@ -170,12 +170,12 @@ func (x DynamicValues) GetTencentCosRegion() string {
 
 // GetTencentCosExpired 腾讯云 COS 对象存储预签名有效期，单位：秒
 func (x DynamicValues) GetTencentCosExpired() time.Duration {
-	return time.Second * time.Duration(x["login_ttl"].(float64))
+	return time.Second * time.Duration(x["tencent_cos_expired"].(float64))
 }
 
 // GetTencentCosLimit 腾讯云 COS 对象存储上传大小限制，单位：KB
 func (x DynamicValues) GetTencentCosLimit() int64 {
-	return int64(x["tencent_cos_limit"].(float64))
+	return int64(x["tencent_cos_limit"].(int))
 }
 
 // GetOffice 办公平台

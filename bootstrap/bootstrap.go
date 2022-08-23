@@ -13,6 +13,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/common/captcha"
 	"github.com/weplanx/server/common/locker"
+	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -30,6 +31,7 @@ var Provides = wire.NewSet(
 	UseRedis,
 	UseNats,
 	UseJetStream,
+	UseTransfer,
 	UseHertz,
 	wire.Struct(new(captcha.Captcha), "*"),
 	wire.Struct(new(locker.Locker), "*"),
@@ -120,6 +122,12 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 // 说明 https://docs.nats.io/using-nats/developer/develop_jetstream
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
+}
+
+// UseTransfer 初始日志传输
+// https://github.com/weplanx/transfer
+func UseTransfer(values *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
+	return transfer.New(values.Namespace, js)
 }
 
 // UseHertz 使用 Hertz

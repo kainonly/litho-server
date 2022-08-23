@@ -9,7 +9,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/hertz-contrib/jwt"
@@ -23,7 +22,9 @@ import (
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/common/validation"
+	"github.com/weplanx/transfer"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,7 +42,8 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz *server.Hertz
+	Hertz    *server.Hertz
+	Transfer *transfer.Transfer
 
 	IndexController   *index.Controller
 	IndexService      *index.Service
@@ -214,14 +216,30 @@ func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 
 // AccessLog 日志
 func (x *API) AccessLog() app.HandlerFunc {
-	return func(c context.Context, ctx *app.RequestContext) {
+	return func(ctx context.Context, c *app.RequestContext) {
 		start := time.Now()
-		ctx.Next(c)
+		c.Next(ctx)
 		end := time.Now()
 		latency := end.Sub(start).Microseconds
-		hlog.CtxTracef(c, "status=%d cost=%d method=%s full_path=%s client_ip=%s host=%s",
-			ctx.Response.StatusCode(), latency,
-			ctx.Request.Header.Method(), ctx.Request.URI().PathOriginal(), ctx.ClientIP(), ctx.Request.Host())
+		x.Transfer.Publish(context.Background(), "access_log", transfer.Payload{
+			Tags: map[string]string{
+				"method":      string(c.Request.Header.Method()),
+				"host":        string(c.Request.Host()),
+				"path":        string(c.Request.Path()),
+				"status_code": strconv.Itoa(c.Response.StatusCode()),
+				"client_ip":   c.ClientIP(),
+			},
+			Fields: map[string]interface{}{
+				"request_header":       string(c.Request.Header.Header()),
+				"request_query":        c.Request.QueryString(),
+				"request_body":         string(c.Request.Body()),
+				"response_header":      string(c.Response.Header.Header()),
+				"response_body":        string(c.Response.Body()),
+				"response_status_code": c.Response.StatusCode(),
+				"cost":                 latency(),
+			},
+			Time: start,
+		})
 	}
 }
 
@@ -276,6 +294,13 @@ func (x *API) ErrHandler() app.HandlerFunc {
 func (x *API) Initialize(ctx context.Context) (err error) {
 	// 加载自定义验证
 	validation.Extend()
+
+	// 传输指标
+	if err = x.Transfer.Set(transfer.Option{
+		Measurement: "access_log",
+	}); err != nil {
+		return
+	}
 
 	// 订阅动态配置
 	if err = x.ValuesService.Sync(ctx); err != nil {

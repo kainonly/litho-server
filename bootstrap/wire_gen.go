@@ -52,6 +52,14 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	jetStreamContext, err := UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
+	transfer, err := UseTransfer(commonValues, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
 	service := &sessions.Service{
 		Inject: inject,
 	}
@@ -114,6 +122,7 @@ func NewAPI() (*api.API, error) {
 	apiAPI := &api.API{
 		Inject:            inject,
 		Hertz:             hertz,
+		Transfer:          transfer,
 		IndexController:   controller,
 		IndexService:      indexService,
 		ValuesController:  valuesController,
