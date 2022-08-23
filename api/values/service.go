@@ -21,7 +21,55 @@ func (x *Service) Key() string {
 
 // Load 载入配置
 func (x *Service) Load(ctx context.Context) (err error) {
+	var count int64
+	if count, err = x.Redis.Exists(ctx, x.Key()).Result(); err != nil {
+		return
+	}
 	var b []byte
+	// 不存在配置则初始化
+	if count == 0 {
+		x.Values.DynamicValues = common.DynamicValues{
+			"session_ttl":               float64(3600),
+			"login_ttl":                 float64(900),
+			"login_failures":            float64(5),
+			"ip_login_failures":         float64(10),
+			"ip_whitelist":              []string{},
+			"ip_blacklist":              []string{},
+			"pwd_strategy":              float64(1),
+			"pwd_ttl":                   float64(365),
+			"cloud":                     "",
+			"tencent_secret_id":         "",
+			"tencent_secret_key":        "",
+			"tencent_cos_bucket":        "",
+			"tencent_cos_region":        "",
+			"tencent_cos_expired":       float64(300),
+			"tencent_cos_limit":         float64(5120),
+			"office":                    "",
+			"feishu_app_id":             "",
+			"feishu_app_secret":         "",
+			"feishu_encrypt_key":        "",
+			"feishu_verification_token": "",
+			"redirect_url":              "",
+			"email_host":                "",
+			"email_port":                "465",
+			"email_username":            "",
+			"email_password":            "",
+			"openapi_url":               "",
+			"openapi_key":               "",
+			"openapi_secret":            "",
+		}
+
+		if b, err = sonic.Marshal(x.Values.DynamicValues); err != nil {
+			return
+		}
+
+		if err = x.Redis.Set(ctx, x.Key(), b, 0).Err(); err != nil {
+			return
+		}
+
+		return
+	}
+
 	if b, err = x.Redis.Get(ctx, x.Key()).Bytes(); err != nil {
 		return
 	}
