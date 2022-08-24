@@ -1,6 +1,6 @@
 # Weplanx API
 
-基于 Hertz 设计的后端单体服务项目
+基于 Hertz 设计的后端管理服务
 
 ## License
 
