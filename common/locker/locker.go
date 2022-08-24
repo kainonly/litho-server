@@ -3,7 +3,7 @@ package locker
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/server/common"
+	"github.com/weplanx/api/common"
 	"time"
 )
 

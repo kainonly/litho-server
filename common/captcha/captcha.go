@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/server/common"
+	"github.com/weplanx/api/common"
 	"time"
 )
 

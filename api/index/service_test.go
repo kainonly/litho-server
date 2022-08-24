@@ -3,7 +3,7 @@ package index_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/common"
+	"github.com/weplanx/api/common"
 	"testing"
 )
 

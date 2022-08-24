@@ -3,8 +3,8 @@ package captcha_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/bootstrap"
-	"github.com/weplanx/server/common/captcha"
+	"github.com/weplanx/api/bootstrap"
+	"github.com/weplanx/api/common/captcha"
 	"os"
 	"testing"
 	"time"

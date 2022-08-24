@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/weplanx/server/bootstrap"
+	"github.com/weplanx/api/bootstrap"
 	"time"
 )
 

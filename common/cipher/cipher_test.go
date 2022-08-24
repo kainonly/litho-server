@@ -2,7 +2,7 @@ package cipher_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/common/cipher"
+	"github.com/weplanx/api/common/cipher"
 	"testing"
 )
 
