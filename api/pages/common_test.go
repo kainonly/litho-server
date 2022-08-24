@@ -1,8 +1,8 @@
 package pages_test
 
 import (
-	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/e2e"
+	"github.com/weplanx/api/api"
+	"github.com/weplanx/api/e2e"
 	"os"
 	"testing"
 )

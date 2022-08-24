@@ -3,8 +3,8 @@ package locker_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/bootstrap"
-	"github.com/weplanx/server/common/locker"
+	"github.com/weplanx/api/bootstrap"
+	"github.com/weplanx/api/common/locker"
 	"os"
 	"testing"
 	"time"

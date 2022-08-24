@@ -2,7 +2,7 @@ package sessions
 
 import (
 	"context"
-	"github.com/weplanx/server/common"
+	"github.com/weplanx/api/common"
 	"strings"
 )
 

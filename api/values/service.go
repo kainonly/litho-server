@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/nats-io/nats.go"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/model"
+	"github.com/weplanx/api/common"
+	"github.com/weplanx/api/model"
 	"time"
 )
 

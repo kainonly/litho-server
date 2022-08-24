@@ -2,8 +2,8 @@ package pages
 
 import (
 	"context"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/model"
+	"github.com/weplanx/api/common"
+	"github.com/weplanx/api/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

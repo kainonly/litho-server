@@ -1,4 +1,4 @@
-module github.com/weplanx/server
+module github.com/weplanx/api
 
 go 1.18
 

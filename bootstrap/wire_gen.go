@@ -7,18 +7,18 @@
 package bootstrap
 
 import (
-	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/api/departments"
-	"github.com/weplanx/server/api/dsl"
-	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/pages"
-	"github.com/weplanx/server/api/roles"
-	"github.com/weplanx/server/api/sessions"
-	"github.com/weplanx/server/api/users"
-	"github.com/weplanx/server/api/values"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/common/captcha"
-	"github.com/weplanx/server/common/locker"
+	"github.com/weplanx/api/api"
+	"github.com/weplanx/api/api/departments"
+	"github.com/weplanx/api/api/dsl"
+	"github.com/weplanx/api/api/index"
+	"github.com/weplanx/api/api/pages"
+	"github.com/weplanx/api/api/roles"
+	"github.com/weplanx/api/api/sessions"
+	"github.com/weplanx/api/api/users"
+	"github.com/weplanx/api/api/values"
+	"github.com/weplanx/api/common"
+	"github.com/weplanx/api/common/captcha"
+	"github.com/weplanx/api/common/locker"
 )
 
 // Injectors from wire.go:

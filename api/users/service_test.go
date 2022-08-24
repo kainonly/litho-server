@@ -3,7 +3,7 @@ package users_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/model"
+	"github.com/weplanx/api/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"testing"
 )
