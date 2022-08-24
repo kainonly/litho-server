@@ -223,20 +223,17 @@ func (x *API) AccessLog() app.HandlerFunc {
 		latency := end.Sub(start).Microseconds
 		x.Transfer.Publish(context.Background(), "access_log", transfer.Payload{
 			Tags: map[string]string{
-				"method":      string(c.Request.Header.Method()),
-				"host":        string(c.Request.Host()),
-				"path":        string(c.Request.Path()),
-				"status_code": strconv.Itoa(c.Response.StatusCode()),
-				"client_ip":   c.ClientIP(),
+				"method": string(c.Request.Header.Method()),
+				"host":   string(c.Request.Host()),
+				"path":   string(c.Request.Path()),
+				"status": strconv.Itoa(c.Response.StatusCode()),
+				"ip":     c.ClientIP(),
 			},
 			Fields: map[string]interface{}{
-				"request_header":       string(c.Request.Header.Header()),
-				"request_query":        c.Request.QueryString(),
-				"request_body":         string(c.Request.Body()),
-				"response_header":      string(c.Response.Header.Header()),
-				"response_body":        string(c.Response.Body()),
-				"response_status_code": c.Response.StatusCode(),
-				"cost":                 latency(),
+				"user_agent": string(c.Request.Header.UserAgent()),
+				"query":      c.Request.QueryString(),
+				"body":       string(c.Request.Body()),
+				"cost":       latency(),
 			},
 			Time: start,
 		})
