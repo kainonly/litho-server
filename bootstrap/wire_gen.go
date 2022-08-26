@@ -15,29 +15,30 @@ import (
 	"github.com/weplanx/api/api/roles"
 	"github.com/weplanx/api/api/users"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/support/integrate/sessions"
-	"github.com/weplanx/support/integrate/values"
-	"github.com/weplanx/support/utlis/captcha"
-	"github.com/weplanx/support/utlis/locker"
+	"github.com/weplanx/support/api/sessions"
+	"github.com/weplanx/support/api/values"
+	"github.com/weplanx/support/bootstrap"
+	"github.com/weplanx/support/utils/captcha"
+	"github.com/weplanx/support/utils/locker"
 )
 
 // Injectors from wire.go:
 
 func NewAPI() (*api.API, error) {
-	supportValues, err := LoadStaticValues()
+	supportValues, err := bootstrap.LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseMongoDB(supportValues)
+	client, err := bootstrap.UseMongoDB(supportValues)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(supportValues, client)
-	redisClient, err := UseRedis(supportValues)
+	database := bootstrap.UseDatabase(supportValues, client)
+	redisClient, err := bootstrap.UseRedis(supportValues)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(supportValues)
+	conn, err := bootstrap.UseNats(supportValues)
 	if err != nil {
 		return nil, err
 	}
@@ -48,11 +49,11 @@ func NewAPI() (*api.API, error) {
 		Redis:  redisClient,
 		Nats:   conn,
 	}
-	hertz, err := UseHertz(supportValues)
+	hertz, err := bootstrap.UseHertz(supportValues)
 	if err != nil {
 		return nil, err
 	}
-	jetStreamContext, err := UseJetStream(conn)
+	jetStreamContext, err := bootstrap.UseJetStream(conn)
 	if err != nil {
 		return nil, err
 	}

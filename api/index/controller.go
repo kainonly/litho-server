@@ -6,7 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/support/utlis/passlib"
+	"github.com/weplanx/support/utils/passlib"
 	"net/http"
 	"time"
 )
