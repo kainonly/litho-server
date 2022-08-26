@@ -2,6 +2,8 @@ module github.com/weplanx/api
 
 go 1.18
 
+replace github.com/weplanx/support v0.0.4 => ../support
+
 require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.2
 	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
@@ -15,7 +17,7 @@ require (
 	github.com/nats-io/nats.go v1.16.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.0
-	github.com/weplanx/support v0.0.3
+	github.com/weplanx/support v0.0.4
 	github.com/weplanx/transfer v1.3.0
 	go.mongodb.org/mongo-driver v1.10.1
 	gopkg.in/yaml.v3 v3.0.1

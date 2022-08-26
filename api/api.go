@@ -17,11 +17,11 @@ import (
 	"github.com/weplanx/api/api/index"
 	"github.com/weplanx/api/api/pages"
 	"github.com/weplanx/api/api/roles"
-	"github.com/weplanx/api/api/sessions"
 	"github.com/weplanx/api/api/users"
-	"github.com/weplanx/api/api/values"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/support/validation"
+	"github.com/weplanx/support/integrate/sessions"
+	"github.com/weplanx/support/integrate/values"
+	"github.com/weplanx/support/utlis/validation"
 	"github.com/weplanx/transfer"
 	"net/http"
 	"strconv"
@@ -130,8 +130,8 @@ func (x *API) Routes() (h *server.Hertz, err error) {
 // Auth 认证
 func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 	return jwt.New(&jwt.HertzJWTMiddleware{
-		Realm:             x.Values.App.Namespace,
-		Key:               []byte(x.Values.App.Key),
+		Realm:             x.Values.Namespace,
+		Key:               []byte(x.Values.Key),
 		Timeout:           time.Hour,
 		SendAuthorization: false,
 		SendCookie:        true,

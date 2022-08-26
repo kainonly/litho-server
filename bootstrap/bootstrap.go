@@ -10,9 +10,9 @@ import (
 	"github.com/hertz-contrib/cors"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
-	"github.com/weplanx/api/common"
-	"github.com/weplanx/support/captcha"
-	"github.com/weplanx/support/locker"
+	"github.com/weplanx/support"
+	"github.com/weplanx/support/utlis/captcha"
+	"github.com/weplanx/support/utlis/locker"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,13 +33,13 @@ var Provides = wire.NewSet(
 	UseJetStream,
 	UseTransfer,
 	UseHertz,
-	UseCaptcha,
-	UseLocker,
+	wire.Struct(new(captcha.Captcha), "*"),
+	wire.Struct(new(locker.Locker), "*"),
 )
 
 // LoadStaticValues 加载静态配置
 // 默认配置路径 ./config/config.yml
-func LoadStaticValues() (values *common.Values, err error) {
+func LoadStaticValues() (values *support.Values, err error) {
 	path := "./config/config.yml"
 	if _, err = os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
@@ -57,7 +57,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 // UseMongoDB 初始化 MongoDB
 // 配置文档 https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
-func UseMongoDB(values *common.Values) (*mongo.Client, error) {
+func UseMongoDB(values *support.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
 		options.Client().ApplyURI(values.Database.Uri),
@@ -67,7 +67,7 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 // UseDatabase 初始化数据库
 // 配置文档 https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
-func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Database) {
+func UseDatabase(values *support.Values, client *mongo.Client) (db *mongo.Database) {
 	option := options.Database().
 		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
 	return client.Database(values.Database.Db, option)
@@ -75,7 +75,7 @@ func UseDatabase(client *mongo.Client, values *common.Values) (db *mongo.Databas
 
 // UseRedis 初始化 Redis
 // 配置文档 https://github.com/go-redis/redis
-func UseRedis(values *common.Values) (client *redis.Client, err error) {
+func UseRedis(values *support.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(values.Redis.Uri)
 	if err != nil {
 		return
@@ -90,7 +90,7 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 // UseNats 初始化 Nats
 // 配置文档 https://docs.nats.io/using-nats/developer
 // SDK https://github.com/nats-io/nats.go
-func UseNats(values *common.Values) (nc *nats.Conn, err error) {
+func UseNats(values *support.Values) (nc *nats.Conn, err error) {
 	var kp nkeys.KeyPair
 	if kp, err = nkeys.FromSeed([]byte(values.Nats.Nkey)); err != nil {
 		return
@@ -126,23 +126,13 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 
 // UseTransfer 初始日志传输
 // https://github.com/weplanx/transfer
-func UseTransfer(values *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
+func UseTransfer(values *support.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
 	return transfer.New(values.Namespace, js)
-}
-
-// UseCaptcha 验证码
-func UseCaptcha(values *common.Values, r *redis.Client) *captcha.Captcha {
-	return captcha.New(values.Namespace, r)
-}
-
-// UseLocker 锁定
-func UseLocker(values *common.Values, r *redis.Client) *locker.Locker {
-	return locker.New(values.Namespace, r)
 }
 
 // UseHertz 使用 Hertz
 // 配置文档 https://www.cloudwego.io/zh/docs/hertz/reference/config
-func UseHertz(values *common.Values) (h *server.Hertz, err error) {
+func UseHertz(values *support.Values) (h *server.Hertz, err error) {
 	opts := []config.Option{
 		server.WithHostPorts(":3000"),
 	}
@@ -155,12 +145,12 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	// 全局中间件
 	h.Use(cors.New(cors.Config{
-		AllowOrigins:     values.Cors.AllowOrigins,
-		AllowMethods:     values.Cors.AllowMethods,
-		AllowHeaders:     values.Cors.AllowHeaders,
-		AllowCredentials: values.Cors.AllowCredentials,
-		ExposeHeaders:    values.Cors.ExposeHeaders,
-		MaxAge:           time.Duration(values.Cors.MaxAge) * time.Second,
+		AllowOrigins:     values.AllowOrigins,
+		AllowMethods:     values.AllowMethods,
+		AllowHeaders:     values.AllowHeaders,
+		AllowCredentials: values.AllowCredentials,
+		ExposeHeaders:    values.ExposeHeaders,
+		MaxAge:           time.Duration(values.MaxAge) * time.Second,
 	}))
 
 	return

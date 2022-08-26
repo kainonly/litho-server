@@ -13,40 +13,42 @@ import (
 	"github.com/weplanx/api/api/index"
 	"github.com/weplanx/api/api/pages"
 	"github.com/weplanx/api/api/roles"
-	"github.com/weplanx/api/api/sessions"
 	"github.com/weplanx/api/api/users"
-	"github.com/weplanx/api/api/values"
 	"github.com/weplanx/api/common"
+	"github.com/weplanx/support/integrate/sessions"
+	"github.com/weplanx/support/integrate/values"
+	"github.com/weplanx/support/utlis/captcha"
+	"github.com/weplanx/support/utlis/locker"
 )
 
 // Injectors from wire.go:
 
 func NewAPI() (*api.API, error) {
-	commonValues, err := LoadStaticValues()
+	supportValues, err := LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseMongoDB(commonValues)
+	client, err := UseMongoDB(supportValues)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(client, commonValues)
-	redisClient, err := UseRedis(commonValues)
+	database := UseDatabase(supportValues, client)
+	redisClient, err := UseRedis(supportValues)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(commonValues)
+	conn, err := UseNats(supportValues)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values: commonValues,
+		Values: supportValues,
 		Mongo:  client,
 		Db:     database,
 		Redis:  redisClient,
 		Nats:   conn,
 	}
-	hertz, err := UseHertz(commonValues)
+	hertz, err := UseHertz(supportValues)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +56,13 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(commonValues, jetStreamContext)
+	transfer, err := UseTransfer(supportValues, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	service := &sessions.Service{
-		Inject: inject,
+		Values: supportValues,
+		Redis:  redisClient,
 	}
 	pagesService := &pages.Service{
 		Inject: inject,
@@ -75,8 +78,14 @@ func NewAPI() (*api.API, error) {
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
 	}
-	captcha := UseCaptcha(commonValues, redisClient)
-	locker := UseLocker(commonValues, redisClient)
+	captchaCaptcha := &captcha.Captcha{
+		Values: supportValues,
+		Redis:  redisClient,
+	}
+	lockerLocker := &locker.Locker{
+		Values: supportValues,
+		Redis:  redisClient,
+	}
 	indexService := &index.Service{
 		Inject:             inject,
 		SessionService:     service,
@@ -84,14 +93,16 @@ func NewAPI() (*api.API, error) {
 		UsersService:       usersService,
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
-		Captcha:            captcha,
-		Locker:             locker,
+		Captcha:            captchaCaptcha,
+		Locker:             lockerLocker,
 	}
 	controller := &index.Controller{
 		IndexService: indexService,
 	}
 	valuesService := &values.Service{
-		Inject: inject,
+		Values: supportValues,
+		Redis:  redisClient,
+		Nats:   conn,
 	}
 	valuesController := &values.Controller{
 		ValuesService: valuesService,
