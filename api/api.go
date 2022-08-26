@@ -21,7 +21,7 @@ import (
 	"github.com/weplanx/api/api/users"
 	"github.com/weplanx/api/api/values"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/api/common/validation"
+	"github.com/weplanx/support/validation"
 	"github.com/weplanx/transfer"
 	"net/http"
 	"strconv"
