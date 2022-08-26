@@ -11,8 +11,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/api/common/captcha"
-	"github.com/weplanx/api/common/locker"
+	"github.com/weplanx/support/captcha"
+	"github.com/weplanx/support/locker"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,8 +33,8 @@ var Provides = wire.NewSet(
 	UseJetStream,
 	UseTransfer,
 	UseHertz,
-	wire.Struct(new(captcha.Captcha), "*"),
-	wire.Struct(new(locker.Locker), "*"),
+	UseCaptcha,
+	UseLocker,
 )
 
 // LoadStaticValues 加载静态配置
@@ -128,6 +128,16 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 // https://github.com/weplanx/transfer
 func UseTransfer(values *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
 	return transfer.New(values.Namespace, js)
+}
+
+// UseCaptcha 验证码
+func UseCaptcha(values *common.Values, r *redis.Client) *captcha.Captcha {
+	return captcha.New(values.Namespace, r)
+}
+
+// UseLocker 锁定
+func UseLocker(values *common.Values, r *redis.Client) *locker.Locker {
+	return locker.New(values.Namespace, r)
 }
 
 // UseHertz 使用 Hertz

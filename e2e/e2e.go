@@ -2,8 +2,8 @@ package e2e
 
 import (
 	"context"
-	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/bootstrap"
+	"github.com/weplanx/api/api"
+	"github.com/weplanx/api/bootstrap"
 	"time"
 )
 

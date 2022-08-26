@@ -17,8 +17,6 @@ import (
 	"github.com/weplanx/api/api/users"
 	"github.com/weplanx/api/api/values"
 	"github.com/weplanx/api/common"
-	"github.com/weplanx/api/common/captcha"
-	"github.com/weplanx/api/common/locker"
 )
 
 // Injectors from wire.go:
@@ -77,14 +75,8 @@ func NewAPI() (*api.API, error) {
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
 	}
-	captchaCaptcha := &captcha.Captcha{
-		Values: commonValues,
-		Redis:  redisClient,
-	}
-	lockerLocker := &locker.Locker{
-		Values: commonValues,
-		Redis:  redisClient,
-	}
+	captcha := UseCaptcha(commonValues, redisClient)
+	locker := UseLocker(commonValues, redisClient)
 	indexService := &index.Service{
 		Inject:             inject,
 		SessionService:     service,
@@ -92,8 +84,8 @@ func NewAPI() (*api.API, error) {
 		UsersService:       usersService,
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
-		Captcha:            captchaCaptcha,
-		Locker:             lockerLocker,
+		Captcha:            captcha,
+		Locker:             locker,
 	}
 	controller := &index.Controller{
 		IndexService: indexService,
