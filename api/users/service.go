@@ -36,7 +36,7 @@ func (x *Service) FindByIdentity(ctx context.Context, identity string) (data mod
 
 // GetActived 获取授权用户数据
 func (x *Service) GetActived(ctx context.Context, id string) (data model.User, err error) {
-	key := x.Values.Key("users")
+	key := x.Values.Name("users")
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
 		return
