@@ -15,7 +15,7 @@ func Initialize() (api *api.API, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	if err = api.Initialize(ctx); err != nil {
+	if err = api.API.Initialize(ctx); err != nil {
 		return
 	}
 

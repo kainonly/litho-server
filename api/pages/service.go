@@ -2,7 +2,6 @@ package pages
 
 import (
 	"context"
-	"github.com/weplanx/api/common"
 	"github.com/weplanx/api/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,7 +10,7 @@ import (
 )
 
 type Service struct {
-	*common.Inject
+	Db *mongo.Database
 }
 
 type Nav struct {

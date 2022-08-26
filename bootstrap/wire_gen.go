@@ -8,48 +8,37 @@ package bootstrap
 
 import (
 	"github.com/weplanx/api/api"
-	"github.com/weplanx/api/api/departments"
-	"github.com/weplanx/api/api/dsl"
-	"github.com/weplanx/api/api/index"
 	"github.com/weplanx/api/api/pages"
-	"github.com/weplanx/api/api/roles"
-	"github.com/weplanx/api/api/users"
-	"github.com/weplanx/api/common"
-	"github.com/weplanx/support/api/sessions"
-	"github.com/weplanx/support/api/values"
-	"github.com/weplanx/support/bootstrap"
-	"github.com/weplanx/support/utils/captcha"
-	"github.com/weplanx/support/utils/locker"
+	api2 "github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/departments"
+	"github.com/weplanx/server/api/dsl"
+	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/roles"
+	"github.com/weplanx/server/api/sessions"
+	"github.com/weplanx/server/api/users"
+	"github.com/weplanx/server/api/values"
+	"github.com/weplanx/server/bootstrap"
+	"github.com/weplanx/server/utils/captcha"
+	"github.com/weplanx/server/utils/locker"
 )
 
 // Injectors from wire.go:
 
 func NewAPI() (*api.API, error) {
-	supportValues, err := bootstrap.LoadStaticValues()
+	commonValues, err := bootstrap.LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := bootstrap.UseMongoDB(supportValues)
+	client, err := bootstrap.UseMongoDB(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	database := bootstrap.UseDatabase(supportValues, client)
-	redisClient, err := bootstrap.UseRedis(supportValues)
+	database := bootstrap.UseDatabase(commonValues, client)
+	redisClient, err := bootstrap.UseRedis(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := bootstrap.UseNats(supportValues)
-	if err != nil {
-		return nil, err
-	}
-	inject := &common.Inject{
-		Values: supportValues,
-		Mongo:  client,
-		Db:     database,
-		Redis:  redisClient,
-		Nats:   conn,
-	}
-	hertz, err := bootstrap.UseHertz(supportValues)
+	conn, err := bootstrap.UseNats(commonValues)
 	if err != nil {
 		return nil, err
 	}
@@ -57,40 +46,42 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(supportValues, jetStreamContext)
+	transfer, err := bootstrap.UseTransfer(commonValues, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	hertz, err := bootstrap.UseHertz(commonValues)
 	if err != nil {
 		return nil, err
 	}
 	service := &sessions.Service{
-		Values: supportValues,
+		Values: commonValues,
 		Redis:  redisClient,
 	}
-	pagesService := &pages.Service{
-		Inject: inject,
-	}
 	rolesService := &roles.Service{
-		Inject: inject,
+		Db: database,
 	}
 	departmentsService := &departments.Service{
-		Inject: inject,
+		Db: database,
 	}
 	usersService := &users.Service{
-		Inject:             inject,
+		Values:             commonValues,
+		Db:                 database,
+		Redis:              redisClient,
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
 	}
 	captchaCaptcha := &captcha.Captcha{
-		Values: supportValues,
+		Values: commonValues,
 		Redis:  redisClient,
 	}
 	lockerLocker := &locker.Locker{
-		Values: supportValues,
+		Values: commonValues,
 		Redis:  redisClient,
 	}
 	indexService := &index.Service{
-		Inject:             inject,
+		Values:             commonValues,
 		SessionService:     service,
-		PagesService:       pagesService,
 		UsersService:       usersService,
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
@@ -101,7 +92,7 @@ func NewAPI() (*api.API, error) {
 		IndexService: indexService,
 	}
 	valuesService := &values.Service{
-		Values: supportValues,
+		Values: commonValues,
 		Redis:  redisClient,
 		Nats:   conn,
 	}
@@ -112,21 +103,20 @@ func NewAPI() (*api.API, error) {
 		SessionsService: service,
 	}
 	dslService := &dsl.Service{
-		Inject: inject,
+		Db: database,
 	}
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
-	pagesController := &pages.Controller{
-		PagesService: pagesService,
-	}
 	usersController := &users.Controller{
 		UsersService: usersService,
 	}
-	apiAPI := &api.API{
-		Inject:            inject,
-		Hertz:             hertz,
+	apiAPI := &api2.API{
+		Values:            commonValues,
+		Db:                database,
+		Redis:             redisClient,
 		Transfer:          transfer,
+		Hertz:             hertz,
 		IndexController:   controller,
 		IndexService:      indexService,
 		ValuesController:  valuesController,
@@ -135,10 +125,19 @@ func NewAPI() (*api.API, error) {
 		SessionService:    service,
 		DslController:     dslController,
 		DslService:        dslService,
-		PagesController:   pagesController,
-		PagesService:      pagesService,
 		UsersController:   usersController,
 		UsersService:      usersService,
 	}
-	return apiAPI, nil
+	pagesService := &pages.Service{
+		Db: database,
+	}
+	pagesController := &pages.Controller{
+		PagesService: pagesService,
+	}
+	api3 := &api.API{
+		API:             apiAPI,
+		PagesController: pagesController,
+		PagesService:    pagesService,
+	}
+	return api3, nil
 }

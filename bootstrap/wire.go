@@ -6,13 +6,13 @@ package bootstrap
 import (
 	"github.com/google/wire"
 	"github.com/weplanx/api/api"
-	"github.com/weplanx/api/common"
+	server "github.com/weplanx/server/api"
 )
 
 func NewAPI() (*api.API, error) {
 	wire.Build(
-		wire.Struct(new(api.API), "*"),
-		wire.Struct(new(common.Inject), "*"),
+		wire.Struct(new(server.API), "*"),
+		server.Provides,
 		Provides,
 		api.Provides,
 	)
