@@ -19,8 +19,12 @@ func main() {
 		panic(err)
 	}
 
-	h, err := api.Routes()
+	h, err := api.Run()
 	if err != nil {
+		panic(err)
+	}
+
+	if _, err = api.Routes(h); err != nil {
 		panic(err)
 	}
 
