@@ -1,4 +1,4 @@
-package pages_test
+package departments_test
 
 import (
 	"github.com/weplanx/server/api"
