@@ -1,4 +1,4 @@
-package pages_test
+package dsl_test
 
 import (
 	"github.com/weplanx/server/api"

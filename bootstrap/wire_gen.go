@@ -7,17 +7,15 @@
 package bootstrap
 
 import (
-	"github.com/weplanx/api/api"
-	"github.com/weplanx/api/api/pages"
-	api2 "github.com/weplanx/server/api"
+	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/pages"
 	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
-	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/utils/captcha"
 	"github.com/weplanx/server/utils/locker"
 )
@@ -25,32 +23,32 @@ import (
 // Injectors from wire.go:
 
 func NewAPI() (*api.API, error) {
-	commonValues, err := bootstrap.LoadStaticValues()
+	commonValues, err := LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := bootstrap.UseMongoDB(commonValues)
+	client, err := UseMongoDB(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	database := bootstrap.UseDatabase(commonValues, client)
-	redisClient, err := bootstrap.UseRedis(commonValues)
+	database := UseDatabase(commonValues, client)
+	redisClient, err := UseRedis(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := bootstrap.UseNats(commonValues)
+	conn, err := UseNats(commonValues)
 	if err != nil {
 		return nil, err
 	}
-	jetStreamContext, err := bootstrap.UseJetStream(conn)
+	jetStreamContext, err := UseJetStream(conn)
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := bootstrap.UseTransfer(commonValues, jetStreamContext)
+	transfer, err := UseTransfer(commonValues, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	hertz, err := bootstrap.UseHertz(commonValues)
+	hertz, err := UseHertz(commonValues)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +69,9 @@ func NewAPI() (*api.API, error) {
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
 	}
+	pagesService := &pages.Service{
+		Db: database,
+	}
 	captchaCaptcha := &captcha.Captcha{
 		Values: commonValues,
 		Redis:  redisClient,
@@ -85,6 +86,7 @@ func NewAPI() (*api.API, error) {
 		UsersService:       usersService,
 		RolesService:       rolesService,
 		DepartmentsService: departmentsService,
+		PagesService:       pagesService,
 		Captcha:            captchaCaptcha,
 		Locker:             lockerLocker,
 	}
@@ -108,10 +110,13 @@ func NewAPI() (*api.API, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
+	pagesController := &pages.Controller{
+		PagesService: pagesService,
+	}
 	usersController := &users.Controller{
 		UsersService: usersService,
 	}
-	apiAPI := &api2.API{
+	apiAPI := &api.API{
 		Values:            commonValues,
 		Db:                database,
 		Redis:             redisClient,
@@ -125,19 +130,10 @@ func NewAPI() (*api.API, error) {
 		SessionService:    service,
 		DslController:     dslController,
 		DslService:        dslService,
+		PagesController:   pagesController,
+		PagesService:      pagesService,
 		UsersController:   usersController,
 		UsersService:      usersService,
 	}
-	pagesService := &pages.Service{
-		Db: database,
-	}
-	pagesController := &pages.Controller{
-		PagesService: pagesService,
-	}
-	api3 := &api.API{
-		API:             apiAPI,
-		PagesController: pagesController,
-		PagesService:    pagesService,
-	}
-	return api3, nil
+	return apiAPI, nil
 }
