@@ -23,7 +23,12 @@ type Nav struct {
 }
 
 // GetNavs 筛选导航数据
-func (x *Service) GetNavs(ctx context.Context) (data []Nav, err error) {
+func (x *Service) GetNavs(ctx context.Context, uid string) (data []Nav, err error) {
+	// TODO: 权限过滤...
+	//var user model.User
+	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+	//	return
+	//}
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("pages").
 		Find(ctx, bson.M{"status": true}); err != nil {
