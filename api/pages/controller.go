@@ -3,6 +3,7 @@ package pages
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -10,6 +11,19 @@ import (
 
 type Controller struct {
 	PagesService *Service
+}
+
+// GetNavs 导航数据
+// @router /navs [GET]
+func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
+	active := common.GetActive(c)
+
+	data, err := x.PagesService.GetNavs(ctx, active.UID)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 // GetOne 获取页面数据

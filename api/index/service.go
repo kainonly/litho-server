@@ -106,16 +106,6 @@ func (x *Service) LogoutSession(ctx context.Context, uid string) (err error) {
 	return x.SessionService.Remove(ctx, uid)
 }
 
-// GetNavs 导航数据
-func (x *Service) GetNavs(ctx context.Context, uid string) (_ []pages.Nav, err error) {
-	// TODO: 权限过滤...
-	//var user model.User
-	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
-	//	return
-	//}
-	return x.PagesService.GetNavs(ctx)
-}
-
 // GetRefreshCode 获取刷新令牌验证码
 func (x *Service) GetRefreshCode(ctx context.Context, uid string) (code string, err error) {
 	if code, err = gonanoid.Nanoid(); err != nil {

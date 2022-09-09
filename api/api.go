@@ -79,7 +79,6 @@ func (x *API) Routes(h *server.Hertz) (auth *jwt.HertzJWTMiddleware, err error) 
 	h.GET("code", auth.MiddlewareFunc(), x.IndexController.GetRefreshCode)
 	h.POST("refresh_token", auth.MiddlewareFunc(), x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
 
-	h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
 	h.GET("options", auth.MiddlewareFunc(), x.IndexController.GetOptions)
 
 	h.GET("user", auth.MiddlewareFunc(), x.IndexController.GetUser)
@@ -119,6 +118,7 @@ func (x *API) Routes(h *server.Hertz) (auth *jwt.HertzJWTMiddleware, err error) 
 
 	_pages := h.Group("pages", auth.MiddlewareFunc())
 	{
+		_pages.GET("", x.PagesController.GetNavs)
 		_pages.GET(":id", x.PagesController.GetOne)
 	}
 
