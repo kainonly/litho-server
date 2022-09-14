@@ -3,14 +3,12 @@ package index
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/go-redis/redis/v8"
 	gonanoid "github.com/matoous/go-nanoid"
-	"github.com/weplanx/server/api/departments"
-	"github.com/weplanx/server/api/pages"
-	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
-	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/server/utils/captcha"
@@ -18,28 +16,34 @@ import (
 	"github.com/weplanx/server/utils/passlib"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
 type Service struct {
-	Values *common.Values
-
-	SessionService     *sessions.Service
-	UsersService       *users.Service
-	RolesService       *roles.Service
-	DepartmentsService *departments.Service
-	PagesService       *pages.Service
-
+	Values  *common.Values
+	Db      *mongo.Database
+	Redis   *redis.Client
 	Captcha *captcha.Captcha
 	Locker  *locker.Locker
+
+	SessionService *sessions.Service
 }
 
 // Login 登录
 func (x *Service) Login(ctx context.Context, identity string, password string) (_ common.Active, err error) {
 	var user model.User
-	if user, err = x.UsersService.FindByIdentity(ctx, identity); err != nil {
+	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
+		"status": true,
+		"$or": bson.A{
+			bson.M{"username": identity},
+			bson.M{"email": identity},
+		},
+	}).Decode(&user); err != nil {
 		return
 	}
+
 	uid := user.ID.Hex()
 
 	// 锁定上限验证
@@ -70,6 +74,33 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 		JTI: jti,
 		UID: uid,
 	}, nil
+}
+
+type Nav struct {
+	ID     primitive.ObjectID `bson:"_id" json:"_id"`
+	Parent interface{}        `json:"parent"`
+	Name   string             `json:"name"`
+	Icon   string             `json:"icon"`
+	Kind   string             `json:"kind"`
+	Sort   int64              `json:"sort"`
+}
+
+// GetNavs 筛选导航数据
+func (x *Service) GetNavs(ctx context.Context, uid string) (navs []Nav, err error) {
+	// TODO: 权限过滤...
+	//var user model.User
+	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+	//	return
+	//}
+	var cursor *mongo.Cursor
+	if cursor, err = x.Db.Collection("pages").
+		Find(ctx, bson.M{"status": true}); err != nil {
+		return
+	}
+	if err = cursor.All(ctx, &navs); err != nil {
+		return
+	}
+	return
 }
 
 // LoginSession 建立登录会话，移除锁定
@@ -149,10 +180,60 @@ func (x *Service) GetOptions(v string) utils.H {
 	return nil
 }
 
-// GetUser 获取授权用户信息
+// GetActived 获取登录用户数据
+func (x *Service) GetActived(ctx context.Context, id string) (data model.User, err error) {
+	key := x.Values.Name("users")
+	var exists int64
+	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+		return
+	}
+
+	if exists == 0 {
+		option := options.Find().SetProjection(bson.M{"password": 0})
+		var cursor *mongo.Cursor
+		if cursor, err = x.Db.Collection("users").
+			Find(ctx, bson.M{"status": true}, option); err != nil {
+			return
+		}
+
+		values := make(map[string]string)
+		for cursor.Next(ctx) {
+			var user model.User
+			if err = cursor.Decode(&user); err != nil {
+				return
+			}
+
+			var value string
+			if value, err = sonic.MarshalString(user); err != nil {
+				return
+			}
+
+			values[user.ID.Hex()] = value
+		}
+		if err = cursor.Err(); err != nil {
+			return
+		}
+
+		if err = x.Redis.HSet(ctx, key, values).Err(); err != nil {
+			return
+		}
+	}
+
+	var result string
+	if result, err = x.Redis.HGet(ctx, key, id).Result(); err != nil {
+		return
+	}
+	if err = sonic.UnmarshalString(result, &data); err != nil {
+		return
+	}
+
+	return
+}
+
+// GetUser 获取登录用户信息
 func (x *Service) GetUser(ctx context.Context, uid string) (data map[string]interface{}, err error) {
 	var user model.User
-	if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
+	if user, err = x.GetActived(ctx, uid); err != nil {
 		return
 	}
 
@@ -167,14 +248,31 @@ func (x *Service) GetUser(ctx context.Context, uid string) (data map[string]inte
 	}
 
 	// 权限组名称
-	if data["roles"], err = x.RolesService.FindNamesByIds(ctx, user.Roles); err != nil {
+	var cursor *mongo.Cursor
+	var roles []string
+	if cursor, err = x.Db.Collection("roles").
+		Find(ctx, bson.M{"_id": bson.M{"$in": user.Roles}}); err != nil {
 		return
 	}
+	for cursor.Next(ctx) {
+		var value model.Role
+		if err = cursor.Decode(&value); err != nil {
+			return
+		}
+
+		roles = append(roles, value.Name)
+	}
+	if err = cursor.Err(); err != nil {
+		return
+	}
+	data["roles"] = roles
 
 	// 部门名称
 	if user.Department != nil {
 		var department model.Department
-		if department, err = x.DepartmentsService.FindOneById(ctx, *user.Department); err != nil {
+		if err = x.Db.Collection("departments").
+			FindOne(ctx, bson.M{"_id": *user.Department}).
+			Decode(&data); err != nil {
 			return
 		}
 		data["department"] = department.Name
@@ -183,18 +281,16 @@ func (x *Service) GetUser(ctx context.Context, uid string) (data map[string]inte
 	return
 }
 
-// SetUser 设置授权用户信息
-func (x *Service) SetUser(ctx context.Context, id string, data interface{}) (interface{}, error) {
-	oid, _ := primitive.ObjectIDFromHex(id)
-	return x.UsersService.UpdateOneById(ctx, oid, bson.M{"$set": data})
-}
-
-// UnsetUser 取消授权用户信息
-func (x *Service) UnsetUser(ctx context.Context, id string, mate string) (interface{}, error) {
+// SetUser 设置登录用户信息
+func (x *Service) SetUser(ctx context.Context, id string, data SetUserDto) (interface{}, error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	update := bson.M{
-		"$set":   bson.M{"update_time": time.Now()},
-		"$unset": bson.M{mate: ""},
+		"$set": data,
 	}
-	return x.UsersService.UpdateOneById(ctx, oid, update)
+	if data.Reset != "" {
+		update["$unset"] = bson.M{data.Reset: ""}
+	}
+
+	return x.Db.Collection("users").
+		UpdateByID(ctx, oid, update)
 }

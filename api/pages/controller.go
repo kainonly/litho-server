@@ -3,7 +3,6 @@ package pages
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -11,41 +10,6 @@ import (
 
 type Controller struct {
 	PagesService *Service
-}
-
-// GetNavs 导航数据
-// @router /navs [GET]
-func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
-	active := common.GetActive(c)
-
-	data, err := x.PagesService.GetNavs(ctx, active.UID)
-	if err != nil {
-		return
-	}
-
-	c.JSON(http.StatusOK, data)
-}
-
-// GetOne 获取页面数据
-// @router /:id
-func (x *Controller) GetOne(ctx context.Context, c *app.RequestContext) {
-	var dto struct {
-		// 页面 ID
-		Id string `path:"id,required" vd:"mongoId($);msg:'页面 ID 不规范'"`
-	}
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	page, err := x.PagesService.FindOneById(ctx, id)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, page)
 }
 
 // GetIndexes 获取页面的模型索引
