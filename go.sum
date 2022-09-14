@@ -12,8 +12,8 @@ github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06 h1:1sDoSuDPWzhkdzNVxCxtIaKiAe96ESVPv8coGwc1gZ4=
 github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06/go.mod h1:DH46F32mSOjUmXrMHnKwZdA8wcEefY7UVqBKYGjpdQY=
 github.com/cloudwego/hertz v0.0.1/go.mod h1:prTyExvsH/UmDkvfU3dp3EHsZFQISfT8R7BirvpTKdo=
-github.com/cloudwego/hertz v0.2.1 h1:59q5azeMJisErOKTrxxxRURiUrGCjJ7gABgwOpejTkc=
-github.com/cloudwego/hertz v0.2.1/go.mod h1:prTyExvsH/UmDkvfU3dp3EHsZFQISfT8R7BirvpTKdo=
+github.com/cloudwego/hertz v0.3.0 h1:gyKaw/uc7I2YLuCzqWHD3G2W8MVKRZPZ5u8k8tiDBbk=
+github.com/cloudwego/hertz v0.3.0/go.mod h1:GWWYlAVkq1gDu6vJd/XNciWsP6q0d4TrEKk5fpJYF04=
 github.com/cloudwego/netpoll v0.2.4 h1:Kbo2HA1cXEgoy/bu1jSNrjcqZj2diENcJqLy6vKiROU=
 github.com/cloudwego/netpoll v0.2.4/go.mod h1:1T2WVuQ+MQw6h6DpE45MohSvDTKdy2DlzCx2KsnPI4E=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

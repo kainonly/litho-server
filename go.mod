@@ -7,7 +7,7 @@ require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.2
 	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
 	github.com/bytedance/sonic v1.3.4
-	github.com/cloudwego/hertz v0.2.1
+	github.com/cloudwego/hertz v0.3.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf

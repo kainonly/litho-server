@@ -13,33 +13,6 @@ type Service struct {
 	Db *mongo.Database
 }
 
-type Nav struct {
-	ID     primitive.ObjectID `bson:"_id" json:"_id"`
-	Parent interface{}        `json:"parent"`
-	Name   string             `json:"name"`
-	Icon   string             `json:"icon"`
-	Kind   string             `json:"kind"`
-	Sort   int64              `json:"sort"`
-}
-
-// GetNavs 筛选导航数据
-func (x *Service) GetNavs(ctx context.Context, uid string) (data []Nav, err error) {
-	// TODO: 权限过滤...
-	//var user model.User
-	//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
-	//	return
-	//}
-	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection("pages").
-		Find(ctx, bson.M{"status": true}); err != nil {
-		return
-	}
-	if err = cursor.All(ctx, &data); err != nil {
-		return
-	}
-	return
-}
-
 // FindOneById 通过 ID 查找
 func (x *Service) FindOneById(ctx context.Context, id primitive.ObjectID) (data model.Page, err error) {
 	if err = x.Db.Collection("pages").

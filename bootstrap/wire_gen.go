@@ -8,13 +8,10 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/api/departments"
 	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/pages"
-	"github.com/weplanx/server/api/roles"
 	"github.com/weplanx/server/api/sessions"
-	"github.com/weplanx/server/api/users"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/utils/captcha"
 	"github.com/weplanx/server/utils/locker"
@@ -52,26 +49,6 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &sessions.Service{
-		Values: commonValues,
-		Redis:  redisClient,
-	}
-	rolesService := &roles.Service{
-		Db: database,
-	}
-	departmentsService := &departments.Service{
-		Db: database,
-	}
-	usersService := &users.Service{
-		Values:             commonValues,
-		Db:                 database,
-		Redis:              redisClient,
-		RolesService:       rolesService,
-		DepartmentsService: departmentsService,
-	}
-	pagesService := &pages.Service{
-		Db: database,
-	}
 	captchaCaptcha := &captcha.Captcha{
 		Values: commonValues,
 		Redis:  redisClient,
@@ -80,15 +57,17 @@ func NewAPI() (*api.API, error) {
 		Values: commonValues,
 		Redis:  redisClient,
 	}
+	service := &sessions.Service{
+		Values: commonValues,
+		Redis:  redisClient,
+	}
 	indexService := &index.Service{
-		Values:             commonValues,
-		SessionService:     service,
-		UsersService:       usersService,
-		RolesService:       rolesService,
-		DepartmentsService: departmentsService,
-		PagesService:       pagesService,
-		Captcha:            captchaCaptcha,
-		Locker:             lockerLocker,
+		Values:         commonValues,
+		Db:             database,
+		Redis:          redisClient,
+		Captcha:        captchaCaptcha,
+		Locker:         lockerLocker,
+		SessionService: service,
 	}
 	controller := &index.Controller{
 		IndexService: indexService,
@@ -110,11 +89,11 @@ func NewAPI() (*api.API, error) {
 	dslController := &dsl.Controller{
 		DslService: dslService,
 	}
+	pagesService := &pages.Service{
+		Db: database,
+	}
 	pagesController := &pages.Controller{
 		PagesService: pagesService,
-	}
-	usersController := &users.Controller{
-		UsersService: usersService,
 	}
 	apiAPI := &api.API{
 		Values:            commonValues,
@@ -132,8 +111,6 @@ func NewAPI() (*api.API, error) {
 		DslService:        dslService,
 		PagesController:   pagesController,
 		PagesService:      pagesService,
-		UsersController:   usersController,
-		UsersService:      usersService,
 	}
 	return apiAPI, nil
 }
