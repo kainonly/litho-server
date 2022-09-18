@@ -19,7 +19,7 @@ type Controller struct {
 }
 
 // Create 新增资源
-// @router /dsl/:model [POST]
+// @router /:model [POST]
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -52,7 +52,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 }
 
 // BulkCreate 批量新增资源
-// @router /dsl/:model/bulk-create [POST]
+// @router /:model/bulk-create [POST]
 func (x *Controller) BulkCreate(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -89,7 +89,7 @@ func (x *Controller) BulkCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // Size 获取资源总数
-// @router /dsl/:model/_size [GET]
+// @router /:model/_size [GET]
 func (x *Controller) Size(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -121,7 +121,7 @@ func (x *Controller) Size(ctx context.Context, c *app.RequestContext) {
 }
 
 // Find 获取匹配资源
-// @router /dsl/:model [GET]
+// @router /:model [GET]
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -192,7 +192,7 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 // FindOne 获取单个资源
-// @router /dsl/:model/_one [GET]
+// @router /:model/_one [GET]
 func (x *Controller) FindOne(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -227,7 +227,7 @@ func (x *Controller) FindOne(ctx context.Context, c *app.RequestContext) {
 }
 
 // FindById 获取指定 ID 的资源
-// @router /dsl/:model/:id [GET]
+// @router /:model/:id [GET]
 func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -255,7 +255,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 // Update 局部更新匹配资源
-// @router /dsl/:model [PATCH]
+// @router /:model [PATCH]
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -298,7 +298,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 // UpdateById 局部更新指定 ID 的资源
-// @router /dsl/:model/:id [PATCH]
+// @router /:model/:id [PATCH]
 func (x *Controller) UpdateById(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -336,7 +336,7 @@ func (x *Controller) UpdateById(ctx context.Context, c *app.RequestContext) {
 }
 
 // Replace 替换指定 ID 的资源
-// @router /dsl/:model/:id [PUT]
+// @router /:model/:id [PUT]
 func (x *Controller) Replace(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -372,7 +372,7 @@ func (x *Controller) Replace(ctx context.Context, c *app.RequestContext) {
 }
 
 // Delete 删除指定 ID 的资源
-// @router /dsl/:model/:id [DELETE]
+// @router /:model/:id [DELETE]
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -396,7 +396,7 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 }
 
 // BulkDelete 批量删除匹配资源
-// @router /dsl/:model/bulk-delete [POST]
+// @router /:model/bulk-delete [POST]
 func (x *Controller) BulkDelete(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
@@ -427,7 +427,7 @@ func (x *Controller) BulkDelete(ctx context.Context, c *app.RequestContext) {
 }
 
 // Sort 排序资源
-// @router /dsl/:model/sort [POST]
+// @router /:model/sort [POST]
 func (x *Controller) Sort(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 模型命名
