@@ -3,9 +3,19 @@ package common
 import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/go-redis/redis/v8"
+	"github.com/weplanx/transfer"
+	"gorm.io/gorm"
 	"strings"
 	"time"
 )
+
+type Inject struct {
+	Values   *Values
+	Db       *gorm.DB
+	Redis    *redis.Client
+	Transfer *transfer.Transfer
+}
 
 type Values struct {
 	// 应用设置
@@ -237,11 +247,8 @@ func (x DynamicValues) GetOpenapiSecret() string {
 
 // Active 授权用户标识
 type Active struct {
-	// Token ID
-	JTI string
-
-	// User ID
-	UID string
+	JTI    string
+	UserId string
 }
 
 // GetActive 获取授权用户标识

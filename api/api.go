@@ -10,18 +10,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
-	"github.com/hertz-contrib/jwt"
-	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/pages"
-	"github.com/weplanx/server/api/sessions"
-	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/validation"
 	"github.com/weplanx/transfer"
-	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strconv"
 	"time"
@@ -29,29 +22,13 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
-	values.Provides,
-	sessions.Provides,
-	dsl.Provides,
-	pages.Provides,
 )
 
 type API struct {
-	Values   *common.Values
-	Db       *mongo.Database
-	Redis    *redis.Client
-	Transfer *transfer.Transfer
-	Hertz    *server.Hertz
-
-	IndexController   *index.Controller
-	IndexService      *index.Service
-	ValuesController  *values.Controller
-	ValuesService     *values.Service
-	SessionController *sessions.Controller
-	SessionService    *sessions.Service
-	DslController     *dsl.Controller
-	DslService        *dsl.Service
-	PagesController   *pages.Controller
-	PagesService      *pages.Service
+	*common.Inject
+	Hertz           *server.Hertz
+	IndexController *index.Controller
+	IndexService    *index.Service
 }
 
 func (x *API) Run() (h *server.Hertz, err error) {
@@ -62,91 +39,91 @@ func (x *API) Run() (h *server.Hertz, err error) {
 }
 
 // Auth 认证
-func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
-	return jwt.New(&jwt.HertzJWTMiddleware{
-		Realm:             x.Values.Namespace,
-		Key:               []byte(x.Values.Key),
-		Timeout:           time.Hour,
-		SendAuthorization: false,
-		SendCookie:        true,
-		CookieMaxAge:      -1,
-		SecureCookie:      true,
-		CookieHTTPOnly:    true,
-		CookieName:        "access_token",
-		CookieSameSite:    http.SameSiteStrictMode,
-		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
-			var dto struct {
-				// 唯一标识，用户名或电子邮件
-				Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
-				// 密码
-				Password string `json:"password,required" vd:"len($)>=8"`
-			}
-			if err = c.BindAndValidate(&dto); err != nil {
-				c.Error(err)
-				return
-			}
-
-			data, err := x.IndexService.Login(ctx, dto.Identity, dto.Password)
-			if err != nil {
-				c.Error(err)
-				return
-			}
-
-			c.Set("identity", data)
-			return data, nil
-		},
-		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
-			v := data.(common.Active)
-			return jwt.MapClaims{
-				"uid": v.UID,
-				"jti": v.JTI,
-			}
-		},
-		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
-			data := common.GetActive(c)
-			if err := x.IndexService.LoginSession(ctx, data.UID, data.JTI); err != nil {
-				c.Error(err)
-				return
-			}
-			c.Status(http.StatusNoContent)
-		},
-		MaxRefresh: time.Hour,
-		RefreshResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
-			c.Status(http.StatusNoContent)
-		},
-		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
-			c.Error(errors.NewPublic(message).
-				SetMeta(map[string]interface{}{
-					"statusCode": http.StatusUnauthorized,
-				}),
-			)
-		},
-		TokenLookup: "cookie: access_token",
-		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
-			data := jwt.ExtractClaims(ctx, c)
-			return common.Active{
-				JTI: data["jti"].(string),
-				UID: data["uid"].(string),
-			}
-		},
-		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
-			identity := data.(common.Active)
-			if err := x.IndexService.AuthVerify(ctx, identity.UID, identity.JTI); err != nil {
-				c.Error(err)
-				return false
-			}
-			return true
-		},
-		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
-			data := common.GetActive(c)
-			if err := x.IndexService.LogoutSession(ctx, data.UID); err != nil {
-				c.Error(err)
-				return
-			}
-			c.Status(http.StatusNoContent)
-		},
-	})
-}
+//func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
+//	return jwt.New(&jwt.HertzJWTMiddleware{
+//		Realm:             x.Values.Namespace,
+//		Key:               []byte(x.Values.Key),
+//		Timeout:           time.Hour,
+//		SendAuthorization: false,
+//		SendCookie:        true,
+//		CookieMaxAge:      -1,
+//		SecureCookie:      true,
+//		CookieHTTPOnly:    true,
+//		CookieName:        "access_token",
+//		CookieSameSite:    http.SameSiteStrictMode,
+//		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
+//			var dto struct {
+//				// 唯一标识，用户名或电子邮件
+//				Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
+//				// 密码
+//				Password string `json:"password,required" vd:"len($)>=8"`
+//			}
+//			if err = c.BindAndValidate(&dto); err != nil {
+//				c.Error(err)
+//				return
+//			}
+//
+//			data, err := x.IndexService.Login(ctx, dto.Identity, dto.Password)
+//			if err != nil {
+//				c.Error(err)
+//				return
+//			}
+//
+//			c.Set("identity", data)
+//			return data, nil
+//		},
+//		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
+//			v := data.(common.Active)
+//			return jwt.MapClaims{
+//				"uid": v.UID,
+//				"jti": v.JTI,
+//			}
+//		},
+//		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
+//			data := common.GetActive(c)
+//			if err := x.IndexService.LoginSession(ctx, data.UID, data.JTI); err != nil {
+//				c.Error(err)
+//				return
+//			}
+//			c.Status(http.StatusNoContent)
+//		},
+//		MaxRefresh: time.Hour,
+//		RefreshResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
+//			c.Status(http.StatusNoContent)
+//		},
+//		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
+//			c.Error(errors.NewPublic(message).
+//				SetMeta(map[string]interface{}{
+//					"statusCode": http.StatusUnauthorized,
+//				}),
+//			)
+//		},
+//		TokenLookup: "cookie: access_token",
+//		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
+//			data := jwt.ExtractClaims(ctx, c)
+//			return common.Active{
+//				JTI: data["jti"].(string),
+//				UID: data["uid"].(string),
+//			}
+//		},
+//		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
+//			identity := data.(common.Active)
+//			if err := x.IndexService.AuthVerify(ctx, identity.UID, identity.JTI); err != nil {
+//				c.Error(err)
+//				return false
+//			}
+//			return true
+//		},
+//		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
+//			data := common.GetActive(c)
+//			if err := x.IndexService.LogoutSession(ctx, data.UID); err != nil {
+//				c.Error(err)
+//				return
+//			}
+//			c.Status(http.StatusNoContent)
+//		},
+//	})
+//}
 
 // AccessLog 日志
 func (x *API) AccessLog() app.HandlerFunc {
@@ -234,9 +211,9 @@ func (x *API) Initialize(ctx context.Context) (err error) {
 	}
 
 	// 订阅动态配置
-	if err = x.ValuesService.Sync(ctx); err != nil {
-		return
-	}
+	//if err = x.ValuesService.Sync(ctx); err != nil {
+	//	return
+	//}
 
 	return
 }
