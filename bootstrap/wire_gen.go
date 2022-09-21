@@ -8,32 +8,27 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/api/dsl"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/pages"
-	"github.com/weplanx/server/api/sessions"
-	"github.com/weplanx/server/api/values"
-	"github.com/weplanx/server/utils/captcha"
+	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/locker"
 )
 
 // Injectors from wire.go:
 
 func NewAPI() (*api.API, error) {
-	commonValues, err := LoadStaticValues()
+	values, err := LoadStaticValues()
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseMongoDB(commonValues)
+	db, err := UseGorm(values)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(commonValues, client)
-	redisClient, err := UseRedis(commonValues)
+	client, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(commonValues)
+	conn, err := UseNats(values)
 	if err != nil {
 		return nil, err
 	}
@@ -41,76 +36,36 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(commonValues, jetStreamContext)
+	transfer, err := UseTransfer(values, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	hertz, err := UseHertz(commonValues)
+	inject := &common.Inject{
+		Values:   values,
+		Db:       db,
+		Redis:    client,
+		Transfer: transfer,
+	}
+	hertz, err := UseHertz(values)
 	if err != nil {
 		return nil, err
-	}
-	captchaCaptcha := &captcha.Captcha{
-		Values: commonValues,
-		Redis:  redisClient,
 	}
 	lockerLocker := &locker.Locker{
-		Values: commonValues,
-		Redis:  redisClient,
+		Values: values,
+		Redis:  client,
 	}
-	service := &sessions.Service{
-		Values: commonValues,
-		Redis:  redisClient,
-	}
-	indexService := &index.Service{
-		Values:         commonValues,
-		Db:             database,
-		Redis:          redisClient,
-		Captcha:        captchaCaptcha,
-		Locker:         lockerLocker,
-		SessionService: service,
+	service := &index.Service{
+		Inject: inject,
+		Locker: lockerLocker,
 	}
 	controller := &index.Controller{
-		IndexService: indexService,
-	}
-	valuesService := &values.Service{
-		Values: commonValues,
-		Redis:  redisClient,
-		Nats:   conn,
-	}
-	valuesController := &values.Controller{
-		ValuesService: valuesService,
-	}
-	sessionsController := &sessions.Controller{
-		SessionsService: service,
-	}
-	dslService := &dsl.Service{
-		Db: database,
-	}
-	dslController := &dsl.Controller{
-		DslService: dslService,
-	}
-	pagesService := &pages.Service{
-		Db: database,
-	}
-	pagesController := &pages.Controller{
-		PagesService: pagesService,
+		IndexService: service,
 	}
 	apiAPI := &api.API{
-		Values:            commonValues,
-		Db:                database,
-		Redis:             redisClient,
-		Transfer:          transfer,
-		Hertz:             hertz,
-		IndexController:   controller,
-		IndexService:      indexService,
-		ValuesController:  valuesController,
-		ValuesService:     valuesService,
-		SessionController: sessionsController,
-		SessionService:    service,
-		DslController:     dslController,
-		DslService:        dslService,
-		PagesController:   pagesController,
-		PagesService:      pagesService,
+		Inject:          inject,
+		Hertz:           hertz,
+		IndexController: controller,
+		IndexService:    service,
 	}
 	return apiAPI, nil
 }
