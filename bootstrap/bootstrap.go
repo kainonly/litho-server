@@ -105,6 +105,14 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
+// UseStore 初始分布配置
+// 说明 https://docs.nats.io/nats-concepts/jetstream/obj_store
+func UseStore(values *common.Values, js nats.JetStreamContext) (nats.ObjectStore, error) {
+	return js.CreateObjectStore(&nats.ObjectStoreConfig{
+		Bucket: values.Namespace,
+	})
+}
+
 // UseTransfer 初始日志传输
 // https://github.com/weplanx/transfer
 func UseTransfer(values *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {

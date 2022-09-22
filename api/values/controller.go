@@ -3,7 +3,6 @@ package values
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"net/http"
 )
 
@@ -23,9 +22,13 @@ func (x *Controller) Get(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data := x.ValuesService.Get(dto.Keys...)
+	data, err := x.ValuesService.Get(dto.Keys...)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 
-	c.JSON(http.StatusOK, utils.H{"data": data})
+	c.JSON(http.StatusOK, data)
 }
 
 // Set 设置动态配置

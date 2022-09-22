@@ -2,17 +2,16 @@ package values
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/bytedance/sonic"
-	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/server/common"
+	"time"
 )
 
 type Service struct {
-	Values *common.Values
-	Redis  *redis.Client
-	Nats   *nats.Conn
+	common.Inject
 }
 
 // Key 命名
@@ -22,56 +21,29 @@ func (x *Service) Key() string {
 
 // Load 载入配置
 func (x *Service) Load(ctx context.Context) (err error) {
-	var count int64
-	if count, err = x.Redis.Exists(ctx, x.Key()).Result(); err != nil {
-		return
-	}
 	var b []byte
-	// 不存在配置则初始化
-	if count == 0 {
-		x.Values.DynamicValues = common.DynamicValues{
-			"session_ttl":               float64(3600),
-			"login_ttl":                 float64(900),
-			"login_failures":            float64(5),
-			"ip_login_failures":         float64(10),
-			"ip_whitelist":              []string{},
-			"ip_blacklist":              []string{},
-			"pwd_strategy":              float64(1),
-			"pwd_ttl":                   float64(365),
-			"cloud":                     "",
-			"tencent_secret_id":         "",
-			"tencent_secret_key":        "",
-			"tencent_cos_bucket":        "",
-			"tencent_cos_region":        "",
-			"tencent_cos_expired":       float64(300),
-			"tencent_cos_limit":         float64(5120),
-			"office":                    "",
-			"feishu_app_id":             "",
-			"feishu_app_secret":         "",
-			"feishu_encrypt_key":        "",
-			"feishu_verification_token": "",
-			"redirect_url":              "",
-			"email_host":                "",
-			"email_port":                "465",
-			"email_username":            "",
-			"email_password":            "",
-			"openapi_url":               "",
-			"openapi_key":               "",
-			"openapi_secret":            "",
+	b, err = x.Store.GetBytes("values")
+	if err != nil {
+		// 不存在配置则初始化
+		if errors.Is(err, nats.ErrObjectNotFound) {
+			x.Values.DynamicValues = common.DynamicValues{
+				SessionTTL:      time.Hour,
+				LoginTTL:        time.Minute * 15,
+				LoginFailures:   5,
+				IpLoginFailures: 10,
+				IpWhitelist:     []string{},
+				IpBlacklist:     []string{},
+				PwdStrategy:     1,
+				PwdTTL:          time.Hour * 24 * 365,
+			}
+			if b, err = sonic.Marshal(x.Values.DynamicValues); err != nil {
+				return
+			}
+			if _, err = x.Store.PutBytes("values", b); err != nil {
+				return
+			}
+			return nil
 		}
-
-		if b, err = sonic.Marshal(x.Values.DynamicValues); err != nil {
-			return
-		}
-
-		if err = x.Redis.Set(ctx, x.Key(), b, 0).Err(); err != nil {
-			return
-		}
-
-		return
-	}
-
-	if b, err = x.Redis.Get(ctx, x.Key()).Bytes(); err != nil {
 		return
 	}
 
@@ -88,33 +60,41 @@ func (x *Service) Sync(ctx context.Context) (err error) {
 		return
 	}
 
-	if _, err = x.Nats.Subscribe(x.Key(), func(msg *nats.Msg) {
-		if string(msg.Data) != "sync" {
-			return
-		}
-		if err = x.Load(context.TODO()); err != nil {
-			fmt.Println(err)
-		}
-	}); err != nil {
+	var watch nats.ObjectWatcher
+	if watch, err = x.Store.Watch(); err != nil {
 		return
+	}
+	current := time.Now()
+	for o := range watch.Updates() {
+		if o == nil || o.ModTime.Unix() < current.Unix() {
+			continue
+		}
 	}
 
 	return
 }
 
 // Get 获取动态配置
-func (x *Service) Get(keys ...string) (data map[string]interface{}) {
+func (x *Service) Get(keys ...string) (data map[string]interface{}, err error) {
+	var b []byte
+	if b, err = x.Store.GetBytes("values"); err != nil {
+		return
+	}
+	if err = sonic.Unmarshal(b, &data); err != nil {
+		return
+	}
+	fmt.Println(data)
 	sets := make(map[string]bool)
 	for _, key := range keys {
 		sets[key] = true
 	}
-	isAll := len(sets) == 0
+	all := len(sets) == 0
 	data = make(map[string]interface{})
-	for k, v := range x.Values.DynamicValues {
-		if !isAll && !sets[k] {
+	for k, v := range data {
+		if !all && !sets[k] {
 			continue
 		}
-		if Secret[k] {
+		if secret[k] {
 			// 密文
 			if v != nil || v != "" {
 				data[k] = "*"
@@ -125,23 +105,25 @@ func (x *Service) Get(keys ...string) (data map[string]interface{}) {
 			data[k] = v
 		}
 	}
-
 	return
 }
 
 // Set 设置动态配置
 func (x *Service) Set(ctx context.Context, data map[string]interface{}) (err error) {
-	// 合并覆盖
-	for k, v := range data {
-		x.Values.DynamicValues[k] = v
-	}
-	return x.Update(ctx)
+	//
+	//// 合并覆盖
+	//for k, v := range data {
+	//	x.Values.DynamicValues[k] = v
+	//}
+	//return x.Update(ctx)
+	return
 }
 
 // Remove 移除动态配置
 func (x *Service) Remove(ctx context.Context, key string) (err error) {
-	delete(x.Values.DynamicValues, key)
-	return x.Update(ctx)
+	//delete(x.Values.DynamicValues, key)
+	//return x.Update(ctx)
+	return
 }
 
 // Update 更新配置

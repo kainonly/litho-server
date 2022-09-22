@@ -17,6 +17,7 @@ func NewAPI() (*api.API, error) {
 		UseRedis,
 		UseNats,
 		UseJetStream,
+		UseStore,
 		UseHertz,
 		UseTransfer,
 		api.Provides,
