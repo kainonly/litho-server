@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/validation"
 	"github.com/weplanx/transfer"
@@ -22,13 +23,17 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
+	values.Provides,
 )
 
 type API struct {
 	*common.Inject
-	Hertz           *server.Hertz
-	IndexController *index.Controller
-	IndexService    *index.Service
+
+	Hertz            *server.Hertz
+	IndexController  *index.Controller
+	IndexService     *index.Service
+	ValuesController *values.Controller
+	ValuesService    *values.Service
 }
 
 func (x *API) Run() (h *server.Hertz, err error) {
@@ -211,9 +216,7 @@ func (x *API) Initialize(ctx context.Context) (err error) {
 	}
 
 	// 订阅动态配置
-	//if err = x.ValuesService.Sync(ctx); err != nil {
-	//	return
-	//}
+	go x.ValuesService.Sync(ctx)
 
 	return
 }

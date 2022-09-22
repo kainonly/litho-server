@@ -25,12 +25,12 @@ func (x *API) Routes(h *server.Hertz) (auth *jwt.HertzJWTMiddleware, err error) 
 		_user.PATCH("", x.IndexController.SetUser)
 	}
 
-	//_values := h.Group("values", auth.MiddlewareFunc())
-	//{
-	//	_values.GET("", x.ValuesController.Get)
-	//	_values.PATCH("", x.ValuesController.Set)
-	//	_values.DELETE(":key", x.ValuesController.Remove)
-	//}
+	_values := h.Group("values")
+	{
+		_values.GET("", x.ValuesController.Get)
+		_values.PATCH("", x.ValuesController.Set)
+		_values.DELETE(":key", x.ValuesController.Remove)
+	}
 	//
 	//_sessions := h.Group("sessions", auth.MiddlewareFunc())
 	//{

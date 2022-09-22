@@ -33,7 +33,7 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx,
 		userId,
-		x.Values.GetLoginFailures(),
+		x.Values.LoginFailures,
 	); err != nil {
 		return
 	}
@@ -45,7 +45,7 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 	// 验证密码正确性
 	if err = passlib.Verify(password, user.Password); err != nil {
 		// 锁定更新
-		if err = x.Locker.Update(ctx, userId, x.Values.GetLoginTTL()); err != nil {
+		if err = x.Locker.Update(ctx, userId, x.Values.LoginTTL); err != nil {
 			return
 		}
 		if err == passlib.ErrNotMatch {
