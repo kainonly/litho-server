@@ -13,31 +13,37 @@ type Service struct {
 	common.Inject
 }
 
+var Default = common.DynamicValues{
+	SessionTTL:      time.Hour,
+	LoginTTL:        time.Minute * 15,
+	LoginFailures:   5,
+	IpLoginFailures: 10,
+	IpWhitelist:     []string{},
+	IpBlacklist:     []string{},
+	PwdStrategy:     1,
+	PwdTTL:          time.Hour * 24 * 365,
+}
+
 // Load 载入配置
 func (x *Service) Load(ctx context.Context) (err error) {
 	var b []byte
-	if b, err = x.Store.GetBytes("values", nats.Context(ctx)); err != nil {
-		// 不存在配置则初始化
-		if errors.Is(err, nats.ErrObjectNotFound) {
-			x.Values.DynamicValues = common.DynamicValues{
-				SessionTTL:      time.Hour,
-				LoginTTL:        time.Minute * 15,
-				LoginFailures:   5,
-				IpLoginFailures: 10,
-				IpWhitelist:     []string{},
-				IpBlacklist:     []string{},
-				PwdStrategy:     1,
-				PwdTTL:          time.Hour * 24 * 365,
-			}
+	var entry nats.KeyValueEntry
+	if entry, err = x.KeyValue.Get("values"); err != nil {
+		if errors.Is(err, nats.ErrKeyNotFound) {
+			x.Values.DynamicValues = Default
 			if b, err = sonic.Marshal(x.Values.DynamicValues); err != nil {
 				return
 			}
-			if _, err = x.Store.PutBytes("values", b, nats.Context(ctx)); err != nil {
+			if _, err = x.KeyValue.Put("values", b); err != nil {
 				return
 			}
-			return nil
+		} else {
+			return
 		}
-		return
+	}
+
+	if b == nil {
+		b = entry.Value()
 	}
 
 	if err = sonic.Unmarshal(b, &x.Values.DynamicValues); err != nil {
@@ -53,21 +59,18 @@ func (x *Service) Sync(ctx context.Context) (err error) {
 		return
 	}
 
-	var watch nats.ObjectWatcher
-	if watch, err = x.Store.Watch(); err != nil {
+	var watch nats.KeyWatcher
+	if watch, err = x.KeyValue.Watch("values"); err != nil {
 		return
 	}
+
 	current := time.Now()
-	for o := range watch.Updates() {
-		if o == nil || o.Name != "values" || o.ModTime.Unix() < current.Unix() {
+	for entry := range watch.Updates() {
+		if entry == nil || entry.Created().Unix() < current.Unix() {
 			continue
 		}
 		// 同步动态配置
-		var b []byte
-		if b, err = x.Store.GetBytes("values"); err != nil {
-			return
-		}
-		if err = sonic.Unmarshal(b, &x.Values.DynamicValues); err != nil {
+		if err = sonic.Unmarshal(entry.Value(), &x.Values.DynamicValues); err != nil {
 			return
 		}
 	}
@@ -77,11 +80,11 @@ func (x *Service) Sync(ctx context.Context) (err error) {
 
 // Get 获取动态配置
 func (x *Service) Get(ctx context.Context, keys ...string) (values map[string]interface{}, err error) {
-	var b []byte
-	if b, err = x.Store.GetBytes("values", nats.Context(ctx)); err != nil {
+	var entry nats.KeyValueEntry
+	if entry, err = x.KeyValue.Get("values"); err != nil {
 		return
 	}
-	if err = sonic.Unmarshal(b, &values); err != nil {
+	if err = sonic.Unmarshal(entry.Value(), &values); err != nil {
 		return
 	}
 	sets := make(map[string]bool)
@@ -109,12 +112,12 @@ func (x *Service) Get(ctx context.Context, keys ...string) (values map[string]in
 
 // Set 设置动态配置
 func (x *Service) Set(ctx context.Context, update map[string]interface{}) (err error) {
-	var b []byte
-	if b, err = x.Store.GetBytes("values", nats.Context(ctx)); err != nil {
+	var entry nats.KeyValueEntry
+	if entry, err = x.KeyValue.Get("values"); err != nil {
 		return
 	}
 	var values map[string]interface{}
-	if err = sonic.Unmarshal(b, &values); err != nil {
+	if err = sonic.Unmarshal(entry.Value(), &values); err != nil {
 		return
 	}
 	for k, v := range update {
@@ -125,12 +128,12 @@ func (x *Service) Set(ctx context.Context, update map[string]interface{}) (err e
 
 // Remove 移除动态配置
 func (x *Service) Remove(ctx context.Context, key string) (err error) {
-	var b []byte
-	if b, err = x.Store.GetBytes("values", nats.Context(ctx)); err != nil {
+	var entry nats.KeyValueEntry
+	if entry, err = x.KeyValue.Get("values"); err != nil {
 		return
 	}
 	var values map[string]interface{}
-	if err = sonic.Unmarshal(b, &values); err != nil {
+	if err = sonic.Unmarshal(entry.Value(), &values); err != nil {
 		return
 	}
 	delete(values, key)
@@ -143,7 +146,7 @@ func (x *Service) Update(ctx context.Context, values map[string]interface{}) (er
 	if b, err = sonic.Marshal(values); err != nil {
 		return
 	}
-	if _, err = x.Store.PutBytes("values", b, nats.Context(ctx)); err != nil {
+	if _, err = x.KeyValue.Put("values", b); err != nil {
 		return
 	}
 	return

@@ -7,7 +7,13 @@ import (
 )
 
 func main() {
-	api, err := bootstrap.NewAPI()
+	path := "./config/config.yml"
+	values, err := bootstrap.LoadStaticValues(path)
+	if err != nil {
+		panic(err)
+	}
+
+	api, err := bootstrap.NewAPI(values)
 	if err != nil {
 		panic(err)
 	}
