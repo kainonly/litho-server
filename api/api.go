@@ -208,15 +208,15 @@ func (x *API) Initialize(ctx context.Context) (err error) {
 	// 加载自定义验证
 	validation.Extend()
 
+	// 订阅动态配置
+	go x.ValuesService.Sync(ctx)
+
 	// 传输指标
 	if err = x.Transfer.Set(transfer.Option{
 		Measurement: "access_log",
 	}); err != nil {
 		return
 	}
-
-	// 订阅动态配置
-	go x.ValuesService.Sync(ctx)
 
 	return
 }

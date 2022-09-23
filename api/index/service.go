@@ -31,10 +31,7 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 
 	// 锁定上限验证
 	var maxLoginFailures bool
-	if maxLoginFailures, err = x.Locker.Verify(ctx,
-		userId,
-		x.Values.LoginFailures,
-	); err != nil {
+	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
 		return
 	}
 	if maxLoginFailures {
@@ -63,50 +60,6 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 	return
 }
 
-//// Login 登录
-//func (x *Service) Login(ctx context.Context, identity string, password string) (_ common.Active, err error) {
-//	var user model.User
-//	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
-//		"status": true,
-//		"$or": bson.A{
-//			bson.M{"username": identity},
-//			bson.M{"email": identity},
-//		},
-//	}).Decode(&user); err != nil {
-//		return
-//	}
-//
-//	uid := user.ID.Hex()
-//
-//	// 锁定上限验证
-//	var maxFailures bool
-//	if maxFailures, err = x.Locker.Verify(ctx, uid, x.Values.GetLoginFailures()); err != nil {
-//		return
-//	}
-//	if maxFailures {
-//		err = errors.NewPublic("用户登录失败已超出最大次数")
-//		return
-//	}
-//
-//	// 验证密码正确性
-//	if err = passlib.Verify(password, user.Password); err != nil {
-//		// 锁定更新
-//		if err = x.Locker.Update(ctx, uid, x.Values.GetLoginTTL()); err != nil {
-//			return
-//		}
-//		if err == passlib.ErrNotMatch {
-//			err = errors.New(err, errors.ErrorTypePublic, nil)
-//		}
-//		return
-//	}
-//
-//	// 令牌 ID
-//	jti, _ := gonanoid.Nanoid()
-//	return common.Active{
-//		JTI: jti,
-//		UID: uid,
-//	}, nil
-//}
 //
 //type Nav struct {
 //	ID     primitive.ObjectID `bson:"_id" json:"_id"`
@@ -135,7 +88,8 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 //	return
 //}
 //
-//// LoginSession 建立登录会话，移除锁定
+
+// LoginSession 建立登录会话，移除锁定
 //func (x *Service) LoginSession(ctx context.Context, uid string, jti string) (err error) {
 //	if err = x.Locker.Delete(ctx, jti); err != nil {
 //		return
@@ -145,6 +99,7 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 //	}
 //	return
 //}
+
 //
 //// AuthVerify 认证鉴权、权限验证、会话续约
 //func (x *Service) AuthVerify(ctx context.Context, uid string, jti string) (err error) {

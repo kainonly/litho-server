@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
@@ -13,7 +14,7 @@ import (
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/transfer"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"os"
@@ -41,13 +42,19 @@ func LoadStaticValues() (values *common.Values, err error) {
 // UseGorm 初始化 Gorm
 // 配置文档 https://gorm.io/zh_CN
 func UseGorm(values *common.Values) (db *gorm.DB, err error) {
-	if db, err = gorm.Open(mysql.Open(values.Database.Uri), &gorm.Config{
+	if db, err = gorm.Open(postgres.Open(values.Database.Uri), &gorm.Config{
 		SkipDefaultTransaction:                   true,
-		PrepareStmt:                              true,
 		DisableForeignKeyConstraintWhenMigrating: true,
 	}); err != nil {
 		return
 	}
+	var sqldb *sql.DB
+	if sqldb, err = db.DB(); err != nil {
+		return
+	}
+	sqldb.SetMaxIdleConns(10)
+	sqldb.SetMaxOpenConns(100)
+	sqldb.SetConnMaxLifetime(time.Hour)
 	if err = db.AutoMigrate(model.User{}); err != nil {
 		return
 	}

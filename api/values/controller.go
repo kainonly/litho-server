@@ -22,7 +22,7 @@ func (x *Controller) Get(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data, err := x.ValuesService.Get(dto.Keys...)
+	data, err := x.ValuesService.Get(ctx, dto.Keys...)
 	if err != nil {
 		c.Error(err)
 		return
