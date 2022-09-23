@@ -10,14 +10,13 @@ import (
 	"github.com/weplanx/server/utils/locker"
 )
 
-func NewAPI() (*api.API, error) {
+func NewAPI(values *common.Values) (*api.API, error) {
 	wire.Build(
-		LoadStaticValues,
 		UseGorm,
 		UseRedis,
 		UseNats,
 		UseJetStream,
-		UseStore,
+		UseKeyValue,
 		UseHertz,
 		UseTransfer,
 		api.Provides,

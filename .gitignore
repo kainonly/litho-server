@@ -23,5 +23,6 @@
 
 /vendor
 config.yml
+config.test.yml
 config-map.yml
 deployment.yml

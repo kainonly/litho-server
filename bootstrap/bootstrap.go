@@ -24,8 +24,7 @@ import (
 
 // LoadStaticValues 加载静态配置
 // 默认配置路径 ./config/config.yml
-func LoadStaticValues() (values *common.Values, err error) {
-	path := "./config/config.yml"
+func LoadStaticValues(path string) (values *common.Values, err error) {
 	if _, err = os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
 	}
@@ -112,12 +111,10 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
-// UseStore 初始分布配置
-// 说明 https://docs.nats.io/nats-concepts/jetstream/obj_store
-func UseStore(values *common.Values, js nats.JetStreamContext) (nats.ObjectStore, error) {
-	return js.CreateObjectStore(&nats.ObjectStoreConfig{
-		Bucket: values.Namespace,
-	})
+// UseKeyValue 初始分布配置
+// 说明 https://docs.nats.io/using-nats/developer/develop_jetstream/kv
+func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
+	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
 }
 
 // UseTransfer 初始日志传输

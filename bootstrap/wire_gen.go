@@ -16,20 +16,16 @@ import (
 
 // Injectors from wire.go:
 
-func NewAPI() (*api.API, error) {
-	commonValues, err := LoadStaticValues()
+func NewAPI(values2 *common.Values) (*api.API, error) {
+	db, err := UseGorm(values2)
 	if err != nil {
 		return nil, err
 	}
-	db, err := UseGorm(commonValues)
+	client, err := UseRedis(values2)
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseRedis(commonValues)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := UseNats(commonValues)
+	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
 	}
@@ -37,29 +33,29 @@ func NewAPI() (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	objectStore, err := UseStore(commonValues, jetStreamContext)
+	keyValue, err := UseKeyValue(values2, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(commonValues, jetStreamContext)
+	transfer, err := UseTransfer(values2, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values:    commonValues,
+		Values:    values2,
 		Db:        db,
 		Redis:     client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
-		Store:     objectStore,
+		KeyValue:  keyValue,
 		Transfer:  transfer,
 	}
-	hertz, err := UseHertz(commonValues)
+	hertz, err := UseHertz(values2)
 	if err != nil {
 		return nil, err
 	}
 	lockerLocker := &locker.Locker{
-		Values: commonValues,
+		Values: values2,
 		Redis:  client,
 	}
 	service := &index.Service{
@@ -70,12 +66,12 @@ func NewAPI() (*api.API, error) {
 		IndexService: service,
 	}
 	commonInject := common.Inject{
-		Values:    commonValues,
+		Values:    values2,
 		Db:        db,
 		Redis:     client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
-		Store:     objectStore,
+		KeyValue:  keyValue,
 		Transfer:  transfer,
 	}
 	valuesService := &values.Service{

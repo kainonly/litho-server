@@ -1,18 +1,21 @@
-package e2e
+package test
 
 import (
 	"context"
-	"fmt"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
 	"time"
 )
 
 func Initialize() (api *api.API, err error) {
-	if api, err = bootstrap.NewAPI(); err != nil {
+	path := "./config/config.test.yml"
+	values, err := bootstrap.LoadStaticValues(path)
+	if err != nil {
+		panic(err)
+	}
+	if api, err = bootstrap.NewAPI(values); err != nil {
 		return
 	}
-	api.Values.Namespace = fmt.Sprintf("%s_test", api.Values.Namespace)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()

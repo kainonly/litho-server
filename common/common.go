@@ -17,7 +17,7 @@ type Inject struct {
 	Redis     *redis.Client
 	Nats      *nats.Conn
 	JetStream nats.JetStreamContext
-	Store     nats.ObjectStore
+	KeyValue  nats.KeyValue
 	Transfer  *transfer.Transfer
 }
 
