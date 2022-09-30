@@ -14,7 +14,7 @@ import (
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/transfer"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"os"
@@ -41,7 +41,7 @@ func LoadStaticValues(path string) (values *common.Values, err error) {
 // UseGorm 初始化 Gorm
 // 配置文档 https://gorm.io/zh_CN
 func UseGorm(values *common.Values) (db *gorm.DB, err error) {
-	if db, err = gorm.Open(postgres.Open(values.Database.Uri), &gorm.Config{
+	if db, err = gorm.Open(mysql.Open(values.Database.Uri), &gorm.Config{
 		SkipDefaultTransaction:                   true,
 		DisableForeignKeyConstraintWhenMigrating: true,
 	}); err != nil {

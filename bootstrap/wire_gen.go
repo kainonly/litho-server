@@ -9,23 +9,22 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/locker"
 )
 
 // Injectors from wire.go:
 
-func NewAPI(values2 *common.Values) (*api.API, error) {
-	db, err := UseGorm(values2)
+func NewAPI(values *common.Values) (*api.API, error) {
+	db, err := UseGorm(values)
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseRedis(values2)
+	client, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(values2)
+	conn, err := UseNats(values)
 	if err != nil {
 		return nil, err
 	}
@@ -33,16 +32,16 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyValue, err := UseKeyValue(values2, jetStreamContext)
+	keyValue, err := UseKeyValue(values, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(values2, jetStreamContext)
+	transfer, err := UseTransfer(values, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values:    values2,
+		Values:    values,
 		Db:        db,
 		Redis:     client,
 		Nats:      conn,
@@ -50,12 +49,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		KeyValue:  keyValue,
 		Transfer:  transfer,
 	}
-	hertz, err := UseHertz(values2)
+	hertz, err := UseHertz(values)
 	if err != nil {
 		return nil, err
 	}
 	lockerLocker := &locker.Locker{
-		Values: values2,
+		Values: values,
 		Redis:  client,
 	}
 	service := &index.Service{
@@ -65,28 +64,11 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	controller := &index.Controller{
 		IndexService: service,
 	}
-	commonInject := common.Inject{
-		Values:    values2,
-		Db:        db,
-		Redis:     client,
-		Nats:      conn,
-		JetStream: jetStreamContext,
-		KeyValue:  keyValue,
-		Transfer:  transfer,
-	}
-	valuesService := &values.Service{
-		Inject: commonInject,
-	}
-	valuesController := &values.Controller{
-		ValuesService: valuesService,
-	}
 	apiAPI := &api.API{
-		Inject:           inject,
-		Hertz:            hertz,
-		IndexController:  controller,
-		IndexService:     service,
-		ValuesController: valuesController,
-		ValuesService:    valuesService,
+		Inject:          inject,
+		Hertz:           hertz,
+		IndexController: controller,
+		IndexService:    service,
 	}
 	return apiAPI, nil
 }
