@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/validation"
 	"github.com/weplanx/transfer"
@@ -23,17 +22,14 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
-	values.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz            *server.Hertz
-	IndexController  *index.Controller
-	IndexService     *index.Service
-	ValuesController *values.Controller
-	ValuesService    *values.Service
+	Hertz           *server.Hertz
+	IndexController *index.Controller
+	IndexService    *index.Service
 }
 
 func (x *API) Run() (h *server.Hertz, err error) {
@@ -209,7 +205,7 @@ func (x *API) Initialize(ctx context.Context) (err error) {
 	validation.Extend()
 
 	// 订阅动态配置
-	go x.ValuesService.Sync(ctx)
+	//go x.ValuesService.Sync(ctx)
 
 	// 传输指标
 	if err = x.Transfer.Set(transfer.Option{
