@@ -16,11 +16,12 @@ import (
 // Injectors from wire.go:
 
 func NewAPI(values *common.Values) (*api.API, error) {
-	db, err := UseGorm(values)
+	client, err := UseMongoDB(values)
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseRedis(values)
+	database := UseDatabase(values, client)
+	redisClient, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +43,9 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	inject := &common.Inject{
 		Values:    values,
-		Db:        db,
-		Redis:     client,
+		Mongo:     client,
+		Db:        database,
+		Redis:     redisClient,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
@@ -55,7 +57,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	lockerLocker := &locker.Locker{
 		Values: values,
-		Redis:  client,
+		Redis:  redisClient,
 	}
 	service := &index.Service{
 		Inject: inject,

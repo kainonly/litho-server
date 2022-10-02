@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
@@ -11,11 +10,11 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/model"
 	"github.com/weplanx/transfer"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -38,26 +37,23 @@ func LoadStaticValues(path string) (values *common.Values, err error) {
 	return
 }
 
-// UseGorm 初始化 Gorm
-// 配置文档 https://gorm.io/zh_CN
-func UseGorm(values *common.Values) (db *gorm.DB, err error) {
-	if db, err = gorm.Open(mysql.Open(values.Database.Uri), &gorm.Config{
-		SkipDefaultTransaction:                   true,
-		DisableForeignKeyConstraintWhenMigrating: true,
-	}); err != nil {
-		return
-	}
-	var sqldb *sql.DB
-	if sqldb, err = db.DB(); err != nil {
-		return
-	}
-	sqldb.SetMaxIdleConns(10)
-	sqldb.SetMaxOpenConns(100)
-	sqldb.SetConnMaxLifetime(time.Hour)
-	if err = db.AutoMigrate(model.User{}); err != nil {
-		return
-	}
-	return
+// UseMongoDB 初始化 MongoDB
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
+func UseMongoDB(values *common.Values) (*mongo.Client, error) {
+	return mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(values.Database.Uri),
+	)
+}
+
+// UseDatabase 初始化数据库
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
+func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Database) {
+	option := options.Database().
+		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
+	return client.Database(values.Database.Db, option)
 }
 
 // UseRedis 初始化 Redis

@@ -8,7 +8,7 @@ import (
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/server/utils/locker"
 	"github.com/weplanx/server/utils/passlib"
-	"strconv"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Service struct {
@@ -19,15 +19,19 @@ type Service struct {
 // Login 登录
 func (x *Service) Login(ctx context.Context, identity string, password string) (active common.Active, err error) {
 	var user model.User
-	if err = x.Db.
-		Where("username = ?", identity).
-		Or("email = ?", identity).
-		Take(&user).
-		Error; err != nil {
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{
+			"status": true,
+			"$or": bson.A{
+				bson.M{"username": identity},
+				bson.M{"email": identity},
+			},
+		}).
+		Decode(&user); err != nil {
 		return
 	}
 
-	userId := strconv.Itoa(int(user.ID))
+	userId := user.ID.Hex()
 
 	// 锁定上限验证
 	var maxLoginFailures bool
