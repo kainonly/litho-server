@@ -12,7 +12,8 @@ import (
 
 func NewAPI(values *common.Values) (*api.API, error) {
 	wire.Build(
-		UseGorm,
+		UseMongoDB,
+		UseDatabase,
 		UseRedis,
 		UseNats,
 		UseJetStream,

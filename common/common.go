@@ -6,14 +6,15 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/transfer"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 	"time"
 )
 
 type Inject struct {
 	Values    *Values
-	Db        *gorm.DB
+	Mongo     *mongo.Client
+	Db        *mongo.Database
 	Redis     *redis.Client
 	Nats      *nats.Conn
 	JetStream nats.JetStreamContext
