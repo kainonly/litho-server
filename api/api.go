@@ -32,10 +32,74 @@ type API struct {
 	IndexService    *index.Service
 }
 
-func (x *API) Run() (h *server.Hertz, err error) {
+// Initialize 初始化
+func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
 	h.Use(x.AccessLog())
 	h.Use(x.ErrHandler())
+	// 加载自定义验证
+	validation.Extend()
+	// 订阅动态配置
+	//go x.ValuesService.Sync(ctx)
+	// 传输指标
+	//if err = x.Transfer.Set(transfer.Option{
+	//	Measurement: "access_log",
+	//}); err != nil {
+	//	return
+	//}
+
+	//if auth, err = x.Auth(); err != nil {
+	//	return
+	//}
+	//
+	//h.GET("", x.IndexController.Index)
+	//h.POST("login", auth.LoginHandler)
+	//h.GET("code", auth.MiddlewareFunc(), x.IndexController.GetRefreshCode)
+	//h.POST("refresh_token", auth.MiddlewareFunc(), x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
+	//h.POST("logout", auth.MiddlewareFunc(), auth.LogoutHandler)
+	//
+	//h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
+	//h.GET("options", auth.MiddlewareFunc(), x.IndexController.GetOptions)
+	//
+	//_user := h.Group("user", auth.MiddlewareFunc())
+	//{
+	//	_user.GET("", x.IndexController.GetUser)
+	//	_user.PATCH("", x.IndexController.SetUser)
+	//}
+
+	//_values := h.Group("values")
+	//{
+	//	_values.GET("", x.ValuesController.Get)
+	//	_values.PATCH("", x.ValuesController.Set)
+	//	_values.DELETE(":key", x.ValuesController.Remove)
+	//}
+	//
+	//_sessions := h.Group("sessions", auth.MiddlewareFunc())
+	//{
+	//	_sessions.GET("", x.SessionController.Lists)
+	//	_sessions.DELETE(":uid", x.SessionController.Remove)
+	//	_sessions.DELETE("", x.SessionController.Clear)
+	//}
+	//
+	//_dsl := h.Group("/:model", auth.MiddlewareFunc())
+	//{
+	//	_dsl.POST("", x.DslController.Create)
+	//	_dsl.POST("bulk-create", x.DslController.BulkCreate)
+	//	_dsl.GET("_size", x.DslController.Size)
+	//	_dsl.GET("", x.DslController.Find)
+	//	_dsl.GET("_one", x.DslController.FindOne)
+	//	_dsl.GET(":id", x.DslController.FindById)
+	//	_dsl.PATCH("", x.DslController.Update)
+	//	_dsl.PATCH(":id", x.DslController.UpdateById)
+	//	_dsl.PUT(":id", x.DslController.Replace)
+	//	_dsl.DELETE(":id", x.DslController.Delete)
+	//	_dsl.POST("bulk-delete", x.DslController.BulkDelete)
+	//	_dsl.POST("sort", x.DslController.Sort)
+	//}
+
+	//_pages := h.Group("pages", auth.MiddlewareFunc())
+	//{
+	//}
 	return
 }
 
@@ -197,22 +261,4 @@ func (x *API) ErrHandler() app.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 		}
 	}
-}
-
-// Initialize 初始化
-func (x *API) Initialize(ctx context.Context) (err error) {
-	// 加载自定义验证
-	validation.Extend()
-
-	// 订阅动态配置
-	//go x.ValuesService.Sync(ctx)
-
-	// 传输指标
-	if err = x.Transfer.Set(transfer.Option{
-		Measurement: "access_log",
-	}); err != nil {
-		return
-	}
-
-	return
 }

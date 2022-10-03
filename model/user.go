@@ -30,14 +30,11 @@ type User struct {
 	// 头像
 	Avatar string `bson:"avatar" json:"avatar"`
 
-	// 登录次数
-	Sessions int64 `bson:"sessions" json:"sessions"`
-
-	// 最近登录记录
-	Last string `json:"last" bson:"last"`
-
 	// 飞书 OpenID
 	Feishu bson.M `json:"feishu" bson:"feishu"`
+
+	// 标签
+	Labels map[string]string `bson:"labels" json:"labels"`
 
 	// 状态
 	Status bool `bson:"status" json:"status"`
@@ -47,4 +44,26 @@ type User struct {
 
 	// 更新时间
 	UpdateTime time.Time `bson:"update_time" json:"-"`
+}
+
+func NewUser(username string, password string) *User {
+	return &User{
+		Username:   username,
+		Password:   password,
+		Roles:      []primitive.ObjectID{},
+		Labels:     map[string]string{},
+		Status:     true,
+		CreateTime: time.Now(),
+		UpdateTime: time.Now(),
+	}
+}
+
+func (x *User) SetEmail(v string) *User {
+	x.Email = v
+	return x
+}
+
+func (x *User) SetRoles(v []primitive.ObjectID) *User {
+	x.Roles = v
+	return x
 }
