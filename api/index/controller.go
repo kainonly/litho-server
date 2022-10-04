@@ -111,14 +111,13 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 // GetNavs 导航数据
 // @router /navs [GET]
 func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
-	//active := common.GetActive(c)
-	//
-	//data, err := x.IndexService.GetNavs(ctx, active.UID)
-	//if err != nil {
-	//	return
-	//}
-	//
-	//c.JSON(http.StatusOK, data)
+	claims := passport.GetClaims(c)
+	data, err := x.IndexService.GetNavs(ctx, claims.UserId)
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 // GetOptions 返回通用配置

@@ -52,8 +52,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.GET("code", auth, x.IndexController.GetRefreshCode)
 	h.POST("refresh_token", auth, x.IndexController.RefreshToken)
 	h.POST("logout", auth, x.IndexController.Logout)
-
-	//h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
+	h.GET("navs", auth, x.IndexController.GetNavs)
 	h.GET("options", auth, x.IndexController.GetOptions)
 
 	_user := h.Group("user", auth)
