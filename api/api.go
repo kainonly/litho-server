@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
+	"github.com/weplanx/server/api/collections"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
@@ -26,18 +27,21 @@ var Provides = wire.NewSet(
 	index.Provides,
 	values.Provides,
 	sessions.Provides,
+	collections.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz              *server.Hertz
-	IndexController    *index.Controller
-	IndexService       *index.Service
-	ValuesController   *values.Controller
-	ValuesService      *values.Service
-	SessionsController *sessions.Controller
-	SessionsService    *sessions.Service
+	Hertz                 *server.Hertz
+	IndexController       *index.Controller
+	IndexService          *index.Service
+	ValuesController      *values.Controller
+	ValuesService         *values.Service
+	SessionsController    *sessions.Controller
+	SessionsService       *sessions.Service
+	CollectionsController collections.Controller
+	CollectionsService    collections.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -51,46 +55,42 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 	//h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
 	//h.GET("options", auth.MiddlewareFunc(), x.IndexController.GetOptions)
-	//
-	//_user := h.Group("user", auth.MiddlewareFunc())
-	//{
-	//	_user.GET("", x.IndexController.GetUser)
-	//	_user.PATCH("", x.IndexController.SetUser)
-	//}
-	//
-	//_values := h.Group("values")
-	//{
-	//	_values.GET("", x.ValuesController.Get)
-	//	_values.PATCH("", x.ValuesController.Set)
-	//	_values.DELETE(":key", x.ValuesController.Remove)
-	//}
-	//
-	//_sessions := h.Group("sessions", auth.MiddlewareFunc())
-	//{
-	//	_sessions.GET("", x.SessionController.Lists)
-	//	_sessions.DELETE(":uid", x.SessionController.Remove)
-	//	_sessions.DELETE("", x.SessionController.Clear)
-	//}
-	//
-	//_dsl := h.Group("/:model", auth.MiddlewareFunc())
-	//{
-	//	_dsl.POST("", x.DslController.Create)
-	//	_dsl.POST("bulk-create", x.DslController.BulkCreate)
-	//	_dsl.GET("_size", x.DslController.Size)
-	//	_dsl.GET("", x.DslController.Find)
-	//	_dsl.GET("_one", x.DslController.FindOne)
-	//	_dsl.GET(":id", x.DslController.FindById)
-	//	_dsl.PATCH("", x.DslController.Update)
-	//	_dsl.PATCH(":id", x.DslController.UpdateById)
-	//	_dsl.PUT(":id", x.DslController.Replace)
-	//	_dsl.DELETE(":id", x.DslController.Delete)
-	//	_dsl.POST("bulk-delete", x.DslController.BulkDelete)
-	//	_dsl.POST("sort", x.DslController.Sort)
-	//}
 
-	//_pages := h.Group("pages", auth.MiddlewareFunc())
-	//{
-	//}
+	_user := h.Group("user", auth)
+	{
+		_user.GET("", x.IndexController.GetUser)
+		_user.PATCH("", x.IndexController.SetUser)
+	}
+
+	_values := h.Group("values", auth)
+	{
+		_values.GET("", x.ValuesController.Get)
+		_values.PATCH("", x.ValuesController.Set)
+		_values.DELETE(":key", x.ValuesController.Remove)
+	}
+
+	_sessions := h.Group("sessions", auth)
+	{
+		_sessions.GET("", x.SessionsController.Lists)
+		_sessions.DELETE(":uid", x.SessionsController.Remove)
+		_sessions.DELETE("", x.SessionsController.Clear)
+	}
+
+	_collections := h.Group("/:model", auth)
+	{
+		_collections.POST("", x.CollectionsController.Create)
+		_collections.POST("bulk-create", x.CollectionsController.BulkCreate)
+		_collections.GET("_size", x.CollectionsController.Size)
+		_collections.GET("", x.CollectionsController.Find)
+		_collections.GET("_one", x.CollectionsController.FindOne)
+		_collections.GET(":id", x.CollectionsController.FindById)
+		_collections.PATCH("", x.CollectionsController.Update)
+		_collections.PATCH(":id", x.CollectionsController.UpdateById)
+		_collections.PUT(":id", x.CollectionsController.Replace)
+		_collections.DELETE(":id", x.CollectionsController.Delete)
+		_collections.POST("bulk-delete", x.CollectionsController.BulkDelete)
+		_collections.POST("sort", x.CollectionsController.Sort)
+	}
 
 	return
 }
