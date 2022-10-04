@@ -126,6 +126,8 @@ type DynamicValues struct {
 	// 腾讯云 API 密钥 Key
 	TencentSecretKey string `json:"tencent_secret_key,omitempty"`
 	// 腾讯云 COS 对象存储 Bucket（存储桶名称）
+	TencentCosBucket string `json:"tencent_cos_bucket,omitempty"`
+	// 腾讯云 COS 对象存储所属地域，例如：ap-guangzhou
 	TencentCosRegion string `json:"tencent_cos_region"`
 	// 腾讯云 COS 对象存储预签名有效期，单位：秒
 	TencentCosExpired int `json:"tencent_cos_expired"`

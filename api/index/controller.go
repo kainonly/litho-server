@@ -3,8 +3,10 @@ package index
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/weplanx/server/utils/passlib"
 	"github.com/weplanx/server/utils/passport"
 	"net/http"
 	"time"
@@ -43,7 +45,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "登录认证成功",
@@ -53,7 +55,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 // GetRefreshCode 获取刷新令牌验证码
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
-	claims := passport.Identity(c)
+	claims := passport.GetClaims(c)
 	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
@@ -76,14 +78,14 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	claims := passport.Identity(c)
+	claims := passport.GetClaims(c)
 	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "令牌刷新成功",
@@ -93,13 +95,13 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 // Logout 注销认证
 // @router /logout [POST]
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
-	claims := passport.Identity(c)
+	claims := passport.GetClaims(c)
 	if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "认证已注销",
@@ -122,35 +124,35 @@ func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
 // GetOptions 返回通用配置
 // @router /options [GET]
 func (x *Controller) GetOptions(ctx context.Context, c *app.RequestContext) {
-	//var dto struct {
-	//	// 类型
-	//	Type string `query:"type,required"`
-	//}
-	//if err := c.BindAndValidate(&dto); err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//data := x.IndexService.GetOptions(dto.Type)
-	//if data == nil {
-	//	c.Status(http.StatusNoContent)
-	//	return
-	//}
-	//
-	//c.JSON(http.StatusOK, data)
+	var dto struct {
+		// 类型
+		Type string `query:"type,required"`
+	}
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	data := x.IndexService.GetOptions(dto.Type)
+	if data == nil {
+		c.Error(errors.NewPublic("配置类型不存在"))
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 // GetUser 获取授权用户信息
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
-	//active := common.GetActive(c)
-	//data, err := x.IndexService.GetUser(ctx, active.UID)
-	//if err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//c.JSON(http.StatusOK, data)
+	claims := passport.GetClaims(c)
+	data, err := x.IndexService.GetUser(ctx, claims.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 type SetUserDto struct {
@@ -173,36 +175,32 @@ type SetUserDto struct {
 // SetUser 设置授权用户信息
 // @router /user [PATCH]
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
-	//var dto SetUserDto
-	//if err := c.BindAndValidate(&dto); err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//// 密码转散列
-	//if dto.Password != "" {
-	//	dto.Password, _ = passlib.Hash(dto.Password)
-	//}
-	//
-	//dto.UpdateTime = time.Now()
-	//active := common.GetActive(c)
-	//if _, err := x.IndexService.SetUser(ctx, active.UID, dto); err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//// 用户名变更，注销登录状态
-	//if dto.Username != "" {
-	//	cookie := &protocol.Cookie{}
-	//	cookie.SetKey("access_token")
-	//	cookie.SetValue("")
-	//	c.Response.Header.SetCookie(cookie)
-	//
-	//	if err := x.IndexService.LogoutSession(ctx, active.UID); err != nil {
-	//		c.Error(err)
-	//		return
-	//	}
-	//}
-	//
-	//c.Status(http.StatusNoContent)
+	var dto SetUserDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	// 密码转散列
+	if dto.Password != "" {
+		dto.Password, _ = passlib.Hash(dto.Password)
+	}
+
+	dto.UpdateTime = time.Now()
+	claims := passport.GetClaims(c)
+	if _, err := x.IndexService.SetUser(ctx, claims.UserId, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	// 用户名变更，注销登录状态
+	if dto.Username != "" {
+		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+		if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
+			c.Error(err)
+			return
+		}
+	}
+
+	c.Status(http.StatusNoContent)
 }

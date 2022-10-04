@@ -45,8 +45,8 @@ func (x *Passport) Verify(tokenString string) (claims Claims, err error) {
 	return
 }
 
-// Identity 获取授权用户标识
-func Identity(c *app.RequestContext) (claims Claims) {
+// GetClaims 获取授权标识
+func GetClaims(c *app.RequestContext) (claims Claims) {
 	value, ok := c.Get("identity")
 	if !ok {
 		return
