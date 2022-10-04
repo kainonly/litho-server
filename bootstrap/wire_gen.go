@@ -8,6 +8,7 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/collections"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
@@ -92,15 +93,23 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
+	collectionsService := &collections.Service{
+		Db: database,
+	}
+	collectionsController := &collections.Controller{
+		CollectionService: collectionsService,
+	}
 	apiAPI := &api.API{
-		Inject:             inject,
-		Hertz:              hertz,
-		IndexController:    controller,
-		IndexService:       indexService,
-		ValuesController:   valuesController,
-		ValuesService:      valuesService,
-		SessionsController: sessionsController,
-		SessionsService:    service,
+		Inject:                inject,
+		Hertz:                 hertz,
+		IndexController:       controller,
+		IndexService:          indexService,
+		ValuesController:      valuesController,
+		ValuesService:         valuesService,
+		SessionsController:    sessionsController,
+		SessionsService:       service,
+		CollectionsController: collectionsController,
+		CollectionsService:    collectionsService,
 	}
 	return apiAPI, nil
 }

@@ -39,6 +39,12 @@ type User struct {
 	// 状态
 	Status bool `bson:"status" json:"status"`
 
+	// 会话次数
+	Sessions int64 `bson:"sessions" json:"sessions"`
+
+	// 最近一次登录时间
+	LastTime time.Time `bson:"last_time" json:"last_time"`
+
 	// 创建时间
 	CreateTime time.Time `bson:"create_time" json:"-"`
 

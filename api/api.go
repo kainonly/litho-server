@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/collections"
 	"github.com/weplanx/server/api/index"
@@ -40,21 +41,20 @@ type API struct {
 	ValuesService         *values.Service
 	SessionsController    *sessions.Controller
 	SessionsService       *sessions.Service
-	CollectionsController collections.Controller
-	CollectionsService    collections.Service
+	CollectionsController *collections.Controller
+	CollectionsService    *collections.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
 	h.GET("", x.IndexController.Index)
 	h.POST("login", x.IndexController.Login)
-
 	h.GET("code", auth, x.IndexController.GetRefreshCode)
 	h.POST("refresh_token", auth, x.IndexController.RefreshToken)
 	h.POST("logout", auth, x.IndexController.Logout)
 
 	//h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
-	//h.GET("options", auth.MiddlewareFunc(), x.IndexController.GetOptions)
+	h.GET("options", auth, x.IndexController.GetOptions)
 
 	_user := h.Group("user", auth)
 	{
@@ -76,7 +76,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_sessions.DELETE("", x.SessionsController.Clear)
 	}
 
-	_collections := h.Group("/:model", auth)
+	_collections := h.Group("/:collection", auth)
 	{
 		_collections.POST("", x.CollectionsController.Create)
 		_collections.POST("bulk-create", x.CollectionsController.BulkCreate)
@@ -101,6 +101,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 		ts := c.Cookie("access_token")
 		if ts == nil {
 			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
 				"message": "认证已失效请重新登录",
 			})
 			return
@@ -108,7 +109,11 @@ func (x *API) AuthGuard() app.HandlerFunc {
 
 		claims, err := x.IndexService.Verify(ctx, string(ts))
 		if err != nil {
-			c.Error(err)
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": "认证已失效请重新登录",
+			})
 			return
 		}
 
