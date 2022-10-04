@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/transfer"
@@ -160,19 +159,4 @@ type DynamicValues struct {
 	OpenapiKey string `json:"openapi_key"`
 	// 开放服务应用认证密钥
 	OpenapiSecret string `json:"openapi_secret,omitempty"`
-}
-
-// Active 授权用户标识
-type Active struct {
-	JTI    string
-	UserId string
-}
-
-// GetActive 获取授权用户标识
-func GetActive(c *app.RequestContext) (data Active) {
-	value, ok := c.Get("identity")
-	if !ok {
-		return
-	}
-	return value.(Active)
 }

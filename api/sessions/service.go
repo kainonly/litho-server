@@ -24,20 +24,20 @@ func (x *Service) Lists(ctx context.Context) (data []string, err error) {
 			Result(); err != nil {
 			return
 		}
-		uids := make([]string, len(keys))
+		userIds := make([]string, len(keys))
 		for k, v := range keys {
-			uids[k] = strings.Replace(v, x.Key(""), "", -1)
+			userIds[k] = strings.Replace(v, x.Key(""), "", -1)
 		}
-		data = append(data, uids...)
+		data = append(data, userIds...)
 	}
 	return
 }
 
 // Verify 验证会话一致性
-func (x *Service) Verify(ctx context.Context, uid string, jti string) (result bool, err error) {
+func (x *Service) Verify(ctx context.Context, userId string, jti string) (result bool, err error) {
 	var value string
 	if value, err = x.Redis.
-		Get(ctx, x.Key(uid)).
+		Get(ctx, x.Key(userId)).
 		Result(); err != nil {
 		return
 	}
@@ -52,16 +52,16 @@ func (x *Service) Set(ctx context.Context, userId string, jti string) error {
 }
 
 // Renew 续约会话
-func (x *Service) Renew(ctx context.Context, uid string) error {
+func (x *Service) Renew(ctx context.Context, userId string) error {
 	return x.Redis.
-		Expire(ctx, x.Key(uid), x.Values.SessionTTL).
+		Expire(ctx, x.Key(userId), x.Values.SessionTTL).
 		Err()
 }
 
 // Remove 移除会话
-func (x *Service) Remove(ctx context.Context, uid string) error {
+func (x *Service) Remove(ctx context.Context, userId string) error {
 	return x.Redis.
-		Del(ctx, x.Key(uid)).
+		Del(ctx, x.Key(userId)).
 		Err()
 }
 

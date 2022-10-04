@@ -7,17 +7,20 @@ import (
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
+	"github.com/weplanx/server/utils/captcha"
 	"github.com/weplanx/server/utils/locker"
 	"github.com/weplanx/server/utils/passlib"
 	"github.com/weplanx/server/utils/passport"
 	"go.mongodb.org/mongo-driver/bson"
+	"time"
 )
 
 type Service struct {
 	*common.Inject
-	Sessions *sessions.Service
-	Passport *passport.Passport
-	Locker   *locker.Locker
+	Passport        *passport.Passport
+	Locker          *locker.Locker
+	Captcha         *captcha.Captcha
+	SessionsService *sessions.Service
 }
 
 // Login 登录
@@ -73,11 +76,65 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 	}
 
 	// 设置会话
-	if err = x.Sessions.Set(ctx, userId, jti); err != nil {
+	if err = x.SessionsService.Set(ctx, userId, jti); err != nil {
 		return
 	}
 
 	return
+}
+
+// Verify 认证鉴权
+func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims, err error) {
+	if claims, err = x.Passport.Verify(ts); err != nil {
+		return
+	}
+	var result bool
+	// 检测会话
+	if result, err = x.SessionsService.Verify(ctx, claims.UserId, claims.ID); err != nil {
+		return
+	}
+	if !result {
+		err = errors.NewPublic("会话令牌不一致")
+		return
+	}
+
+	// TODO: 检查用户状态
+
+	// 会话续约
+	if err = x.SessionsService.Renew(ctx, claims.UserId); err != nil {
+		return
+	}
+
+	return
+}
+
+// GetRefreshCode 获取刷新令牌验证码
+func (x *Service) GetRefreshCode(ctx context.Context, userId string) (code string, err error) {
+	if code, err = gonanoid.Nanoid(); err != nil {
+		return
+	}
+	if err = x.Captcha.Create(ctx, userId, code, 15*time.Second); err != nil {
+		return
+	}
+	return
+}
+
+// RefreshToken 刷新令牌
+func (x *Service) RefreshToken(ctx context.Context, claims passport.Claims, code string) (ts string, err error) {
+	// 验证随机码
+	if err = x.Captcha.Verify(ctx, claims.UserId, code); err != nil {
+		return
+	}
+	// 创建令牌
+	if ts, err = x.Passport.Create(claims.UserId, claims.ID); err != nil {
+		return
+	}
+	return
+}
+
+// Logout 注销登录
+func (x *Service) Logout(ctx context.Context, userId string) (err error) {
+	return x.SessionsService.Remove(ctx, userId)
 }
 
 //
@@ -109,52 +166,6 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 //}
 //
 
-// LoginSession 建立登录会话，移除锁定
-//func (x *Service) LoginSession(ctx context.Context, uid string, jti string) (err error) {
-//	if err = x.Locker.Delete(ctx, jti); err != nil {
-//		return
-//	}
-//	if err = x.SessionService.Set(ctx, uid, jti); err != nil {
-//		return
-//	}
-//	return
-//}
-
-//
-//// AuthVerify 认证鉴权、权限验证、会话续约
-//func (x *Service) AuthVerify(ctx context.Context, uid string, jti string) (err error) {
-//	var result bool
-//	// 检测会话
-//	if result, err = x.SessionService.Verify(ctx, uid, jti); err != nil {
-//		return
-//	}
-//	if !result {
-//		err = errors.NewPublic("会话令牌不一致")
-//		return
-//	}
-//
-//	// TODO: Check User Status
-//
-//	// 会话续约
-//	return x.SessionService.Renew(ctx, uid)
-//}
-//
-//// LogoutSession 注销登录会话
-//func (x *Service) LogoutSession(ctx context.Context, uid string) (err error) {
-//	return x.SessionService.Remove(ctx, uid)
-//}
-//
-//// GetRefreshCode 获取刷新令牌验证码
-//func (x *Service) GetRefreshCode(ctx context.Context, uid string) (code string, err error) {
-//	if code, err = gonanoid.Nanoid(); err != nil {
-//		return
-//	}
-//	if err = x.Captcha.Create(ctx, uid, code, 15*time.Second); err != nil {
-//		return
-//	}
-//	return
-//}
-//
 //// GetOptions 返回通用配置
 //func (x *Service) GetOptions(v string) utils.H {
 //	switch v {

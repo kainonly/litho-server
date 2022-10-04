@@ -41,16 +41,14 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	//if auth, err = x.Auth(); err != nil {
-	//	return
-	//}
-
+	auth := x.AuthGuard()
 	h.GET("", x.IndexController.Index)
 	h.POST("login", x.IndexController.Login)
-	//h.GET("code", auth.MiddlewareFunc(), x.IndexController.GetRefreshCode)
-	//h.POST("refresh_token", auth.MiddlewareFunc(), x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
-	//h.POST("logout", auth.MiddlewareFunc(), auth.LogoutHandler)
-	//
+
+	h.GET("code", auth, x.IndexController.GetRefreshCode)
+	h.POST("refresh_token", auth, x.IndexController.RefreshToken)
+	h.POST("logout", auth, x.IndexController.Logout)
+
 	//h.GET("navs", auth.MiddlewareFunc(), x.IndexController.GetNavs)
 	//h.GET("options", auth.MiddlewareFunc(), x.IndexController.GetOptions)
 	//
@@ -97,85 +95,27 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	return
 }
 
-//// Auth 认证
-//func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
-//	return jwt.New(&jwt.HertzJWTMiddleware{
-//		Realm:   x.Values.Namespace,
-//		Key:     []byte(x.Values.Key),
-//		Timeout: time.Hour,
-//		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
-//			var dto struct {
-//				// 唯一标识，用户名或电子邮件
-//				Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
-//				// 密码
-//				Password string `json:"password,required" vd:"len($)>=8"`
-//			}
-//			if err = c.BindAndValidate(&dto); err != nil {
-//				c.Error(err)
-//				return
-//			}
-//
-//			data, err := x.IndexService.Login(ctx, dto.Identity, dto.Password)
-//			if err != nil {
-//				c.Error(err)
-//				return
-//			}
-//
-//			c.Set("identity", data)
-//			return data, nil
-//		},
-//		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
-//			v := data.(common.Active)
-//			return jwt.MapClaims{
-//				"userId": v.UserId,
-//				"jti":    v.JTI,
-//			}
-//		},
-//		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
-//			data := common.GetActive(c)
-//			if err := x.IndexService.LoginSession(ctx, data.UserId, data.JTI); err != nil {
-//				c.Error(err)
-//				return
-//			}
-//			c.Status(http.StatusNoContent)
-//		},
-//		MaxRefresh: time.Hour,
-//		RefreshResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
-//			c.Status(http.StatusNoContent)
-//		},
-//		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
-//			c.Error(errors.NewPublic(message).
-//				SetMeta(map[string]interface{}{
-//					"statusCode": http.StatusUnauthorized,
-//				}),
-//			)
-//		},
-//		TokenLookup: "cookie: access_token",
-//		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
-//			data := jwt.ExtractClaims(ctx, c)
-//			return common.Active{
-//				JTI:    data["jti"].(string),
-//				UserId: data["userId"].(string),
-//			}
-//		},
-//		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
-//			identity := data.(common.Active)
-//			if err := x.IndexService.AuthVerify(ctx, identity.UserId, identity.JTI); err != nil {
-//				c.Error(err)
-//				return false
-//			}
-//			return true
-//		},
-//		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
-//			data := common.GetActive(c)
-//			if err := x.IndexService.LogoutSession(ctx, data.UserId); err != nil {
-//				c.Error(err)
-//				return
-//			}
-//			c.Status(http.StatusNoContent)
-//		},
-//	})
-//}
+// AuthGuard 认证中间件
+func (x *API) AuthGuard() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		ts := c.Cookie("access_token")
+		if ts == nil {
+			c.AbortWithStatusJSON(401, utils.H{
+				"message": "认证已失效请重新登录",
+			})
+			return
+		}
+
+		claims, err := x.IndexService.Verify(ctx, string(ts))
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		c.Set("identity", claims)
+		c.Next(ctx)
+	}
+}
 
 // AccessLog 日志
 func (x *API) AccessLog() app.HandlerFunc {
