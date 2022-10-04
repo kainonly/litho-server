@@ -1,4 +1,4 @@
-package index_test
+package values_test
 
 import (
 	"github.com/weplanx/server/api"

@@ -12,6 +12,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/sessions"
+	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/validation"
 	"github.com/weplanx/transfer"
@@ -22,38 +24,29 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
+	values.Provides,
+	sessions.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz           *server.Hertz
-	IndexController *index.Controller
-	IndexService    *index.Service
+	Hertz              *server.Hertz
+	IndexController    *index.Controller
+	IndexService       *index.Service
+	ValuesController   *values.Controller
+	ValuesService      *values.Service
+	SessionsController *sessions.Controller
+	SessionsService    *sessions.Service
 }
 
-// Initialize 初始化
-func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
-	h = x.Hertz
-	h.Use(x.AccessLog())
-	h.Use(x.ErrHandler())
-	// 加载自定义验证
-	validation.Extend()
-	// 订阅动态配置
-	//go x.ValuesService.Sync(ctx)
-	// 传输指标
-	//if err = x.Transfer.Set(transfer.Option{
-	//	Measurement: "access_log",
-	//}); err != nil {
-	//	return
-	//}
-
+func (x *API) Routes(h *server.Hertz) (err error) {
 	//if auth, err = x.Auth(); err != nil {
 	//	return
 	//}
-	//
-	//h.GET("", x.IndexController.Index)
-	//h.POST("login", auth.LoginHandler)
+
+	h.GET("", x.IndexController.Index)
+	h.POST("login", x.IndexController.Login)
 	//h.GET("code", auth.MiddlewareFunc(), x.IndexController.GetRefreshCode)
 	//h.POST("refresh_token", auth.MiddlewareFunc(), x.IndexController.VerifyRefreshCode, auth.RefreshHandler)
 	//h.POST("logout", auth.MiddlewareFunc(), auth.LogoutHandler)
@@ -66,7 +59,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	//	_user.GET("", x.IndexController.GetUser)
 	//	_user.PATCH("", x.IndexController.SetUser)
 	//}
-
+	//
 	//_values := h.Group("values")
 	//{
 	//	_values.GET("", x.ValuesController.Get)
@@ -100,22 +93,16 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	//_pages := h.Group("pages", auth.MiddlewareFunc())
 	//{
 	//}
+
 	return
 }
 
-// Auth 认证
+//// Auth 认证
 //func (x *API) Auth() (*jwt.HertzJWTMiddleware, error) {
 //	return jwt.New(&jwt.HertzJWTMiddleware{
-//		Realm:             x.Values.Namespace,
-//		Key:               []byte(x.Values.Key),
-//		Timeout:           time.Hour,
-//		SendAuthorization: false,
-//		SendCookie:        true,
-//		CookieMaxAge:      -1,
-//		SecureCookie:      true,
-//		CookieHTTPOnly:    true,
-//		CookieName:        "access_token",
-//		CookieSameSite:    http.SameSiteStrictMode,
+//		Realm:   x.Values.Namespace,
+//		Key:     []byte(x.Values.Key),
+//		Timeout: time.Hour,
 //		Authenticator: func(ctx context.Context, c *app.RequestContext) (_ interface{}, err error) {
 //			var dto struct {
 //				// 唯一标识，用户名或电子邮件
@@ -140,13 +127,13 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 //		PayloadFunc: func(data interface{}) (claims jwt.MapClaims) {
 //			v := data.(common.Active)
 //			return jwt.MapClaims{
-//				"uid": v.UID,
-//				"jti": v.JTI,
+//				"userId": v.UserId,
+//				"jti":    v.JTI,
 //			}
 //		},
 //		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, message string, time time.Time) {
 //			data := common.GetActive(c)
-//			if err := x.IndexService.LoginSession(ctx, data.UID, data.JTI); err != nil {
+//			if err := x.IndexService.LoginSession(ctx, data.UserId, data.JTI); err != nil {
 //				c.Error(err)
 //				return
 //			}
@@ -167,13 +154,13 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 //		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
 //			data := jwt.ExtractClaims(ctx, c)
 //			return common.Active{
-//				JTI: data["jti"].(string),
-//				UID: data["uid"].(string),
+//				JTI:    data["jti"].(string),
+//				UserId: data["userId"].(string),
 //			}
 //		},
 //		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
 //			identity := data.(common.Active)
-//			if err := x.IndexService.AuthVerify(ctx, identity.UID, identity.JTI); err != nil {
+//			if err := x.IndexService.AuthVerify(ctx, identity.UserId, identity.JTI); err != nil {
 //				c.Error(err)
 //				return false
 //			}
@@ -181,7 +168,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 //		},
 //		LogoutResponse: func(ctx context.Context, c *app.RequestContext, code int) {
 //			data := common.GetActive(c)
-//			if err := x.IndexService.LogoutSession(ctx, data.UID); err != nil {
+//			if err := x.IndexService.LogoutSession(ctx, data.UserId); err != nil {
 //				c.Error(err)
 //				return
 //			}
@@ -261,4 +248,22 @@ func (x *API) ErrHandler() app.HandlerFunc {
 			c.Status(http.StatusInternalServerError)
 		}
 	}
+}
+
+// Initialize 初始化
+func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
+	h = x.Hertz
+	h.Use(x.AccessLog())
+	h.Use(x.ErrHandler())
+	// 加载自定义验证
+	validation.Extend()
+	// 订阅动态配置
+	go x.ValuesService.Sync(ctx)
+	// 传输指标
+	//if err = x.Transfer.Set(transfer.Option{
+	//	Measurement: "access_log",
+	//}); err != nil {
+	//	return
+	//}
+	return
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"net/http"
 	"time"
 )
@@ -19,6 +20,28 @@ func (x *Controller) Index(ctx context.Context, c *app.RequestContext) {
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
 	})
+}
+
+func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
+	var dto struct {
+		// 唯一标识，用户名或电子邮件
+		Identity string `json:"identity,required" vd:"len($)>=4 || email($)"`
+		// 密码
+		Password string `json:"password,required" vd:"len($)>=8"`
+	}
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	ts, err := x.IndexService.Login(ctx, dto.Identity, dto.Password)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.Status(204)
 }
 
 // GetRefreshCode 获取刷新令牌验证码

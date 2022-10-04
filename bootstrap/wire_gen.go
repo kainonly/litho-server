@@ -9,23 +9,26 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/sessions"
+	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/utils/locker"
+	"github.com/weplanx/server/utils/passport"
 )
 
 // Injectors from wire.go:
 
-func NewAPI(values *common.Values) (*api.API, error) {
-	client, err := UseMongoDB(values)
+func NewAPI(values2 *common.Values) (*api.API, error) {
+	client, err := UseMongoDB(values2)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(values, client)
-	redisClient, err := UseRedis(values)
+	database := UseDatabase(values2, client)
+	redisClient, err := UseRedis(values2)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(values)
+	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
 	}
@@ -33,16 +36,16 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyValue, err := UseKeyValue(values, jetStreamContext)
+	keyValue, err := UseKeyValue(values2, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(values, jetStreamContext)
+	transfer, err := UseTransfer(values2, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values:    values,
+		Values:    values2,
 		Mongo:     client,
 		Db:        database,
 		Redis:     redisClient,
@@ -51,26 +54,47 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		KeyValue:  keyValue,
 		Transfer:  transfer,
 	}
-	hertz, err := UseHertz(values)
+	hertz, err := UseHertz(values2)
 	if err != nil {
 		return nil, err
 	}
+	service := &sessions.Service{
+		Inject: inject,
+	}
+	passportPassport := &passport.Passport{
+		Values: values2,
+	}
 	lockerLocker := &locker.Locker{
-		Values: values,
+		Values: values2,
 		Redis:  redisClient,
 	}
-	service := &index.Service{
-		Inject: inject,
-		Locker: lockerLocker,
+	indexService := &index.Service{
+		Inject:   inject,
+		Sessions: service,
+		Passport: passportPassport,
+		Locker:   lockerLocker,
 	}
 	controller := &index.Controller{
-		IndexService: service,
+		IndexService: indexService,
+	}
+	valuesService := &values.Service{
+		Inject: inject,
+	}
+	valuesController := &values.Controller{
+		ValuesService: valuesService,
+	}
+	sessionsController := &sessions.Controller{
+		SessionsService: service,
 	}
 	apiAPI := &api.API{
-		Inject:          inject,
-		Hertz:           hertz,
-		IndexController: controller,
-		IndexService:    service,
+		Inject:             inject,
+		Hertz:              hertz,
+		IndexController:    controller,
+		IndexService:       indexService,
+		ValuesController:   valuesController,
+		ValuesService:      valuesService,
+		SessionsController: sessionsController,
+		SessionsService:    service,
 	}
 	return apiAPI, nil
 }
