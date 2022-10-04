@@ -9,6 +9,7 @@ import (
 	"github.com/hertz-contrib/cors"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
+	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -141,6 +142,27 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 		ExposeHeaders:    values.ExposeHeaders,
 		MaxAge:           time.Duration(values.MaxAge) * time.Second,
 	}))
+
+	return
+}
+
+// UseTest 初始测试
+func UseTest() (api *api.API, err error) {
+	path := "./config/config.yml"
+	values, err := LoadStaticValues(path)
+	if err != nil {
+		panic(err)
+	}
+	if api, err = NewAPI(values); err != nil {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	if _, err = api.Initialize(ctx); err != nil {
+		return
+	}
 
 	return
 }

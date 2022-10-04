@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	gonanoid "github.com/matoous/go-nanoid"
+	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/server/utils/locker"
 	"github.com/weplanx/server/utils/passlib"
+	"github.com/weplanx/server/utils/passport"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Service struct {
 	*common.Inject
-	Locker *locker.Locker
+	Sessions *sessions.Service
+	Passport *passport.Passport
+	Locker   *locker.Locker
 }
 
 // Login 登录
-func (x *Service) Login(ctx context.Context, identity string, password string) (active common.Active, err error) {
+func (x *Service) Login(ctx context.Context, identity string, password string) (ts string, err error) {
 	var user model.User
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
@@ -44,21 +48,33 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 	}
 
 	// 验证密码正确性
-	if err = passlib.Verify(password, user.Password); err != nil {
+	var match bool
+	if match, err = passlib.Verify(password, user.Password); err != nil {
+		return
+	}
+	if !match {
 		// 锁定更新
 		if err = x.Locker.Update(ctx, userId, x.Values.LoginTTL); err != nil {
 			return
 		}
-		if err == passlib.ErrNotMatch {
-			err = errors.New(err, errors.ErrorTypePublic, nil)
-		}
+		err = errors.NewPublic("用户名称或用户密码不正确")
 		return
 	}
 
+	// 生成令牌
 	jti, _ := gonanoid.Nanoid()
-	active = common.Active{
-		JTI:    jti,
-		UserId: userId,
+	if ts, err = x.Passport.Create(userId, jti); err != nil {
+		return
+	}
+
+	// 锁定清零
+	if err = x.Locker.Delete(ctx, userId); err != nil {
+		return
+	}
+
+	// 设置会话
+	if err = x.Sessions.Set(ctx, userId, jti); err != nil {
+		return
 	}
 
 	return

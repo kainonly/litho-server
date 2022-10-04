@@ -8,7 +8,7 @@ import (
 
 func TestService_Login(t *testing.T) {
 	ctx := context.TODO()
-	active, err := x.IndexService.Login(ctx, "weplanx", "pass@VAN1234")
+	ts, err := x.IndexService.Login(ctx, "weplanx", "pass@VAN1234")
 	assert.Nil(t, err)
-	t.Log(active)
+	t.Log(ts)
 }
