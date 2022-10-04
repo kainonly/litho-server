@@ -12,6 +12,7 @@ import (
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/utils/captcha"
 	"github.com/weplanx/server/utils/locker"
 	"github.com/weplanx/server/utils/passport"
 )
@@ -58,9 +59,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &sessions.Service{
-		Inject: inject,
-	}
 	passportPassport := &passport.Passport{
 		Values: values2,
 	}
@@ -68,11 +66,19 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Values: values2,
 		Redis:  redisClient,
 	}
+	captchaCaptcha := &captcha.Captcha{
+		Values: values2,
+		Redis:  redisClient,
+	}
+	service := &sessions.Service{
+		Inject: inject,
+	}
 	indexService := &index.Service{
-		Inject:   inject,
-		Sessions: service,
-		Passport: passportPassport,
-		Locker:   lockerLocker,
+		Inject:          inject,
+		Passport:        passportPassport,
+		Locker:          lockerLocker,
+		Captcha:         captchaCaptcha,
+		SessionsService: service,
 	}
 	controller := &index.Controller{
 		IndexService: indexService,

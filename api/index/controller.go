@@ -5,6 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/weplanx/server/utils/passport"
 	"net/http"
 	"time"
 )
@@ -22,6 +23,8 @@ func (x *Controller) Index(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
+// Login 登录认证
+// @router /login [POST]
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
 		// 唯一标识，用户名或电子邮件
@@ -41,42 +44,66 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
-	c.Status(204)
+	c.JSON(200, utils.H{
+		"code":    0,
+		"message": "登录认证成功",
+	})
 }
 
 // GetRefreshCode 获取刷新令牌验证码
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
-	//active := common.GetActive(c)
-	//code, err := x.IndexService.GetRefreshCode(ctx, active.UID)
-	//if err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//c.JSON(http.StatusOK, utils.H{
-	//	"code": code,
-	//})
+	claims := passport.Identity(c)
+	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.H{
+		"code": code,
+	})
 }
 
-// VerifyRefreshCode 校验刷新令牌验证码
+// RefreshToken 刷新令牌
 // @router /refresh_token [POST]
-func (x *Controller) VerifyRefreshCode(ctx context.Context, c *app.RequestContext) {
-	//var dto struct {
-	//	Code string `json:"code,required"`
-	//}
-	//if err := c.BindAndValidate(&dto); err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//active := common.GetActive(c)
-	//if err := x.IndexService.Captcha.Verify(ctx, active.UID, dto.Code); err != nil {
-	//	c.Error(err)
-	//	return
-	//}
-	//
-	//c.Next(ctx)
+func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
+	var dto struct {
+		Code string `json:"code,required"`
+	}
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	claims := passport.Identity(c)
+	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.JSON(http.StatusOK, utils.H{
+		"code":    0,
+		"message": "令牌刷新成功",
+	})
+}
+
+// Logout 注销认证
+// @router /logout [POST]
+func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
+	claims := passport.Identity(c)
+	if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.JSON(200, utils.H{
+		"code":    0,
+		"message": "认证已注销",
+	})
 }
 
 // GetNavs 导航数据

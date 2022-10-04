@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/utils/captcha"
 	"github.com/weplanx/server/utils/locker"
 	"github.com/weplanx/server/utils/passport"
 )
@@ -26,6 +27,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		wire.Struct(new(common.Inject), "*"),
 		wire.Struct(new(passport.Passport), "*"),
 		wire.Struct(new(locker.Locker), "*"),
+		wire.Struct(new(captcha.Captcha), "*"),
 	)
 	return &api.API{}, nil
 }

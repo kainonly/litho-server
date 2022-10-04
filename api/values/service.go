@@ -13,17 +13,6 @@ type Service struct {
 	*common.Inject
 }
 
-var Default = common.DynamicValues{
-	SessionTTL:      time.Hour,
-	LoginTTL:        time.Minute * 15,
-	LoginFailures:   5,
-	IpLoginFailures: 10,
-	IpWhitelist:     []string{},
-	IpBlacklist:     []string{},
-	PwdStrategy:     1,
-	PwdTTL:          time.Hour * 24 * 365,
-}
-
 // Load 载入配置
 func (x *Service) Load(ctx context.Context) (err error) {
 	var b []byte
@@ -96,7 +85,7 @@ func (x *Service) Get(ctx context.Context, keys ...string) (values map[string]in
 		if !all && !sets[k] {
 			continue
 		}
-		if secret[k] {
+		if Secret[k] {
 			// 密文
 			if v != nil || v != "" {
 				values[k] = "*"
