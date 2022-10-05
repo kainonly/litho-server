@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	path := "./config/config.yml"
-	values, err := bootstrap.LoadStaticValues(path)
+	values, err := bootstrap.LoadStaticValues()
 	if err != nil {
 		panic(err)
 	}

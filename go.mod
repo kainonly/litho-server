@@ -7,6 +7,7 @@ require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.2
 	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
 	github.com/bytedance/sonic v1.5.0
+	github.com/caarlos0/env/v6 v6.10.1
 	github.com/cloudwego/hertz v0.3.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.4.2
@@ -20,7 +21,6 @@ require (
 	github.com/weplanx/transfer v1.3.0
 	go.mongodb.org/mongo-driver v1.10.2
 	golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -63,4 +63,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
