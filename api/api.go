@@ -49,6 +49,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
 	h.GET("", x.IndexController.Index)
 	h.POST("login", x.IndexController.Login)
+	h.GET("verify", x.IndexController.Verify)
 	h.GET("code", auth, x.IndexController.GetRefreshCode)
 	h.POST("refresh_token", auth, x.IndexController.RefreshToken)
 	h.POST("logout", auth, x.IndexController.Logout)
@@ -197,7 +198,7 @@ func (x *API) ErrHandler() app.HandlerFunc {
 // Initialize 初始化
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
-	h.Use(x.AccessLog())
+	//h.Use(x.AccessLog())
 	h.Use(x.ErrHandler())
 	// 加载自定义验证
 	validation.Extend()
