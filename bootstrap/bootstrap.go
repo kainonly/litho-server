@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"github.com/caarlos0/env/v6"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
@@ -15,24 +16,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
 )
 
 // LoadStaticValues 加载静态配置
-// 默认配置路径 ./config/config.yml
-func LoadStaticValues(path string) (values *common.Values, err error) {
-	if _, err = os.Stat(path); os.IsNotExist(err) {
-		return nil, fmt.Errorf("静态配置不存在，请检查路径 [%s]", path)
-	}
-	var b []byte
-	if b, err = ioutil.ReadFile(path); err != nil {
-		return
-	}
-	if err = yaml.Unmarshal(b, &values); err != nil {
+func LoadStaticValues() (values *common.Values, err error) {
+	values = new(common.Values)
+	if err = env.Parse(values); err != nil {
 		return
 	}
 	return
@@ -44,7 +36,7 @@ func LoadStaticValues(path string) (values *common.Values, err error) {
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
-		options.Client().ApplyURI(values.Database.Uri),
+		options.Client().ApplyURI(values.Database.Mongo),
 	)
 }
 
@@ -54,13 +46,13 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Database) {
 	option := options.Database().
 		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
-	return client.Database(values.Database.Db, option)
+	return client.Database(values.Database.Name, option)
 }
 
 // UseRedis 初始化 Redis
 // 配置文档 https://github.com/go-redis/redis
 func UseRedis(values *common.Values) (client *redis.Client, err error) {
-	opts, err := redis.ParseURL(values.Redis.Uri)
+	opts, err := redis.ParseURL(values.Database.Redis)
 	if err != nil {
 		return
 	}
@@ -135,12 +127,12 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	// 全局中间件
 	h.Use(cors.New(cors.Config{
-		AllowOrigins:     values.AllowOrigins,
-		AllowMethods:     values.AllowMethods,
-		AllowHeaders:     values.AllowHeaders,
-		AllowCredentials: values.AllowCredentials,
-		ExposeHeaders:    values.ExposeHeaders,
-		MaxAge:           time.Duration(values.MaxAge) * time.Second,
+		AllowOrigins:     values.Hosts,
+		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
+		AllowHeaders:     []string{"X-Pagesize", "X-Page"},
+		AllowCredentials: true,
+		ExposeHeaders:    []string{"X-Total"},
+		MaxAge:           time.Hour * 2,
 	}))
 
 	return
@@ -148,8 +140,7 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 // UseTest 初始测试
 func UseTest() (api *api.API, err error) {
-	path := "./config/config.yml"
-	values, err := LoadStaticValues(path)
+	values, err := LoadStaticValues()
 	if err != nil {
 		panic(err)
 	}

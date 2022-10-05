@@ -2,12 +2,13 @@ package common
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
-	"strings"
-	"time"
 )
 
 type Inject struct {
@@ -22,70 +23,60 @@ type Inject struct {
 }
 
 type Values struct {
-	// 应用设置
-	App `yaml:"app"`
+	// 监听地址
+	Address string `env:"ADDRESS" envDefault:":3000"`
 
-	// 跨域设置
-	Cors `yaml:"cors"`
+	// 命名空间
+	Namespace string `env:"NAMESPACE,required"`
 
-	// MongoDB 配置
-	Database `yaml:"database"`
+	// 密钥
+	Key string `env:"KEY,required"`
 
-	// Redis 配置
-	Redis `yaml:"redis"`
+	// 跨域
+	Hosts []string `env:"HOSTS" envSeparator:","`
+
+	// 数据库
+	Database `envPrefix:"DATABASE_"`
 
 	// NATS 配置
-	Nats `yaml:"nats"`
+	Nats `envPrefix:"NATS_"`
 
 	// 动态配置
-	DynamicValues `yaml:"-"`
+	DynamicValues `env:"-"`
 }
 
-type App struct {
-	// 地址
-	Address string `yaml:"address"`
-	// 命名空间
-	Namespace string `yaml:"namespace"`
-	// 密钥
-	Key string `yaml:"key"`
+type Database struct {
+	// MongoDB 连接 Uri
+	Mongo string `env:"MONGO,required"`
+
+	// MongoDB 数据库名称
+	Name string `env:"NAME,required"`
+
+	// Redis 连接 Uri
+	Redis string `env:"REDIS,required"`
+}
+
+type Nats struct {
+	// Nats 连接地址
+	Hosts []string `env:"HOSTS,required" envSeparator:","`
+
+	// Nats Nkey 认证
+	Nkey string `env:"NKEY,required"`
 }
 
 // Name 生成空间名称
-func (x App) Name(v ...string) string {
+func (x Values) Name(v ...string) string {
 	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
 
 // Subject 生成主题名称
-func (x App) Subject(v string) string {
+func (x Values) Subject(v string) string {
 	return fmt.Sprintf(`%s.events.%s`, x.Namespace, v)
 }
 
 // Queue 生成队列名称
-func (x App) Queue(v string) string {
+func (x Values) Queue(v string) string {
 	return fmt.Sprintf(`%s:events:%s`, x.Namespace, v)
-}
-
-type Cors struct {
-	AllowOrigins     []string `yaml:"allowOrigins"`
-	AllowMethods     []string `yaml:"allowMethods"`
-	AllowHeaders     []string `yaml:"allowHeaders"`
-	ExposeHeaders    []string `yaml:"exposeHeaders"`
-	AllowCredentials bool     `yaml:"allowCredentials"`
-	MaxAge           int      `yaml:"maxAge"`
-}
-
-type Database struct {
-	Uri string `yaml:"uri"`
-	Db  string `yaml:"db"`
-}
-
-type Redis struct {
-	Uri string `yaml:"uri"`
-}
-
-type Nats struct {
-	Hosts []string `yaml:"hosts"`
-	Nkey  string   `yaml:"nkey"`
 }
 
 // DynamicValues 动态配置
