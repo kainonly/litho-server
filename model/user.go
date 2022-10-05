@@ -46,10 +46,10 @@ type User struct {
 	LastTime time.Time `bson:"last_time" json:"last_time"`
 
 	// 创建时间
-	CreateTime time.Time `bson:"create_time" json:"-"`
+	CreateTime time.Time `bson:"create_time" json:"create_time"`
 
 	// 更新时间
-	UpdateTime time.Time `bson:"update_time" json:"-"`
+	UpdateTime time.Time `bson:"update_time" json:"update_time"`
 }
 
 func NewUser(username string, password string) *User {

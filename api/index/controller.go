@@ -52,6 +52,33 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
+// Verify 主动验证
+// @router /verify [GET]
+func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
+	ts := c.Cookie("access_token")
+	if ts == nil {
+		c.JSON(401, utils.H{
+			"code":    0,
+			"message": "认证已失效请重新登录",
+		})
+		return
+	}
+
+	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
+		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+		c.JSON(401, utils.H{
+			"code":    0,
+			"message": "认证已失效请重新登录",
+		})
+		return
+	}
+
+	c.JSON(200, utils.H{
+		"code":    0,
+		"message": "验证成功",
+	})
+}
+
 // GetRefreshCode 获取刷新令牌验证码
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {

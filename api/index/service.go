@@ -86,6 +86,18 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 		return
 	}
 
+	// 状态更新
+	if _, err = x.Db.Collection("users").
+		UpdateOne(ctx,
+			bson.M{"_id": user.ID},
+			bson.M{
+				"$set": bson.M{"last_time": time.Now()},
+				"$inc": bson.M{"sessions": 1},
+			},
+		); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -270,24 +282,26 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 	}
 
 	// 权限组名称
-	var cursor *mongo.Cursor
-	var roles []string
-	if cursor, err = x.Db.Collection("roles").
-		Find(ctx, bson.M{"_id": bson.M{"$in": user.Roles}}); err != nil {
-		return
-	}
-	for cursor.Next(ctx) {
-		var value model.Role
-		if err = cursor.Decode(&value); err != nil {
+	if len(user.Roles) != 0 {
+		var cursor *mongo.Cursor
+		var roles []string
+		if cursor, err = x.Db.Collection("roles").
+			Find(ctx, bson.M{"_id": bson.M{"$in": user.Roles}}); err != nil {
 			return
 		}
+		for cursor.Next(ctx) {
+			var value model.Role
+			if err = cursor.Decode(&value); err != nil {
+				return
+			}
 
-		roles = append(roles, value.Name)
+			roles = append(roles, value.Name)
+		}
+		if err = cursor.Err(); err != nil {
+			return
+		}
+		data["roles"] = roles
 	}
-	if err = cursor.Err(); err != nil {
-		return
-	}
-	data["roles"] = roles
 
 	// 部门名称
 	if user.Department != nil {
