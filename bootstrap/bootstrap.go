@@ -129,7 +129,7 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 	h.Use(cors.New(cors.Config{
 		AllowOrigins:     values.Hosts,
 		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
-		AllowHeaders:     []string{"X-Pagesize", "X-Page"},
+		AllowHeaders:     []string{"Content-Type", "X-Pagesize", "X-Page"},
 		AllowCredentials: true,
 		ExposeHeaders:    []string{"X-Total"},
 		MaxAge:           time.Hour * 2,
