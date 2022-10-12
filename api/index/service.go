@@ -269,6 +269,8 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 	data = map[string]interface{}{
 		"username":    user.Username,
 		"email":       user.Email,
+		"department":  "",
+		"roles":       []string{},
 		"name":        user.Name,
 		"avatar":      user.Avatar,
 		"sessions":    user.Sessions,
@@ -278,12 +280,14 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 
 	// 权限组名称
 	if len(user.Roles) != 0 {
+		roles := data["roles"].([]string)
+
 		var cursor *mongo.Cursor
-		var roles []string
 		if cursor, err = x.Db.Collection("roles").
 			Find(ctx, bson.M{"_id": bson.M{"$in": user.Roles}}); err != nil {
 			return
 		}
+
 		for cursor.Next(ctx) {
 			var value model.Role
 			if err = cursor.Decode(&value); err != nil {
@@ -295,7 +299,6 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 		if err = cursor.Err(); err != nil {
 			return
 		}
-		data["roles"] = roles
 	}
 
 	// 部门名称
