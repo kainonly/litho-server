@@ -98,6 +98,12 @@ func (x *Service) Login(ctx context.Context, identity string, password string) (
 		return
 	}
 
+	// 用户缓存刷新
+	key := x.Values.Name("users", userId)
+	if _, err = x.Redis.Del(ctx, key).Result(); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -214,47 +220,36 @@ func (x *Service) GetOptions(v string) utils.H {
 	return nil
 }
 
-// GetIdentity 获取登录用户数据
+// GetIdentity 获取用户缓存
 func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.User, err error) {
-	key := x.Values.Name("users")
+	key := x.Values.Name("users", userId)
 	var exists int64
 	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
 		return
 	}
 
 	if exists == 0 {
-		option := options.Find().SetProjection(bson.M{"password": 0})
-		var cursor *mongo.Cursor
-		if cursor, err = x.Db.Collection("users").
-			Find(ctx, bson.M{"status": true}, option); err != nil {
+		option := options.FindOne().SetProjection(bson.M{"password": 0})
+		if err = x.Db.Collection("users").
+			FindOne(ctx, bson.M{"status": true}, option).
+			Decode(&data); err != nil {
 			return
 		}
 
-		values := make(map[string]string)
-		for cursor.Next(ctx) {
-			var user model.User
-			if err = cursor.Decode(&user); err != nil {
-				return
-			}
-
-			var value string
-			if value, err = sonic.MarshalString(user); err != nil {
-				return
-			}
-
-			values[user.ID.Hex()] = value
-		}
-		if err = cursor.Err(); err != nil {
+		var value string
+		if value, err = sonic.MarshalString(data); err != nil {
 			return
 		}
 
-		if err = x.Redis.HSet(ctx, key, values).Err(); err != nil {
+		if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
 			return
 		}
+
+		return
 	}
 
 	var result string
-	if result, err = x.Redis.HGet(ctx, key, userId).Result(); err != nil {
+	if result, err = x.Redis.Get(ctx, key).Result(); err != nil {
 		return
 	}
 	if err = sonic.UnmarshalString(result, &data); err != nil {
