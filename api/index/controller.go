@@ -182,8 +182,6 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	// 用户名
-	Username string `json:"username,omitempty" bson:"username,omitempty"`
 	// 电子邮件
 	Email string `json:"email,omitempty" bson:"email,omitempty" vd:"$=='' || email($)"`
 	// 称呼
@@ -193,7 +191,7 @@ type SetUserDto struct {
 	// 密码
 	Password string `json:"password,omitempty" bson:"password,omitempty"`
 	// 重置
-	Reset string `json:"reset,omitempty" vd:"in($, 'feishu')" bson:"reset"`
+	Reset string `json:"reset,omitempty" vd:"$=='' || in($, 'feishu')" bson:"reset"`
 	// 更新时间
 	UpdateTime time.Time `json:"-" bson:"update_time"`
 }
@@ -217,15 +215,6 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	if _, err := x.IndexService.SetUser(ctx, claims.UserId, dto); err != nil {
 		c.Error(err)
 		return
-	}
-
-	// 用户名变更，注销登录状态
-	if dto.Username != "" {
-		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
-		if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
-			c.Error(err)
-			return
-		}
 	}
 
 	c.Status(http.StatusNoContent)

@@ -316,8 +316,8 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 }
 
 // SetUser 设置登录用户信息
-func (x *Service) SetUser(ctx context.Context, id string, data SetUserDto) (interface{}, error) {
-	oid, _ := primitive.ObjectIDFromHex(id)
+func (x *Service) SetUser(ctx context.Context, userId string, data SetUserDto) (result interface{}, err error) {
+	oid, _ := primitive.ObjectIDFromHex(userId)
 	update := bson.M{
 		"$set": data,
 	}
@@ -325,6 +325,16 @@ func (x *Service) SetUser(ctx context.Context, id string, data SetUserDto) (inte
 		update["$unset"] = bson.M{data.Reset: ""}
 	}
 
-	return x.Db.Collection("users").
-		UpdateByID(ctx, oid, update)
+	if result, err = x.Db.Collection("users").
+		UpdateByID(ctx, oid, update); err != nil {
+		return
+	}
+
+	// 用户缓存刷新
+	key := x.Values.Name("users", userId)
+	if _, err = x.Redis.Del(ctx, key).Result(); err != nil {
+		return
+	}
+
+	return
 }
