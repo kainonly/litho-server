@@ -5,17 +5,20 @@ import (
 	"time"
 )
 
-type App struct {
+type Project struct {
 	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 
-	// 应用名称
+	// 项目名称
 	Name string `bson:"name" json:"name"`
 
+	// 项目命名空间
+	Namespace string `bson:"namespace" json:"namespace"`
+
 	// Access Key ID
-	AppId string `bson:"key" json:"key"`
+	AccessKeyID string `bson:"access_key_id" json:"access_key_id"`
 
 	// Secret Access Key
-	Secret string `bson:"secret" json:"secret"`
+	SecretAccessKey string `bson:"secret_access_key" json:"secret_access_key"`
 
 	// 后端入口
 	Entry []string `bson:"entry" json:"entry"`
