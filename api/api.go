@@ -121,7 +121,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 	}
 }
 
-// AccessLog 日志
+// AccessLogs 日志
 func (x *API) AccessLogs() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		start := time.Now()
@@ -197,7 +197,7 @@ func (x *API) ErrHandler() app.HandlerFunc {
 // Initialize 初始化
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
-	//h.Use(x.AccessLog())
+	h.Use(x.AccessLogs())
 	h.Use(x.ErrHandler())
 	// 加载自定义验证
 	validation.Extend()
