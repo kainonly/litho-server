@@ -108,8 +108,8 @@ func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue
 
 // UseTransfer 初始日志传输
 // https://github.com/weplanx/transfer
-func UseTransfer(values *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
-	return transfer.New(values.Namespace, js)
+func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
+	return transfer.New(values.Namespace, db, js)
 }
 
 // UseHertz 使用 Hertz
