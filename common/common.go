@@ -2,12 +2,12 @@ package common
 
 import (
 	"fmt"
+	"github.com/weplanx/transfer"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
-	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

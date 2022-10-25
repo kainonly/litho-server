@@ -1,6 +1,6 @@
 # Weplanx Server
 
-Golang 版本的后端服务，基于 Hertz 设计的单体实验项目
+Backend service, based on Hertz's experimental project
 
 ## License
 

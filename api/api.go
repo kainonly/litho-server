@@ -20,7 +20,6 @@ import (
 	"github.com/weplanx/server/utils/validation"
 	"github.com/weplanx/transfer"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -123,27 +122,27 @@ func (x *API) AuthGuard() app.HandlerFunc {
 }
 
 // AccessLog 日志
-func (x *API) AccessLog() app.HandlerFunc {
+func (x *API) AccessLogs() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		start := time.Now()
 		c.Next(ctx)
 		end := time.Now()
 		latency := end.Sub(start).Microseconds
-		x.Transfer.Publish(context.Background(), "access_log", transfer.Payload{
-			Tags: map[string]string{
+		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
+			Metadata: map[string]interface{}{
 				"method": string(c.Request.Header.Method()),
 				"host":   string(c.Request.Host()),
 				"path":   string(c.Request.Path()),
-				"status": strconv.Itoa(c.Response.StatusCode()),
+				"status": c.Response.StatusCode(),
 				"ip":     c.ClientIP(),
 			},
-			Fields: map[string]interface{}{
+			Data: map[string]interface{}{
 				"user_agent": string(c.Request.Header.UserAgent()),
 				"query":      c.Request.QueryString(),
 				"body":       string(c.Request.Body()),
 				"cost":       latency(),
 			},
-			Time: start,
+			Timestamp: start,
 		})
 	}
 }
@@ -205,10 +204,12 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	// 订阅动态配置
 	go x.ValuesService.Sync(ctx)
 	// 传输指标
-	//if err = x.Transfer.Set(transfer.Option{
-	//	Measurement: "access_log",
-	//}); err != nil {
-	//	return
-	//}
+	if err = x.Transfer.Set(ctx, transfer.Option{
+		Key:         "access",
+		Description: "请求日志",
+		TTL:         15552000,
+	}); err != nil {
+		return
+	}
 	return
 }
