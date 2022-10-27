@@ -2,6 +2,7 @@ package collections
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -68,11 +69,12 @@ func (x *Service) Replace(ctx context.Context, name string, id primitive.ObjectI
 
 // Delete 删除指定 ID 的文档
 func (x *Service) Delete(ctx context.Context, name string, id primitive.ObjectID) (_ interface{}, err error) {
-	return x.Db.Collection(name).DeleteOne(ctx, M{"_id": id})
+	return x.Db.Collection(name).DeleteOne(ctx, M{"_id": id, "labels.fixed": bson.M{"$exists": false}})
 }
 
 // BulkDelete 批量删除匹配文档
 func (x *Service) BulkDelete(ctx context.Context, name string, filter M) (_ interface{}, err error) {
+	filter["labels.fixed"] = bson.M{"$exists": false}
 	return x.Db.Collection(name).DeleteMany(ctx, filter)
 }
 

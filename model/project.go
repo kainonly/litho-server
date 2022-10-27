@@ -23,6 +23,9 @@ type Project struct {
 	// 有效时间
 	ExpireTime *time.Time `bson:"expire_time" json:"expire_time"`
 
+	// 标签
+	Labels map[string]string `bson:"labels" json:"-"`
+
 	// 状态
 	Status bool `bson:"status" json:"status"`
 
