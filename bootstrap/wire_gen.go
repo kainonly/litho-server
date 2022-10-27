@@ -42,7 +42,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(values2, jetStreamContext)
+	transfer, err := UseTransfer(values2, database, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
