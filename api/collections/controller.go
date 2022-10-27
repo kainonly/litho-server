@@ -480,12 +480,19 @@ func (x *Controller) Transform(data M, format M) (err error) {
 				}
 			}
 			break
+
 		case "date":
-			// 转换为 ISODate
-			if cursor[key], err = time.Parse(time.RFC1123, cursor[key].(string)); err != nil {
+			if cursor[key], err = time.Parse(time.RFC3339, cursor[key].(string)); err != nil {
 				return
 			}
 			break
+
+		//case "date":
+		//	// 转换为 ISODate
+		//	if cursor[key], err = time.Parse(time.RFC1123, cursor[key].(string)); err != nil {
+		//		return
+		//	}
+		//	break
 
 		case "password":
 			// 密码类型，转换为 Argon2id
