@@ -13,9 +13,6 @@ import (
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/captcha"
-	"github.com/weplanx/server/utils/locker"
-	"github.com/weplanx/server/utils/passport"
 )
 
 // Injectors from wire.go:
@@ -60,25 +57,17 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	passportPassport := &passport.Passport{
-		Values: values2,
-	}
-	lockerLocker := &locker.Locker{
-		Values: values2,
-		Redis:  redisClient,
-	}
-	captchaCaptcha := &captcha.Captcha{
-		Values: values2,
-		Redis:  redisClient,
-	}
+	passport := UsePassport(values2)
+	locker := UseLocker(values2, redisClient)
+	captcha := UseCaptcha(values2, redisClient)
 	service := &sessions.Service{
 		Inject: inject,
 	}
 	indexService := &index.Service{
 		Inject:          inject,
-		Passport:        passportPassport,
-		Locker:          lockerLocker,
-		Captcha:         captchaCaptcha,
+		Passport:        passport,
+		Locker:          locker,
+		Captcha:         captcha,
 		SessionsService: service,
 	}
 	controller := &index.Controller{
