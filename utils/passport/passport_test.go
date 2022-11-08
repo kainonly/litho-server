@@ -3,8 +3,7 @@ package passport_test
 import (
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/passport"
+	"github.com/weplanx/utils/passport"
 	"os"
 	"testing"
 )
@@ -12,12 +11,7 @@ import (
 var x *passport.Passport
 
 func TestMain(m *testing.M) {
-	x = &passport.Passport{
-		Values: &common.Values{
-			App: common.App{Namespace: "dev"},
-		},
-	}
-
+	x = passport.NewPassport("dev", "hZXD^@K9%wydDC3Z@cyDvE%5bz9SP7gy")
 	os.Exit(m.Run())
 }
 
@@ -33,5 +27,5 @@ func TestPassport(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, clamis.ID, jti)
 	assert.Equal(t, clamis.UserId, "xs1fp")
-	assert.Equal(t, clamis.Issuer, x.Values.Namespace)
+	assert.Equal(t, clamis.Issuer, x.Namespace)
 }

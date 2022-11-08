@@ -2,20 +2,27 @@ package captcha
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/go-redis/redis/v8"
-	"github.com/weplanx/server/common"
 	"time"
 )
 
 type Captcha struct {
-	Values *common.Values
-	Redis  *redis.Client
+	Namespace string
+	Redis     *redis.Client
+}
+
+func NewCaptcha(namespace string, client *redis.Client) *Captcha {
+	return &Captcha{
+		Namespace: namespace,
+		Redis:     client,
+	}
 }
 
 // Key 验证命名
 func (x *Captcha) Key(name string) string {
-	return x.Values.Name("captcha", name)
+	return fmt.Sprintf(`%s:captcha:%s`, x.Namespace, name)
 }
 
 // Create 创建验证码

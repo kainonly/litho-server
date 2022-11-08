@@ -2,7 +2,7 @@ package passlib_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/utils/passlib"
+	"github.com/weplanx/utils/passlib"
 	"testing"
 )
 

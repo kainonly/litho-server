@@ -4,8 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/captcha"
+	"github.com/weplanx/utils/captcha"
 	"os"
 	"testing"
 	"time"
@@ -18,12 +17,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		return
 	}
-	x = &captcha.Captcha{
-		Values: &common.Values{
-			App: common.App{Namespace: "dev"},
-		},
-		Redis: redis.NewClient(opts),
-	}
+	x = captcha.NewCaptcha("dev", redis.NewClient(opts))
 	os.Exit(m.Run())
 }
 
