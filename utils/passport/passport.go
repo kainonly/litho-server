@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/weplanx/server/common"
 	"time"
 )
 
 type Passport struct {
-	Values *common.Values
+	Namespace string
+	Key       string
+}
+
+func NewPassport(namespace string, key string) *Passport {
+	return &Passport{
+		Namespace: namespace,
+		Key:       key,
+	}
 }
 
 type Claims struct {
@@ -25,11 +32,11 @@ func (x *Passport) Create(userId string, jti string) (tokenString string, err er
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(2 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    x.Values.Namespace,
+			Issuer:    x.Namespace,
 			ID:        jti,
 		},
 	})
-	return token.SignedString([]byte(x.Values.Key))
+	return token.SignedString([]byte(x.Key))
 }
 
 // Verify 验证令牌
@@ -38,7 +45,7 @@ func (x *Passport) Verify(tokenString string) (claims Claims, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(x.Values.Key), nil
+		return []byte(x.Key), nil
 	}); err != nil {
 		return
 	}

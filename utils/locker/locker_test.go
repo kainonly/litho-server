@@ -4,8 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/common"
-	"github.com/weplanx/server/utils/locker"
+	"github.com/weplanx/utils/locker"
 	"os"
 	"testing"
 	"time"
@@ -18,13 +17,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		return
 	}
-
-	x = &locker.Locker{
-		Values: &common.Values{
-			App: common.App{Namespace: "dev"},
-		},
-		Redis: redis.NewClient(opts),
-	}
+	x = locker.NewLocker("dev", redis.NewClient(opts))
 	os.Exit(m.Run())
 }
 
