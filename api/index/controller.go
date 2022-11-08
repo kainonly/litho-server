@@ -6,8 +6,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
-	"github.com/weplanx/server/utils/passlib"
-	"github.com/weplanx/server/utils/passport"
+	"github.com/weplanx/utils/passlib"
+	"github.com/weplanx/utils/passport"
 	"net/http"
 	"time"
 )

@@ -13,6 +13,9 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
+	"github.com/weplanx/utils/captcha"
+	"github.com/weplanx/utils/locker"
+	"github.com/weplanx/utils/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -104,6 +107,18 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 // 说明 https://docs.nats.io/using-nats/developer/develop_jetstream/kv
 func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
+}
+
+func UsePassport(values *common.Values) *passport.Passport {
+	return passport.NewPassport(values.Namespace, values.Key)
+}
+
+func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
+	return locker.NewLocker(values.Namespace, client)
+}
+
+func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
+	return captcha.NewCaptcha(values.Namespace, client)
 }
 
 // UseTransfer 初始日志传输
