@@ -8,11 +8,11 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
-	"github.com/weplanx/server/api/collections"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/utils/dsl"
 )
 
 // Injectors from wire.go:
@@ -82,23 +82,23 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
-	collectionsService := &collections.Service{
-		Db: database,
+	dslDSL := UseDSL(values2, database)
+	dslService := &dsl.Service{
+		DSL: dslDSL,
 	}
-	collectionsController := &collections.Controller{
-		CollectionService: collectionsService,
+	dslController := &dsl.Controller{
+		CollectionService: dslService,
 	}
 	apiAPI := &api.API{
-		Inject:                inject,
-		Hertz:                 hertz,
-		IndexController:       controller,
-		IndexService:          indexService,
-		ValuesController:      valuesController,
-		ValuesService:         valuesService,
-		SessionsController:    sessionsController,
-		SessionsService:       service,
-		CollectionsController: collectionsController,
-		CollectionsService:    collectionsService,
+		Inject:             inject,
+		Hertz:              hertz,
+		IndexController:    controller,
+		IndexService:       indexService,
+		ValuesController:   valuesController,
+		ValuesService:      valuesService,
+		SessionsController: sessionsController,
+		SessionsService:    service,
+		DSL:                dslController,
 	}
 	return apiAPI, nil
 }
