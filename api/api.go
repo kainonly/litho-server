@@ -18,7 +18,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/dsl"
-	"github.com/weplanx/utils/validation"
+	"github.com/weplanx/utils/helper"
 	"net/http"
 	"time"
 )
@@ -74,21 +74,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_sessions.DELETE("", x.SessionsController.Clear)
 	}
 
-	_collections := h.Group("/:collection", auth)
-	{
-		_collections.POST("", x.DSL.Create)
-		_collections.POST("bulk-create", x.DSL.BulkCreate)
-		_collections.GET("_size", x.DSL.Size)
-		_collections.GET("", x.DSL.Find)
-		_collections.GET("_one", x.DSL.FindOne)
-		_collections.GET(":id", x.DSL.FindById)
-		_collections.PATCH("", x.DSL.Update)
-		_collections.PATCH(":id", x.DSL.UpdateById)
-		_collections.PUT(":id", x.DSL.Replace)
-		_collections.DELETE(":id", x.DSL.Delete)
-		_collections.POST("bulk-delete", x.DSL.BulkDelete)
-		_collections.POST("sort", x.DSL.Sort)
-	}
+	helper.BindDSL(h.Group("/:collection", auth), x.DSL)
 
 	return
 }
@@ -199,7 +185,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h.Use(x.AccessLogs())
 	h.Use(x.ErrHandler())
 	// 加载自定义验证
-	validation.Extend()
+	helper.RegValidate()
 	// 订阅动态配置
 	go x.ValuesService.Sync(ctx)
 	// 传输指标
