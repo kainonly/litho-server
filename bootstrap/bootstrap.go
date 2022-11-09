@@ -115,16 +115,19 @@ func UseDSL(values *common.Values, db *mongo.Database) *dsl.DSL {
 	return dsl.New(db, dsl.SetNamespace(values.Namespace))
 }
 
+// UsePassport 使用鉴权
 func UsePassport(values *common.Values) *passport.Passport {
-	return passport.NewPassport(values.Namespace, values.Key)
+	return passport.New(values.Namespace, values.Key)
 }
 
+// UseLocker 使用锁定
 func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
-	return locker.NewLocker(values.Namespace, client)
+	return locker.New(values.Namespace, client)
 }
 
+// UseCaptcha 使用验证
 func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
-	return captcha.NewCaptcha(values.Namespace, client)
+	return captcha.New(values.Namespace, client)
 }
 
 // UseTransfer 初始日志传输
