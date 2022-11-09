@@ -12,12 +12,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
-	"github.com/weplanx/server/api/collections"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
+	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/validation"
 	"net/http"
 	"time"
@@ -27,21 +27,20 @@ var Provides = wire.NewSet(
 	index.Provides,
 	values.Provides,
 	sessions.Provides,
-	collections.Provides,
+	dsl.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz                 *server.Hertz
-	IndexController       *index.Controller
-	IndexService          *index.Service
-	ValuesController      *values.Controller
-	ValuesService         *values.Service
-	SessionsController    *sessions.Controller
-	SessionsService       *sessions.Service
-	CollectionsController *collections.Controller
-	CollectionsService    *collections.Service
+	Hertz              *server.Hertz
+	IndexController    *index.Controller
+	IndexService       *index.Service
+	ValuesController   *values.Controller
+	ValuesService      *values.Service
+	SessionsController *sessions.Controller
+	SessionsService    *sessions.Service
+	DSL                *dsl.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -77,18 +76,18 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 	_collections := h.Group("/:collection", auth)
 	{
-		_collections.POST("", x.CollectionsController.Create)
-		_collections.POST("bulk-create", x.CollectionsController.BulkCreate)
-		_collections.GET("_size", x.CollectionsController.Size)
-		_collections.GET("", x.CollectionsController.Find)
-		_collections.GET("_one", x.CollectionsController.FindOne)
-		_collections.GET(":id", x.CollectionsController.FindById)
-		_collections.PATCH("", x.CollectionsController.Update)
-		_collections.PATCH(":id", x.CollectionsController.UpdateById)
-		_collections.PUT(":id", x.CollectionsController.Replace)
-		_collections.DELETE(":id", x.CollectionsController.Delete)
-		_collections.POST("bulk-delete", x.CollectionsController.BulkDelete)
-		_collections.POST("sort", x.CollectionsController.Sort)
+		_collections.POST("", x.DSL.Create)
+		_collections.POST("bulk-create", x.DSL.BulkCreate)
+		_collections.GET("_size", x.DSL.Size)
+		_collections.GET("", x.DSL.Find)
+		_collections.GET("_one", x.DSL.FindOne)
+		_collections.GET(":id", x.DSL.FindById)
+		_collections.PATCH("", x.DSL.Update)
+		_collections.PATCH(":id", x.DSL.UpdateById)
+		_collections.PUT(":id", x.DSL.Replace)
+		_collections.DELETE(":id", x.DSL.Delete)
+		_collections.POST("bulk-delete", x.DSL.BulkDelete)
+		_collections.POST("sort", x.DSL.Sort)
 	}
 
 	return

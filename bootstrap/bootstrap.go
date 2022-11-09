@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
+	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/locker"
 	"github.com/weplanx/utils/passport"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -107,6 +108,11 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 // 说明 https://docs.nats.io/using-nats/developer/develop_jetstream/kv
 func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
+}
+
+// UseDSL 使用通用查询
+func UseDSL(values *common.Values, db *mongo.Database) *dsl.DSL {
+	return dsl.New(db, dsl.SetNamespace(values.Namespace))
 }
 
 func UsePassport(values *common.Values) *passport.Passport {
