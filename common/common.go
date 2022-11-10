@@ -2,9 +2,11 @@ package common
 
 import (
 	"fmt"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/transfer"
+	"github.com/weplanx/utils/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 	"time"
@@ -151,4 +153,13 @@ type DynamicValues struct {
 	OpenapiKey string `json:"openapi_key"`
 	// 开放服务应用认证密钥
 	OpenapiSecret string `json:"openapi_secret,omitempty"`
+}
+
+// GetClaims 获取授权标识
+func GetClaims(c *app.RequestContext) (claims passport.Claims) {
+	value, ok := c.Get("identity")
+	if !ok {
+		return
+	}
+	return value.(passport.Claims)
 }

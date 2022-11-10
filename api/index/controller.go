@@ -6,8 +6,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/passlib"
-	"github.com/weplanx/utils/passport"
 	"net/http"
 	"time"
 )
@@ -82,7 +82,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 // GetRefreshCode 获取刷新令牌验证码
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
@@ -105,7 +105,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
 	if err != nil {
 		c.Error(err)
@@ -122,7 +122,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 // Logout 注销认证
 // @router /logout [POST]
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
 		c.Error(err)
 		return
@@ -138,7 +138,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 // GetNavs 导航数据
 // @router /navs [GET]
 func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	data, err := x.IndexService.GetNavs(ctx, claims.UserId)
 	if err != nil {
 		return
@@ -171,7 +171,7 @@ func (x *Controller) GetOptions(ctx context.Context, c *app.RequestContext) {
 // GetUser 获取授权用户信息
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	data, err := x.IndexService.GetUser(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
@@ -211,7 +211,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	dto.UpdateTime = time.Now()
-	claims := passport.GetClaims(c)
+	claims := common.GetClaims(c)
 	if _, err := x.IndexService.SetUser(ctx, claims.UserId, dto); err != nil {
 		c.Error(err)
 		return

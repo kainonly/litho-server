@@ -87,7 +87,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		DSL: dslDSL,
 	}
 	dslController := &dsl.Controller{
-		CollectionService: dslService,
+		DSLService: dslService,
 	}
 	apiAPI := &api.API{
 		Inject:             inject,
