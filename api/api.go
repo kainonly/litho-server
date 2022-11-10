@@ -2,8 +2,13 @@ package api
 
 import (
 	"context"
+	"github.com/bytedance/go-tagexpr/v2/binding"
+	"github.com/bytedance/go-tagexpr/v2/validator"
+	"github.com/bytedance/gopkg/util/logger"
+	"github.com/bytedance/sonic/decoder"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
@@ -14,6 +19,7 @@ import (
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
+	"net/http"
 	"time"
 )
 
@@ -126,11 +132,58 @@ func (x *API) AccessLogs() app.HandlerFunc {
 	}
 }
 
+// ErrHandler 错误处理
+func (x *API) ErrHandler() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		c.Next(ctx)
+		err := c.Errors.Last()
+		if err == nil {
+			return
+		}
+
+		if err.IsType(errors.ErrorTypePublic) {
+			statusCode := http.StatusBadRequest
+			result := utils.H{"message": err.Error()}
+			if meta, ok := err.Meta.(map[string]interface{}); ok {
+				if meta["statusCode"] != nil {
+					statusCode = meta["statusCode"].(int)
+				}
+				if meta["code"] != nil {
+					result["code"] = meta["code"]
+				}
+			}
+			c.JSON(statusCode, result)
+			return
+		}
+
+		switch e := err.Err.(type) {
+		case decoder.SyntaxError:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": e.Description(),
+			})
+			break
+		case *binding.Error:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": e.Error(),
+			})
+			break
+		case *validator.Error:
+			c.JSON(http.StatusBadRequest, utils.H{
+				"message": e.Error(),
+			})
+			break
+		default:
+			logger.Error(err)
+			c.Status(http.StatusInternalServerError)
+		}
+	}
+}
+
 // Initialize 初始化
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
 	h.Use(x.AccessLogs())
-	h.Use(helper.ErrHandler())
+	h.Use(x.ErrHandler())
 	// 加载自定义验证
 	helper.RegValidate()
 	// 订阅动态配置
