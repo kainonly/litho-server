@@ -9,25 +9,25 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/dsl"
+	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/sessions"
 )
 
 // Injectors from wire.go:
 
-func NewAPI(values2 *common.Values) (*api.API, error) {
-	client, err := UseMongoDB(values2)
+func NewAPI(values *common.Values) (*api.API, error) {
+	client, err := UseMongoDB(values)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(values2, client)
-	redisClient, err := UseRedis(values2)
+	database := UseDatabase(values, client)
+	redisClient, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(values2)
+	conn, err := UseNats(values)
 	if err != nil {
 		return nil, err
 	}
@@ -35,16 +35,16 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyValue, err := UseKeyValue(values2, jetStreamContext)
+	keyValue, err := UseKeyValue(values, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(values2, database, jetStreamContext)
+	transfer, err := UseTransfer(values, database, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values:    values2,
+		Values:    values,
 		Mongo:     client,
 		Db:        database,
 		Redis:     redisClient,
@@ -53,14 +53,14 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		KeyValue:  keyValue,
 		Transfer:  transfer,
 	}
-	hertz, err := UseHertz(values2)
+	hertz, err := UseHertz(values)
 	if err != nil {
 		return nil, err
 	}
-	passport := UsePassport(values2)
-	locker := UseLocker(values2, redisClient)
-	captcha := UseCaptcha(values2, redisClient)
-	sessionsSessions := UseSessions(values2, redisClient)
+	passport := UsePassport(values)
+	locker := UseLocker(values, redisClient)
+	captcha := UseCaptcha(values, redisClient)
+	sessionsSessions := UseSessions(values, redisClient)
 	service := &sessions.Service{
 		Sessions: sessionsSessions,
 	}
@@ -74,16 +74,17 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	controller := &index.Controller{
 		IndexService: indexService,
 	}
-	valuesService := &values.Service{
-		Inject: inject,
+	kvKV := UseKV(values, keyValue)
+	kvService := &kv.Service{
+		KV: kvKV,
 	}
-	valuesController := &values.Controller{
-		ValuesService: valuesService,
+	kvController := &kv.Controller{
+		KVService: kvService,
 	}
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
-	dslDSL := UseDSL(values2, database)
+	dslDSL := UseDSL(values, database)
 	dslService := &dsl.Service{
 		DSL: dslDSL,
 	}
@@ -91,14 +92,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		DSLService: dslService,
 	}
 	apiAPI := &api.API{
-		Inject:           inject,
-		Hertz:            hertz,
-		IndexController:  controller,
-		IndexService:     indexService,
-		ValuesController: valuesController,
-		ValuesService:    valuesService,
-		Sessions:         sessionsController,
-		DSL:              dslController,
+		Inject:   inject,
+		Hertz:    hertz,
+		Index:    controller,
+		KV:       kvController,
+		Sessions: sessionsController,
+		DSL:      dslController,
 	}
 	return apiAPI, nil
 }

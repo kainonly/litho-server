@@ -13,11 +13,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
+	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/sessions"
 	"net/http"
 	"time"
@@ -25,7 +25,7 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
-	values.Provides,
+	kv.Provides,
 	sessions.Provides,
 	dsl.Provides,
 )
@@ -33,39 +33,31 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz            *server.Hertz
-	IndexController  *index.Controller
-	IndexService     *index.Service
-	ValuesController *values.Controller
-	ValuesService    *values.Service
-	Sessions         *sessions.Controller
-	DSL              *dsl.Controller
+	Hertz    *server.Hertz
+	Index    *index.Controller
+	KV       *kv.Controller
+	Sessions *sessions.Controller
+	DSL      *dsl.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
-	h.GET("", x.IndexController.Index)
-	h.POST("login", x.IndexController.Login)
-	h.GET("verify", x.IndexController.Verify)
-	h.GET("code", auth, x.IndexController.GetRefreshCode)
-	h.POST("refresh_token", auth, x.IndexController.RefreshToken)
-	h.POST("logout", auth, x.IndexController.Logout)
-	h.GET("navs", auth, x.IndexController.GetNavs)
-	h.GET("options", auth, x.IndexController.GetOptions)
+	h.GET("", x.Index.Index)
+	h.POST("login", x.Index.Login)
+	h.GET("verify", x.Index.Verify)
+	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", auth, x.Index.RefreshToken)
+	h.POST("logout", auth, x.Index.Logout)
+	h.GET("navs", auth, x.Index.GetNavs)
+	h.GET("options", auth, x.Index.GetOptions)
 
 	_user := h.Group("user", auth)
 	{
-		_user.GET("", x.IndexController.GetUser)
-		_user.PATCH("", x.IndexController.SetUser)
+		_user.GET("", x.Index.GetUser)
+		_user.PATCH("", x.Index.SetUser)
 	}
 
-	_values := h.Group("values", auth)
-	{
-		_values.GET("", x.ValuesController.Get)
-		_values.PATCH("", x.ValuesController.Set)
-		_values.DELETE(":key", x.ValuesController.Remove)
-	}
-
+	helper.BindKV(h.Group("values", auth), x.KV)
 	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
 	helper.BindDSL(h.Group(":collection", auth), x.DSL)
 
@@ -84,7 +76,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			return
 		}
 
-		claims, err := x.IndexService.Verify(ctx, string(ts))
+		claims, err := x.Index.IndexService.Verify(ctx, string(ts))
 		if err != nil {
 			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{
@@ -180,7 +172,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	// 加载自定义验证
 	helper.RegValidate()
 	// 订阅动态配置
-	go x.ValuesService.Sync(ctx)
+	go x.KV.KVService.Sync()
 	// 传输指标
 	if err = x.Transfer.Set(ctx, transfer.Option{
 		Key:         "access",
