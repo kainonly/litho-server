@@ -9,10 +9,10 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/dsl"
+	"github.com/weplanx/utils/sessions"
 )
 
 // Injectors from wire.go:
@@ -60,8 +60,9 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	passport := UsePassport(values2)
 	locker := UseLocker(values2, redisClient)
 	captcha := UseCaptcha(values2, redisClient)
+	sessionsSessions := UseSessions(values2, redisClient)
 	service := &sessions.Service{
-		Inject: inject,
+		Sessions: sessionsSessions,
 	}
 	indexService := &index.Service{
 		Inject:          inject,
@@ -90,15 +91,14 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		DSLService: dslService,
 	}
 	apiAPI := &api.API{
-		Inject:             inject,
-		Hertz:              hertz,
-		IndexController:    controller,
-		IndexService:       indexService,
-		ValuesController:   valuesController,
-		ValuesService:      valuesService,
-		SessionsController: sessionsController,
-		SessionsService:    service,
-		DSL:                dslController,
+		Inject:           inject,
+		Hertz:            hertz,
+		IndexController:  controller,
+		IndexService:     indexService,
+		ValuesController: valuesController,
+		ValuesService:    valuesService,
+		Sessions:         sessionsController,
+		DSL:              dslController,
 	}
 	return apiAPI, nil
 }

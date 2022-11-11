@@ -22,7 +22,6 @@ var (
 		"openapi_secret":            true,
 	}
 	Default = common.DynamicValues{
-		SessionTTL:      time.Hour,
 		LoginTTL:        time.Minute * 15,
 		LoginFailures:   5,
 		IpLoginFailures: 10,
