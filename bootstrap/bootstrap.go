@@ -17,6 +17,7 @@ import (
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/locker"
 	"github.com/weplanx/utils/passport"
+	"github.com/weplanx/utils/sessions"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -110,9 +111,21 @@ func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
 }
 
+// UseSessions 使用会话
+func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions {
+	return sessions.New(
+		sessions.SetNamespace(values.Namespace),
+		sessions.SetRedis(redis),
+		sessions.SetValues(values.SessionsValues),
+	)
+}
+
 // UseDSL 使用通用查询
 func UseDSL(values *common.Values, db *mongo.Database) *dsl.DSL {
-	return dsl.New(db, dsl.SetNamespace(values.Namespace))
+	return dsl.New(
+		dsl.SetNamespace(values.Namespace),
+		dsl.SetDatabase(db),
+	)
 }
 
 // UsePassport 使用鉴权

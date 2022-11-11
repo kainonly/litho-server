@@ -7,6 +7,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/passport"
+	"github.com/weplanx/utils/sessions"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 	"time"
@@ -44,6 +45,8 @@ type Values struct {
 
 	// 动态配置
 	DynamicValues `env:"-"`
+
+	SessionsValues *sessions.Values `env:"-"`
 }
 
 type Database struct {
@@ -82,9 +85,9 @@ func (x Values) Queue(v string) string {
 
 // DynamicValues 动态配置
 type DynamicValues struct {
-	// 会话周期（秒）
-	// 用户在 1 小时 内没有操作，将结束会话。
-	SessionTTL time.Duration `json:"session_ttl"`
+	//// 会话周期（秒）
+	//// 用户在 1 小时 内没有操作，将结束会话。
+	//SessionTTL time.Duration `json:"session_ttl"`
 	// 登录锁定时间
 	// 锁定 15 分钟。
 	LoginTTL time.Duration `json:"login_ttl"`

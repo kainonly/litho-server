@@ -17,6 +17,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseNats,
 		UseJetStream,
 		UseKeyValue,
+		UseSessions,
 		UseDSL,
 		UsePassport,
 		UseLocker,

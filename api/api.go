@@ -13,12 +13,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/sessions"
 	"github.com/weplanx/server/api/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
+	"github.com/weplanx/utils/sessions"
 	"net/http"
 	"time"
 )
@@ -33,14 +33,13 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz              *server.Hertz
-	IndexController    *index.Controller
-	IndexService       *index.Service
-	ValuesController   *values.Controller
-	ValuesService      *values.Service
-	SessionsController *sessions.Controller
-	SessionsService    *sessions.Service
-	DSL                *dsl.Controller
+	Hertz            *server.Hertz
+	IndexController  *index.Controller
+	IndexService     *index.Service
+	ValuesController *values.Controller
+	ValuesService    *values.Service
+	Sessions         *sessions.Controller
+	DSL              *dsl.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -67,14 +66,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_values.DELETE(":key", x.ValuesController.Remove)
 	}
 
-	_sessions := h.Group("sessions", auth)
-	{
-		_sessions.GET("", x.SessionsController.Lists)
-		_sessions.DELETE(":uid", x.SessionsController.Remove)
-		_sessions.DELETE("", x.SessionsController.Clear)
-	}
-
-	helper.BindDSL(h.Group("/:collection", auth), x.DSL)
+	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
+	helper.BindDSL(h.Group(":collection", auth), x.DSL)
 
 	return
 }
