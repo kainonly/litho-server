@@ -15,6 +15,7 @@ import (
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
 	"github.com/weplanx/utils/dsl"
+	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/locker"
 	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/sessions"
@@ -32,6 +33,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 	if err = env.Parse(values); err != nil {
 		return
 	}
+	values.DynamicValues = &kv.DEFAULT
 	return
 }
 
@@ -105,10 +107,19 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
-// UseKeyValue 初始分布配置
+// UseKeyValue 初始 KeyValue
 // 说明 https://docs.nats.io/using-nats/developer/develop_jetstream/kv
 func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
+}
+
+// UseKV 使用动态配置
+func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
+	return kv.New(
+		kv.SetNamespace(values.Namespace),
+		kv.SetKeyValue(keyvalue),
+		kv.SetDynamicValues(values.DynamicValues),
+	)
 }
 
 // UseSessions 使用会话
@@ -116,7 +127,7 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 	return sessions.New(
 		sessions.SetNamespace(values.Namespace),
 		sessions.SetRedis(redis),
-		sessions.SetValues(values.SessionsValues),
+		sessions.SetDynamicValues(values.DynamicValues),
 	)
 }
 
