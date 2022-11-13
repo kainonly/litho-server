@@ -172,7 +172,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	// 加载自定义验证
 	helper.RegValidate()
 	// 订阅动态配置
-	go x.KV.KVService.Sync()
+	go x.KV.KVService.Sync(nil)
 	// 传输指标
 	if err = x.Transfer.Set(ctx, transfer.Option{
 		Key:         "access",
