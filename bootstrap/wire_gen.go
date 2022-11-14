@@ -84,7 +84,10 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
-	dslDSL := UseDSL(values, database)
+	dslDSL, err := UseDSL(values, database)
+	if err != nil {
+		return nil, err
+	}
 	dslService := &dsl.Service{
 		DSL: dslDSL,
 	}
