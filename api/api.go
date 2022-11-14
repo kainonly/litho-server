@@ -174,7 +174,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	// 订阅动态配置
 	go x.KV.KVService.Sync(nil)
 	// 传输指标
-	if err = x.Transfer.Set(ctx, transfer.Option{
+	if err = x.Transfer.Set(ctx, transfer.LogOption{
 		Key:         "access",
 		Description: "请求日志",
 		TTL:         15552000,

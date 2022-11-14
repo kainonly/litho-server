@@ -166,7 +166,11 @@ func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 // UseTransfer 初始日志传输
 // https://github.com/weplanx/transfer
 func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
-	return transfer.New(values.Namespace, db, js)
+	return transfer.New(
+		transfer.SetNamespace(values.Namespace),
+		transfer.SetDatabase(db),
+		transfer.SetJetStream(js),
+	)
 }
 
 // UseHertz 使用 Hertz

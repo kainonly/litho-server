@@ -17,9 +17,9 @@ require (
 	github.com/nats-io/nats.go v1.18.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.0
-	github.com/weplanx/transfer v1.5.1
+	github.com/weplanx/transfer v1.6.0
 	github.com/weplanx/utils v0.0.6
-	go.mongodb.org/mongo-driver v1.10.3
+	go.mongodb.org/mongo-driver v1.11.0
 )
 
 require (
