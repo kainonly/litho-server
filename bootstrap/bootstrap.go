@@ -132,7 +132,7 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 }
 
 // UseDSL 使用通用查询
-func UseDSL(values *common.Values, db *mongo.Database) *dsl.DSL {
+func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	return dsl.New(
 		dsl.SetNamespace(values.Namespace),
 		dsl.SetDatabase(db),
