@@ -172,10 +172,10 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	// 加载自定义验证
 	helper.RegValidate()
 	// 订阅动态配置
-	go x.KV.KVService.Sync(nil)
-	//if err = x.DSL.DSLService.Load(ctx); err != nil {
-	//	return
-	//}
+	updated := make(chan *kv.DynamicValues)
+	go x.KV.KVService.Sync(&kv.SyncOption{
+		Updated: updated,
+	})
 	// 传输指标
 	if err = x.Transfer.Set(ctx, transfer.LogOption{
 		Key:         "access",
@@ -184,5 +184,15 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	}); err != nil {
 		return
 	}
+	go func() {
+		for {
+			select {
+			case <-updated:
+				if err = x.DSL.DSLService.Load(ctx); err != nil {
+					return
+				}
+			}
+		}
+	}()
 	return
 }
