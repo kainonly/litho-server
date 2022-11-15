@@ -34,9 +34,9 @@ func LoadStaticValues() (values *common.Values, err error) {
 		return
 	}
 	values.DynamicValues = &kv.DEFAULT
-	values.DynamicValues.DSL = map[string]kv.DSLOption{
-		"users": {
-			Keys: map[string]int64{},
+	values.DynamicValues.DSL = map[string]*kv.DSLOption{
+		"dev_table": {
+			Keys: []string{"no", "account", "address", "customer", "description"},
 		},
 	}
 	return
@@ -141,6 +141,7 @@ func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	return dsl.New(
 		dsl.SetNamespace(values.Namespace),
 		dsl.SetDatabase(db),
+		dsl.SetDynamicValues(values.DynamicValues),
 	)
 }
 
