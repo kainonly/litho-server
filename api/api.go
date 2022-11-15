@@ -173,6 +173,9 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	helper.RegValidate()
 	// 订阅动态配置
 	go x.KV.KVService.Sync(nil)
+	//if err = x.DSL.DSLService.Load(ctx); err != nil {
+	//	return
+	//}
 	// 传输指标
 	if err = x.Transfer.Set(ctx, transfer.LogOption{
 		Key:         "access",
