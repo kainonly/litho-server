@@ -60,7 +60,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	helper.BindKV(h.Group("values", auth), x.KV)
 	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
 	helper.BindDSL(h.Group(":collection", auth), x.DSL)
-
 	return
 }
 
