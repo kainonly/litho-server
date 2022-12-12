@@ -10,7 +10,6 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/sessions"
 )
@@ -18,12 +17,11 @@ import (
 // Injectors from wire.go:
 
 func NewAPI(values *common.Values) (*api.API, error) {
-	client, err := UseMongoDB(values)
+	db, err := UseDatabase(values)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(values, client)
-	redisClient, err := UseRedis(values)
+	client, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
@@ -39,28 +37,22 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfer, err := UseTransfer(values, database, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	inject := &common.Inject{
 		Values:    values,
-		Mongo:     client,
-		Db:        database,
-		Redis:     redisClient,
+		Db:        db,
+		Redis:     client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
-		Transfer:  transfer,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {
 		return nil, err
 	}
 	passport := UsePassport(values)
-	locker := UseLocker(values, redisClient)
-	captcha := UseCaptcha(values, redisClient)
-	sessionsSessions := UseSessions(values, redisClient)
+	locker := UseLocker(values, client)
+	captcha := UseCaptcha(values, client)
+	sessionsSessions := UseSessions(values, client)
 	service := &sessions.Service{
 		Sessions: sessionsSessions,
 	}
@@ -84,23 +76,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
-	dslDSL, err := UseDSL(values, database)
-	if err != nil {
-		return nil, err
-	}
-	dslService := &dsl.Service{
-		DSL: dslDSL,
-	}
-	dslController := &dsl.Controller{
-		DSLService: dslService,
-	}
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
 		Index:    controller,
 		KV:       kvController,
 		Sessions: sessionsController,
-		DSL:      dslController,
 	}
 	return apiAPI, nil
 }

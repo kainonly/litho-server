@@ -1,190 +1,205 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"github.com/bytedance/sonic"
 	"time"
 )
 
 type Page struct {
-	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-
-	// 父节点
-	Parent interface{} `bson:"parent" json:"parent"`
-
-	// 名称
-	Name string `bson:"name" json:"name"`
-
-	// 字体图标
-	Icon string `bson:"icon,omitempty" json:"icon,omitempty"`
-
-	// 种类
-	Kind string `bson:"kind" json:"kind"`
-
-	// 形式
-	Manifest string `bson:"manifest,omitempty" json:"manifest,omitempty"`
-
-	// Schema 模型，数据集时存在
-	Schema *Schema `bson:"schema,omitempty" json:"schema,omitempty"`
-
-	// 数据源，数据聚合时存在
-	Source *Source `bson:"source,omitempty" json:"source,omitempty"`
-
-	// 自定义，自定义种类时存在
-	Manual *Manual `bson:"manual,omitempty" json:"manual,omitempty"`
-
-	// 排序
-	Sort int64 `bson:"sort" json:"sort"`
-
-	// 状态
-	Status *bool `bson:"status" json:"status"`
-
-	// 创建时间
-	CreateTime time.Time `bson:"create_time" json:"create_time"`
-
-	// 更新时间
-	UpdateTime time.Time `bson:"update_time" json:"update_time"`
+	ID        uint64    `json:"id"`
+	Parent    uint64    `gorm:"default:0;not null;comment:父节点" json:"parent"`
+	Name      string    `gorm:"type:varchar;not null;comment:名称" json:"name"`
+	Icon      string    `gorm:"type:varchar;comment:字体图标" json:"icon,omitempty"`
+	Kind      string    `gorm:"type:varchar;default:'default';not null;comment:种类" json:"kind"`
+	Manifest  string    `gorm:"type:varchar;default:'default';not null;comment:形式" json:"manifest,omitempty"`
+	Schema    Schema    `gorm:"type:jsonb;default:'{}';not null;comment:模型，数据集时存在" json:"schema,omitempty"`
+	Source    Source    `gorm:"type:jsonb;default:'{}';not null;comment:数据源，数据聚合时存在" json:"source,omitempty"`
+	Manual    Manual    `gorm:"type:jsonb;default:'{}';not null;comment:自定义，自定义种类时存在" json:"manual,omitempty"`
+	Sort      int64     `gorm:"default:0;comment:排序" json:"sort"`
+	Status    bool      `gorm:"default:true;not null;comment:状态" json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Schema struct {
 	// 命名
-	Key string `bson:"key" json:"key"`
+	Key string `json:"key"`
 
 	// 字段
-	Fields []*SchemaField `bson:"fields" json:"fields"`
+	Fields []SchemaField `json:"fields"`
 
 	// 显隐规则
-	Rules []*SchemaRule `bson:"rules,omitempty" json:"rules,omitempty"`
+	Rules []SchemaRule `json:"rules,omitempty"`
 
 	// 启用事务补偿
-	Event *bool `bson:"event,omitempty" json:"event,omitempty"`
+	Event *bool `json:"event,omitempty"`
 
 	// 启用详情
-	Detail *bool `bson:"detail,omitempty" json:"detail,omitempty"`
+	Detail *bool `json:"detail,omitempty"`
+}
+
+func (x *Schema) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+	return sonic.Unmarshal(bytes, x)
+}
+
+func (x Schema) Value() (driver.Value, error) {
+	return sonic.MarshalString(x)
 }
 
 type SchemaField struct {
 	// 命名
-	Key string `bson:"key" json:"key"`
+	Key string `json:"key"`
 
 	// 显示名称
-	Label string `bson:"label" json:"label"`
+	Label string `json:"label"`
 
 	// 字段类型
-	Type string `bson:"type" json:"type"`
+	Type string `json:"type"`
 
 	// 字段描述
-	Description string `bson:"description,omitempty" json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 
 	// 字段提示
-	Placeholder string `bson:"placeholder,omitempty" json:"placeholder,omitempty"`
+	Placeholder string `json:"placeholder,omitempty"`
 
 	// 默认值
-	Default interface{} `bson:"default,omitempty" json:"default,omitempty"`
+	Default interface{} `json:"default,omitempty"`
 
 	// 关键词
-	Keyword *bool `bson:"keyword,omitempty" json:"keyword,omitempty"`
+	Keyword bool `json:"keyword,omitempty"`
 
 	// 是否必须
-	Required *bool `bson:"required,omitempty" json:"required,omitempty"`
+	Required bool `json:"required,omitempty"`
 
 	// 隐藏字段
-	Hide *bool `bson:"hide,omitempty" json:"hide,omitempty"`
+	Hide bool `json:"hide,omitempty"`
 
 	// 只读
-	Readonly *bool `bson:"readonly,omitempty" json:"readonly,omitempty"`
+	Readonly bool `json:"readonly,omitempty"`
 
 	// 投影
-	Projection *int64 `bson:"projection,omitempty" json:"projection,omitempty"`
+	Projection int64 `json:"projection,omitempty"`
 
 	// 排序
-	Sort *int64 `bson:"sort" json:"sort"`
+	Sort int64 `json:"sort"`
 
 	// 配置
-	Option *SchemaFieldOption `bson:"option,omitempty" json:"option,omitempty"`
+	Option *SchemaFieldOption `json:"option,omitempty"`
 }
 
 type SchemaFieldOption struct {
 	// 最大值
-	Max int64 `bson:"max,omitempty" json:"max,omitempty"`
+	Max int64 `json:"max,omitempty"`
 
 	// 最小值
-	Min int64 `bson:"min,omitempty" json:"min,omitempty"`
+	Min int64 `json:"min,omitempty"`
 
 	// 保留小数
-	Decimal int64 `bson:"decimal,omitempty" json:"decimal,omitempty"`
+	Decimal int64 `json:"decimal,omitempty"`
 
 	// 包含时间
-	Time *bool `bson:"time,omitempty" json:"time,omitempty"`
+	Time bool `json:"time,omitempty"`
 
 	// 枚举数值
-	Values []Value `bson:"values,omitempty" json:"values,omitempty"`
+	Values []Value `json:"values,omitempty"`
 
 	// 引用类型，模型
-	Reference string `bson:"reference,omitempty" json:"reference,omitempty"`
+	Reference string `json:"reference,omitempty"`
 
 	// 引用类型，目标字段
-	Target string `bson:"target,omitempty" json:"target,omitempty"`
+	Target string `json:"target,omitempty"`
 
 	// 多选
-	Multiple *bool `bson:"multiple,omitempty" json:"multiple,omitempty"`
+	Multiple bool `json:"multiple,omitempty"`
 
 	// 组件标识
-	Component string `bson:"component,omitempty" json:"component,omitempty"`
+	Component string `json:"component,omitempty"`
 }
 
 type Value struct {
 	// 名称
-	Label string `bson:"label" json:"label"`
+	Label string `json:"label"`
 
 	// 数值
-	Value interface{} `bson:"value" json:"value"`
+	Value interface{} `json:"value"`
 }
 
 type SchemaRule struct {
 	// 逻辑
-	Logic string `bson:"logic" json:"logic"`
+	Logic string `json:"logic"`
 
 	// 条件
-	Conditions []*SchemaRuleCondition `bson:"conditions" json:"conditions"`
+	Conditions []*SchemaRuleCondition `json:"conditions"`
 
 	// 显示字段
-	Keys []string `bson:"keys" json:"keys"`
+	Keys []string `json:"keys"`
 }
 
 type SchemaRuleCondition struct {
 	// 字段
-	Key string `bson:"key" json:"key"`
+	Key string `json:"key"`
 
 	// 操作符
-	Operate string `bson:"operate" json:"operate"`
+	Operate string `json:"operate"`
 
 	// 数值
-	Value interface{} `bson:"value" json:"value"`
+	Value interface{} `json:"value"`
 }
 
 type Source struct {
 	// 布局
-	Layout string `bson:"layout" json:"layout"`
+	Layout string `json:"layout"`
 
 	// 图表
-	Panels []*Panel `bson:"panels" json:"panels"`
+	Panels []*Panel `json:"panels"`
+}
+
+func (x *Source) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+	return sonic.Unmarshal(bytes, x)
+}
+
+func (x Source) Value() (driver.Value, error) {
+	return sonic.MarshalString(x)
 }
 
 type Panel struct {
 	// 模式
-	Query string `bson:"query" json:"query"`
+	Query string `json:"query"`
 
 	// 映射
-	Mappings map[string]string `bson:"mappings" json:"mappings"`
+	Mappings map[string]string `json:"mappings"`
 
 	// 样式
-	Style map[string]interface{} `bson:"style,omitempty" json:"style,omitempty"`
+	Style map[string]interface{} `json:"style,omitempty"`
 }
 
 type Manual struct {
 	// 页面标识，自定义页面接入命名
-	Scope string `bson:"scope" json:"scope"`
+	Scope string `json:"scope"`
 
 	// 权限细粒化
-	Policies map[string]string `bson:"policies" json:"policies"`
+	Policies map[string]string `json:"policies"`
+}
+
+func (x *Manual) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+	return sonic.Unmarshal(bytes, x)
+}
+
+func (x Manual) Value() (driver.Value, error) {
+	return sonic.MarshalString(x)
 }

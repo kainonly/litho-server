@@ -1,47 +1,36 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"github.com/bytedance/sonic"
 	"time"
 )
 
 type Role struct {
-	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-
-	// 名称
-	Name string `bson:"name" json:"name"`
-
-	// 描述
-	Description string `bson:"description" json:"description"`
-
-	// 授权页面
-	Pages map[string]*int64 `bson:"pages" json:"pages"`
-
-	// 标签
-	Labels map[string]string `bson:"labels" json:"labels"`
-
-	// 状态
-	Status bool `bson:"status" json:"status"`
-
-	// 创建时间
-	CreateTime time.Time `bson:"create_time" json:"-"`
-
-	// 更新时间
-	UpdateTime time.Time `bson:"update_time" json:"-"`
+	ID          uint64    `json:"id"`
+	Name        string    `gorm:"type:varchar;uniqueIndex;not null;comment:名称" json:"name"`
+	Description string    `gorm:"type:varchar;comment:描述" json:"description"`
+	Pages       RolePages `gorm:"type:jsonb;default:'{}';not null;comment:授权页面" json:"pages"`
+	Status      bool      `gorm:"default:true;not null;comment:状态" json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func NewRole(name string) *Role {
-	return &Role{
-		Name:       name,
-		Pages:      map[string]*int64{},
-		Labels:     map[string]string{},
-		Status:     true,
-		CreateTime: time.Now(),
-		UpdateTime: time.Now(),
+type RolePages map[string]int64
+
+func (x *RolePages) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
 	}
+	return sonic.Unmarshal(bytes, x)
 }
 
-func (x *Role) SetDescription(v string) *Role {
-	x.Description = v
-	return x
+func (x RolePages) Value() (driver.Value, error) {
+	if len(x) == 0 {
+		return nil, nil
+	}
+	return sonic.MarshalString(x)
 }

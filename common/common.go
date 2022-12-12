@@ -5,22 +5,19 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
-	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/passport"
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 	"strings"
 )
 
 type Inject struct {
 	Values    *Values
-	Mongo     *mongo.Client
-	Db        *mongo.Database
+	Db        *gorm.DB
 	Redis     *redis.Client
 	Nats      *nats.Conn
 	JetStream nats.JetStreamContext
 	KeyValue  nats.KeyValue
-	Transfer  *transfer.Transfer
 }
 
 type Values struct {
@@ -47,11 +44,8 @@ type Values struct {
 }
 
 type Database struct {
-	// MongoDB 连接 Uri
-	Mongo string `env:"MONGO,required"`
-
-	// MongoDB 数据库名称
-	Name string `env:"NAME,required"`
+	// Gorm DSN
+	Gorm string `env:"GORM,required"`
 
 	// Redis 连接 Uri
 	Redis string `env:"REDIS,required"`

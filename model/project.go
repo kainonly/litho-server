@@ -1,37 +1,18 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/lib/pq"
 	"time"
 )
 
 type Project struct {
-	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-
-	// 项目名称
-	Name string `bson:"name" json:"name"`
-
-	// 命名空间
-	Namespace string `bson:"namespace" json:"namespace"`
-
-	// Secret
-	Secret string `bson:"secret" json:"secret"`
-
-	// 后端入口
-	Entry []string `bson:"entry" json:"entry"`
-
-	// 有效时间
-	ExpireTime *time.Time `bson:"expire_time" json:"expire_time"`
-
-	// 标签
-	Labels map[string]string `bson:"labels" json:"-"`
-
-	// 状态
-	Status bool `bson:"status" json:"status"`
-
-	// 创建时间
-	CreateTime time.Time `bson:"create_time" json:"create_time"`
-
-	// 更新时间
-	UpdateTime time.Time `bson:"update_time" json:"update_time"`
+	ID         uint64         `json:"id"`
+	Name       string         `gorm:"type:varchar;not null;comment:项目名称" json:"name"`
+	Namespace  string         `gorm:"type:varchar;uniqueIndex;not null;comment:命名空间" json:"namespace"`
+	Secret     string         `gorm:"type:varchar;not null;comment:密钥" json:"secret"`
+	Entry      pq.StringArray `gorm:"type:varchar[];default:array[]::varchar[];comment:后端入口" json:"entry"`
+	ExpireTime int64          `gorm:"default:0;comment:有效期" json:"expire_time"`
+	Status     bool           `gorm:"default:true;not null;comment:状态" json:"status"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
 }
