@@ -11,11 +11,11 @@ require (
 	github.com/bytedance/sonic v1.5.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/cloudwego/hertz v0.4.2
-	github.com/go-faker/faker/v4 v4.0.0-beta.3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf
 	github.com/lib/pq v1.10.7
+	github.com/matoous/go-nanoid v1.5.0
 	github.com/nats-io/nats.go v1.21.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.1

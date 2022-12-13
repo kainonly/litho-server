@@ -40,11 +40,11 @@ type API struct {
 func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
 	h.GET("", x.Index.Index)
-	//h.POST("login", x.Index.Login)
-	//h.GET("verify", x.Index.Verify)
-	//h.GET("code", auth, x.Index.GetRefreshCode)
-	//h.POST("refresh_token", auth, x.Index.RefreshToken)
-	//h.POST("logout", auth, x.Index.Logout)
+	h.POST("login", x.Index.Login)
+	h.GET("verify", x.Index.Verify)
+	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", auth, x.Index.RefreshToken)
+	h.POST("logout", auth, x.Index.Logout)
 	//h.GET("navs", auth, x.Index.GetNavs)
 	//h.GET("options", auth, x.Index.GetOptions)
 	//
