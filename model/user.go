@@ -1,20 +1,38 @@
 package model
 
 import (
-	"github.com/lib/pq"
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"github.com/bytedance/sonic"
 	"time"
 )
 
 type User struct {
-	ID         uint64        `json:"id"`
-	Username   string        `gorm:"type:varchar;not null;uniqueIndex;comment:用户名" json:"username"`
-	Password   string        `gorm:"type:varchar;not null;comment:密码" json:"-"`
-	Email      string        `gorm:"type:varchar;not null;index;comment:电子邮件" json:"email"`
-	Name       string        `gorm:"type:varchar;default:'';not null;comment:称呼" json:"name"`
-	Avatar     string        `gorm:"type:varchar;default:'';not null;comment:头像" json:"avatar"`
-	Department uint64        `gorm:"default:0;not null;comment:所属部门" json:"department,omitempty"`
-	Roles      pq.Int64Array `gorm:"type:int8[];default:array[]::int8[];not null;comment:权限组" json:"roles,omitempty"`
-	Status     bool          `gorm:"default:true;not null;comment:状态" json:"status"`
-	CreatedAt  time.Time     `json:"created_at"`
-	UpdatedAt  time.Time     `json:"updated_at"`
+	ID          uint64      `json:"id"`
+	Email       string      `gorm:"type:varchar;not null;uniqueIndex;comment:电子邮件" json:"email"`
+	Password    string      `gorm:"type:varchar;not null;comment:密码" json:"-"`
+	Name        string      `gorm:"type:varchar;default:'';not null;comment:称呼" json:"name"`
+	Avatar      string      `gorm:"type:varchar;default:'';not null;comment:头像" json:"avatar"`
+	Permissions Permissions `gorm:"type:jsonb;default:'{}';not null;comment:授权" json:"-"`
+	Status      bool        `gorm:"default:true;not null;comment:状态" json:"status"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+}
+
+type Permissions map[string]interface{}
+
+func (x *Permissions) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+	return sonic.Unmarshal(bytes, x)
+}
+
+func (x Permissions) Value() (driver.Value, error) {
+	if len(x) == 0 {
+		return nil, nil
+	}
+	return sonic.MarshalString(x)
 }
