@@ -15,9 +15,9 @@ type Page struct {
 	Icon      string    `gorm:"type:varchar;comment:字体图标" json:"icon,omitempty"`
 	Kind      string    `gorm:"type:varchar;default:'default';not null;comment:种类" json:"kind"`
 	Manifest  string    `gorm:"type:varchar;default:'default';not null;comment:形式" json:"manifest,omitempty"`
-	Schema    Schema    `gorm:"type:jsonb;default:'{}';not null;comment:模型，数据集时存在" json:"schema,omitempty"`
-	Source    Source    `gorm:"type:jsonb;default:'{}';not null;comment:数据源，数据聚合时存在" json:"source,omitempty"`
-	Manual    Manual    `gorm:"type:jsonb;default:'{}';not null;comment:自定义，自定义种类时存在" json:"manual,omitempty"`
+	Schema    Schema    `gorm:"type:jsonb;comment:模型，数据集时存在" json:"schema,omitempty"`
+	Source    Source    `gorm:"type:jsonb;comment:数据源，数据聚合时存在" json:"source,omitempty"`
+	Manual    Manual    `gorm:"type:jsonb;comment:自定义，自定义种类时存在" json:"manual,omitempty"`
 	Sort      int64     `gorm:"default:0;comment:排序" json:"sort"`
 	Status    bool      `gorm:"default:true;not null;comment:状态" json:"status"`
 	CreatedAt time.Time `json:"created_at"`
