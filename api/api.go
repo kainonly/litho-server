@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
@@ -45,14 +46,13 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.GET("code", auth, x.Index.GetRefreshCode)
 	h.POST("refresh_token", auth, x.Index.RefreshToken)
 	h.POST("logout", auth, x.Index.Logout)
-	//h.GET("navs", auth, x.Index.GetNavs)
 	//h.GET("options", auth, x.Index.GetOptions)
 	//
-	//_user := h.Group("user", auth)
-	//{
-	//	_user.GET("", x.Index.GetUser)
-	//	_user.PATCH("", x.Index.SetUser)
-	//}
+	_user := h.Group("user", auth)
+	{
+		_user.GET("", x.Index.GetUser)
+		_user.POST("", x.Index.SetUser)
+	}
 
 	helper.BindKV(h.Group("values", auth), x.KV)
 	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
@@ -72,17 +72,17 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			return
 		}
 
-		//claims, err := x.Index.IndexService.Verify(ctx, string(ts))
-		//if err != nil {
-		//	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
-		//	c.AbortWithStatusJSON(401, utils.H{
-		//		"code":    0,
-		//		"message": "认证已失效请重新登录",
-		//	})
-		//	return
-		//}
-		//
-		//c.Set("identity", claims)
+		claims, err := x.Index.IndexService.Verify(ctx, string(ts))
+		if err != nil {
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": "认证已失效请重新登录",
+			})
+			return
+		}
+
+		c.Set("identity", claims)
 		c.Next(ctx)
 	}
 }

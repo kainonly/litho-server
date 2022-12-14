@@ -8,6 +8,8 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/passlib"
 	"net/http"
+	"reflect"
+	"strings"
 	"time"
 )
 
@@ -93,12 +95,14 @@ func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) 
 	})
 }
 
+type RefreshTokenDto struct {
+	Code string `json:"code,required"`
+}
+
 // RefreshToken 刷新令牌
 // @router /refresh_token [POST]
 func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
-	var dto struct {
-		Code string `json:"code,required"`
-	}
+	var dto RefreshTokenDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
@@ -128,23 +132,11 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
-	c.JSON(200, utils.H{
+	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "认证已注销",
 	})
 }
-
-// GetNavs 导航数据
-// @router /navs [GET]
-//func (x *Controller) GetNavs(ctx context.Context, c *app.RequestContext) {
-//	claims := common.GetClaims(c)
-//	data, err := x.IndexService.GetNavs(ctx, claims.UserId)
-//	if err != nil {
-//		return
-//	}
-//
-//	c.JSON(http.StatusOK, data)
-//}
 
 // GetOptions 返回通用配置
 // @router /options [GET]
@@ -181,22 +173,20 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
+	// 更新字段
+	Set string `json:"$set,requred" vd:"in($, 'Email', 'Name', 'Avatar', 'Password')"`
 	// 电子邮件
-	Email string `json:"email,omitempty" bson:"email,omitempty" vd:"$=='' || email($)"`
+	Email string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'必须是电子邮件'"`
 	// 称呼
-	Name string `json:"name" bson:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// 头像
-	Avatar string `json:"avatar" bson:"avatar,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 	// 密码
-	Password string `json:"password,omitempty" bson:"password,omitempty"`
-	// 重置
-	Reset string `json:"reset,omitempty" vd:"$=='' || in($, 'feishu')" bson:"reset"`
-	// 更新时间
-	UpdateTime time.Time `json:"-" bson:"update_time"`
+	Password string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'密码必须大于8位'"`
 }
 
 // SetUser 设置授权用户信息
-// @router /user [PATCH]
+// @router /user [POST]
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -204,17 +194,23 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// 密码转散列
-	if dto.Password != "" {
-		dto.Password, _ = passlib.Hash(dto.Password)
+	data := make(map[string]interface{})
+	key := strings.ToLower(dto.Set)
+	value := reflect.ValueOf(dto).FieldByName(dto.Set).Interface()
+	if key == "password" {
+		data[key], _ = passlib.Hash(value.(string))
+	} else {
+		data[key] = value
 	}
 
-	dto.UpdateTime = time.Now()
 	claims := common.GetClaims(c)
-	if _, err := x.IndexService.SetUser(ctx, claims.UserId, dto); err != nil {
+	if err := x.IndexService.SetUser(ctx, claims.UserId, data); err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, utils.H{
+		"code":    0,
+		"message": "设置成功",
+	})
 }

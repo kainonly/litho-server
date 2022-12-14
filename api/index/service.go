@@ -139,36 +139,7 @@ func (x *Service) Logout(ctx context.Context, userId string) (err error) {
 	return x.SessionsService.Remove(ctx, userId)
 }
 
-//	type Nav struct {
-//		ID     primitive.ObjectID `bson:"_id" json:"_id"`
-//		Parent interface{}        `json:"parent"`
-//		Name   string             `json:"name"`
-//		Icon   string             `json:"icon"`
-//		Kind   string             `json:"kind"`
-//		Sort   int64              `json:"sort"`
-//	}
-//
-// // GetNavs 筛选导航数据
-//
-//	func (x *Service) GetNavs(ctx context.Context, userId string) (navs []Nav, err error) {
-//		// TODO: 权限过滤...
-//		//var user model.User
-//		//if user, err = x.UsersService.GetActived(ctx, uid); err != nil {
-//		//	return
-//		//}
-//		var cursor *mongo.Cursor
-//		if cursor, err = x.Db.Collection("pages").
-//			Find(ctx, bson.M{"status": true}); err != nil {
-//			return
-//		}
-//		if err = cursor.All(ctx, &navs); err != nil {
-//			return
-//		}
-//		return
-//	}
-//
 // // GetOptions 返回通用配置
-//
 //	func (x *Service) GetOptions(v string) utils.H {
 //		switch v {
 //		// 上传类
@@ -256,19 +227,13 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 }
 
 // SetUser 设置登录用户信息
-func (x *Service) SetUser(ctx context.Context, userId string, data SetUserDto) (result interface{}, err error) {
-	//oid, _ := primitive.ObjectIDFromHex(userId)
-	//update := bson.M{
-	//	"$set": data,
-	//}
-	//if data.Reset != "" {
-	//	update["$unset"] = bson.M{data.Reset: ""}
-	//}
-	//
-	//if result, err = x.Db.Collection("users").
-	//	UpdateByID(ctx, oid, update); err != nil {
-	//	return
-	//}
+func (x *Service) SetUser(ctx context.Context, userId string, data map[string]interface{}) (err error) {
+	if err = x.Db.
+		Model(&model.User{}).
+		Where(`id = ?`, userId).
+		Updates(data).Error; err != nil {
+		return
+	}
 
 	// 用户缓存刷新
 	key := x.Values.Name("users", userId)
