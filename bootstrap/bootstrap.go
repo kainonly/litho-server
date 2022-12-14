@@ -33,6 +33,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 	if err = env.Parse(values); err != nil {
 		return
 	}
+	values.DynamicValues = &kv.DEFAULT
 	return
 }
 
