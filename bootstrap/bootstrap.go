@@ -20,8 +20,8 @@ import (
 	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/sessions"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"os"
 	"strings"
 	"time"
@@ -37,16 +37,23 @@ func LoadStaticValues() (values *common.Values, err error) {
 	return
 }
 
+// UseMongoDB 初始化 MongoDB
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
+func UseMongoDB(values *common.Values) (*mongo.Client, error) {
+	return mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(values.Database.Mongo),
+	)
+}
+
 // UseDatabase 初始化数据库
-// 配置文档 https://gorm.io/zh_CN/
-func UseDatabase(values *common.Values) (db *gorm.DB, err error) {
-	return gorm.Open(postgres.New(postgres.Config{
-		DSN:                  values.Gorm,
-		PreferSimpleProtocol: true,
-	}), &gorm.Config{
-		SkipDefaultTransaction:                   true,
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
+// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
+func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Database) {
+	option := options.Database().
+		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
+	return client.Database(values.Database.Name, option)
 }
 
 // UseRedis 初始化 Redis

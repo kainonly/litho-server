@@ -12,7 +12,9 @@ import (
 	"github.com/weplanx/utils/passlib"
 	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/sessions"
-	"strconv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -27,14 +29,14 @@ type Service struct {
 // Login 登录
 func (x *Service) Login(ctx context.Context, email string, password string) (ts string, err error) {
 	var user model.User
-	if err = x.Db.
-		Where(`email = ?`, email).
-		Where(`status = ?`, true).
-		Take(&user).Error; err != nil {
+	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
+		"email":  email,
+		"status": true,
+	}).Decode(&user); err != nil {
 		return
 	}
 
-	userId := strconv.FormatUint(user.ID, 10)
+	userId := user.ID.Hex()
 
 	// 锁定上限验证
 	var maxLoginFailures bool
@@ -181,9 +183,14 @@ func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.Us
 	}
 
 	if exists == 0 {
-		if err = x.Db.
-			Where(`status = ?`, true).
-			Take(&data).Error; err != nil {
+		id, _ := primitive.ObjectIDFromHex(userId)
+		option := options.FindOne().SetProjection(bson.M{"password": 0})
+		if err = x.Db.Collection("users").
+			FindOne(ctx, bson.M{
+				"_id":    id,
+				"status": true,
+			}, option).
+			Decode(&data); err != nil {
 			return
 		}
 
@@ -227,11 +234,13 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 }
 
 // SetUser 设置登录用户信息
-func (x *Service) SetUser(ctx context.Context, userId string, data map[string]interface{}) (err error) {
-	if err = x.Db.
-		Model(&model.User{}).
-		Where(`id = ?`, userId).
-		Updates(data).Error; err != nil {
+func (x *Service) SetUser(ctx context.Context, userId string, data map[string]interface{}) (result interface{}, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	update := bson.M{
+		"$set": data,
+	}
+	if result, err = x.Db.Collection("users").
+		UpdateByID(ctx, id, update); err != nil {
 		return
 	}
 

@@ -204,7 +204,8 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.GetClaims(c)
-	if err := x.IndexService.SetUser(ctx, claims.UserId, data); err != nil {
+	_, err := x.IndexService.SetUser(ctx, claims.UserId, data)
+	if err != nil {
 		c.Error(err)
 		return
 	}
