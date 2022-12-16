@@ -11,12 +11,14 @@ import (
 
 func NewAPI(values *common.Values) (*api.API, error) {
 	wire.Build(
+		UseMongoDB,
 		UseDatabase,
 		UseRedis,
 		UseNats,
 		UseJetStream,
 		UseKeyValue,
 		UseKV,
+		UseDSL,
 		UseSessions,
 		UsePassport,
 		UseLocker,

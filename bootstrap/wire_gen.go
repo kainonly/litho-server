@@ -9,7 +9,9 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/sessions"
 )
@@ -17,11 +19,12 @@ import (
 // Injectors from wire.go:
 
 func NewAPI(values *common.Values) (*api.API, error) {
-	db, err := UseDatabase(values)
+	client, err := UseMongoDB(values)
 	if err != nil {
 		return nil, err
 	}
-	client, err := UseRedis(values)
+	database := UseDatabase(values, client)
+	redisClient, err := UseRedis(values)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +42,9 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	inject := &common.Inject{
 		Values:    values,
-		Db:        db,
-		Redis:     client,
+		Mongo:     client,
+		Db:        database,
+		Redis:     redisClient,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
@@ -50,9 +54,9 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		return nil, err
 	}
 	passport := UsePassport(values)
-	locker := UseLocker(values, client)
-	captcha := UseCaptcha(values, client)
-	sessionsSessions := UseSessions(values, client)
+	locker := UseLocker(values, redisClient)
+	captcha := UseCaptcha(values, redisClient)
+	sessionsSessions := UseSessions(values, redisClient)
 	service := &sessions.Service{
 		Sessions: sessionsSessions,
 	}
@@ -66,6 +70,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	controller := &index.Controller{
 		IndexService: indexService,
 	}
+	projectsService := &projects.Service{
+		Inject: inject,
+	}
+	projectsController := &projects.Controller{
+		ProjectsService: projectsService,
+	}
 	kvKV := UseKV(values, keyValue)
 	kvService := &kv.Service{
 		KV: kvKV,
@@ -76,12 +86,24 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		SessionsService: service,
 	}
+	dslDSL, err := UseDSL(values, database)
+	if err != nil {
+		return nil, err
+	}
+	dslService := &dsl.Service{
+		DSL: dslDSL,
+	}
+	dslController := &dsl.Controller{
+		DSLService: dslService,
+	}
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
 		Index:    controller,
+		Projects: projectsController,
 		KV:       kvController,
 		Sessions: sessionsController,
+		DSL:      dslController,
 	}
 	return apiAPI, nil
 }

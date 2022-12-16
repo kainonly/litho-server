@@ -1,20 +1,26 @@
 package model_test
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/weplanx/server/model"
 	"testing"
+	"time"
 )
 
 func TestCreateProject(t *testing.T) {
-	err := db.Migrator().DropTable(model.Project{})
-	assert.NoError(t, err)
-	err = db.AutoMigrate(model.Project{})
-	assert.NoError(t, err)
-
-	err = db.Create(&model.Project{
-		Name:      "默认",
-		Namespace: "default",
-	}).Error
+	var err error
+	_, err = db.Collection("projects").InsertOne(
+		context.TODO(),
+		model.Project{
+			Name:        "默认",
+			Namespace:   "default",
+			Entry:       []string{},
+			Expire:      0,
+			Status:      true,
+			CreatedTime: time.Now(),
+			UpdatedTime: time.Now(),
+		},
+	)
 	assert.NoError(t, err)
 }

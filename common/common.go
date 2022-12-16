@@ -7,13 +7,14 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/passport"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 )
 
 type Inject struct {
 	Values    *Values
-	Db        *gorm.DB
+	Mongo     *mongo.Client
+	Db        *mongo.Database
 	Redis     *redis.Client
 	Nats      *nats.Conn
 	JetStream nats.JetStreamContext
@@ -44,8 +45,11 @@ type Values struct {
 }
 
 type Database struct {
-	// Gorm DSN
-	Gorm string `env:"GORM,required"`
+	// MongoDB 连接 Uri
+	Mongo string `env:"MONGO,required"`
+
+	// MongoDB 数据库名称
+	Name string `env:"NAME,required"`
 
 	// Redis 连接 Uri
 	Redis string `env:"REDIS,required"`

@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
@@ -23,6 +24,7 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
+	projects.Provides,
 	kv.Provides,
 	sessions.Provides,
 	dsl.Provides,
@@ -33,9 +35,10 @@ type API struct {
 
 	Hertz    *server.Hertz
 	Index    *index.Controller
+	Projects *projects.Controller
 	KV       *kv.Controller
 	Sessions *sessions.Controller
-	//DSL      *dsl.Controller
+	DSL      *dsl.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -48,15 +51,23 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("logout", auth, x.Index.Logout)
 	//h.GET("options", auth, x.Index.GetOptions)
 	//
-	_user := h.Group("user", auth)
+	user := h.Group("user", auth)
 	{
-		_user.GET("", x.Index.GetUser)
-		_user.POST("", x.Index.SetUser)
+		user.GET("", x.Index.GetUser)
+		user.POST("", x.Index.SetUser)
 	}
+
+	//projects := h.Group("projects", auth)
+	//{
+	//	projects.GET("")
+	//	projects.POST("")
+	//	projects.PATCH(":id")
+	//	projects.DELETE(":id")
+	//}
 
 	helper.BindKV(h.Group("values", auth), x.KV)
 	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
-	//helper.BindDSL(h.Group(":collection", auth), x.DSL)
+	helper.BindDSL(h.Group(":collection", auth), x.DSL)
 	return
 }
 
