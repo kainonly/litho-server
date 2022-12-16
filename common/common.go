@@ -22,53 +22,30 @@ type Inject struct {
 }
 
 type Values struct {
-	// 监听地址
-	Address string `env:"ADDRESS" envDefault:":3000"`
-
-	// 命名空间
-	Namespace string `env:"NAMESPACE,required"`
-
-	// 密钥
-	Key string `env:"KEY,required"`
-
-	// 跨域
-	Hosts []string `env:"HOSTS" envSeparator:","`
-
-	// 数据库
-	Database `envPrefix:"DATABASE_"`
-
-	// NATS 配置
-	Nats `envPrefix:"NATS_"`
-
-	// 动态配置
+	Address           string   `env:"ADDRESS" envDefault:":3000"`
+	Namespace         string   `env:"NAMESPACE,required"`
+	Key               string   `env:"KEY,required"`
+	Hosts             []string `env:"HOSTS" envSeparator:","`
+	Database          `envPrefix:"DATABASE_"`
+	Nats              `envPrefix:"NATS_"`
 	*kv.DynamicValues `env:"-"`
 }
 
 type Database struct {
-	// MongoDB 连接 Uri
 	Mongo string `env:"MONGO,required"`
-
-	// MongoDB 数据库名称
-	Name string `env:"NAME,required"`
-
-	// Redis 连接 Uri
+	Name  string `env:"NAME,required"`
 	Redis string `env:"REDIS,required"`
 }
 
 type Nats struct {
-	// Nats 连接地址
 	Hosts []string `env:"HOSTS,required" envSeparator:","`
-
-	// Nats Nkey 认证
-	Nkey string `env:"NKEY,required"`
+	Nkey  string   `env:"NKEY,required"`
 }
 
-// Name 生成空间名称
 func (x Values) Name(v ...string) string {
 	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
 
-// GetClaims 获取授权标识
 func GetClaims(c *app.RequestContext) (claims passport.Claims) {
 	value, ok := c.Get("identity")
 	if !ok {

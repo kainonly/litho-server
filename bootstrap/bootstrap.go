@@ -27,7 +27,7 @@ import (
 	"time"
 )
 
-// LoadStaticValues 加载静态配置
+// LoadStaticValues
 func LoadStaticValues() (values *common.Values, err error) {
 	values = new(common.Values)
 	if err = env.Parse(values); err != nil {
@@ -37,8 +37,8 @@ func LoadStaticValues() (values *common.Values, err error) {
 	return
 }
 
-// UseMongoDB 初始化 MongoDB
-// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// UseMongoDB
+// https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
@@ -47,8 +47,8 @@ func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	)
 }
 
-// UseDatabase 初始化数据库
-// 配置文档 https://www.mongodb.com/docs/drivers/go/current/
+// UseDatabase
+// https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
 func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Database) {
 	option := options.Database().
@@ -56,8 +56,8 @@ func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Databas
 	return client.Database(values.Database.Name, option)
 }
 
-// UseRedis 初始化 Redis
-// 配置文档 https://github.com/go-redis/redis
+// UseRedis
+// https://github.com/go-redis/redis
 func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(values.Database.Redis)
 	if err != nil {
@@ -70,9 +70,9 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	return
 }
 
-// UseNats 初始化 Nats
-// 配置文档 https://docs.nats.io/using-nats/developer
-// SDK https://github.com/nats-io/nats.go
+// UseNats
+// https://docs.nats.io/using-nats/developer
+// https://github.com/nats-io/nats.go
 func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 	var kp nkeys.KeyPair
 	if kp, err = nkeys.FromSeed([]byte(values.Nats.Nkey)); err != nil {
@@ -101,19 +101,19 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 	return
 }
 
-// UseJetStream 初始化流
-// 说明 https://docs.nats.io/using-nats/developer/develop_jetstream
+// UseJetStream
+// https://docs.nats.io/using-nats/developer/develop_jetstream
 func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 	return nc.JetStream(nats.PublishAsyncMaxPending(256))
 }
 
-// UseKeyValue 初始 KeyValue
-// 说明 https://docs.nats.io/using-nats/developer/develop_jetstream/kv
+// UseKeyValue
+// https://docs.nats.io/using-nats/developer/develop_jetstream/kv
 func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
 }
 
-// UseKV 使用动态配置
+// UseKV
 func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
 	return kv.New(
 		kv.SetNamespace(values.Namespace),
@@ -122,7 +122,7 @@ func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
 	)
 }
 
-// UseSessions 使用会话
+// UseSessions
 func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions {
 	return sessions.New(
 		sessions.SetNamespace(values.Namespace),
@@ -131,7 +131,7 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 	)
 }
 
-// UseDSL 使用通用查询
+// UseDSL
 func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	return dsl.New(
 		dsl.SetNamespace(values.Namespace),
@@ -140,7 +140,7 @@ func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	)
 }
 
-// UsePassport 使用鉴权
+// UsePassport
 func UsePassport(values *common.Values) *passport.Passport {
 	return passport.New(
 		passport.SetNamespace(values.Namespace),
@@ -148,7 +148,7 @@ func UsePassport(values *common.Values) *passport.Passport {
 	)
 }
 
-// UseLocker 使用锁定
+// UseLocker
 func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
 	return locker.New(
 		locker.SetNamespace(values.Namespace),
@@ -156,7 +156,7 @@ func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
 	)
 }
 
-// UseCaptcha 使用验证
+// UseCaptcha
 func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 	return captcha.New(
 		captcha.SetNamespace(values.Namespace),
@@ -164,7 +164,7 @@ func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 	)
 }
 
-// UseTransfer 初始日志传输
+// UseTransfer
 // https://github.com/weplanx/transfer
 func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
 	return transfer.New(
@@ -174,8 +174,8 @@ func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamCon
 	)
 }
 
-// UseHertz 使用 Hertz
-// 配置文档 https://www.cloudwego.io/zh/docs/hertz/reference/config
+// UseHertz
+// https://www.cloudwego.io/zh/docs/hertz/reference/config
 func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 	opts := []config.Option{
 		server.WithHostPorts(values.Address),
@@ -187,7 +187,6 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	h = server.Default(opts...)
 
-	// 全局中间件
 	h.Use(cors.New(cors.Config{
 		AllowOrigins:     values.Hosts,
 		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
@@ -200,7 +199,7 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 	return
 }
 
-// UseTest 初始测试
+// UseTest
 func UseTest() (api *api.API, err error) {
 	values, err := LoadStaticValues()
 	if err != nil {
