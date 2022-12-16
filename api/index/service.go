@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/utils/sessions"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
@@ -29,10 +30,16 @@ type Service struct {
 // Login 登录
 func (x *Service) Login(ctx context.Context, email string, password string) (ts string, err error) {
 	var user model.User
-	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
-		"email":  email,
-		"status": true,
-	}).Decode(&user); err != nil {
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{
+			"email":  email,
+			"status": true,
+		}).Decode(&user); err != nil {
+		if err == mongo.ErrNoDocuments {
+			err = errors.NewPublic("用户不存在或已被冻结")
+			return
+		}
+
 		return
 	}
 
