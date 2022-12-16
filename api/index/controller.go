@@ -17,16 +17,16 @@ type Controller struct {
 	IndexService *Service
 }
 
-// Index 入口
+// Ping
 // @router / [GET]
-func (x *Controller) Index(ctx context.Context, c *app.RequestContext) {
+func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
 	c.JSON(http.StatusOK, utils.H{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
 	})
 }
 
-// Login 登录认证
+// User Login
 // @router /login [POST]
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	var dto struct {
@@ -49,18 +49,18 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
-		"message": "登录认证成功",
+		"message": "ok",
 	})
 }
 
-// Verify 主动验证
+// User Verify
 // @router /verify [GET]
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("access_token")
 	if ts == nil {
 		c.JSON(401, utils.H{
 			"code":    0,
-			"message": "认证已失效请重新登录",
+			"message": MsgAuthenticationExpired,
 		})
 		return
 	}
@@ -69,18 +69,18 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 		c.JSON(401, utils.H{
 			"code":    0,
-			"message": "认证已失效请重新登录",
+			"message": MsgAuthenticationExpired,
 		})
 		return
 	}
 
 	c.JSON(200, utils.H{
 		"code":    0,
-		"message": "验证成功",
+		"message": "ok",
 	})
 }
 
-// GetRefreshCode 获取刷新令牌验证码
+// Get Token Captcha
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
@@ -99,7 +99,7 @@ type RefreshTokenDto struct {
 	Code string `json:"code,required"`
 }
 
-// RefreshToken 刷新令牌
+// Refresh Token
 // @router /refresh_token [POST]
 func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	var dto RefreshTokenDto
@@ -118,11 +118,11 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
-		"message": "令牌刷新成功",
+		"message": "ok",
 	})
 }
 
-// Logout 注销认证
+// Logout
 // @router /logout [POST]
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
@@ -134,32 +134,11 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
-		"message": "认证已注销",
+		"message": "ok",
 	})
 }
 
-// GetOptions 返回通用配置
-// @router /options [GET]
-//func (x *Controller) GetOptions(ctx context.Context, c *app.RequestContext) {
-//	var dto struct {
-//		// 类型
-//		Type string `query:"type,required"`
-//	}
-//	if err := c.BindAndValidate(&dto); err != nil {
-//		c.Error(err)
-//		return
-//	}
-//
-//	data := x.IndexService.GetOptions(dto.Type)
-//	if data == nil {
-//		c.Error(errors.NewPublic("配置类型不存在"))
-//		return
-//	}
-//
-//	c.JSON(http.StatusOK, data)
-//}
-
-// GetUser 获取授权用户信息
+// Get User Info
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
@@ -173,19 +152,14 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	// 更新字段
-	Set string `json:"$set,requred" vd:"in($, 'Email', 'Name', 'Avatar', 'Password')"`
-	// 电子邮件
-	Email string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'必须是电子邮件'"`
-	// 称呼
-	Name string `json:"name,omitempty"`
-	// 头像
-	Avatar string `json:"avatar,omitempty"`
-	// 密码
-	Password string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'密码必须大于8位'"`
+	Set      string `json:"$set,requred" vd:"in($, 'email', 'name', 'avatar', 'password')"`
+	Email    string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
+	Name     string `json:"name,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
+	Password string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
 }
 
-// SetUser 设置授权用户信息
+// Set User Info
 // @router /user [POST]
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserDto
@@ -193,14 +167,13 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-
 	data := make(map[string]interface{})
-	key := strings.ToLower(dto.Set)
-	value := reflect.ValueOf(dto).FieldByName(dto.Set).Interface()
-	if key == "password" {
-		data[key], _ = passlib.Hash(value.(string))
+	path := strings.ToUpper(dto.Set[:1]) + dto.Set[1:]
+	value := reflect.ValueOf(dto).FieldByName(path).Interface()
+	if dto.Set == "password" {
+		data[dto.Set], _ = passlib.Hash(value.(string))
 	} else {
-		data[key] = value
+		data[dto.Set] = value
 	}
 
 	claims := common.GetClaims(c)
@@ -212,6 +185,6 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
-		"message": "设置成功",
+		"message": "ok",
 	})
 }

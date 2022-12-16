@@ -43,14 +43,13 @@ type API struct {
 
 func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
-	h.GET("", x.Index.Index)
+	h.GET("", x.Index.Ping)
 	h.POST("login", x.Index.Login)
 	h.GET("verify", x.Index.Verify)
 	h.GET("code", auth, x.Index.GetRefreshCode)
 	h.POST("refresh_token", auth, x.Index.RefreshToken)
 	h.POST("logout", auth, x.Index.Logout)
-	//h.GET("options", auth, x.Index.GetOptions)
-	//
+
 	user := h.Group("user", auth)
 	{
 		user.GET("", x.Index.GetUser)
@@ -71,14 +70,14 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	return
 }
 
-// AuthGuard 认证中间件
+// AuthGuard
 func (x *API) AuthGuard() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		ts := c.Cookie("access_token")
 		if ts == nil {
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": "认证已失效请重新登录",
+				"message": "authentication has expired, please log in again",
 			})
 			return
 		}
@@ -88,7 +87,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": "认证已失效请重新登录",
+				"message": index.MsgAuthenticationExpired,
 			})
 			return
 		}
@@ -151,16 +150,19 @@ func (x *API) ErrHandler() app.HandlerFunc {
 		switch e := err.Err.(type) {
 		case decoder.SyntaxError:
 			c.JSON(http.StatusBadRequest, utils.H{
+				"code":    0,
 				"message": e.Description(),
 			})
 			break
 		case *binding.Error:
 			c.JSON(http.StatusBadRequest, utils.H{
+				"code":    0,
 				"message": e.Error(),
 			})
 			break
 		case *validator.Error:
 			c.JSON(http.StatusBadRequest, utils.H{
+				"code":    0,
 				"message": e.Error(),
 			})
 			break
