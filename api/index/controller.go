@@ -26,15 +26,15 @@ func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
+type LoginDto struct {
+	Email    string `json:"email,required" vd:"email($)"`
+	Password string `json:"password,required" vd:"len($)>=8"`
+}
+
 // User Login
 // @router /login [POST]
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
-	var dto struct {
-		// 电子邮件
-		Email string `json:"email,required" vd:"email($)"`
-		// 密码
-		Password string `json:"password,required" vd:"len($)>=8"`
-	}
+	var dto LoginDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return

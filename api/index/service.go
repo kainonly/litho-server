@@ -130,39 +130,6 @@ func (x *Service) Logout(ctx context.Context, userId string) (err error) {
 	return x.SessionsService.Remove(ctx, userId)
 }
 
-// // GetOptions 返回通用配置
-//	func (x *Service) GetOptions(v string) utils.H {
-//		switch v {
-//		// 上传类
-//		case "upload":
-//			switch x.Values.Cloud {
-//			// 腾讯云
-//			case "tencent":
-//				// Cos 对象存储
-//				return utils.H{
-//					"type": "cos",
-//					"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
-//						x.Values.TencentCosBucket, x.Values.TencentCosRegion,
-//					),
-//					"limit": x.Values.TencentCosLimit,
-//				}
-//			}
-//		// 企业平台类
-//		case "office":
-//			switch x.Values.Office {
-//			// 飞书
-//			case "feishu":
-//				return utils.H{
-//					"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
-//					"redirect": x.Values.RedirectUrl,
-//					"app_id":   x.Values.FeishuAppId,
-//				}
-//			}
-//		}
-//		return nil
-//	}
-//
-
 func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.User, err error) {
 	key := x.Values.Name("users", userId)
 	var exists int64
