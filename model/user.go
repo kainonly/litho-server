@@ -17,8 +17,8 @@ type User struct {
 	Avatar      string             `bson:"avatar" json:"avatar"`
 	Permissions Permissions        `bson:"permissions" json:"-"`
 	Status      bool               `bson:"status" json:"status"`
-	CreatedTime time.Time          `bson:"created_time" json:"created_time"`
-	UpdatedTime time.Time          `bson:"updated_time" json:"updated_time"`
+	CreateTime  time.Time          `bson:"create_time" json:"create_time"`
+	UpdateTime  time.Time          `bson:"update_time" json:"update_time"`
 }
 
 func NewUser(email string, password string) *User {
@@ -27,8 +27,8 @@ func NewUser(email string, password string) *User {
 		Password:    password,
 		Permissions: map[string]interface{}{},
 		Status:      true,
-		CreatedTime: time.Now(),
-		UpdatedTime: time.Now(),
+		CreateTime:  time.Now(),
+		UpdateTime:  time.Now(),
 	}
 }
 
