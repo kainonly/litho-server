@@ -31,7 +31,7 @@ type LoginDto struct {
 	Password string `json:"password,required" vd:"len($)>=8"`
 }
 
-// User Login
+// Login
 // @router /login [POST]
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	var dto LoginDto
@@ -53,7 +53,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
-// User Verify
+// Verify
 // @router /verify [GET]
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("access_token")
@@ -80,7 +80,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
-// Get Token Captcha
+// GetRefreshCode
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
@@ -99,7 +99,7 @@ type RefreshTokenDto struct {
 	Code string `json:"code,required"`
 }
 
-// Refresh Token
+// RefreshToken
 // @router /refresh_token [POST]
 func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	var dto RefreshTokenDto
@@ -138,7 +138,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
-// Get User Info
+// GetUser
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
@@ -159,7 +159,7 @@ type SetUserDto struct {
 	Password string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
 }
 
-// Set User Info
+// SetUser
 // @router /user [POST]
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserDto
