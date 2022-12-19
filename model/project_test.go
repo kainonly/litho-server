@@ -11,7 +11,7 @@ func TestCreateProject(t *testing.T) {
 	var err error
 	_, err = db.Collection("projects").InsertOne(
 		context.TODO(),
-		model.NewProject("DEFAULT", "default"),
+		model.NewProject("默认示例", "default"),
 	)
 	assert.NoError(t, err)
 }
