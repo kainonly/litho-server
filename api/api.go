@@ -15,11 +15,14 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
 	"github.com/weplanx/utils/kv"
+	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/sessions"
 	"net/http"
+	"time"
 )
 
 var Provides = wire.NewSet(
@@ -39,6 +42,7 @@ type API struct {
 	KV       *kv.Controller
 	Sessions *sessions.Controller
 	DSL      *dsl.Controller
+	Transfer *transfer.Transfer
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -70,7 +74,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	return
 }
 
-// AuthGuard
 func (x *API) AuthGuard() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		ts := c.Cookie("access_token")
@@ -97,31 +100,37 @@ func (x *API) AuthGuard() app.HandlerFunc {
 	}
 }
 
-// AccessLogs 日志
-//func (x *API) AccessLogs() app.HandlerFunc {
-//	return func(ctx context.Context, c *app.RequestContext) {
-//		start := time.Now()
-//		c.Next(ctx)
-//		end := time.Now()
-//		latency := end.Sub(start).Microseconds
-//		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
-//			Metadata: map[string]interface{}{
-//				"method": string(c.Request.Header.Method()),
-//				"host":   string(c.Request.Host()),
-//				"path":   string(c.Request.Path()),
-//				"status": c.Response.StatusCode(),
-//				"ip":     c.ClientIP(),
-//			},
-//			Data: map[string]interface{}{
-//				"user_agent": string(c.Request.Header.UserAgent()),
-//				"query":      c.Request.QueryString(),
-//				"body":       string(c.Request.Body()),
-//				"cost":       latency(),
-//			},
-//			Timestamp: start,
-//		})
-//	}
-//}
+func (x *API) AccessLogs() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		start := time.Now()
+		c.Next(ctx)
+		end := time.Now()
+		latency := end.Sub(start).Milliseconds
+		var userId string
+		if value, ok := c.Get("identity"); ok {
+			claims := value.(passport.Claims)
+			userId = claims.UserId
+		}
+		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
+			Metadata: map[string]interface{}{
+				"method":  string(c.Request.Header.Method()),
+				"host":    string(c.Request.Host()),
+				"path":    string(c.Request.Path()),
+				"ip":      c.ClientIP(),
+				"user_id": userId,
+			},
+			Data: map[string]interface{}{
+				"user_agent": string(c.Request.Header.UserAgent()),
+				"header":     string(c.Request.Header.Header()),
+				"query":      string(c.Request.QueryString()),
+				"body":       string(c.Request.Body()),
+				"cost":       latency(),
+				"status":     c.Response.StatusCode(),
+			},
+			Timestamp: start,
+		})
+	}
+}
 
 // ErrHandler 错误处理
 func (x *API) ErrHandler() app.HandlerFunc {
@@ -176,7 +185,7 @@ func (x *API) ErrHandler() app.HandlerFunc {
 // Initialize 初始化
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
-	//h.Use(x.AccessLogs())
+	h.Use(x.AccessLogs())
 	h.Use(x.ErrHandler())
 	// 加载自定义验证
 	helper.RegValidate()
@@ -186,22 +195,22 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 		Updated: updated,
 	})
 	// 传输指标
-	//if err = x.Transfer.Set(ctx, transfer.LogOption{
-	//	Key:         "access",
-	//	Description: "请求日志",
-	//	TTL:         15552000,
-	//}); err != nil {
-	//	return
-	//}
-	//go func() {
-	//	for {
-	//		select {
-	//		case <-updated:
-	//			if err = x.DSL.DSLService.Load(ctx); err != nil {
-	//				return
-	//			}
-	//		}
-	//	}
-	//}()
+	if err = x.Transfer.Set(ctx, transfer.LogOption{
+		Key:         "access",
+		Description: "访问日志",
+		TTL:         15552000,
+	}); err != nil {
+		return
+	}
+	go func() {
+		for {
+			select {
+			case <-updated:
+				if err = x.DSL.DSLService.Load(ctx); err != nil {
+					return
+				}
+			}
+		}
+	}()
 	return
 }

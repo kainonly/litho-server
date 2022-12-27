@@ -117,7 +117,6 @@ func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
 }
 
-// UseKV
 func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
 	return kv.New(
 		kv.SetNamespace(values.Namespace),
@@ -126,7 +125,6 @@ func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
 	)
 }
 
-// UseSessions
 func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions {
 	return sessions.New(
 		sessions.SetNamespace(values.Namespace),
@@ -135,7 +133,6 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 	)
 }
 
-// UseDSL
 func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	return dsl.New(
 		dsl.SetNamespace(values.Namespace),
@@ -144,7 +141,6 @@ func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	)
 }
 
-// UsePassport
 func UsePassport(values *common.Values) *passport.Passport {
 	return passport.New(
 		passport.SetNamespace(values.Namespace),
@@ -152,7 +148,6 @@ func UsePassport(values *common.Values) *passport.Passport {
 	)
 }
 
-// UseLocker
 func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
 	return locker.New(
 		locker.SetNamespace(values.Namespace),
@@ -160,7 +155,6 @@ func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
 	)
 }
 
-// UseCaptcha
 func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 	return captcha.New(
 		captcha.SetNamespace(values.Namespace),
