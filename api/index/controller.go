@@ -42,7 +42,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	var metadata model.LoginMetadata
-	var data model.LoginData
+	metadata.Email = dto.Email
 	ts, err := x.IndexService.Login(ctx, dto.Email, dto.Password, &metadata)
 	if err != nil {
 		c.Error(err)
@@ -50,6 +50,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	metadata.Ip = c.ClientIP()
+	var data model.LoginData
 	data.UserAgent = string(c.UserAgent())
 	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
