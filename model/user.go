@@ -17,6 +17,8 @@ type User struct {
 	Avatar      string             `bson:"avatar" json:"avatar"`
 	Permissions Permissions        `bson:"permissions" json:"-"`
 	Status      bool               `bson:"status" json:"status"`
+	Sessions    int64              `bson:"sessions" json:"sessions"`
+	Last        string             `bson:"last" json:"last"`
 	CreateTime  time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime  time.Time          `bson:"update_time" json:"update_time"`
 }

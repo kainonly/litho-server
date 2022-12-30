@@ -124,6 +124,8 @@ github.com/tidwall/pretty v1.2.0/go.mod h1:ITEVvHYasfjBbM0u2Pg8T2nJnzm8xPwvNhhso
 github.com/tidwall/sjson v1.2.4/go.mod h1:098SZ494YoMWPmMO6ct4dcFnqxwj9r/gF0Etp19pSNM=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
+github.com/weplanx/openapi v0.2.3 h1:1A5XMC7ZS0X/QAxPPp4camYGbsHd2or57WyO6YABf3g=
+github.com/weplanx/openapi v0.2.3/go.mod h1:tmeDf8/t0h7uogN+IoWCnBMHCv2Al6PWvExscivmMt8=
 github.com/weplanx/transfer v1.6.0 h1:2WGuhhvSeiuBy2w/SGF0iax5fVZI75q73n1/LqI/2uk=
 github.com/weplanx/transfer v1.6.0/go.mod h1:bAJ4lMHg3WNpbc5YgBW/6RsrRT9r174fzSdbr81I3pc=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=

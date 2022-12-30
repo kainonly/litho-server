@@ -25,6 +25,8 @@ func TestCreateCollectionForUsers(t *testing.T) {
 					{"name", bson.M{"bsonType": "string"}},
 					{"avatar", bson.M{"bsonType": "string"}},
 					{"permissions", bson.M{"bsonType": "object"}},
+					{"sessions", bson.M{"bsonType": []string{"number", "null"}}},
+					{"last", bson.M{"bsonType": []string{"string", "null"}}},
 					{"status", bson.M{"bsonType": "bool"}},
 					{"create_time", bson.M{"bsonType": "date"}},
 					{"update_time", bson.M{"bsonType": "date"}},

@@ -2,9 +2,12 @@ package index
 
 import (
 	"context"
+	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	gonanoid "github.com/matoous/go-nanoid"
+	"github.com/weplanx/openapi/client"
+	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/utils/captcha"
@@ -25,9 +28,10 @@ type Service struct {
 	Locker          *locker.Locker
 	Captcha         *captcha.Captcha
 	SessionsService *sessions.Service
+	OpenAPIService  *openapi.Service
 }
 
-func (x *Service) Login(ctx context.Context, email string, password string) (ts string, err error) {
+func (x *Service) Login(ctx context.Context, email string, password string, metadata *model.LoginMetadata) (ts string, err error) {
 	var user model.User
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
@@ -43,6 +47,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 	}
 
 	userId := user.ID.Hex()
+	metadata.UserID = userId
 
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
@@ -66,6 +71,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 	}
 
 	jti, _ := gonanoid.Nanoid()
+	metadata.TokenId = jti
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
@@ -81,6 +87,30 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 		return
 	}
 
+	return
+}
+
+func (x *Service) WriteLoginLog(ctx context.Context, metadata model.LoginMetadata, data model.LoginData) (err error) {
+	var oapi *client.Client
+	if oapi, err = x.OpenAPIService.Client(); err != nil {
+		return
+	}
+	if data.Detail, err = oapi.GetIp(ctx, metadata.Ip); err != nil {
+		return
+	}
+	if _, err = x.Db.Collection("users").UpdateOne(ctx, bson.M{
+		"email": metadata.Email,
+	}, bson.M{
+		"$inc": bson.M{"sessions": 1},
+		"$set": bson.M{
+			"last": fmt.Sprintf(`%s %s`, data.Detail["isp"], metadata.Ip),
+		},
+	}); err != nil {
+		return err
+	}
+	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, model.NewLoginLog(metadata, data)); err != nil {
+		return
+	}
 	return
 }
 
