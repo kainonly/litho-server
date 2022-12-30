@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/model"
 	"github.com/weplanx/utils/passlib"
 	"net/http"
 	"reflect"
@@ -40,11 +41,17 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	ts, err := x.IndexService.Login(ctx, dto.Email, dto.Password)
+	var metadata model.LoginMetadata
+	var data model.LoginData
+	ts, err := x.IndexService.Login(ctx, dto.Email, dto.Password, &metadata)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+
+	metadata.Ip = c.ClientIP()
+	data.UserAgent = string(c.UserAgent())
+	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{

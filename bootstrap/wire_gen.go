@@ -9,6 +9,7 @@ package bootstrap
 import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/dsl"
@@ -60,12 +61,16 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	service := &sessions.Service{
 		Sessions: sessionsSessions,
 	}
+	openapiService := &openapi.Service{
+		Inject: inject,
+	}
 	indexService := &index.Service{
 		Inject:          inject,
 		Passport:        passport,
 		Locker:          locker,
 		Captcha:         captcha,
 		SessionsService: service,
+		OpenAPIService:  openapiService,
 	}
 	controller := &index.Controller{
 		IndexService: indexService,

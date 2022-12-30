@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
@@ -27,6 +28,7 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
+	openapi.Provides,
 	projects.Provides,
 	kv.Provides,
 	sessions.Provides,
@@ -104,6 +106,10 @@ func (x *API) AccessLogs() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		start := time.Now()
 		c.Next(ctx)
+		method := string(c.Request.Header.Method())
+		if method == "GET" {
+			return
+		}
 		end := time.Now()
 		latency := end.Sub(start).Milliseconds
 		var userId string
@@ -113,7 +119,7 @@ func (x *API) AccessLogs() app.HandlerFunc {
 		}
 		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
 			Metadata: map[string]interface{}{
-				"method":  string(c.Request.Header.Method()),
+				"method":  method,
 				"host":    string(c.Request.Host()),
 				"path":    string(c.Request.Path()),
 				"ip":      c.ClientIP(),
@@ -121,7 +127,6 @@ func (x *API) AccessLogs() app.HandlerFunc {
 			},
 			Data: map[string]interface{}{
 				"user_agent": string(c.Request.Header.UserAgent()),
-				"header":     string(c.Request.Header.Header()),
 				"query":      string(c.Request.QueryString()),
 				"body":       string(c.Request.Body()),
 				"cost":       latency(),
