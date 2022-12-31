@@ -2,7 +2,6 @@ package index
 
 import (
 	"context"
-	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	gonanoid "github.com/matoous/go-nanoid"
@@ -95,20 +94,33 @@ func (x *Service) WriteLoginLog(ctx context.Context, metadata model.LoginMetadat
 	if oapi, err = x.OpenAPIService.Client(); err != nil {
 		return
 	}
-	if data.Detail, err = oapi.GetIp(ctx, metadata.Ip); err != nil {
+	var detail map[string]interface{}
+	if detail, err = oapi.GetIp(ctx, metadata.Ip); err != nil {
 		return
 	}
+	data.Country = detail["country"].(string)
+	data.Province = detail["province"].(string)
+	data.City = detail["city"].(string)
+	data.Isp = detail["isp"].(string)
+	r := model.NewLoginLog(metadata, data)
 	if _, err = x.Db.Collection("users").UpdateOne(ctx, bson.M{
 		"email": metadata.Email,
 	}, bson.M{
 		"$inc": bson.M{"sessions": 1},
 		"$set": bson.M{
-			"last": fmt.Sprintf(`%s %s`, data.Detail["isp"], metadata.Ip),
+			"last": model.UserLast{
+				Timestamp: r.Timestamp,
+				Ip:        r.Metadata.Ip,
+				Country:   r.Data.Country,
+				Province:  r.Data.Province,
+				City:      r.Data.City,
+				Isp:       r.Data.Isp,
+			},
 		},
 	}); err != nil {
 		return err
 	}
-	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, model.NewLoginLog(metadata, data)); err != nil {
+	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, r); err != nil {
 		return
 	}
 	return

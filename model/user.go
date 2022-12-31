@@ -1,52 +1,41 @@
 package model
 
 import (
-	"database/sql/driver"
-	"errors"
-	"fmt"
-	"github.com/bytedance/sonic"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 type User struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	Email       string             `bson:"email" json:"email"`
-	Password    string             `bson:"password" json:"-"`
-	Name        string             `bson:"name" json:"name"`
-	Avatar      string             `bson:"avatar" json:"avatar"`
-	Permissions Permissions        `bson:"permissions" json:"-"`
-	Status      bool               `bson:"status" json:"status"`
-	Sessions    int64              `bson:"sessions" json:"sessions"`
-	Last        string             `bson:"last" json:"last"`
-	CreateTime  time.Time          `bson:"create_time" json:"create_time"`
-	UpdateTime  time.Time          `bson:"update_time" json:"update_time"`
+	ID          primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
+	Email       string               `bson:"email" json:"email"`
+	Roles       []primitive.ObjectID `bson:"permissions" json:"-"`
+	Password    string               `bson:"password" json:"-"`
+	Name        string               `bson:"name" json:"name"`
+	Avatar      string               `bson:"avatar" json:"avatar"`
+	BackupEmail string               `bson:"backup_email" json:"backup_email"`
+	Sessions    int64                `bson:"sessions" json:"sessions"`
+	Last        UserLast             `bson:"last" json:"last"`
+	Status      bool                 `bson:"status" json:"status"`
+	CreateTime  time.Time            `bson:"create_time" json:"create_time"`
+	UpdateTime  time.Time            `bson:"update_time" json:"update_time"`
+}
+
+type UserLast struct {
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
+	Ip        string    `bson:"ip" json:"ip"`
+	Country   string    `bson:"country" json:"country"`
+	Province  string    `bson:"province" json:"province"`
+	City      string    `bson:"city" json:"city"`
+	Isp       string    `bson:"isp" json:"isp"`
 }
 
 func NewUser(email string, password string) *User {
 	return &User{
-		Email:       email,
-		Password:    password,
-		Permissions: map[string]interface{}{},
-		Status:      true,
-		CreateTime:  time.Now(),
-		UpdateTime:  time.Now(),
+		Email:      email,
+		Password:   password,
+		Roles:      []primitive.ObjectID{},
+		Status:     true,
+		CreateTime: time.Now(),
+		UpdateTime: time.Now(),
 	}
-}
-
-type Permissions map[string]interface{}
-
-func (x *Permissions) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
-	}
-	return sonic.Unmarshal(bytes, x)
-}
-
-func (x Permissions) Value() (driver.Value, error) {
-	if len(x) == 0 {
-		return nil, nil
-	}
-	return sonic.MarshalString(x)
 }

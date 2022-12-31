@@ -1,7 +1,6 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
@@ -19,7 +18,10 @@ type LoginMetadata struct {
 }
 
 type LoginData struct {
-	Detail    bson.M `bson:"detail"`
+	Country   string `bson:"country" json:"country"`
+	Province  string `bson:"province" json:"province"`
+	City      string `bson:"city" json:"city"`
+	Isp       string `bson:"isp" json:"isp"`
 	UserAgent string `bson:"user_agent"`
 }
 
