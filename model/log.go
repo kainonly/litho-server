@@ -12,7 +12,7 @@ type LoginLog struct {
 }
 
 type LoginMetadata struct {
-	UserID  string `bson:"user"`
+	UserID  string `bson:"user_id"`
 	Email   string `bson:"email"`
 	TokenId string `bson:"token_id"`
 	Ip      string `bson:"ip"`

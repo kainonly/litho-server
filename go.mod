@@ -18,6 +18,7 @@ require (
 	github.com/nats-io/nats.go v1.21.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.1
+	github.com/weplanx/openapi v0.2.3
 	github.com/weplanx/transfer v1.6.0
 	github.com/weplanx/utils v0.0.6
 	go.mongodb.org/mongo-driver v1.11.0
@@ -50,7 +51,6 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/weplanx/openapi v0.2.3 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
@@ -61,7 +61,6 @@ require (
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

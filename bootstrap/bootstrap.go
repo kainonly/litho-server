@@ -35,7 +35,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 	values.DynamicValues = &kv.DEFAULT
 	values.DynamicValues.DSL = map[string]*kv.DSLOption{
 		"users": {
-			Keys: []string{"_id", "email", "name", "avatar", "status", "create_time", "update_time"},
+			Keys: []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
 		},
 	}
 	return
