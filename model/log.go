@@ -15,6 +15,7 @@ type LoginMetadata struct {
 	Email   string `bson:"email"`
 	TokenId string `bson:"token_id"`
 	Ip      string `bson:"ip"`
+	Channel string `bson:"channel" json:"channel"`
 }
 
 type LoginData struct {

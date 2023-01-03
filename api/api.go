@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
+	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
@@ -30,6 +31,7 @@ var Provides = wire.NewSet(
 	index.Provides,
 	openapi.Provides,
 	projects.Provides,
+	feishu.Provides,
 	kv.Provides,
 	sessions.Provides,
 	dsl.Provides,
@@ -41,6 +43,7 @@ type API struct {
 	Hertz    *server.Hertz
 	Index    *index.Controller
 	Projects *projects.Controller
+	Feishu   *feishu.Controller
 	KV       *kv.Controller
 	Sessions *sessions.Controller
 	DSL      *dsl.Controller
@@ -62,13 +65,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		user.POST("", x.Index.SetUser)
 	}
 
-	//projects := h.Group("projects", auth)
-	//{
-	//	projects.GET("")
-	//	projects.POST("")
-	//	projects.PATCH(":id")
-	//	projects.DELETE(":id")
-	//}
+	_feishu := h.Group("feishu")
+	{
+		_feishu.POST("", x.Feishu.Challenge)
+		_feishu.GET("", x.Feishu.OAuth)
+	}
 
 	helper.BindKV(h.Group("values", auth), x.KV)
 	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
