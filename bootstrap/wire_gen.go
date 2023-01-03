@@ -77,6 +77,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	controller := &index.Controller{
 		IndexService: indexService,
+		Values:       values,
 	}
 	projectsService := &projects.Service{
 		Inject: inject,

@@ -2,6 +2,7 @@ package index
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -16,6 +17,7 @@ import (
 
 type Controller struct {
 	IndexService *Service
+	Values       *common.Values
 }
 
 // Ping
@@ -197,4 +199,42 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		"code":    0,
 		"message": "ok",
 	})
+}
+
+type OptionsDto struct {
+	Type string `query:"type"`
+}
+
+// Options 返回通用配置
+func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
+	var dto OptionsDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+	switch dto.Type {
+	case "upload":
+		switch x.Values.Cloud {
+		case "tencent":
+			c.JSON(http.StatusOK, utils.H{
+				"type": "cos",
+				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
+					x.Values.TencentCosBucket, x.Values.TencentCosRegion,
+				),
+				"limit": x.Values.TencentCosLimit,
+			})
+			return
+		}
+	case "office":
+		switch x.Values.Office {
+		case "feishu":
+			c.JSON(http.StatusOK, utils.H{
+				"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+				"redirect": x.Values.RedirectUrl,
+				"app_id":   x.Values.FeishuAppId,
+			})
+			return
+		}
+	}
+	return
 }
