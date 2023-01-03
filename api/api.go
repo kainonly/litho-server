@@ -59,11 +59,13 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("refresh_token", auth, x.Index.RefreshToken)
 	h.POST("logout", auth, x.Index.Logout)
 
-	user := h.Group("user", auth)
+	_user := h.Group("user", auth)
 	{
-		user.GET("", x.Index.GetUser)
-		user.POST("", x.Index.SetUser)
+		_user.GET("", x.Index.GetUser)
+		_user.POST("", x.Index.SetUser)
 	}
+
+	h.GET("options", auth, x.Index.Options)
 
 	_feishu := h.Group("feishu")
 	{
