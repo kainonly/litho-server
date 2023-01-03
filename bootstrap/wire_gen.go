@@ -8,6 +8,7 @@ package bootstrap
 
 import (
 	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
@@ -41,14 +42,16 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	httpClients := UseHttpClients()
 	inject := &common.Inject{
-		Values:    values,
-		Mongo:     client,
-		Db:        database,
-		Redis:     redisClient,
-		Nats:      conn,
-		JetStream: jetStreamContext,
-		KeyValue:  keyValue,
+		Values:      values,
+		Mongo:       client,
+		Db:          database,
+		Redis:       redisClient,
+		Nats:        conn,
+		JetStream:   jetStreamContext,
+		KeyValue:    keyValue,
+		HttpClients: httpClients,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {
@@ -81,6 +84,18 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	projectsController := &projects.Controller{
 		ProjectsService: projectsService,
 	}
+	feishuService := &feishu.Service{
+		Inject:          inject,
+		SessionsService: service,
+		Locker:          locker,
+		Passport:        passport,
+	}
+	feishuController := &feishu.Controller{
+		IndexService:  indexService,
+		FeishuService: feishuService,
+		Values:        values,
+		Passport:      passport,
+	}
 	kvKV := UseKV(values, keyValue)
 	kvService := &kv.Service{
 		KV: kvKV,
@@ -110,6 +125,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Hertz:    hertz,
 		Index:    controller,
 		Projects: projectsController,
+		Feishu:   feishuController,
 		KV:       kvController,
 		Sessions: sessionsController,
 		DSL:      dslController,

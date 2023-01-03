@@ -24,6 +24,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseLocker,
 		UseCaptcha,
 		UseTransfer,
+		UseHttpClients,
 		UseHertz,
 		api.Provides,
 		wire.Struct(new(api.API), "*"),

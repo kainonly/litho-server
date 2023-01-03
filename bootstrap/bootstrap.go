@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-resty/resty/v2"
 	"github.com/hertz-contrib/cors"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -170,6 +171,14 @@ func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamCon
 		transfer.SetDatabase(db),
 		transfer.SetJetStream(js),
 	)
+}
+
+// UseHttpClients 创建请求客户端
+func UseHttpClients() *common.HttpClients {
+	return &common.HttpClients{
+		Feishu: resty.New().
+			SetBaseURL("https://open.feishu.cn/open-apis"),
+	}
 }
 
 // UseHertz
