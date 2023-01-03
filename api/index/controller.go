@@ -58,7 +58,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	data.UserAgent = string(c.UserAgent())
 	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
-	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -78,7 +78,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	}
 
 	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
-		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+		c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
 		c.JSON(401, utils.H{
 			"code":    0,
 			"message": MsgAuthenticationExpired,

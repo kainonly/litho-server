@@ -58,8 +58,12 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 }
 
 type OAuthDto struct {
-	Code  string `query:"code,required"`
-	State string `query:"state"`
+	Code  string   `query:"code,required"`
+	State StateDto `query:"state"`
+}
+
+type StateDto struct {
+	Action string `json:"action,omitempty"`
 }
 
 // OAuth 第三方登录与关联
@@ -74,15 +78,8 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	var state struct {
-		Action string `json:"action,omitempty"`
-	}
-	if err = sonic.UnmarshalString(dto.State, &state); err != nil {
-		c.Error(err)
-		return
-	}
 
-	switch state.Action {
+	switch dto.State.Action {
 	case "link":
 		ts := c.Cookie("access_token")
 		if ts == nil {
@@ -93,7 +90,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 		if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
-			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
 			c.JSON(401, utils.H{
 				"code":    0,
 				"message": index.MsgAuthenticationExpired,
@@ -124,7 +121,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	data.UserAgent = string(c.UserAgent())
 	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
-	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "ok",
