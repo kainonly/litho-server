@@ -16,6 +16,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
+	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/csrf"
@@ -33,6 +34,7 @@ var Provides = wire.NewSet(
 	openapi.Provides,
 	projects.Provides,
 	feishu.Provides,
+	tencent.Provides,
 	kv.Provides,
 	sessions.Provides,
 	dsl.Provides,
@@ -46,6 +48,7 @@ type API struct {
 	Index    *index.Controller
 	Projects *projects.Controller
 	Feishu   *feishu.Controller
+	Tencent  *tencent.Controller
 	KV       *kv.Controller
 	Sessions *sessions.Controller
 	DSL      *dsl.Controller
@@ -74,6 +77,12 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_feishu.POST("", x.Feishu.Challenge)
 		_feishu.GET("", x.Feishu.OAuth)
+	}
+
+	_tencent := h.Group("tencent", auth)
+	{
+		_tencent.GET("cos-presigned", x.Tencent.CosPresigned)
+		_tencent.GET("cos-image-info", x.Tencent.ImageInfo)
 	}
 
 	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)

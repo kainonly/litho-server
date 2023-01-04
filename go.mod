@@ -14,12 +14,12 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/wire v0.5.0
-	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf
 	github.com/hertz-contrib/requestid v1.1.0
 	github.com/matoous/go-nanoid v1.5.0
 	github.com/nats-io/nats.go v1.21.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.1
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.40
 	github.com/weplanx/openapi v0.2.3
 	github.com/weplanx/transfer v1.6.0
 	github.com/weplanx/utils v0.0.6
@@ -30,6 +30,7 @@ require (
 	github.com/andeya/goutil v0.0.0-20220704075712-42f2ec55fe8d // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06 // indirect
+	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/netpoll v0.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -37,13 +38,16 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/mozillazg/go-httpheader v0.2.1 // indirect
 	github.com/nats-io/jwt/v2 v2.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect

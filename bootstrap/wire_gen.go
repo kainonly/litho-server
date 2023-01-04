@@ -12,6 +12,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
+	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
@@ -99,6 +100,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Values:        values,
 		Passport:      passport,
 	}
+	tencentService := &tencent.Service{
+		Inject: inject,
+	}
+	tencentController := &tencent.Controller{
+		TencentService: tencentService,
+	}
 	kvKV := UseKV(values, keyValue)
 	kvService := &kv.Service{
 		KV: kvKV,
@@ -130,6 +137,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Index:    controller,
 		Projects: projectsController,
 		Feishu:   feishuController,
+		Tencent:  tencentController,
 		KV:       kvController,
 		Sessions: sessionsController,
 		DSL:      dslController,
