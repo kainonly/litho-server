@@ -8,7 +8,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
-	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -204,14 +203,6 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	h.Use(
 		requestid.New(),
-		cors.New(cors.Config{
-			AllowOrigins:     values.Hosts,
-			AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
-			AllowHeaders:     []string{"Content-Type", "X-Pagesize", "X-Page", "X-XSRF-TOKEN"},
-			AllowCredentials: true,
-			ExposeHeaders:    []string{"X-Total"},
-			MaxAge:           time.Hour * 2,
-		}),
 	)
 
 	return
