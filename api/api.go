@@ -53,32 +53,32 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	csrf := x.Csrf.VerifyToken()
+	csrfToken := x.Csrf.VerifyToken()
 	auth := x.AuthGuard()
 	h.GET("", x.Index.Ping)
-	h.POST("login", csrf, x.Index.Login)
-	h.GET("verify", csrf, x.Index.Verify)
-	h.GET("code", csrf, auth, x.Index.GetRefreshCode)
-	h.POST("refresh_token", csrf, auth, x.Index.RefreshToken)
-	h.POST("logout", csrf, auth, x.Index.Logout)
+	h.POST("login", csrfToken, x.Index.Login)
+	h.GET("verify", x.Index.Verify)
+	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", csrfToken, auth, x.Index.RefreshToken)
+	h.POST("logout", csrfToken, auth, x.Index.Logout)
 
-	_user := h.Group("user", csrf, auth)
+	_user := h.Group("user", csrfToken, auth)
 	{
 		_user.GET("", x.Index.GetUser)
 		_user.POST("", x.Index.SetUser)
 	}
 
-	h.GET("options", csrf, auth, x.Index.Options)
+	h.GET("options", x.Index.Options)
 
-	_feishu := h.Group("feishu", csrf)
+	_feishu := h.Group("feishu")
 	{
 		_feishu.POST("", x.Feishu.Challenge)
 		_feishu.GET("", x.Feishu.OAuth)
 	}
 
-	helper.BindKV(h.Group("values", csrf, auth), x.KV)
-	helper.BindSessions(h.Group("sessions", csrf, auth), x.Sessions)
-	helper.BindDSL(h.Group(":collection", csrf, auth), x.DSL)
+	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
+	helper.BindSessions(h.Group("sessions", csrfToken, auth), x.Sessions)
+	helper.BindDSL(h.Group(":collection", csrfToken, auth), x.DSL)
 	return
 }
 

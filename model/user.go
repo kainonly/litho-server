@@ -13,6 +13,7 @@ type User struct {
 	Name        string               `bson:"name" json:"name"`
 	Avatar      string               `bson:"avatar" json:"avatar"`
 	BackupEmail string               `bson:"backup_email" json:"backup_email"`
+	Feishu      FeishuUserData       `bson:"feishu" json:"feishu"`
 	Sessions    int64                `bson:"sessions" json:"sessions"`
 	Last        UserLast             `bson:"last" json:"last"`
 	Status      bool                 `bson:"status" json:"status"`
