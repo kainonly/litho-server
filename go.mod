@@ -14,6 +14,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/wire v0.5.0
+	github.com/hertz-contrib/cors v0.0.0-20220601061225-50f4e582beaf
 	github.com/hertz-contrib/requestid v1.1.0
 	github.com/matoous/go-nanoid v1.5.0
 	github.com/nats-io/nats.go v1.21.0

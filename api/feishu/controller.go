@@ -89,8 +89,9 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			})
 			return
 		}
-		if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
-			c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
+		claims, err := x.IndexService.Verify(ctx, string(ts))
+		if err != nil {
+			c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteLaxMode, true, true)
 			c.JSON(401, utils.H{
 				"code":    0,
 				"message": index.MsgAuthenticationExpired,
@@ -98,7 +99,6 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		claims := common.GetClaims(c)
 		if _, err = x.FeishuService.Link(ctx, claims.UserId, userData); err != nil {
 			c.Error(err)
 			return
@@ -121,9 +121,6 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	data.UserAgent = string(c.UserAgent())
 	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
-	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
-	c.JSON(200, utils.H{
-		"code":    0,
-		"message": "ok",
-	})
+	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
+	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.Host)))
 }

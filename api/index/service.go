@@ -221,11 +221,16 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]i
 	}
 
 	data = map[string]interface{}{
-		"email":       user.Email,
-		"name":        user.Name,
-		"avatar":      user.Avatar,
-		"sessions":    user.Sessions,
-		"last":        user.Last,
+		"email":    user.Email,
+		"name":     user.Name,
+		"avatar":   user.Avatar,
+		"sessions": user.Sessions,
+		"last":     user.Last,
+		"feishu": map[string]interface{}{
+			"name":    user.Feishu.Name,
+			"en_name": user.Feishu.EnName,
+			"open_id": user.Feishu.OpenId,
+		},
 		"create_time": user.CreateTime,
 		"update_time": user.UpdateTime,
 	}
