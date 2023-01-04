@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
+	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/passlib"
 	"net/http"
 	"reflect"
@@ -17,12 +18,14 @@ import (
 
 type Controller struct {
 	IndexService *Service
+	Csrf         *csrf.Csrf
 	Values       *common.Values
 }
 
 // Ping
 // @router / [GET]
 func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
+	x.Csrf.SetToken(c)
 	c.JSON(http.StatusOK, utils.H{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
@@ -58,7 +61,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	data.UserAgent = string(c.UserAgent())
 	go x.IndexService.WriteLoginLog(ctx, metadata, data)
 
-	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -78,7 +81,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	}
 
 	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
-		c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteStrictMode, true, true)
+		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 		c.JSON(401, utils.H{
 			"code":    0,
 			"message": MsgAuthenticationExpired,
@@ -127,7 +130,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -143,7 +146,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "ok",

@@ -57,6 +57,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	csrf := UseCsrf(values)
 	passport := UsePassport(values)
 	locker := UseLocker(values, redisClient)
 	captcha := UseCaptcha(values, redisClient)
@@ -77,6 +78,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	controller := &index.Controller{
 		IndexService: indexService,
+		Csrf:         csrf,
 		Values:       values,
 	}
 	projectsService := &projects.Service{
@@ -124,6 +126,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
+		Csrf:     csrf,
 		Index:    controller,
 		Projects: projectsController,
 		Feishu:   feishuController,
