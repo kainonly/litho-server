@@ -24,11 +24,10 @@ type Inject struct {
 }
 
 type Values struct {
-	Address           string   `env:"ADDRESS" envDefault:":3000"`
-	Namespace         string   `env:"NAMESPACE,required"`
-	Key               string   `env:"KEY,required"`
-	Console           string   `env:"CONSOLE,required"`
-	Hosts             []string `env:"HOSTS" envSeparator:","`
+	Address           string `env:"ADDRESS" envDefault:":3000"`
+	Namespace         string `env:"NAMESPACE,required"`
+	Key               string `env:"KEY,required"`
+	Host              string `env:"HOST,required"`
 	Database          `envPrefix:"DATABASE_"`
 	Nats              `envPrefix:"NATS_"`
 	*kv.DynamicValues `env:"-"`
