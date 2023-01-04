@@ -9,12 +9,14 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
+	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/locker"
@@ -142,6 +144,12 @@ func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
 	)
 }
 
+func UseCsrf(values *common.Values) *csrf.Csrf {
+	return csrf.New(
+		csrf.SetKey(values.Key),
+	)
+}
+
 func UsePassport(values *common.Values) *passport.Passport {
 	return passport.New(
 		passport.SetNamespace(values.Namespace),
@@ -194,14 +202,17 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	h = server.Default(opts...)
 
-	h.Use(cors.New(cors.Config{
-		AllowOrigins:     values.Hosts,
-		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Content-Type", "X-Pagesize", "X-Page"},
-		AllowCredentials: true,
-		ExposeHeaders:    []string{"X-Total"},
-		MaxAge:           time.Hour * 2,
-	}))
+	h.Use(
+		requestid.New(),
+		cors.New(cors.Config{
+			AllowOrigins:     values.Hosts,
+			AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
+			AllowHeaders:     []string{"Content-Type", "X-Pagesize", "X-Page", "X-XSRF-TOKEN"},
+			AllowCredentials: true,
+			ExposeHeaders:    []string{"X-Total"},
+			MaxAge:           time.Hour * 2,
+		}),
+	)
 
 	return
 }

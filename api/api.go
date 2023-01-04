@@ -18,6 +18,7 @@ import (
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
+	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
 	"github.com/weplanx/utils/kv"
@@ -41,6 +42,7 @@ type API struct {
 	*common.Inject
 
 	Hertz    *server.Hertz
+	Csrf     *csrf.Csrf
 	Index    *index.Controller
 	Projects *projects.Controller
 	Feishu   *feishu.Controller
@@ -51,31 +53,32 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
+	csrf := x.Csrf.VerifyToken()
 	auth := x.AuthGuard()
 	h.GET("", x.Index.Ping)
-	h.POST("login", x.Index.Login)
-	h.GET("verify", x.Index.Verify)
-	h.GET("code", auth, x.Index.GetRefreshCode)
-	h.POST("refresh_token", auth, x.Index.RefreshToken)
-	h.POST("logout", auth, x.Index.Logout)
+	h.POST("login", csrf, x.Index.Login)
+	h.GET("verify", csrf, x.Index.Verify)
+	h.GET("code", csrf, auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", csrf, auth, x.Index.RefreshToken)
+	h.POST("logout", csrf, auth, x.Index.Logout)
 
-	_user := h.Group("user", auth)
+	_user := h.Group("user", csrf, auth)
 	{
 		_user.GET("", x.Index.GetUser)
 		_user.POST("", x.Index.SetUser)
 	}
 
-	h.GET("options", auth, x.Index.Options)
+	h.GET("options", csrf, auth, x.Index.Options)
 
-	_feishu := h.Group("feishu")
+	_feishu := h.Group("feishu", csrf)
 	{
 		_feishu.POST("", x.Feishu.Challenge)
 		_feishu.GET("", x.Feishu.OAuth)
 	}
 
-	helper.BindKV(h.Group("values", auth), x.KV)
-	helper.BindSessions(h.Group("sessions", auth), x.Sessions)
-	helper.BindDSL(h.Group(":collection", auth), x.DSL)
+	helper.BindKV(h.Group("values", csrf, auth), x.KV)
+	helper.BindSessions(h.Group("sessions", csrf, auth), x.Sessions)
+	helper.BindDSL(h.Group(":collection", csrf, auth), x.DSL)
 	return
 }
 
@@ -92,7 +95,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 
 		claims, err := x.Index.IndexService.Verify(ctx, string(ts))
 		if err != nil {
-			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
 				"message": index.MsgAuthenticationExpired,
@@ -193,6 +196,7 @@ func (x *API) ErrHandler() app.HandlerFunc {
 // Initialize 初始化
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
+
 	h.Use(x.AccessLogs())
 	h.Use(x.ErrHandler())
 	// 加载自定义验证

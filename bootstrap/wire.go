@@ -20,6 +20,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseKV,
 		UseDSL,
 		UseSessions,
+		UseCsrf,
 		UsePassport,
 		UseLocker,
 		UseCaptcha,
