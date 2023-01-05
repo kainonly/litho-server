@@ -2,7 +2,6 @@ package index
 
 import (
 	"context"
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/openapi/client"
@@ -17,7 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -172,67 +170,54 @@ func (x *Service) Logout(ctx context.Context, userId string) (err error) {
 	return x.SessionsService.Remove(ctx, userId)
 }
 
-func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.User, err error) {
-	key := x.Values.Name("users", userId)
-	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+//func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.User, err error) {
+//	key := x.Values.Name("users", userId)
+//	var exists int64
+//	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+//		return
+//	}
+//
+//	if exists == 0 {
+//		id, _ := primitive.ObjectIDFromHex(userId)
+//		option := options.FindOne().SetProjection(bson.M{"password": 0})
+//		if err = x.Db.Collection("users").
+//			FindOne(ctx, bson.M{
+//				"_id":    id,
+//				"status": true,
+//			}, option).
+//			Decode(&data); err != nil {
+//			return
+//		}
+//
+//		var value string
+//		if value, err = sonic.MarshalString(data); err != nil {
+//			return
+//		}
+//
+//		if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
+//			return
+//		}
+//
+//		return
+//	}
+//
+//	var result string
+//	if result, err = x.Redis.Get(ctx, key).Result(); err != nil {
+//		return
+//	}
+//	if err = sonic.UnmarshalString(result, &data); err != nil {
+//		return
+//	}
+//
+//	return
+//}
+
+func (x *Service) GetUser(ctx context.Context, userId string) (user model.User, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&user); err != nil {
 		return
-	}
-
-	if exists == 0 {
-		id, _ := primitive.ObjectIDFromHex(userId)
-		option := options.FindOne().SetProjection(bson.M{"password": 0})
-		if err = x.Db.Collection("users").
-			FindOne(ctx, bson.M{
-				"_id":    id,
-				"status": true,
-			}, option).
-			Decode(&data); err != nil {
-			return
-		}
-
-		var value string
-		if value, err = sonic.MarshalString(data); err != nil {
-			return
-		}
-
-		if err = x.Redis.Set(ctx, key, value, 0).Err(); err != nil {
-			return
-		}
-
-		return
-	}
-
-	var result string
-	if result, err = x.Redis.Get(ctx, key).Result(); err != nil {
-		return
-	}
-	if err = sonic.UnmarshalString(result, &data); err != nil {
-		return
-	}
-
-	return
-}
-
-func (x *Service) GetUser(ctx context.Context, userId string) (data map[string]interface{}, err error) {
-	var user model.User
-	if user, err = x.GetIdentity(ctx, userId); err != nil {
-		return
-	}
-
-	data = map[string]interface{}{
-		"email":    user.Email,
-		"name":     user.Name,
-		"avatar":   user.Avatar,
-		"sessions": user.Sessions,
-		"last":     user.Last,
-		"feishu": map[string]interface{}{
-			"name":    user.Feishu.Name,
-			"en_name": user.Feishu.EnName,
-			"open_id": user.Feishu.OpenId,
-		},
-		"create_time": user.CreateTime,
-		"update_time": user.UpdateTime,
 	}
 
 	return

@@ -6,13 +6,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/huandu/xstrings"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/passlib"
 	"net/http"
 	"reflect"
-	"strings"
 	"time"
 )
 
@@ -167,11 +167,12 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	Set      string `json:"$set,requred" vd:"in($, 'email', 'name', 'avatar', 'password')"`
-	Email    string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
-	Name     string `json:"name,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
-	Password string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
+	Set         string `json:"$set,required" vd:"in($, 'email', 'name', 'avatar', 'password', 'backup_email')"`
+	Email       string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
+	BackupEmail string `json:"backup_email,omitempty" vd:"(Set)$!='BackupEmail' || email($);msg:'must be email'"`
+	Name        string `json:"name,omitempty"`
+	Avatar      string `json:"avatar,omitempty"`
+	Password    string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
 }
 
 // SetUser
@@ -183,7 +184,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	data := make(map[string]interface{})
-	path := strings.ToUpper(dto.Set[:1]) + dto.Set[1:]
+	path := xstrings.ToCamelCase(dto.Set)
 	value := reflect.ValueOf(dto).FieldByName(path).Interface()
 	if dto.Set == "password" {
 		data[dto.Set], _ = passlib.Hash(value.(string))
