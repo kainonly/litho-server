@@ -72,9 +72,9 @@ jobs:
             ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
 
-      - name: Kubernetes 滚动更新
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBE_CONFIG }}
-          version: v1.23.1
-          command: patch deployment server --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"
+#      - name: Kubernetes 滚动更新
+#        uses: steebchen/kubectl@v2.0.0
+#        with:
+#          config: ${{ secrets.KUBE_CONFIG }}
+#          version: v1.23.1
+#          command: patch deployment server --patch "$(sed "s/\${tag}/${{steps.meta.outputs.version}}/" < ./config/patch.yml)"
