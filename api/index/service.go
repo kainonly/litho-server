@@ -3,6 +3,7 @@ package index
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/openapi/client"
 	"github.com/weplanx/server/api/openapi"
@@ -212,22 +213,46 @@ func (x *Service) Logout(ctx context.Context, userId string) (err error) {
 //	return
 //}
 
-func (x *Service) GetUser(ctx context.Context, userId string) (user model.User, err error) {
+func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
+	var user model.User
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{"_id": id}).
 		Decode(&user); err != nil {
 		return
 	}
 
+	data = utils.H{
+		"email":        user.Email,
+		"name":         user.Name,
+		"avatar":       user.Avatar,
+		"backup_email": user.BackupEmail,
+		"sessions":     user.Sessions,
+		"last":         user.Last,
+		"status":       user.Status,
+		"create_time":  user.CreateTime,
+		"update_time":  user.UpdateTime,
+	}
+
+	if user.Feishu.OpenId != "" {
+		feishu := user.Feishu
+		data["feishu"] = utils.H{
+			"name":          feishu.Name,
+			"en_name":       feishu.EnName,
+			"avatar_url":    feishu.AvatarUrl,
+			"avatar_thumb":  feishu.AvatarThumb,
+			"avatar_middle": feishu.AvatarMiddle,
+			"avatar_big":    feishu.AvatarBig,
+			"open_id":       feishu.OpenId,
+		}
+	}
+
 	return
 }
 
-func (x *Service) SetUser(ctx context.Context, userId string, data map[string]interface{}) (result interface{}, err error) {
+func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (result interface{}, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
-	update := bson.M{
-		"$set": data,
-	}
+
 	if result, err = x.Db.Collection("users").
 		UpdateByID(ctx, id, update); err != nil {
 		return

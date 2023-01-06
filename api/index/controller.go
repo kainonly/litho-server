@@ -11,6 +11,7 @@ import (
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/passlib"
+	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"reflect"
 	"time"
@@ -193,7 +194,35 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.GetClaims(c)
-	_, err := x.IndexService.SetUser(ctx, claims.UserId, data)
+	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
+		"$set": data,
+	})
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.H{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type UnsetUserDto struct {
+	Key string `path:"key,required" vd:"in($, 'feishu')"`
+}
+
+func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
+	var dto UnsetUserDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	claims := common.GetClaims(c)
+	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
+		"$unset": bson.M{dto.Key: 1},
+	})
 	if err != nil {
 		c.Error(err)
 		return
