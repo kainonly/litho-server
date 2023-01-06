@@ -45,8 +45,7 @@ func (x *Service) CosPresigned(ctx context.Context) (result interface{}, err err
 	date := time.Now()
 	expired := date.Add(time.Duration(x.Values.TencentCosExpired) * time.Second)
 	keyTime := fmt.Sprintf(`%d;%d`,
-		date.Unix(), expired.Unix(),
-	)
+		date.Unix(), expired.Unix())
 	name, _ := gonanoid.Nanoid()
 	key := fmt.Sprintf(`%s/%s/%s`,
 		x.Values.Namespace,

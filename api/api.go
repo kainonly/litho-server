@@ -69,6 +69,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_user.GET("", x.Index.GetUser)
 		_user.POST("", x.Index.SetUser)
+		_user.DELETE(":key", x.Index.UnsetUser)
 	}
 
 	h.GET("options", x.Index.Options)
