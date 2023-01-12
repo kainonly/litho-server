@@ -3,6 +3,7 @@ package feishu
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/errors"
@@ -119,7 +120,12 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	metadata.Ip = c.ClientIP()
 	var data model.LoginData
 	data.UserAgent = string(c.UserAgent())
-	go x.IndexService.WriteLoginLog(ctx, metadata, data)
+	go func() {
+		if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
+			logger.Error(err)
+			return
+		}
+	}()
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.Host)))

@@ -7,7 +7,7 @@ replace github.com/weplanx/utils v0.0.6 => ./utils
 require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/bytedance/go-tagexpr/v2 v2.9.6
-	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
+	github.com/bytedance/gopkg v0.0.0-20220623074550-9d6d3df70991
 	github.com/bytedance/sonic v1.5.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/cloudwego/hertz v0.4.2
@@ -35,12 +35,15 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
+	github.com/hertz-contrib/obs-opentelemetry/tracing v0.1.1 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
@@ -63,6 +66,10 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	go.opentelemetry.io/otel v1.7.0 // indirect
+	go.opentelemetry.io/otel/metric v0.30.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.7.0 // indirect
+	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect

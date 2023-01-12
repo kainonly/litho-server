@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
+	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -199,10 +200,14 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 		opts = append(opts, server.WithExitWaitTime(0))
 	}
 
+	tracer, cfg := hertztracing.NewServerTracer()
+	opts = append(opts, tracer)
+
 	h = server.Default(opts...)
 
 	h.Use(
 		requestid.New(),
+		hertztracing.ServerMiddleware(cfg),
 	)
 
 	return

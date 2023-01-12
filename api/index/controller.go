@@ -3,6 +3,7 @@ package index
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -60,7 +61,12 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	var data model.LoginData
 
 	data.UserAgent = string(c.UserAgent())
-	go x.IndexService.WriteLoginLog(ctx, metadata, data)
+	go func() {
+		if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
+			logger.Error(err)
+			return
+		}
+	}()
 
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(200, utils.H{
