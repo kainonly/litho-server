@@ -28,5 +28,8 @@ func main() {
 		panic(err)
 	}
 
+	otel := bootstrap.ProviderOpenTelemetry(values)
+	defer otel.Shutdown(ctx)
+
 	h.Spin()
 }

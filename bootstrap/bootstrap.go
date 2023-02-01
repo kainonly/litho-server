@@ -8,6 +8,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
+	"github.com/hertz-contrib/obs-opentelemetry/provider"
+	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -41,6 +43,14 @@ func LoadStaticValues() (values *common.Values, err error) {
 		},
 	}
 	return
+}
+
+func ProviderOpenTelemetry(values *common.Values) provider.OtelProvider {
+	return provider.NewOpenTelemetryProvider(
+		provider.WithServiceName(values.Namespace),
+		provider.WithExportEndpoint(values.Otel),
+		provider.WithInsecure(),
+	)
 }
 
 // UseMongoDB
@@ -191,8 +201,10 @@ func UseHttpClients() *common.HttpClients {
 // UseHertz
 // https://www.cloudwego.io/zh/docs/hertz/reference/config
 func UseHertz(values *common.Values) (h *server.Hertz, err error) {
+	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
 		server.WithHostPorts(values.Address),
+		tracer,
 	}
 
 	if os.Getenv("MODE") != "release" {
@@ -205,6 +217,7 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 	h.Use(
 		requestid.New(),
+		tracing.ServerMiddleware(cfg),
 	)
 
 	return

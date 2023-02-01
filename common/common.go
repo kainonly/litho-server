@@ -25,6 +25,7 @@ type Inject struct {
 
 type Values struct {
 	Address           string `env:"ADDRESS" envDefault:":3000"`
+	Otel              string `env:"OTEL"`
 	Namespace         string `env:"NAMESPACE,required"`
 	Key               string `env:"KEY,required"`
 	Host              string `env:"HOST,required"`
