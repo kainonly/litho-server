@@ -105,7 +105,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/authorized`, x.Values.Host)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/authorized`, x.Values.BaseUrl)))
 		return
 	}
 
@@ -113,7 +113,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	metadata.Channel = "feishu"
 	ts, err := x.FeishuService.Login(ctx, userData.OpenId, &metadata)
 	if err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/unauthorize`, x.Values.Host)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/unauthorize`, x.Values.BaseUrl)))
 		return
 	}
 
@@ -128,5 +128,5 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
-	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.Host)))
+	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.BaseUrl)))
 }
