@@ -8,9 +8,9 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/bytedance/go-tagexpr/v2 v2.9.6
 	github.com/bytedance/gopkg v0.0.0-20220623074550-9d6d3df70991
-	github.com/bytedance/sonic v1.5.0
+	github.com/bytedance/sonic v1.7.1
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/cloudwego/hertz v0.4.2
+	github.com/cloudwego/hertz v0.5.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/wire v0.5.0
@@ -33,7 +33,7 @@ require (
 	github.com/andeya/goutil v0.0.0-20220704075712-42f2ec55fe8d // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/netpoll v0.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

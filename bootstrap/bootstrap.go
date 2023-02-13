@@ -48,7 +48,7 @@ func LoadStaticValues() (values *common.Values, err error) {
 func ProviderOpenTelemetry(values *common.Values) provider.OtelProvider {
 	return provider.NewOpenTelemetryProvider(
 		provider.WithServiceName(values.Namespace),
-		provider.WithExportEndpoint(values.Otel),
+		provider.WithExportEndpoint(values.Otlp.Endpoint),
 		provider.WithInsecure(),
 	)
 }
@@ -59,7 +59,7 @@ func ProviderOpenTelemetry(values *common.Values) provider.OtelProvider {
 func UseMongoDB(values *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
-		options.Client().ApplyURI(values.Database.Mongo),
+		options.Client().ApplyURI(values.Database.Host),
 	)
 }
 
