@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/go-resty/resty/v2"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
@@ -27,6 +28,9 @@ type Service struct {
 	Locker          *locker.Locker
 	Passport        *passport.Passport
 }
+
+var client = resty.New().
+	SetBaseURL("https://open.feishu.cn/open-apis")
 
 // Decrypt 解密
 func (x *Service) Decrypt(encrypt string, key string) (string, error) {
@@ -75,7 +79,7 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 			TenantAccessToken string `json:"tenant_access_token"`
 			Expire            int64  `json:"expire"`
 		}
-		if _, err = x.HttpClients.Feishu.R().
+		if _, err = client.R().
 			SetBody(map[string]interface{}{
 				"app_id":     x.Values.FeishuAppId,
 				"app_secret": x.Values.FeishuAppSecret,
@@ -105,7 +109,7 @@ func (x *Service) GetUserAccessToken(ctx context.Context, code string) (_ model.
 		Msg  string               `json:"msg"`
 		Data model.FeishuUserData `json:"data"`
 	}
-	if _, err = x.HttpClients.Feishu.R().
+	if _, err = client.R().
 		SetAuthToken(token).
 		SetBody(map[string]interface{}{
 			"grant_type": "authorization_code",
@@ -210,7 +214,7 @@ func (x *Service) CreateTask(ctx context.Context) (result map[string]interface{}
 		"repeat_rule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR"
 	}`
 
-	if _, err = x.HttpClients.Feishu.R().
+	if _, err = client.R().
 		SetAuthToken(token).
 		SetBody(body).
 		SetResult(&result).
@@ -225,7 +229,7 @@ func (x *Service) GetTasks(ctx context.Context) (result map[string]interface{}, 
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {
 		return
 	}
-	if _, err = x.HttpClients.Feishu.R().
+	if _, err = client.R().
 		SetAuthToken(token).
 		SetResult(&result).
 		Get("/task/v1/tasks"); err != nil {

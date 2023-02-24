@@ -43,16 +43,14 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpClients := UseHttpClients()
 	inject := &common.Inject{
-		Values:      values,
-		Mongo:       client,
-		Db:          database,
-		Redis:       redisClient,
-		Nats:        conn,
-		JetStream:   jetStreamContext,
-		KeyValue:    keyValue,
-		HttpClients: httpClients,
+		Values:    values,
+		Mongo:     client,
+		Db:        database,
+		Redis:     redisClient,
+		Nats:      conn,
+		JetStream: jetStreamContext,
+		KeyValue:  keyValue,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {
