@@ -14,6 +14,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
@@ -24,36 +25,43 @@ import (
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/sessions"
 	"net/http"
+	"os"
 )
 
 var Provides = wire.NewSet(
 	index.Provides,
+	kv.Provides,
+	sessions.Provides,
+	dsl.Provides,
 	openapi.Provides,
 	projects.Provides,
 	feishu.Provides,
 	tencent.Provides,
-	kv.Provides,
-	sessions.Provides,
-	dsl.Provides,
+	monitor.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz    *server.Hertz
-	Csrf     *csrf.Csrf
+	Hertz *server.Hertz
+	Csrf  *csrf.Csrf
+
 	Index    *index.Controller
 	Projects *projects.Controller
 	Feishu   *feishu.Controller
 	Tencent  *tencent.Controller
+	Monitor  *monitor.Controller
+	MonitorX *monitor.Service
 	KV       *kv.Controller
 	Sessions *sessions.Controller
 	DSL      *dsl.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	csrfToken := x.Csrf.VerifyToken()
+	release := os.Getenv("MODE") == "release"
+	csrfToken := x.Csrf.VerifyToken(!release)
 	auth := x.AuthGuard()
+
 	h.GET("", x.Index.Ping)
 	h.POST("login", csrfToken, x.Index.Login)
 	h.GET("verify", x.Index.Verify)
@@ -82,6 +90,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_tencent.GET("cos-presigned", x.Tencent.CosPresigned)
 		_tencent.GET("cos-image-info", x.Tencent.ImageInfo)
+	}
+
+	_monitor := h.Group("monitor", auth)
+	{
+		_monitor.GET("cgo_calls", x.Monitor.GetCgoCalls)
 	}
 
 	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
