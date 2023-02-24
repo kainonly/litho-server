@@ -16,6 +16,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseMongoDB,
 		UseDatabase,
 		UseRedis,
+		UseInflux,
 		UseNats,
 		UseJetStream,
 		UseKeyValue,

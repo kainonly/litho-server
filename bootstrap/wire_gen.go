@@ -10,6 +10,7 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
@@ -31,6 +32,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	influxdb2Client := UseInflux(values)
 	conn, err := UseNats(values)
 	if err != nil {
 		return nil, err
@@ -48,6 +50,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Mongo:     client,
 		Db:        database,
 		Redis:     redisClient,
+		Influx:    influxdb2Client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
@@ -104,6 +107,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	tencentController := &tencent.Controller{
 		TencentService: tencentService,
 	}
+	monitorService := &monitor.Service{
+		Inject: inject,
+	}
+	monitorController := &monitor.Controller{
+		MonitorService: monitorService,
+	}
 	kvKV := UseKV(values, keyValue)
 	kvService := &kv.Service{
 		KV: kvKV,
@@ -132,6 +141,8 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Projects: projectsController,
 		Feishu:   feishuController,
 		Tencent:  tencentController,
+		Monitor:  monitorController,
+		MonitorX: monitorService,
 		KV:       kvController,
 		Sessions: sessionsController,
 		DSL:      dslController,

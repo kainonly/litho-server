@@ -12,9 +12,9 @@ type Values struct {
 	Namespace         string `env:"NAMESPACE,required"`
 	Key               string `env:"KEY,required"`
 	Database          `envPrefix:"DATABASE_"`
+	Influx            `envPrefix:"INFLUX_"`
 	Nats              `envPrefix:"NATS_"`
 	Otlp              `envPrefix:"OTLP_"`
-	Influx            `envPrefix:"INFLUX_"`
 	*kv.DynamicValues `env:"-"`
 }
 
@@ -22,6 +22,13 @@ type Database struct {
 	Host  string `env:"HOST,required"`
 	Name  string `env:"NAME,required"`
 	Redis string `env:"REDIS,required"`
+}
+
+type Influx struct {
+	Url    string `env:"URL"`
+	Org    string `env:"ORG"`
+	Token  string `env:"TOKEN"`
+	Bucket string `env:"BUCKET"`
 }
 
 type Nats struct {
@@ -32,11 +39,6 @@ type Nats struct {
 type Otlp struct {
 	Endpoint string `env:"ENDPOINT"`
 	// TODO: Improve other configuration later
-}
-
-type Influx struct {
-	Url   string `env:"URL"`
-	Token string `env:"TOEKN"`
 }
 
 func (x Values) Name(v ...string) string {
