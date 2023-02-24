@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/weplanx/server/common"
+	"time"
 )
 
 type Service struct {
@@ -30,7 +31,7 @@ func (x *Service) GetCgoCalls(ctx context.Context) (data []interface{}, err erro
 	data = make([]interface{}, 0)
 	for result.Next() {
 		data = append(data, map[string]interface{}{
-			"timestamp": result.Record().Time(),
+			"timestamp": result.Record().Time().Format(time.DateTime),
 			"value":     result.Record().Value(),
 		})
 	}
