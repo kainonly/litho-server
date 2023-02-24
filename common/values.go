@@ -14,6 +14,7 @@ type Values struct {
 	Database          `envPrefix:"DATABASE_"`
 	Nats              `envPrefix:"NATS_"`
 	Otlp              `envPrefix:"OTLP_"`
+	Influx            `envPrefix:"INFLUX_"`
 	*kv.DynamicValues `env:"-"`
 }
 
@@ -31,6 +32,11 @@ type Nats struct {
 type Otlp struct {
 	Endpoint string `env:"ENDPOINT"`
 	// TODO: Improve other configuration later
+}
+
+type Influx struct {
+	Url   string `env:"URL"`
+	Token string `env:"TOEKN"`
 }
 
 func (x Values) Name(v ...string) string {

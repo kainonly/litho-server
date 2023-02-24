@@ -11,6 +11,8 @@ import (
 
 func NewAPI(values *common.Values) (*api.API, error) {
 	wire.Build(
+		wire.Struct(new(api.API), "*"),
+		wire.Struct(new(common.Inject), "*"),
 		UseMongoDB,
 		UseDatabase,
 		UseRedis,
@@ -24,11 +26,8 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UsePassport,
 		UseLocker,
 		UseCaptcha,
-		UseHttpClients,
 		UseHertz,
 		api.Provides,
-		wire.Struct(new(api.API), "*"),
-		wire.Struct(new(common.Inject), "*"),
 	)
 	return &api.API{}, nil
 }

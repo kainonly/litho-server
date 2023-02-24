@@ -7,7 +7,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-redis/redis/v8"
-	"github.com/go-resty/resty/v2"
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
@@ -188,14 +187,6 @@ func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 //		transfer.SetJetStream(js),
 //	)
 //}
-
-// UseHttpClients 创建请求客户端
-func UseHttpClients() *common.HttpClients {
-	return &common.HttpClients{
-		Feishu: resty.New().
-			SetBaseURL("https://open.feishu.cn/open-apis"),
-	}
-}
 
 // UseHertz
 // https://www.cloudwego.io/zh/docs/hertz/reference/config
