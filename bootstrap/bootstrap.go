@@ -15,7 +15,6 @@ import (
 	"github.com/nats-io/nkeys"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
 	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/dsl"
@@ -180,15 +179,15 @@ func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
 	)
 }
 
-// UseTransfer
-// https://github.com/weplanx/transfer
-func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
-	return transfer.New(
-		transfer.SetNamespace(values.Namespace),
-		transfer.SetDatabase(db),
-		transfer.SetJetStream(js),
-	)
-}
+//// UseTransfer
+//// https://github.com/weplanx/transfer
+//func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
+//	return transfer.New(
+//		transfer.SetNamespace(values.Namespace),
+//		transfer.SetDatabase(db),
+//		transfer.SetJetStream(js),
+//	)
+//}
 
 // UseHttpClients 创建请求客户端
 func UseHttpClients() *common.HttpClients {

@@ -3,7 +3,6 @@ package index
 import (
 	"context"
 	"fmt"
-	"github.com/bytedance/gopkg/util/logger"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -57,16 +56,16 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	metadata.Ip = c.ClientIP()
-	var data model.LoginData
-
-	data.UserAgent = string(c.UserAgent())
-	go func() {
-		if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
-			logger.Error(err)
-			return
-		}
-	}()
+	//metadata.Ip = c.ClientIP()
+	//var data model.LoginData
+	//
+	//data.UserAgent = string(c.UserAgent())
+	//go func() {
+	//	if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
+	//		logger.Error(err)
+	//		return
+	//	}
+	//}()
 
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(200, utils.H{
@@ -265,15 +264,12 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	case "office":
-		switch x.Values.Office {
-		case "feishu":
-			c.JSON(http.StatusOK, utils.H{
-				"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
-				"redirect": x.Values.RedirectUrl,
-				"app_id":   x.Values.FeishuAppId,
-			})
-			return
-		}
+		c.JSON(http.StatusOK, utils.H{
+			"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+			"redirect": x.Values.RedirectUrl,
+			"app_id":   x.Values.FeishuAppId,
+		})
+		return
 	}
 	return
 }
