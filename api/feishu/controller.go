@@ -3,7 +3,6 @@ package feishu
 import (
 	"context"
 	"fmt"
-	"github.com/bytedance/gopkg/util/logger"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/errors"
@@ -117,16 +116,36 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	metadata.Ip = c.ClientIP()
-	var data model.LoginData
-	data.UserAgent = string(c.UserAgent())
-	go func() {
-		if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
-			logger.Error(err)
-			return
-		}
-	}()
+	//metadata.Ip = c.ClientIP()
+	//var data model.LoginData
+	//data.UserAgent = string(c.UserAgent())
+	//go func() {
+	//	if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
+	//		logger.Error(err)
+	//		return
+	//	}
+	//}()
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.BaseUrl)))
+}
+
+func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
+	result, err := x.FeishuService.CreateTask(ctx)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
+	result, err := x.FeishuService.GetTasks(ctx)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

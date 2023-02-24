@@ -179,3 +179,57 @@ func (x *Service) Login(ctx context.Context, openId string, metadata *model.Logi
 
 	return
 }
+
+func (x *Service) CreateTask(ctx context.Context) (result map[string]interface{}, err error) {
+	var token string
+	if token, err = x.GetTenantAccessToken(ctx); err != nil {
+		return
+	}
+	body := `{
+		"summary": "每天喝八杯水，保持身心愉悦",
+		"description": "多吃水果，多运动，健康生活，快乐工作。",
+		"rich_summary": "富文本标题[飞书开放平台](https://open.feishu.cn)",
+		"rich_description": "富文本备注[飞书开放平台](https://open.feishu.cn)",
+		"extra": "dGVzdA==",
+		"due": {
+			"time": "1623124318",
+			"timezone": "Asia/Shanghai",
+			"is_all_day": false
+		},
+		"origin": {
+			"platform_i18n_name": "{\"zh_cn\": \"IT 工作台\", \"en_us\": \"IT Workspace\"}",
+			"href": {
+				"url": "https://support.feishu.com/internal/foo-bar",
+				"title": "反馈一个问题，需要协助排查"
+			}
+		},
+		"can_edit":true,
+		"custom": "{\"custom_complete\":{\"android\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}},\"ios\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}},\"pc\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}}}}",
+		"follower_ids": ["ou_13585843f02bc94923ed17a007cbc9b1", "ou_219a0611de2a639aa939ee97013f37a5"],
+		"collaborator_ids": ["ou_13585843f02bc94923ed17a007cbc9b1", "ou_219a0611de2a639aa939ee97013f37a5"],
+		"repeat_rule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR"
+	}`
+
+	if _, err = x.HttpClients.Feishu.R().
+		SetAuthToken(token).
+		SetBody(body).
+		SetResult(&result).
+		Post("/task/v1/tasks"); err != nil {
+		return
+	}
+	return
+}
+
+func (x *Service) GetTasks(ctx context.Context) (result map[string]interface{}, err error) {
+	var token string
+	if token, err = x.GetTenantAccessToken(ctx); err != nil {
+		return
+	}
+	if _, err = x.HttpClients.Feishu.R().
+		SetAuthToken(token).
+		SetResult(&result).
+		Get("/task/v1/tasks"); err != nil {
+		return
+	}
+	return
+}

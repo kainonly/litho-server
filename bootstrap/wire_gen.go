@@ -126,10 +126,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	dslController := &dsl.Controller{
 		DSLService: dslService,
 	}
-	transfer, err := UseTransfer(values, database, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
@@ -141,7 +137,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		KV:       kvController,
 		Sessions: sessionsController,
 		DSL:      dslController,
-		Transfer: transfer,
 	}
 	return apiAPI, nil
 }
