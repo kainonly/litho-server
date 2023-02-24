@@ -64,6 +64,7 @@ type OAuthDto struct {
 
 type StateDto struct {
 	Action string `json:"action,omitempty"`
+	Locale string `json:"locale,omitempty"`
 }
 
 // OAuth 第三方登录与关联
@@ -104,7 +105,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/authorized`, x.Values.BaseUrl)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/authorized`, x.Values.BaseUrl, dto.State.Locale)))
 		return
 	}
 
@@ -112,7 +113,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	metadata.Channel = "feishu"
 	ts, err := x.FeishuService.Login(ctx, userData.OpenId, &metadata)
 	if err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/#/unauthorize`, x.Values.BaseUrl)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/unauthorize`, x.Values.BaseUrl, dto.State.Locale)))
 		return
 	}
 
@@ -127,7 +128,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	//}()
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
-	c.Redirect(302, []byte(fmt.Sprintf(`%s/#/`, x.Values.BaseUrl)))
+	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/`, x.Values.BaseUrl, dto.State.Locale)))
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
