@@ -95,6 +95,14 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_monitor := h.Group("monitor", auth)
 	{
 		_monitor.GET("cgo_calls", x.Monitor.GetCgoCalls)
+		_monitor.GET("mongo_uptime", x.Monitor.GetMongoUptime)
+		_monitor.GET("mongo_available_connections", x.Monitor.GetMongoAvailableConnections)
+		_monitor.GET("mongo_open_connections", x.Monitor.GetMongoOpenConnections)
+		_monitor.GET("mongo_commands_per_second", x.Monitor.GetMongoCommandsPerSecond)
+		_monitor.GET("mongo_query_operations", x.Monitor.GetMongoQueryOperations)
+		_monitor.GET("mongo_document_operations", x.Monitor.GetMongoDocumentOperations)
+		_monitor.GET("mongo_flushes", x.Monitor.GetMongoFlushes)
+		_monitor.GET("mongo_network_io", x.Monitor.GetMongoNetworkIO)
 	}
 
 	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
