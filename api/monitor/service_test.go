@@ -59,3 +59,15 @@ func TestService_GetMongoNetworkIO(t *testing.T) {
 	assert.NoError(t, err)
 	t.Log(data)
 }
+
+func TestService_GetRedisMem(t *testing.T) {
+	data, err := x.MonitorX.GetRedisMem(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisCpu(t *testing.T) {
+	data, err := x.MonitorX.GetRedisCpu(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}

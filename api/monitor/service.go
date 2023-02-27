@@ -303,3 +303,97 @@ func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, er
 	}
 	return
 }
+
+func (x *Service) ToRedisMem(v string) int {
+	switch v {
+	case "used_memory":
+		return 0
+	case "used_memory_dataset":
+		return 1
+	case "used_memory_rss":
+		return 2
+	case "used_memory_lua":
+		return 3
+	}
+	return 0
+}
+
+func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r["_measurement"] == "redis")
+		|> filter(fn: (r) => 
+			r["_field"] == "used_memory" or 
+			r["_field"] == "used_memory_dataset" or 
+			r["_field"] == "used_memory_rss" or 
+			r["_field"] == "used_memory_lua"
+		)
+  		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+			x.ToRedisMem(result.Record().Field()),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) ToRedisCpu(v string) int {
+	switch v {
+	case "used_cpu_user":
+		return 0
+	case "used_cpu_sys":
+		return 1
+	case "used_cpu_sys_children":
+		return 2
+	case "used_cpu_user_children":
+		return 3
+	}
+	return 0
+}
+
+func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r["_measurement"] == "redis")
+		|> filter(fn: (r) => 
+			r["_field"] == "used_cpu_user" or 
+			r["_field"] == "used_cpu_sys" or 
+			r["_field"] == "used_cpu_sys_children" or 
+			r["_field"] == "used_cpu_user_children"
+		)
+  		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+			x.ToRedisCpu(result.Record().Field()),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
