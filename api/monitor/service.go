@@ -397,3 +397,30 @@ func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err erro
 	}
 	return
 }
+
+func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "instantaneous_ops_per_sec")
+		|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}

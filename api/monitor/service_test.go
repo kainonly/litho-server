@@ -71,3 +71,9 @@ func TestService_GetRedisCpu(t *testing.T) {
 	assert.NoError(t, err)
 	t.Log(data)
 }
+
+func TestService_GetQPS(t *testing.T) {
+	data, err := x.MonitorX.GetQPS(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
