@@ -8,19 +8,19 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/bytedance/go-tagexpr/v2 v2.9.6
 	github.com/bytedance/gopkg v0.0.0-20221122125632-68358b8ecec6
-	github.com/bytedance/sonic v1.7.1
+	github.com/bytedance/sonic v1.8.1
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/cloudwego/hertz v0.5.2
+	github.com/cloudwego/hertz v0.6.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/wire v0.5.0
-	github.com/hertz-contrib/obs-opentelemetry/logging/logrus v0.1.1
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.2.0
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.2.0
 	github.com/hertz-contrib/requestid v1.1.0
 	github.com/huandu/xstrings v1.4.0
+	github.com/influxdata/influxdb-client-go/v2 v2.12.2
 	github.com/matoous/go-nanoid v1.5.0
-	github.com/nats-io/nats.go v1.21.0
+	github.com/nats-io/nats.go v1.24.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.40
@@ -49,7 +49,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
-	github.com/influxdata/influxdb-client-go/v2 v2.12.2 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
@@ -63,7 +62,6 @@ require (
 	github.com/nyaruka/phonenumbers v1.1.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/thoas/go-funk v0.9.2 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -90,7 +88,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.2.0 // indirect
-	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
+	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.5.0 // indirect
