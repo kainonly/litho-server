@@ -52,7 +52,7 @@ func (x *Service) GetMongoUptime(ctx context.Context) (value interface{}, err er
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 		|> filter(fn: (r) => r["_field"] == "uptime_ns")
 	  	|> last()
-  		|> map(fn: (r) => ({r with _value: r._value / 60000000000}))
+  		|> map(fn: (r) => ({r with _value: r._value / 3600000000000}))
 	`, x.Values.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -304,6 +304,29 @@ func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, er
 	return
 }
 
+func (x *Service) GetRedisUptime(ctx context.Context) (value interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r["_measurement"] == "redis")
+		|> filter(fn: (r) => r._field == "uptime")
+	  	|> last()
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	for result.Next() {
+		value = result.Record().Value()
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
 func (x *Service) ToRedisMem(v string) int {
 	switch v {
 	case "used_memory":
@@ -404,7 +427,7 @@ func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, er
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "instantaneous_ops_per_sec")
-		|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
 	`, x.Values.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -416,6 +439,149 @@ func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, er
 		data = append(data, []interface{}{
 			result.Record().Time().Format(time.TimeOnly),
 			result.Record().Value(),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRedisEviExpKeys(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "evicted_keys" or r._field == "expired_keys")
+		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRedisCollectionsRate(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "total_connections_received" or r._field == "rejected_connections")
+		|> derivative(unit: 1s, nonNegative: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRedisConnectedSlaves(ctx context.Context) (value interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "connected_slaves")
+		|> aggregateWindow(every: 1s, fn: min)
+		|> min()
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	for result.Next() {
+		value = result.Record().Value()
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRedisHitRate(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "keyspace_hitrate")
+		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) ToRedisNetworkIO(v string) int {
+	switch v {
+	case "total_net_output_bytes":
+		return 0
+	case "total_net_input_bytes":
+		return 1
+	}
+	return 0
+}
+
+func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r._measurement == "redis")
+		|> filter(fn: (r) => r._field == "total_net_output_bytes" or r._field == "total_net_input_bytes")
+		|> derivative(unit: 1s, nonNegative: false)
+	`, x.Values.Influx.Bucket)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+			x.ToRedisNetworkIO(result.Record().Field()),
 		})
 	}
 
