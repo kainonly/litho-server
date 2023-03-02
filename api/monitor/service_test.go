@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func TestService_GetQPS(t *testing.T) {
+	data, err := x.MonitorX.GetQPS(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
 func TestService_GetCgoCalls(t *testing.T) {
 	data, err := x.MonitorX.GetCgoCalls(context.TODO())
 	assert.NoError(t, err)
@@ -60,6 +66,12 @@ func TestService_GetMongoNetworkIO(t *testing.T) {
 	t.Log(data)
 }
 
+func TestService_GetRedisUptime(t *testing.T) {
+	data, err := x.MonitorX.GetRedisUptime(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
 func TestService_GetRedisMem(t *testing.T) {
 	data, err := x.MonitorX.GetRedisMem(context.TODO())
 	assert.NoError(t, err)
@@ -72,8 +84,38 @@ func TestService_GetRedisCpu(t *testing.T) {
 	t.Log(data)
 }
 
-func TestService_GetQPS(t *testing.T) {
-	data, err := x.MonitorX.GetQPS(context.TODO())
+func TestService_GetRedisOpsPerSec(t *testing.T) {
+	data, err := x.MonitorX.GetRedisOpsPerSec(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisEviExpKeys(t *testing.T) {
+	data, err := x.MonitorX.GetRedisEviExpKeys(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisCollectionsRate(t *testing.T) {
+	data, err := x.MonitorX.GetRedisCollectionsRate(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisConnectedSlaves(t *testing.T) {
+	data, err := x.MonitorX.GetRedisConnectedSlaves(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisHitRate(t *testing.T) {
+	data, err := x.MonitorX.GetRedisHitRate(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetRedisNetworkIO(t *testing.T) {
+	data, err := x.MonitorX.GetRedisNetworkIO(context.TODO())
 	assert.NoError(t, err)
 	t.Log(data)
 }
