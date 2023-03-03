@@ -119,3 +119,51 @@ func TestService_GetRedisNetworkIO(t *testing.T) {
 	assert.NoError(t, err)
 	t.Log(data)
 }
+
+func TestService_GetNatsUptime(t *testing.T) {
+	data, err := x.MonitorX.GetNatsUptime(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsCpu(t *testing.T) {
+	data, err := x.MonitorX.GetNatsCpu(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsMem(t *testing.T) {
+	data, err := x.MonitorX.GetNatsMem(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsConnections(t *testing.T) {
+	data, err := x.MonitorX.GetNatsConnections(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsSubscriptions(t *testing.T) {
+	data, err := x.MonitorX.GetNatsSubscriptions(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsSlowConsumers(t *testing.T) {
+	data, err := x.MonitorX.GetNatsSlowConsumers(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsMsgIO(t *testing.T) {
+	data, err := x.MonitorX.GetNatsMsgIO(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetNatsBytesIO(t *testing.T) {
+	data, err := x.MonitorX.GetNatsBytesIO(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
