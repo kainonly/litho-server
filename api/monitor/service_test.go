@@ -7,7 +7,13 @@ import (
 )
 
 func TestService_GetQPS(t *testing.T) {
-	data, err := x.MonitorX.GetQPS(context.TODO())
+	data, err := x.MonitorX.GetQpsRate(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetErrorRate(t *testing.T) {
+	data, err := x.MonitorX.GetErrorRate(context.TODO())
 	assert.NoError(t, err)
 	t.Log(data)
 }

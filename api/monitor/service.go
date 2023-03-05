@@ -13,7 +13,93 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) GetQPS(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`
+		import "experimental/aggregate"
+
+		data =
+			from(bucket: "%s")
+				|> range(start: -15m, stop: now())
+				|> filter(fn: (r) => r["_measurement"] == "prometheus")
+				|> filter(fn: (r) => r["service.name"] == "%s")
+				|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
+
+		all =
+			data
+				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+				|> set(key: "method", value: "ALL")
+				|> fill(value: 0.0)
+
+		method =
+			data
+				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name", "http.method"])
+				|> rename(columns: {"http.method": "method"})
+				|> fill(value: 0.0)
+		
+		union(tables: [method, all])
+	`, x.Values.Influx.Bucket, x.Values.Namespace)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+			result.Record().ValueByKey("method"),
+		})
+	}
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err error) {
+	queryAPI := x.Influx.QueryAPI(x.Values.Influx.Org)
+	query := fmt.Sprintf(`
+		import "experimental/aggregate"
+
+		data =
+			from(bucket: "%s")
+				|> range(start: -15m, stop: now())
+				|> filter(fn: (r) => r["_measurement"] == "prometheus")
+				|> filter(fn: (r) => r["service.name"] == "%s")
+				|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
+
+		all =
+			data
+				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+				|> set(key: "type", value: "ALL")
+				|> fill(value: 0.0)
+
+		err =
+			data
+				|> filter(fn: (r) => r["http.status_code"] =~ /^[4,5]/)
+				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+				|> set(key: "type", value: "ERR")
+				|> fill(value: 0.0)
+		
+		union(tables: [all, err])
+			|> pivot(rowKey: ["_time"], columnKey: ["type"], valueColumn: "_value")
+			|> map(fn: (r) => ({r with _value: r.ERR / r.ALL}))
+	`, x.Values.Influx.Bucket, x.Values.Namespace)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
 	return
 }
 
