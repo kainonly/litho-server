@@ -18,6 +18,30 @@ func TestService_GetErrorRate(t *testing.T) {
 	t.Log(data)
 }
 
+func TestService_GetGoroutines(t *testing.T) {
+	data, err := x.MonitorX.GetGoroutines(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetUptime(t *testing.T) {
+	data, err := x.MonitorX.GetUptime(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetLookups(t *testing.T) {
+	data, err := x.MonitorX.GetLookups(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetCgCount(t *testing.T) {
+	data, err := x.MonitorX.GetGcCount(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
 func TestService_GetCgoCalls(t *testing.T) {
 	data, err := x.MonitorX.GetCgoCalls(context.TODO())
 	assert.NoError(t, err)
