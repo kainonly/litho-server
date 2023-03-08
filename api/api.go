@@ -108,6 +108,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
 	helper.BindSessions(h.Group("sessions", csrfToken, auth), x.Sessions)
 	helper.BindDSL(h.Group(":collection", csrfToken, auth), x.DSL)
+
 	return
 }
 
@@ -247,7 +248,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 		for {
 			select {
 			case <-updated:
-				if err = x.DSL.DSLService.Load(ctx); err != nil {
+				if err = x.DSL.Service.Load(ctx); err != nil {
 					return
 				}
 			}
