@@ -60,13 +60,37 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		return nil, err
 	}
 	csrf := UseCsrf(values)
+	kvKV := UseKV(values, keyValue)
+	service := &kv.Service{
+		KV: kvKV,
+	}
+	controller := &kv.Controller{
+		KVService: service,
+	}
+	sessionsSessions := UseSessions(values, redisClient)
+	sessionsService := &sessions.Service{
+		Sessions: sessionsSessions,
+	}
+	sessionsController := &sessions.Controller{
+		SessionsService: sessionsService,
+	}
+	transfer, err := UseTransfer(values, database, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	dslDSL, err := UseDSL(values, database)
+	if err != nil {
+		return nil, err
+	}
+	dslService := &dsl.Service{
+		DSL: dslDSL,
+	}
+	dslController := &dsl.Controller{
+		Service: dslService,
+	}
 	passport := UsePassport(values)
 	locker := UseLocker(values, redisClient)
 	captcha := UseCaptcha(values, redisClient)
-	sessionsSessions := UseSessions(values, redisClient)
-	service := &sessions.Service{
-		Sessions: sessionsSessions,
-	}
 	openapiService := &openapi.Service{
 		Inject: inject,
 	}
@@ -75,10 +99,10 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Passport:        passport,
 		Locker:          locker,
 		Captcha:         captcha,
-		SessionsService: service,
+		SessionsService: sessionsService,
 		OpenAPIService:  openapiService,
 	}
-	controller := &index.Controller{
+	indexController := &index.Controller{
 		IndexService: indexService,
 		Csrf:         csrf,
 		Values:       values,
@@ -91,7 +115,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	feishuService := &feishu.Service{
 		Inject:          inject,
-		SessionsService: service,
+		SessionsService: sessionsService,
 		Locker:          locker,
 		Passport:        passport,
 	}
@@ -113,39 +137,20 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	monitorController := &monitor.Controller{
 		MonitorService: monitorService,
 	}
-	kvKV := UseKV(values, keyValue)
-	kvService := &kv.Service{
-		KV: kvKV,
-	}
-	kvController := &kv.Controller{
-		KVService: kvService,
-	}
-	sessionsController := &sessions.Controller{
-		SessionsService: service,
-	}
-	dslDSL, err := UseDSL(values, database)
-	if err != nil {
-		return nil, err
-	}
-	dslService := &dsl.Service{
-		DSL: dslDSL,
-	}
-	dslController := &dsl.Controller{
-		Service: dslService,
-	}
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
 		Csrf:     csrf,
-		Index:    controller,
+		KV:       controller,
+		Sessions: sessionsController,
+		Transfer: transfer,
+		DSL:      dslController,
+		Index:    indexController,
 		Projects: projectsController,
 		Feishu:   feishuController,
 		Tencent:  tencentController,
 		Monitor:  monitorController,
 		MonitorX: monitorService,
-		KV:       kvController,
-		Sessions: sessionsController,
-		DSL:      dslController,
 	}
 	return apiAPI, nil
 }
