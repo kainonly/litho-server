@@ -8,42 +8,41 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"testing"
 )
 
-func TestCreateCollectionForUsers(t *testing.T) {
+func TestCreateUsersCollection(t *testing.T) {
 	ctx := context.TODO()
-	option := options.CreateCollection().
-		SetValidator(bson.D{
-			{"$jsonSchema", bson.D{
-				{"title", "projects"},
-				{"required", bson.A{"_id", "email", "password", "name", "avatar", "permissions", "status", "create_time", "update_time"}},
-				{"properties", bson.D{
-					{"_id", bson.M{"bsonType": "objectId"}},
-					{"email", bson.M{"bsonType": "string"}},
-					{"password", bson.M{"bsonType": "string"}},
-					{"name", bson.M{"bsonType": "string"}},
-					{"avatar", bson.M{"bsonType": "string"}},
-					{"permissions", bson.M{"bsonType": "object"}},
-					{"sessions", bson.M{"bsonType": []string{"number", "null"}}},
-					{"last", bson.M{"bsonType": []string{"string", "null"}}},
-					{"status", bson.M{"bsonType": "bool"}},
-					{"create_time", bson.M{"bsonType": "date"}},
-					{"update_time", bson.M{"bsonType": "date"}},
-				}},
-				{"additionalProperties", false},
-			}},
-		})
-	if err := db.CreateCollection(ctx, "users", option); err != nil {
-		t.Error(err)
+	b, err := os.ReadFile("./user.json")
+	assert.NoError(t, err)
+	var jsonSchema bson.D
+	err = bson.UnmarshalExtJSON(b, true, &jsonSchema)
+	assert.NoError(t, err)
+
+	n, err := db.ListCollectionNames(ctx, bson.M{"name": "users"})
+	assert.NoError(t, err)
+	if len(n) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		err = db.CreateCollection(ctx, "users", option)
+		assert.NoError(t, err)
+	} else {
+		err = db.RunCommand(ctx, bson.D{
+			{"collMod", "users"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err()
+		assert.NoError(t, err)
 	}
-	r, err := db.Collection("users").Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    bson.D{{"email", 1}},
-		Options: options.Index().SetUnique(true).SetName("idx_email"),
-	})
-	if err != nil {
-		t.Error(err)
+
+	index := mongo.IndexModel{
+		Keys: bson.D{{"email", 1}},
+		Options: options.Index().
+			SetUnique(true).
+			SetName("idx_email"),
 	}
+	r, err := db.Collection("users").Indexes().CreateOne(ctx, index)
+	assert.NoError(t, err)
 	t.Log(r)
 }
 

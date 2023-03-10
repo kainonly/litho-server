@@ -8,26 +8,15 @@ import (
 type User struct {
 	ID          primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
 	Email       string               `bson:"email" json:"email"`
-	Roles       []primitive.ObjectID `bson:"roles" json:"-"`
 	Password    string               `bson:"password" json:"-"`
+	Roles       []primitive.ObjectID `bson:"roles" json:"-"`
 	Name        string               `bson:"name" json:"name"`
 	Avatar      string               `bson:"avatar" json:"avatar"`
 	BackupEmail string               `bson:"backup_email" json:"backup_email"`
 	Feishu      FeishuUserData       `bson:"feishu" json:"feishu"`
-	Sessions    int64                `bson:"sessions" json:"sessions"`
-	Last        UserLast             `bson:"last" json:"last"`
 	Status      bool                 `bson:"status" json:"status"`
 	CreateTime  time.Time            `bson:"create_time" json:"create_time"`
 	UpdateTime  time.Time            `bson:"update_time" json:"update_time"`
-}
-
-type UserLast struct {
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	Ip        string    `bson:"ip" json:"ip"`
-	Country   string    `bson:"country" json:"country"`
-	Province  string    `bson:"province" json:"province"`
-	City      string    `bson:"city" json:"city"`
-	Isp       string    `bson:"isp" json:"isp"`
 }
 
 // 参数详情

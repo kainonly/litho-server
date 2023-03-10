@@ -3,6 +3,7 @@ package feishu
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/errors"
@@ -16,10 +17,10 @@ import (
 )
 
 type Controller struct {
-	IndexService  *index.Service
-	FeishuService *Service
-	Values        *common.Values
-	Passport      *passport.Passport
+	Service  *Service
+	Index    *index.Service
+	Values   *common.Values
+	Passport *passport.Passport
 }
 
 type ChallengeDto struct {
@@ -33,7 +34,7 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	raw, err := x.FeishuService.Decrypt(dto.Encrypt, x.Values.FeishuEncryptKey)
+	raw, err := x.Service.Decrypt(dto.Encrypt, x.Values.FeishuEncryptKey)
 	if err != nil {
 		c.Error(err)
 		return
@@ -74,7 +75,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	userData, err := x.FeishuService.GetUserAccessToken(ctx, dto.Code)
+	userData, err := x.Service.GetUserAccessToken(ctx, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -90,7 +91,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			})
 			return
 		}
-		claims, err := x.IndexService.Verify(ctx, string(ts))
+		claims, err := x.Index.Verify(ctx, string(ts))
 		if err != nil {
 			c.SetCookie("access_token", "", -1, "", "", protocol.CookieSameSiteLaxMode, true, true)
 			c.JSON(401, utils.H{
@@ -100,7 +101,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		if _, err = x.FeishuService.Link(ctx, claims.UserId, userData); err != nil {
+		if _, err = x.Service.Link(ctx, claims.UserId, userData); err != nil {
 			c.Error(err)
 			return
 		}
@@ -109,30 +110,26 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var metadata model.LoginMetadata
-	metadata.Channel = "feishu"
-	ts, err := x.FeishuService.Login(ctx, userData.OpenId, &metadata)
+	logdata := model.NewLoginLog("feishu", c.ClientIP(), string(c.UserAgent()))
+	ts, err := x.Service.Login(ctx, userData.OpenId, logdata)
 	if err != nil {
 		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/unauthorize`, x.Values.BaseUrl, dto.State.Locale)))
 		return
 	}
 
-	//metadata.Ip = c.ClientIP()
-	//var data model.LoginData
-	//data.UserAgent = string(c.UserAgent())
-	//go func() {
-	//	if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
-	//		logger.Error(err)
-	//		return
-	//	}
-	//}()
+	go func() {
+		if err := x.Index.WriteLoginLog(ctx, logdata); err != nil {
+			logger.Error(err)
+			return
+		}
+	}()
 
 	c.SetCookie("access_token", ts, 0, "", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/`, x.Values.BaseUrl, dto.State.Locale)))
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
-	result, err := x.FeishuService.CreateTask(ctx)
+	result, err := x.Service.CreateTask(ctx)
 	if err != nil {
 		c.Error(err)
 		return
@@ -142,7 +139,7 @@ func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
-	result, err := x.FeishuService.GetTasks(ctx)
+	result, err := x.Service.GetTasks(ctx)
 	if err != nil {
 		c.Error(err)
 		return
