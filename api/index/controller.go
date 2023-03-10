@@ -3,6 +3,7 @@ package index
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
@@ -18,9 +19,9 @@ import (
 )
 
 type Controller struct {
-	IndexService *Service
-	Csrf         *csrf.Csrf
-	Values       *common.Values
+	Service *Service
+	Csrf    *csrf.Csrf
+	Values  *common.Values
 }
 
 // Ping
@@ -47,25 +48,19 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var metadata model.LoginMetadata
-	metadata.Email = dto.Email
-	metadata.Channel = "email"
-	ts, err := x.IndexService.Login(ctx, dto.Email, dto.Password, &metadata)
+	logdata := model.NewLoginLog("email", c.ClientIP(), string(c.UserAgent()))
+	ts, err := x.Service.Login(ctx, dto.Email, dto.Password, logdata)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	//metadata.Ip = c.ClientIP()
-	//var data model.LoginData
-	//
-	//data.UserAgent = string(c.UserAgent())
-	//go func() {
-	//	if err := x.IndexService.WriteLoginLog(ctx, metadata, data); err != nil {
-	//		logger.Error(err)
-	//		return
-	//	}
-	//}()
+	go func() {
+		if err := x.Service.WriteLoginLog(ctx, logdata); err != nil {
+			logger.Error(err)
+			return
+		}
+	}()
 
 	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 	c.JSON(200, utils.H{
@@ -86,7 +81,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
+	if _, err := x.Service.Verify(ctx, string(ts)); err != nil {
 		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 		c.JSON(401, utils.H{
 			"code":    0,
@@ -105,7 +100,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 // @router /code [GET]
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
-	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
+	code, err := x.Service.GetRefreshCode(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -130,7 +125,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.GetClaims(c)
-	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
+	ts, err := x.Service.RefreshToken(ctx, claims, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -147,7 +142,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 // @router /logout [POST]
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
-	if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
+	if err := x.Service.Logout(ctx, claims.UserId); err != nil {
 		c.Error(err)
 		return
 	}
@@ -163,7 +158,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 // @router /user [GET]
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
-	data, err := x.IndexService.GetUser(ctx, claims.UserId)
+	data, err := x.Service.GetUser(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -199,7 +194,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.GetClaims(c)
-	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
+	_, err := x.Service.SetUser(ctx, claims.UserId, bson.M{
 		"$set": data,
 	})
 	if err != nil {
@@ -225,7 +220,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.GetClaims(c)
-	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
+	_, err := x.Service.SetUser(ctx, claims.UserId, bson.M{
 		"$unset": bson.M{dto.Key: 1},
 	})
 	if err != nil {

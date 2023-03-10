@@ -136,7 +136,7 @@ func (x *Service) Link(ctx context.Context, userId string, data model.FeishuUser
 }
 
 // Login 免登陆
-func (x *Service) Login(ctx context.Context, openId string, metadata *model.LoginMetadata) (ts string, err error) {
+func (x *Service) Login(ctx context.Context, openId string, logdata *model.LoginLog) (ts string, err error) {
 	var user model.User
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
@@ -152,8 +152,7 @@ func (x *Service) Login(ctx context.Context, openId string, metadata *model.Logi
 	}
 
 	userId := user.ID.Hex()
-	metadata.Email = user.Email
-	metadata.UserID = userId
+	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
@@ -165,7 +164,6 @@ func (x *Service) Login(ctx context.Context, openId string, metadata *model.Logi
 	}
 
 	jti, _ := gonanoid.Nanoid()
-	metadata.TokenId = jti
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}

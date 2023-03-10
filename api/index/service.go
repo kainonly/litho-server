@@ -6,7 +6,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/weplanx/openapi/client"
-	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/utils/captcha"
@@ -22,14 +21,13 @@ import (
 
 type Service struct {
 	*common.Inject
-	Passport        *passport.Passport
-	Locker          *locker.Locker
-	Captcha         *captcha.Captcha
-	SessionsService *sessions.Service
-	OpenAPIService  *openapi.Service
+	Passport *passport.Passport
+	Locker   *locker.Locker
+	Captcha  *captcha.Captcha
+	Sessions *sessions.Service
 }
 
-func (x *Service) Login(ctx context.Context, email string, password string, metadata *model.LoginMetadata) (ts string, err error) {
+func (x *Service) Login(ctx context.Context, email string, password string, logdata *model.LoginLog) (ts string, err error) {
 	var user model.User
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{
@@ -45,7 +43,7 @@ func (x *Service) Login(ctx context.Context, email string, password string, meta
 	}
 
 	userId := user.ID.Hex()
-	metadata.UserID = userId
+	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
@@ -69,14 +67,13 @@ func (x *Service) Login(ctx context.Context, email string, password string, meta
 	}
 
 	jti, _ := gonanoid.Nanoid()
-	metadata.TokenId = jti
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
 	if err = x.Locker.Delete(ctx, userId); err != nil {
 		return
 	}
-	if err = x.SessionsService.Set(ctx, userId, jti); err != nil {
+	if err = x.Sessions.Set(ctx, userId, jti); err != nil {
 		return
 	}
 
@@ -88,38 +85,25 @@ func (x *Service) Login(ctx context.Context, email string, password string, meta
 	return
 }
 
-func (x *Service) WriteLoginLog(ctx context.Context, metadata model.LoginMetadata, data model.LoginData) (err error) {
+func (x *Service) Openapi() (*client.Client, error) {
+	return client.New(
+		x.Values.OpenapiUrl,
+		client.SetApiGateway(x.Values.OpenapiKey, x.Values.OpenapiSecret),
+	)
+}
+
+func (x *Service) WriteLoginLog(ctx context.Context, logdata *model.LoginLog) (err error) {
 	var oapi *client.Client
-	if oapi, err = x.OpenAPIService.Client(); err != nil {
+	if oapi, err = x.Openapi(); err != nil {
 		return
 	}
 	var detail map[string]interface{}
-	if detail, err = oapi.GetIp(ctx, metadata.Ip); err != nil {
+	if detail, err = oapi.GetIp(ctx, logdata.Metadata.ClientIP); err != nil {
 		return
 	}
-	data.Country = detail["country"].(string)
-	data.Province = detail["province"].(string)
-	data.City = detail["city"].(string)
-	data.Isp = detail["isp"].(string)
-	r := model.NewLoginLog(metadata, data)
-	if _, err = x.Db.Collection("users").UpdateOne(ctx, bson.M{
-		"email": metadata.Email,
-	}, bson.M{
-		"$inc": bson.M{"sessions": 1},
-		"$set": bson.M{
-			"last": model.UserLast{
-				Timestamp: r.Timestamp,
-				Ip:        r.Metadata.Ip,
-				Country:   r.Data.Country,
-				Province:  r.Data.Province,
-				City:      r.Data.City,
-				Isp:       r.Data.Isp,
-			},
-		},
-	}); err != nil {
-		return err
-	}
-	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, r); err != nil {
+	logdata.SetLocation(detail)
+
+	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, logdata); err != nil {
 		return
 	}
 	return
@@ -130,7 +114,7 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 		return
 	}
 	var result bool
-	if result, err = x.SessionsService.Verify(ctx, claims.UserId, claims.ID); err != nil {
+	if result, err = x.Sessions.Verify(ctx, claims.UserId, claims.ID); err != nil {
 		return
 	}
 	if !result {
@@ -140,7 +124,7 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 
 	// TODO: Check User Status
 
-	if err = x.SessionsService.Renew(ctx, claims.UserId); err != nil {
+	if err = x.Sessions.Renew(ctx, claims.UserId); err != nil {
 		return
 	}
 
@@ -168,7 +152,7 @@ func (x *Service) RefreshToken(ctx context.Context, claims passport.Claims, code
 }
 
 func (x *Service) Logout(ctx context.Context, userId string) (err error) {
-	return x.SessionsService.Remove(ctx, userId)
+	return x.Sessions.Remove(ctx, userId)
 }
 
 //func (x *Service) GetIdentity(ctx context.Context, userId string) (data model.User, err error) {
@@ -227,8 +211,6 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err
 		"name":         user.Name,
 		"avatar":       user.Avatar,
 		"backup_email": user.BackupEmail,
-		"sessions":     user.Sessions,
-		"last":         user.Last,
 		"status":       user.Status,
 		"create_time":  user.CreateTime,
 		"update_time":  user.UpdateTime,

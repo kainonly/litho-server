@@ -15,7 +15,6 @@ import (
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/monitor"
-	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
@@ -36,7 +35,6 @@ var Provides = wire.NewSet(
 	kv.Provides,
 	sessions.Provides,
 	dsl.Provides,
-	openapi.Provides,
 	projects.Provides,
 	feishu.Provides,
 	tencent.Provides,
@@ -127,7 +125,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			return
 		}
 
-		claims, err := x.Index.IndexService.Verify(ctx, string(ts))
+		claims, err := x.Index.Service.Verify(ctx, string(ts))
 		if err != nil {
 			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteLaxMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{

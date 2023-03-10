@@ -11,7 +11,6 @@ import (
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/monitor"
-	"github.com/weplanx/server/api/openapi"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
@@ -91,21 +90,17 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	passport := UsePassport(values)
 	locker := UseLocker(values, redisClient)
 	captcha := UseCaptcha(values, redisClient)
-	openapiService := &openapi.Service{
-		Inject: inject,
-	}
 	indexService := &index.Service{
-		Inject:          inject,
-		Passport:        passport,
-		Locker:          locker,
-		Captcha:         captcha,
-		SessionsService: sessionsService,
-		OpenAPIService:  openapiService,
+		Inject:   inject,
+		Passport: passport,
+		Locker:   locker,
+		Captcha:  captcha,
+		Sessions: sessionsService,
 	}
 	indexController := &index.Controller{
-		IndexService: indexService,
-		Csrf:         csrf,
-		Values:       values,
+		Service: indexService,
+		Csrf:    csrf,
+		Values:  values,
 	}
 	projectsService := &projects.Service{
 		Inject: inject,
@@ -120,10 +115,10 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Passport:        passport,
 	}
 	feishuController := &feishu.Controller{
-		IndexService:  indexService,
-		FeishuService: feishuService,
-		Values:        values,
-		Passport:      passport,
+		Service:  feishuService,
+		Index:    indexService,
+		Values:   values,
+		Passport: passport,
 	}
 	tencentService := &tencent.Service{
 		Inject: inject,
