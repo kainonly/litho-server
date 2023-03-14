@@ -152,10 +152,11 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 	)
 }
 
-func UseDSL(values *common.Values, db *mongo.Database) (*dsl.DSL, error) {
+func UseDSL(values *common.Values, db *mongo.Database, rdb *redis.Client) (*dsl.DSL, error) {
 	return dsl.New(
 		dsl.SetNamespace(values.Namespace),
 		dsl.SetDatabase(db),
+		dsl.SetRedis(rdb),
 		dsl.SetDynamicValues(values.DynamicValues),
 	)
 }
