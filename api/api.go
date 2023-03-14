@@ -44,12 +44,12 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz    *server.Hertz
-	Csrf     *csrf.Csrf
-	KV       *kv.Controller
-	Sessions *sessions.Controller
-	Transfer *transfer.Transfer
-	DSL      *dsl.Controller
+	Hertz     *server.Hertz
+	Csrf      *csrf.Csrf
+	KV        *kv.Controller
+	Sessions  *sessions.Controller
+	Transfer  *transfer.Transfer
+	Resources *dsl.Controller
 
 	Index    *index.Controller
 	Projects *projects.Controller
@@ -109,7 +109,24 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
 	helper.BindSessions(h.Group("sessions", csrfToken, auth), x.Sessions)
-	helper.BindDSL(h.Group(":collection", csrfToken, auth), x.DSL)
+
+	_resources := h.Group(":collection", csrfToken, auth)
+	{
+		_resources.POST("", x.Resources.Create)
+		_resources.POST("bulk-create", x.Resources.BulkCreate)
+		_resources.GET("_size", x.Resources.Size)
+		_resources.GET("", x.Resources.Find)
+		_resources.GET("_one", x.Resources.FindOne)
+		_resources.GET(":id", x.Resources.FindById)
+		_resources.PATCH("", x.Resources.Update)
+		_resources.PATCH(":id", x.Resources.UpdateById)
+		_resources.PUT(":id", x.Resources.Replace)
+		_resources.DELETE(":id", x.Resources.Delete)
+		_resources.POST("bulk-delete", x.Resources.BulkDelete)
+		_resources.POST("sort", x.Resources.Sort)
+	}
+
+	h.POST("transaction", csrfToken, auth, x.Resources.Transaction)
 
 	return
 }
@@ -241,7 +258,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 		for {
 			select {
 			case <-updated:
-				if err = x.DSL.Service.Load(ctx); err != nil {
+				if err = x.Resources.Service.Load(ctx); err != nil {
 					return
 				}
 			}

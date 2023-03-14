@@ -77,7 +77,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	dslDSL, err := UseDSL(values, database)
+	dslDSL, err := UseDSL(values, database, redisClient)
 	if err != nil {
 		return nil, err
 	}
@@ -133,19 +133,19 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		MonitorService: monitorService,
 	}
 	apiAPI := &api.API{
-		Inject:   inject,
-		Hertz:    hertz,
-		Csrf:     csrf,
-		KV:       controller,
-		Sessions: sessionsController,
-		Transfer: transfer,
-		DSL:      dslController,
-		Index:    indexController,
-		Projects: projectsController,
-		Feishu:   feishuController,
-		Tencent:  tencentController,
-		Monitor:  monitorController,
-		MonitorX: monitorService,
+		Inject:    inject,
+		Hertz:     hertz,
+		Csrf:      csrf,
+		KV:        controller,
+		Sessions:  sessionsController,
+		Transfer:  transfer,
+		Resources: dslController,
+		Index:     indexController,
+		Projects:  projectsController,
+		Feishu:    feishuController,
+		Tencent:   tencentController,
+		Monitor:   monitorController,
+		MonitorX:  monitorService,
 	}
 	return apiAPI, nil
 }
