@@ -20,10 +20,10 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/csrf"
-	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/helper"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/passport"
+	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ var Provides = wire.NewSet(
 	index.Provides,
 	kv.Provides,
 	sessions.Provides,
-	dsl.Provides,
+	resources.Provides,
 	projects.Provides,
 	feishu.Provides,
 	tencent.Provides,
@@ -49,7 +49,7 @@ type API struct {
 	KV        *kv.Controller
 	Sessions  *sessions.Controller
 	Transfer  *transfer.Transfer
-	Resources *dsl.Controller
+	Resources *resources.Controller
 
 	Index    *index.Controller
 	Projects *projects.Controller

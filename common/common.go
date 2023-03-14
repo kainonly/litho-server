@@ -2,9 +2,9 @@ package common
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/go-redis/redis/v8"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
+	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/utils/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 )

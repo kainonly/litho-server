@@ -14,8 +14,8 @@ import (
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
+	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
 )
 
@@ -77,15 +77,15 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	dslDSL, err := UseDSL(values, client, database, redisClient)
+	dsl, err := UseDSL(values, client, database, redisClient)
 	if err != nil {
 		return nil, err
 	}
-	dslService := &dsl.Service{
-		DSL: dslDSL,
+	resourcesService := &resources.Service{
+		DSL: dsl,
 	}
-	dslController := &dsl.Controller{
-		Service: dslService,
+	resourcesController := &resources.Controller{
+		Service: resourcesService,
 	}
 	passport := UsePassport(values)
 	locker := UseLocker(values, redisClient)
@@ -139,7 +139,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		KV:        controller,
 		Sessions:  sessionsController,
 		Transfer:  transfer,
-		Resources: dslController,
+		Resources: resourcesController,
 		Index:     indexController,
 		Projects:  projectsController,
 		Feishu:    feishuController,
