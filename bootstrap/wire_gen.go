@@ -77,7 +77,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	dslDSL, err := UseDSL(values, database, redisClient)
+	dslDSL, err := UseDSL(values, client, database, redisClient)
 	if err != nil {
 		return nil, err
 	}

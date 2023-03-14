@@ -127,6 +127,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	}
 
 	h.POST("transaction", csrfToken, auth, x.Resources.Transaction)
+	h.POST("commit", csrfToken, auth, x.Resources.Commit)
 
 	return
 }
