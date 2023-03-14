@@ -68,8 +68,16 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("login", csrfToken, x.Index.Login)
 	h.GET("verify", x.Index.Verify)
 	h.GET("code", auth, x.Index.GetRefreshCode)
-	h.POST("refresh_token", csrfToken, auth, x.Index.RefreshToken)
-	h.POST("logout", csrfToken, auth, x.Index.Logout)
+
+	universal := h.Group("", csrfToken, auth)
+	{
+		universal.POST("refresh_token", x.Index.RefreshToken)
+		universal.POST("logout", x.Index.Logout)
+
+		helper.BindResources(universal, x.Resources)
+		helper.BindKV(universal, x.KV)
+		helper.BindSessions(universal, x.Sessions)
+	}
 
 	_user := h.Group("user", csrfToken, auth)
 	{
@@ -90,8 +98,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 	_tencent := h.Group("tencent", auth)
 	{
-		_tencent.GET("cos-presigned", x.Tencent.CosPresigned)
-		_tencent.GET("cos-image-info", x.Tencent.ImageInfo)
+		_tencent.GET("cos_presigned", x.Tencent.CosPresigned)
+		_tencent.GET("cos_image_info", x.Tencent.ImageInfo)
 	}
 
 	_monitor := h.Group("monitor", auth)
@@ -106,28 +114,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_monitor.GET("mongo_flushes", x.Monitor.GetMongoFlushes)
 		_monitor.GET("mongo_network_io", x.Monitor.GetMongoNetworkIO)
 	}
-
-	helper.BindKV(h.Group("values", csrfToken, auth), x.KV)
-	helper.BindSessions(h.Group("sessions", csrfToken, auth), x.Sessions)
-
-	_resources := h.Group(":collection", csrfToken, auth)
-	{
-		_resources.POST("", x.Resources.Create)
-		_resources.POST("bulk-create", x.Resources.BulkCreate)
-		_resources.GET("_size", x.Resources.Size)
-		_resources.GET("", x.Resources.Find)
-		_resources.GET("_one", x.Resources.FindOne)
-		_resources.GET(":id", x.Resources.FindById)
-		_resources.PATCH("", x.Resources.Update)
-		_resources.PATCH(":id", x.Resources.UpdateById)
-		_resources.PUT(":id", x.Resources.Replace)
-		_resources.DELETE(":id", x.Resources.Delete)
-		_resources.POST("bulk-delete", x.Resources.BulkDelete)
-		_resources.POST("sort", x.Resources.Sort)
-	}
-
-	h.POST("transaction", csrfToken, auth, x.Resources.Transaction)
-	h.POST("commit", csrfToken, auth, x.Resources.Commit)
 
 	return
 }
