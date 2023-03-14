@@ -6,22 +6,22 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/go-redis/redis/v8"
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
+	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
 	"github.com/weplanx/utils/csrf"
-	"github.com/weplanx/utils/dsl"
 	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/locker"
 	"github.com/weplanx/utils/passport"
+	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -152,13 +152,13 @@ func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions 
 	)
 }
 
-func UseDSL(values *common.Values, client *mongo.Client, db *mongo.Database, rdb *redis.Client) (*dsl.DSL, error) {
-	return dsl.New(
-		dsl.SetNamespace(values.Namespace),
-		dsl.SetMongoClient(client),
-		dsl.SetDatabase(db),
-		dsl.SetRedis(rdb),
-		dsl.SetDynamicValues(values.DynamicValues),
+func UseDSL(values *common.Values, client *mongo.Client, db *mongo.Database, rdb *redis.Client) (*resources.DSL, error) {
+	return resources.New(
+		resources.SetNamespace(values.Namespace),
+		resources.SetMongoClient(client),
+		resources.SetDatabase(db),
+		resources.SetRedis(rdb),
+		resources.SetDynamicValues(values.DynamicValues),
 	)
 }
 
