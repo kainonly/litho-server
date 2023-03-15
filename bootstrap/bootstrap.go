@@ -18,11 +18,11 @@ import (
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/captcha"
 	"github.com/weplanx/utils/csrf"
-	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/locker"
 	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
+	"github.com/weplanx/utils/values"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -31,13 +31,13 @@ import (
 	"time"
 )
 
-func LoadStaticValues() (values *common.Values, err error) {
-	values = new(common.Values)
-	if err = env.Parse(values); err != nil {
+func LoadStaticValues() (v *common.Values, err error) {
+	v = new(common.Values)
+	if err = env.Parse(v); err != nil {
 		return
 	}
-	values.DynamicValues = &kv.DEFAULT
-	values.DynamicValues.DSL = map[string]*kv.DSLOption{
+	v.DynamicValues = &values.DEFAULT
+	v.DynamicValues.Resources = map[string]*values.ResourcesOption{
 		"users": {
 			Keys: []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
 		},
@@ -45,10 +45,10 @@ func LoadStaticValues() (values *common.Values, err error) {
 	return
 }
 
-func ProviderOpenTelemetry(values *common.Values) provider.OtelProvider {
+func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
 	return provider.NewOpenTelemetryProvider(
-		provider.WithServiceName(values.Namespace),
-		provider.WithExportEndpoint(values.Otlp.Endpoint),
+		provider.WithServiceName(v.Namespace),
+		provider.WithExportEndpoint(v.Otlp.Endpoint),
 		provider.WithInsecure(),
 	)
 }
@@ -56,26 +56,26 @@ func ProviderOpenTelemetry(values *common.Values) provider.OtelProvider {
 // UseMongoDB
 // https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
-func UseMongoDB(values *common.Values) (*mongo.Client, error) {
+func UseMongoDB(v *common.Values) (*mongo.Client, error) {
 	return mongo.Connect(
 		context.TODO(),
-		options.Client().ApplyURI(values.Database.Host),
+		options.Client().ApplyURI(v.Database.Host),
 	)
 }
 
 // UseDatabase
 // https://www.mongodb.com/docs/drivers/go/current/
 // https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
-func UseDatabase(values *common.Values, client *mongo.Client) (db *mongo.Database) {
+func UseDatabase(v *common.Values, client *mongo.Client) (db *mongo.Database) {
 	option := options.Database().
 		SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
-	return client.Database(values.Database.Name, option)
+	return client.Database(v.Database.Name, option)
 }
 
 // UseRedis
 // https://github.com/go-redis/redis
-func UseRedis(values *common.Values) (client *redis.Client, err error) {
-	opts, err := redis.ParseURL(values.Database.Redis)
+func UseRedis(v *common.Values) (client *redis.Client, err error) {
+	opts, err := redis.ParseURL(v.Database.Redis)
 	if err != nil {
 		return
 	}
@@ -86,19 +86,19 @@ func UseRedis(values *common.Values) (client *redis.Client, err error) {
 	return
 }
 
-func UseInflux(values *common.Values) influxdb2.Client {
+func UseInflux(v *common.Values) influxdb2.Client {
 	return influxdb2.NewClient(
-		values.Influx.Url,
-		values.Influx.Token,
+		v.Influx.Url,
+		v.Influx.Token,
 	)
 }
 
 // UseNats
 // https://docs.nats.io/using-nats/developer
 // https://github.com/nats-io/nats.go
-func UseNats(values *common.Values) (nc *nats.Conn, err error) {
+func UseNats(v *common.Values) (nc *nats.Conn, err error) {
 	var kp nkeys.KeyPair
-	if kp, err = nkeys.FromSeed([]byte(values.Nats.Nkey)); err != nil {
+	if kp, err = nkeys.FromSeed([]byte(v.Nats.Nkey)); err != nil {
 		return
 	}
 	defer kp.Wipe()
@@ -110,7 +110,7 @@ func UseNats(values *common.Values) (nc *nats.Conn, err error) {
 		return nil, fmt.Errorf("nkey 验证失败")
 	}
 	if nc, err = nats.Connect(
-		strings.Join(values.Nats.Hosts, ","),
+		strings.Join(v.Nats.Hosts, ","),
 		nats.MaxReconnects(5),
 		nats.ReconnectWait(2*time.Second),
 		nats.ReconnectJitter(500*time.Millisecond, 2*time.Second),
@@ -132,78 +132,78 @@ func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
 
 // UseKeyValue
 // https://docs.nats.io/using-nats/developer/develop_jetstream/kv
-func UseKeyValue(values *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
-	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: values.Namespace})
+func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
+	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: v.Namespace})
 }
 
-func UseKV(values *common.Values, keyvalue nats.KeyValue) *kv.KV {
-	return kv.New(
-		kv.SetNamespace(values.Namespace),
-		kv.SetKeyValue(keyvalue),
-		kv.SetDynamicValues(values.DynamicValues),
+func UseValues(v *common.Values, kv nats.KeyValue) *values.Service {
+	return values.New(
+		values.SetNamespace(v.Namespace),
+		values.SetKeyValue(kv),
+		values.SetDynamicValues(v.DynamicValues),
 	)
 }
 
-func UseSessions(values *common.Values, redis *redis.Client) *sessions.Sessions {
+func UseSessions(v *common.Values, rdb *redis.Client) *sessions.Service {
 	return sessions.New(
-		sessions.SetNamespace(values.Namespace),
-		sessions.SetRedis(redis),
-		sessions.SetDynamicValues(values.DynamicValues),
+		sessions.SetNamespace(v.Namespace),
+		sessions.SetRedis(rdb),
+		sessions.SetDynamicValues(v.DynamicValues),
 	)
 }
 
-func UseDSL(values *common.Values, client *mongo.Client, db *mongo.Database, rdb *redis.Client) (*resources.DSL, error) {
+func UseResources(v *common.Values, mgo *mongo.Client, db *mongo.Database, rdb *redis.Client) (*resources.Service, error) {
 	return resources.New(
-		resources.SetNamespace(values.Namespace),
-		resources.SetMongoClient(client),
+		resources.SetNamespace(v.Namespace),
+		resources.SetMongoClient(mgo),
 		resources.SetDatabase(db),
 		resources.SetRedis(rdb),
-		resources.SetDynamicValues(values.DynamicValues),
+		resources.SetDynamicValues(v.DynamicValues),
 	)
 }
 
-func UseCsrf(values *common.Values) *csrf.Csrf {
+func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
-		csrf.SetKey(values.Key),
+		csrf.SetKey(v.Key),
 	)
 }
 
-func UsePassport(values *common.Values) *passport.Passport {
+func UsePassport(v *common.Values) *passport.Passport {
 	return passport.New(
-		passport.SetNamespace(values.Namespace),
-		passport.SetKey(values.Key),
+		passport.SetNamespace(v.Namespace),
+		passport.SetKey(v.Key),
 	)
 }
 
-func UseLocker(values *common.Values, client *redis.Client) *locker.Locker {
+func UseLocker(v *common.Values, client *redis.Client) *locker.Locker {
 	return locker.New(
-		locker.SetNamespace(values.Namespace),
+		locker.SetNamespace(v.Namespace),
 		locker.SetRedis(client),
 	)
 }
 
-func UseCaptcha(values *common.Values, client *redis.Client) *captcha.Captcha {
+func UseCaptcha(v *common.Values, client *redis.Client) *captcha.Captcha {
 	return captcha.New(
-		captcha.SetNamespace(values.Namespace),
+		captcha.SetNamespace(v.Namespace),
 		captcha.SetRedis(client),
 	)
 }
 
 // UseTransfer
 // https://github.com/weplanx/transfer
-func UseTransfer(values *common.Values, db *mongo.Database, js nats.JetStreamContext) (*transfer.Transfer, error) {
+func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
 	return transfer.New(
-		transfer.SetNamespace(values.Namespace),
+		transfer.SetNamespace(v.Namespace),
 		transfer.SetJetStream(js),
 	)
 }
 
 // UseHertz
 // https://www.cloudwego.io/zh/docs/hertz/reference/config
-func UseHertz(values *common.Values) (h *server.Hertz, err error) {
+func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
-		server.WithHostPorts(values.Address),
+		server.WithHostPorts(v.Address),
 		tracer,
 	}
 
@@ -225,11 +225,11 @@ func UseHertz(values *common.Values) (h *server.Hertz, err error) {
 
 // UseTest
 func UseTest() (api *api.API, err error) {
-	values, err := LoadStaticValues()
+	v, err := LoadStaticValues()
 	if err != nil {
 		panic(err)
 	}
-	if api, err = NewAPI(values); err != nil {
+	if api, err = NewAPI(v); err != nil {
 		return
 	}
 

@@ -67,9 +67,9 @@ func (x *Service) Decrypt(encrypt string, key string) (string, error) {
 
 // GetTenantAccessToken 获取 TenantAccessToken
 func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err error) {
-	key := x.Values.Name("feishu", "tenant_access_token")
+	key := x.V.Name("feishu", "tenant_access_token")
 	var exists int64
-	if exists, err = x.Redis.Exists(ctx, key).Result(); err != nil {
+	if exists, err = x.RDb.Exists(ctx, key).Result(); err != nil {
 		return
 	}
 	if exists == 0 {
@@ -81,21 +81,21 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		}
 		if _, err = client.R().
 			SetBody(map[string]interface{}{
-				"app_id":     x.Values.FeishuAppId,
-				"app_secret": x.Values.FeishuAppSecret,
+				"app_id":     x.V.FeishuAppId,
+				"app_secret": x.V.FeishuAppSecret,
 			}).
 			SetResult(&result).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {
 			return
 		}
-		if err = x.Redis.Set(ctx, key,
+		if err = x.RDb.Set(ctx, key,
 			result.TenantAccessToken,
 			time.Second*time.Duration(result.Expire),
 		).Err(); err != nil {
 			return
 		}
 	}
-	return x.Redis.Get(ctx, key).Result()
+	return x.RDb.Get(ctx, key).Result()
 }
 
 // GetUserAccessToken 获取 AccessToken
@@ -155,7 +155,7 @@ func (x *Service) Login(ctx context.Context, openId string, logdata *model.Login
 	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
-	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
+	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
 		return
 	}
 	if maxLoginFailures {
@@ -174,8 +174,8 @@ func (x *Service) Login(ctx context.Context, openId string, logdata *model.Login
 		return
 	}
 
-	key := x.Values.Name("users", userId)
-	if _, err = x.Redis.Del(ctx, key).Result(); err != nil {
+	key := x.V.Name("users", userId)
+	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
 		return
 	}
 

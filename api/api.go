@@ -15,16 +15,15 @@ import (
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/monitor"
-	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"github.com/weplanx/utils/csrf"
 	"github.com/weplanx/utils/helper"
-	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/passport"
 	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
+	"github.com/weplanx/utils/values"
 	"net/http"
 	"os"
 	"time"
@@ -32,10 +31,9 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
-	kv.Provides,
+	values.Provides,
 	sessions.Provides,
 	resources.Provides,
-	projects.Provides,
 	feishu.Provides,
 	tencent.Provides,
 	monitor.Provides,
@@ -44,15 +42,15 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz     *server.Hertz
-	Csrf      *csrf.Csrf
-	KV        *kv.Controller
+	Hertz    *server.Hertz
+	Csrf     *csrf.Csrf
+	Transfer *transfer.Transfer
+
+	Values    *values.Controller
 	Sessions  *sessions.Controller
-	Transfer  *transfer.Transfer
 	Resources *resources.Controller
 
 	Index    *index.Controller
-	Projects *projects.Controller
 	Feishu   *feishu.Controller
 	Tencent  *tencent.Controller
 	Monitor  *monitor.Controller
@@ -68,6 +66,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("login", csrfToken, x.Index.Login)
 	h.GET("verify", x.Index.Verify)
 	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.GET("options", x.Index.Options)
 
 	universal := h.Group("", csrfToken, auth)
 	{
@@ -75,7 +74,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		universal.POST("logout", x.Index.Logout)
 
 		helper.BindResources(universal, x.Resources)
-		helper.BindKV(universal, x.KV)
+		helper.BindValues(universal, x.Values)
 		helper.BindSessions(universal, x.Sessions)
 	}
 
@@ -85,8 +84,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_user.POST("", x.Index.SetUser)
 		_user.DELETE(":key", x.Index.UnsetUser)
 	}
-
-	h.GET("options", x.Index.Options)
 
 	_feishu := h.Group("feishu")
 	{
@@ -229,8 +226,8 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h.Use(x.ErrHandler())
 	helper.RegValidate()
 
-	updated := make(chan *kv.DynamicValues)
-	go x.KV.KVService.Sync(&kv.SyncOption{
+	updated := make(chan *values.DynamicValues)
+	go x.Values.Service.Sync(&values.SyncOption{
 		Updated: updated,
 	})
 

@@ -46,7 +46,7 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
-	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.Values.LoginFailures); err != nil {
+	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
 		return
 	}
 	if maxLoginFailures {
@@ -59,7 +59,7 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 		return
 	}
 	if !match {
-		if err = x.Locker.Update(ctx, userId, x.Values.LoginTTL); err != nil {
+		if err = x.Locker.Update(ctx, userId, x.V.LoginTTL); err != nil {
 			return
 		}
 		err = errors.NewPublic("the user email or password is incorrect")
@@ -77,8 +77,8 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 		return
 	}
 
-	key := x.Values.Name("users", userId)
-	if _, err = x.Redis.Del(ctx, key).Result(); err != nil {
+	key := x.V.Name("users", userId)
+	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
 		return
 	}
 
@@ -87,8 +87,8 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 
 func (x *Service) Openapi() (*client.Client, error) {
 	return client.New(
-		x.Values.OpenapiUrl,
-		client.SetApiGateway(x.Values.OpenapiKey, x.Values.OpenapiSecret),
+		x.V.OpenapiUrl,
+		client.SetApiGateway(x.V.OpenapiKey, x.V.OpenapiSecret),
 	)
 }
 
@@ -240,8 +240,8 @@ func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (re
 		return
 	}
 
-	key := x.Values.Name("users", userId)
-	if _, err = x.Redis.Del(ctx, key).Result(); err != nil {
+	key := x.V.Name("users", userId)
+	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
 		return
 	}
 
