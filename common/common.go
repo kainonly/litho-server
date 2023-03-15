@@ -10,14 +10,14 @@ import (
 )
 
 type Inject struct {
-	Values    *Values
-	Mongo     *mongo.Client
-	Db        *mongo.Database
-	Redis     *redis.Client
-	Influx    influxdb2.Client
-	Nats      *nats.Conn
-	JetStream nats.JetStreamContext
-	KeyValue  nats.KeyValue
+	V    *Values
+	Mgo  *mongo.Client
+	Db   *mongo.Database
+	RDb  *redis.Client
+	Flux influxdb2.Client
+	Nats *nats.Conn
+	JS   nats.JetStreamContext
+	KV   nats.KeyValue
 }
 
 func GetClaims(c *app.RequestContext) (claims passport.Claims) {

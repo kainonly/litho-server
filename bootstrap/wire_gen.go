@@ -11,28 +11,27 @@ import (
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/monitor"
-	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/utils/kv"
 	"github.com/weplanx/utils/resources"
 	"github.com/weplanx/utils/sessions"
+	"github.com/weplanx/utils/values"
 )
 
 // Injectors from wire.go:
 
-func NewAPI(values *common.Values) (*api.API, error) {
-	client, err := UseMongoDB(values)
+func NewAPI(values2 *common.Values) (*api.API, error) {
+	client, err := UseMongoDB(values2)
 	if err != nil {
 		return nil, err
 	}
-	database := UseDatabase(values, client)
-	redisClient, err := UseRedis(values)
+	database := UseDatabase(values2, client)
+	redisClient, err := UseRedis(values2)
 	if err != nil {
 		return nil, err
 	}
-	influxdb2Client := UseInflux(values)
-	conn, err := UseNats(values)
+	influxdb2Client := UseInflux(values2)
+	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
 	}
@@ -40,56 +39,47 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyValue, err := UseKeyValue(values, jetStreamContext)
+	keyValue, err := UseKeyValue(values2, jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
 	inject := &common.Inject{
-		Values:    values,
-		Mongo:     client,
-		Db:        database,
-		Redis:     redisClient,
-		Influx:    influxdb2Client,
-		Nats:      conn,
-		JetStream: jetStreamContext,
-		KeyValue:  keyValue,
+		V:    values2,
+		Mgo:  client,
+		Db:   database,
+		RDb:  redisClient,
+		Flux: influxdb2Client,
+		Nats: conn,
+		JS:   jetStreamContext,
+		KV:   keyValue,
 	}
-	hertz, err := UseHertz(values)
+	hertz, err := UseHertz(values2)
 	if err != nil {
 		return nil, err
 	}
-	csrf := UseCsrf(values)
-	kvKV := UseKV(values, keyValue)
-	service := &kv.Service{
-		KV: kvKV,
+	csrf := UseCsrf(values2)
+	transfer, err := UseTransfer(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
 	}
-	controller := &kv.Controller{
-		KVService: service,
+	service := UseValues(values2, keyValue)
+	controller := &values.Controller{
+		Service: service,
 	}
-	sessionsSessions := UseSessions(values, redisClient)
-	sessionsService := &sessions.Service{
-		Sessions: sessionsSessions,
-	}
+	sessionsService := UseSessions(values2, redisClient)
 	sessionsController := &sessions.Controller{
-		SessionsService: sessionsService,
+		Service: sessionsService,
 	}
-	transfer, err := UseTransfer(values, database, jetStreamContext)
+	resourcesService, err := UseResources(values2, client, database, redisClient)
 	if err != nil {
 		return nil, err
-	}
-	dsl, err := UseDSL(values, client, database, redisClient)
-	if err != nil {
-		return nil, err
-	}
-	resourcesService := &resources.Service{
-		DSL: dsl,
 	}
 	resourcesController := &resources.Controller{
 		Service: resourcesService,
 	}
-	passport := UsePassport(values)
-	locker := UseLocker(values, redisClient)
-	captcha := UseCaptcha(values, redisClient)
+	passport := UsePassport(values2)
+	locker := UseLocker(values2, redisClient)
+	captcha := UseCaptcha(values2, redisClient)
 	indexService := &index.Service{
 		Inject:   inject,
 		Passport: passport,
@@ -100,13 +90,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	indexController := &index.Controller{
 		Service: indexService,
 		Csrf:    csrf,
-		Values:  values,
-	}
-	projectsService := &projects.Service{
-		Inject: inject,
-	}
-	projectsController := &projects.Controller{
-		ProjectsService: projectsService,
+		Values:  values2,
 	}
 	feishuService := &feishu.Service{
 		Inject:          inject,
@@ -117,7 +101,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	feishuController := &feishu.Controller{
 		Service:  feishuService,
 		Index:    indexService,
-		Values:   values,
+		Values:   values2,
 		Passport: passport,
 	}
 	tencentService := &tencent.Service{
@@ -136,12 +120,11 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Inject:    inject,
 		Hertz:     hertz,
 		Csrf:      csrf,
-		KV:        controller,
-		Sessions:  sessionsController,
 		Transfer:  transfer,
+		Values:    controller,
+		Sessions:  sessionsController,
 		Resources: resourcesController,
 		Index:     indexController,
-		Projects:  projectsController,
 		Feishu:    feishuController,
 		Tencent:   tencentController,
 		Monitor:   monitorController,
