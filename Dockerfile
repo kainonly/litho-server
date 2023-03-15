@@ -5,6 +5,6 @@ RUN apk add tzdata
 COPY dist /app
 WORKDIR /app
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD [ "./main" ]
