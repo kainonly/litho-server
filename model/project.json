@@ -1,0 +1,46 @@
+{
+  "$jsonSchema": {
+    "title": "project",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "name",
+      "namespace",
+      "status",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "namespace": {
+        "bsonType": "string"
+      },
+      "secret": {
+        "bsonType": "string"
+      },
+      "entry": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "string"
+        }
+      },
+      "expire": {
+        "bsonType": "number"
+      },
+      "status": {
+        "bsonType": "bool"
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    }
+  }
+}
