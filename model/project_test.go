@@ -7,44 +7,42 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 	"testing"
 )
 
-func TestCreateCollectionForProjects(t *testing.T) {
+func TestCreateProjects(t *testing.T) {
 	ctx := context.TODO()
-	option := options.CreateCollection().
-		SetValidator(bson.D{
-			{"$jsonSchema", bson.D{
-				{"title", "projects"},
-				{"required", bson.A{"_id", "name", "namespace", "secret", "entry", "expire", "status", "create_time", "update_time"}},
-				{"properties", bson.D{
-					{"_id", bson.M{"bsonType": "objectId"}},
-					{"name", bson.M{"bsonType": "string"}},
-					{"namespace", bson.M{"bsonType": "string"}},
-					{"secret", bson.M{"bsonType": "string"}},
-					{"entry", bson.M{"bsonType": "array"}},
-					{"expire", bson.M{"bsonType": "number"}},
-					{"status", bson.M{"bsonType": "bool"}},
-					{"create_time", bson.M{"bsonType": "date"}},
-					{"update_time", bson.M{"bsonType": "date"}},
-				}},
-				{"additionalProperties", false},
-			}},
-		})
-	if err := db.CreateCollection(ctx, "projects", option); err != nil {
-		t.Error(err)
+	b, err := os.ReadFile("./project.json")
+	assert.NoError(t, err)
+	var jsonSchema bson.D
+	err = bson.UnmarshalExtJSON(b, true, &jsonSchema)
+	assert.NoError(t, err)
+
+	n, err := db.ListCollectionNames(ctx, bson.M{"name": "projects"})
+	assert.NoError(t, err)
+	if len(n) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		err = db.CreateCollection(ctx, "projects", option)
+		assert.NoError(t, err)
+	} else {
+		err = db.RunCommand(ctx, bson.D{
+			{"collMod", "projects"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err()
+		assert.NoError(t, err)
 	}
+
 	r, err := db.Collection("projects").Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{"namespace", 1}},
 		Options: options.Index().SetUnique(true).SetName("idx_namespace"),
 	})
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 	t.Log(r)
 }
 
-func TestCreateProjects(t *testing.T) {
+func TestMockProject(t *testing.T) {
 	var err error
 	_, err = db.Collection("projects").InsertOne(
 		context.TODO(),
