@@ -1,0 +1,26 @@
+{
+  "$jsonSchema": {
+    "title": "picture_tag",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "name",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    }
+  }
+}
