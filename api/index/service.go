@@ -43,7 +43,6 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 	}
 
 	userId := user.ID.Hex()
-	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
@@ -82,6 +81,7 @@ func (x *Service) Login(ctx context.Context, email string, password string, logd
 		return
 	}
 
+	logdata.SetUserID(user.ID)
 	return
 }
 
@@ -104,6 +104,22 @@ func (x *Service) WriteLoginLog(ctx context.Context, logdata *model.LoginLog) (e
 	logdata.SetLocation(detail)
 
 	if _, err = x.Db.Collection("login_logs").InsertOne(ctx, logdata); err != nil {
+		return
+	}
+	filter := bson.M{"_id": logdata.Metadata.UserID}
+	if _, err = x.Db.Collection("users").UpdateOne(ctx, filter, bson.M{
+		"$inc": bson.M{"sessions": 1},
+		"$set": bson.M{
+			"history": model.UserHistory{
+				Timestamp: time.Now(),
+				ClientIP:  logdata.Metadata.ClientIP,
+				Country:   logdata.Country,
+				Province:  logdata.Province,
+				City:      logdata.City,
+				Isp:       logdata.Isp,
+			},
+		},
+	}); err != nil {
 		return
 	}
 	return
@@ -211,6 +227,8 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err
 		"name":         user.Name,
 		"avatar":       user.Avatar,
 		"backup_email": user.BackupEmail,
+		"sessions":     user.Sessions,
+		"history":      user.History,
 		"status":       user.Status,
 		"create_time":  user.CreateTime,
 		"update_time":  user.UpdateTime,
