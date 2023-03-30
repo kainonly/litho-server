@@ -19,6 +19,9 @@
       "url": {
         "bsonType": "string"
       },
+      "params": {
+        "bsonType": "object"
+      },
       "tags": {
         "bsonType": "array",
         "items": {

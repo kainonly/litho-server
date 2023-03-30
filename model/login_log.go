@@ -1,6 +1,7 @@
 package model
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
@@ -14,14 +15,14 @@ type LoginLog struct {
 	UserAgent string           `bson:"user_agent"`
 }
 
-func (x *LoginLog) SetUserID(v string) {
+func (x *LoginLog) SetUserID(v primitive.ObjectID) {
 	x.Metadata.UserID = v
 }
 
 type LoginLogMetadata struct {
-	UserID   string `bson:"user_id"`
-	ClientIP string `bson:"client_ip"`
-	Channel  string `bson:"channel" json:"channel"`
+	UserID   primitive.ObjectID `bson:"user_id"`
+	ClientIP string             `bson:"client_ip"`
+	Channel  string             `bson:"channel" json:"channel"`
 }
 
 func (x *LoginLog) SetLocation(v map[string]interface{}) {

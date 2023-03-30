@@ -99,15 +99,15 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 }
 
 // GetUserAccessToken 获取 AccessToken
-func (x *Service) GetUserAccessToken(ctx context.Context, code string) (_ model.FeishuUserData, err error) {
+func (x *Service) GetUserAccessToken(ctx context.Context, code string) (_ model.UserFeishu, err error) {
 	var token string
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {
 		return
 	}
 	var result struct {
-		Code uint64               `json:"code"`
-		Msg  string               `json:"msg"`
-		Data model.FeishuUserData `json:"data"`
+		Code uint64           `json:"code"`
+		Msg  string           `json:"msg"`
+		Data model.UserFeishu `json:"data"`
 	}
 	if _, err = client.R().
 		SetAuthToken(token).
@@ -127,7 +127,7 @@ func (x *Service) GetUserAccessToken(ctx context.Context, code string) (_ model.
 }
 
 // Link 关联
-func (x *Service) Link(ctx context.Context, userId string, data model.FeishuUserData) (_ *mongo.UpdateResult, err error) {
+func (x *Service) Link(ctx context.Context, userId string, data model.UserFeishu) (_ *mongo.UpdateResult, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
 	return x.Db.Collection("users").UpdateOne(ctx,
 		bson.M{"_id": id},
@@ -152,7 +152,6 @@ func (x *Service) Login(ctx context.Context, openId string, logdata *model.Login
 	}
 
 	userId := user.ID.Hex()
-	logdata.SetUserID(userId)
 
 	var maxLoginFailures bool
 	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
@@ -179,6 +178,7 @@ func (x *Service) Login(ctx context.Context, openId string, logdata *model.Login
 		return
 	}
 
+	logdata.SetUserID(user.ID)
 	return
 }
 
