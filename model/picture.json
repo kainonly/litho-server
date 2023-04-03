@@ -19,8 +19,55 @@
       "url": {
         "bsonType": "string"
       },
-      "params": {
-        "bsonType": "object"
+      "query": {
+        "bsonType": "string"
+      },
+      "process": {
+        "bsonType": "object",
+        "properties": {
+          "mode": {
+            "bsonType": "number"
+          },
+          "cut": {
+            "required": [
+              "x",
+              "y",
+              "w",
+              "h"
+            ],
+            "properties": {
+              "x": {
+                "bsonType": "number"
+              },
+              "y": {
+                "bsonType": "number"
+              },
+              "w": {
+                "bsonType": "number"
+              },
+              "h": {
+                "bsonType": "number"
+              }
+            }
+          },
+          "zoom": {
+            "bsonType": "object",
+            "properties": {
+              "w": {
+                "bsonType": [
+                  "number",
+                  "null"
+                ]
+              },
+              "h": {
+                "bsonType": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
       },
       "tags": {
         "bsonType": "array",
