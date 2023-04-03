@@ -156,15 +156,18 @@ func (x *API) AccessLogs() app.HandlerFunc {
 		}
 		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
 			Timestamp: now,
-			Metadata: map[string]interface{}{
-				"method":    method,
-				"path":      string(c.Request.Path()),
-				"user_id":   userId,
-				"client_ip": c.ClientIP(),
-			},
 			Data: map[string]interface{}{
+				"metadata": map[string]interface{}{
+					"method":    method,
+					"path":      string(c.Request.Path()),
+					"user_id":   userId,
+					"client_ip": c.ClientIP(),
+				},
 				"status":     c.Response.StatusCode(),
 				"user_agent": string(c.Request.Header.UserAgent()),
+			},
+			Format: map[string]interface{}{
+				"metadata.user_id": "oid",
 			},
 		})
 	}
