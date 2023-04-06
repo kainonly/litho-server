@@ -7,7 +7,7 @@ import (
 )
 
 type Values struct {
-	Address               string `env:"ADDRESS" envDefault:":3001"`
+	Address               string `env:"ADDRESS" envDefault:":9000"`
 	BaseUrl               string `env:"BASE_URL,required"`
 	Namespace             string `env:"NAMESPACE,required"`
 	Key                   string `env:"KEY,required"`
