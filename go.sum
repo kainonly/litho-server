@@ -314,8 +314,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/weplanx/openapi v0.2.3 h1:1A5XMC7ZS0X/QAxPPp4camYGbsHd2or57WyO6YABf3g=
 github.com/weplanx/openapi v0.2.3/go.mod h1:tmeDf8/t0h7uogN+IoWCnBMHCv2Al6PWvExscivmMt8=
-github.com/weplanx/transfer v1.8.0 h1:gFiiLyhmmY+l1oZlXQ5lEvSwwFQcR+SGJDCHrAnQigo=
-github.com/weplanx/transfer v1.8.0/go.mod h1:e1d3Eg4orKB4KCTnFslnCHurlVvtv5hUG2q4ZW0Vsao=
+github.com/weplanx/transfer v1.8.1 h1:Lu2QT0EpD1NSElZPTpag2oFfSi9klUkA9GFKxBuNyI8=
+github.com/weplanx/transfer v1.8.1/go.mod h1:e1d3Eg4orKB4KCTnFslnCHurlVvtv5hUG2q4ZW0Vsao=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.1 h1:VOMT+81stJgXW3CpHyqHN3AXDYIMsx56mEFrB37Mb/E=
