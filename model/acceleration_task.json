@@ -1,0 +1,35 @@
+{
+  "$jsonSchema": {
+    "title": "acceleration_task",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "source",
+      "target",
+      "status",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "source": {
+        "bsonType": "string"
+      },
+      "target": {
+        "bsonType": "string"
+      },
+      "status": {
+        "bsonType": "bool"
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false
+  }
+}
