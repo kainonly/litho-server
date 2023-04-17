@@ -61,7 +61,7 @@ func TestMockAccelerationTasks(t *testing.T) {
 	for i, key := range keys {
 		data[i] = model.NewAccelerationTask(
 			"https://cdn.jsdelivr.net/npm"+key,
-			"assets"+key,
+			"npm"+key,
 		)
 	}
 	_, err := db.Collection("acceleration_tasks").InsertMany(context.TODO(), data)
