@@ -54,7 +54,10 @@ func TestMockAccelerationTasks(t *testing.T) {
 		"/localforage@1.10.0/dist/localforage.min.js",
 		"/cropperjs@1.5.13/dist/cropper.min.js",
 		"/cropperjs@1.5.13/dist/cropper.min.css",
+		"/monaco-editor@0.36.1/min/vs/loader.js",
+		"/monaco-editor@0.36.1/min/vs/editor/editor.main.js",
 		"/monaco-editor@0.36.1/min/vs/editor/editor.main.min.js",
+		"/monaco-editor@0.36.1/min/vs/editor/editor.main.css",
 		"/monaco-editor@0.36.1/min/vs/editor/editor.main.min.css",
 	}
 	data := make([]interface{}, len(keys))
