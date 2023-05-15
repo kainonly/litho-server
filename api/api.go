@@ -14,7 +14,6 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/server/api/feishu"
 	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
@@ -36,7 +35,6 @@ var Provides = wire.NewSet(
 	resources.Provides,
 	feishu.Provides,
 	tencent.Provides,
-	monitor.Provides,
 )
 
 type API struct {
@@ -50,11 +48,9 @@ type API struct {
 	Sessions  *sessions.Controller
 	Resources *resources.Controller
 
-	Index    *index.Controller
-	Feishu   *feishu.Controller
-	Tencent  *tencent.Controller
-	Monitor  *monitor.Controller
-	MonitorX *monitor.Service
+	Index   *index.Controller
+	Feishu  *feishu.Controller
+	Tencent *tencent.Controller
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -97,19 +93,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_tencent.GET("cos_presigned", x.Tencent.CosPresigned)
 		_tencent.GET("cos_image_info", x.Tencent.ImageInfo)
-	}
-
-	_monitor := h.Group("monitor", auth)
-	{
-		_monitor.GET("cgo_calls", x.Monitor.GetCgoCalls)
-		_monitor.GET("mongo_uptime", x.Monitor.GetMongoUptime)
-		_monitor.GET("mongo_available_connections", x.Monitor.GetMongoAvailableConnections)
-		_monitor.GET("mongo_open_connections", x.Monitor.GetMongoOpenConnections)
-		_monitor.GET("mongo_commands_per_second", x.Monitor.GetMongoCommandsPerSecond)
-		_monitor.GET("mongo_query_operations", x.Monitor.GetMongoQueryOperations)
-		_monitor.GET("mongo_document_operations", x.Monitor.GetMongoDocumentOperations)
-		_monitor.GET("mongo_flushes", x.Monitor.GetMongoFlushes)
-		_monitor.GET("mongo_network_io", x.Monitor.GetMongoNetworkIO)
 	}
 
 	return
