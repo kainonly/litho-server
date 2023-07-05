@@ -2,25 +2,17 @@ package bootstrap
 
 import (
 	"context"
-	"database/sql"
 	"github.com/caarlos0/env/v8"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/hertz-contrib/requestid"
 	"github.com/redis/go-redis/v9"
-	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/weplanx/server/common"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.uber.org/fx"
 	"os"
-)
-
-var Provides = fx.Provide(
-	LoadStaticValues,
-	UseDatabase,
-	UseRedis,
-	UseHertz,
 )
 
 func LoadStaticValues() (v *common.Values, err error) {
@@ -31,9 +23,16 @@ func LoadStaticValues() (v *common.Values, err error) {
 	return
 }
 
-func UseDatabase(v *common.Values) (db *bun.DB) {
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(v.Database.Url)))
-	db = bun.NewDB(sqldb, pgdialect.New())
+func UseMongoDB(v *common.Values) (client *mongo.Client, db *mongo.Database, err error) {
+	if client, err = mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(v.Database.Url),
+	); err != nil {
+		return
+	}
+	option := options.Database().
+		SetWriteConcern(writeconcern.Majority())
+	db = client.Database(v.Database.Name, option)
 	return
 }
 

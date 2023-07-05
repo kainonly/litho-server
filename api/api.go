@@ -1,7 +1,7 @@
-package admin
+package api
 
 import (
-	"github.com/weplanx/server/admin/index"
+	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"go.uber.org/fx"
 )
