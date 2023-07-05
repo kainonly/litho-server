@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/weplanx/server/admin"
+	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
 	"go.uber.org/fx"
 )
@@ -9,7 +9,12 @@ import (
 func main() {
 	fx.New(
 		fx.NopLogger,
-		bootstrap.Provides,
-		admin.Options,
+		fx.Provide(
+			bootstrap.LoadStaticValues,
+			bootstrap.UseMongoDB,
+			bootstrap.UseRedis,
+			bootstrap.UseHertz,
+		),
+		api.Options,
 	).Run()
 }

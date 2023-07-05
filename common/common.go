@@ -5,8 +5,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/redis/go-redis/v9"
-	"github.com/uptrace/bun"
 	"github.com/weplanx/utils/passport"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 	"strings"
 )
@@ -16,12 +16,12 @@ type Inject struct {
 
 	V     *Values
 	Hertz *server.Hertz
-	DB    *bun.DB
+	Mgo   *mongo.Client
+	Db    *mongo.Database
 	RDb   *redis.Client
 }
 
 type Values struct {
-	Kind      string `env:"KIND" envDefault:"admin"`
 	Address   string `env:"ADDRESS" envDefault:":3000"`
 	Namespace string `env:"NAMESPACE,required"`
 	Key       string `env:"KEY,required"`
