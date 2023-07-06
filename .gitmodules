@@ -1,3 +1,0 @@
-[submodule "utils"]
-	path = utils
-	url = git@github.com:weplanx/utils.git
