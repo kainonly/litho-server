@@ -4,12 +4,14 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/weplanx/go-wpx/csrf"
 	"net/http"
 	"time"
 )
 
 type Controller struct {
 	IndexService *Service
+	Csrf         *csrf.Csrf
 }
 
 func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {

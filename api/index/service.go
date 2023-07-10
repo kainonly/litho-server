@@ -1,11 +1,13 @@
 package index
 
 import (
+	"github.com/weplanx/go-wpx/sessions"
 	"github.com/weplanx/server/common"
 )
 
 type Service struct {
 	*common.Inject
+	Session *sessions.Service
 }
 
 //func (x *Service) Login(ctx context.Context, email string, password string) (ts string, err error) {

@@ -3,22 +3,28 @@ package common
 import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
+	"github.com/weplanx/go-wpx/captcha"
+	"github.com/weplanx/go-wpx/cipher"
+	"github.com/weplanx/go-wpx/locker"
 	"github.com/weplanx/go-wpx/passport"
+	"github.com/weplanx/go-wpx/values"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.uber.org/fx"
 	"strings"
 )
 
 type Inject struct {
-	fx.In
-
-	V     *Values
-	Hertz *server.Hertz
-	Mgo   *mongo.Client
-	Db    *mongo.Database
-	RDb   *redis.Client
+	V         *Values
+	Mgo       *mongo.Client
+	Db        *mongo.Database
+	RDb       *redis.Client
+	JetStream nats.JetStreamContext
+	KeyValue  nats.KeyValue
+	Cipher    *cipher.Cipher
+	Passport  *passport.Passport
+	Captcha   *captcha.Captcha
+	Locker    *locker.Locker
 }
 
 type Values struct {
@@ -27,6 +33,7 @@ type Values struct {
 	Key       string `env:"KEY,required"`
 	Database  `envPrefix:"DATABASE_"`
 	Nats      `envPrefix:"NATS_"`
+	*values.DynamicValues
 }
 
 type Database struct {

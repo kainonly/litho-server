@@ -1,19 +1,10 @@
 package index
 
 import (
-	"github.com/weplanx/server/common"
-	"go.uber.org/fx"
+	"github.com/google/wire"
 )
 
-var Provides = fx.Provide(
-	func(index *Service) *Controller {
-		return &Controller{
-			IndexService: index,
-		}
-	},
-	func(i common.Inject) *Service {
-		return &Service{
-			Inject: &i,
-		}
-	},
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
