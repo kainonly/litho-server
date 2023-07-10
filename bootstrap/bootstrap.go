@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"context"
-	"github.com/caarlos0/env/v8"
+	"github.com/caarlos0/env/v9"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/hertz-contrib/requestid"

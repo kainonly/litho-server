@@ -5,7 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/redis/go-redis/v9"
-	"github.com/weplanx/utils/passport"
+	"github.com/weplanx/go-wpx/passport"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 	"strings"
