@@ -2,8 +2,8 @@ package model_test
 
 import (
 	"context"
-	"github.com/alexedwards/argon2id"
 	"github.com/stretchr/testify/assert"
+	"github.com/weplanx/go-wpx/passlib"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,7 +47,7 @@ func TestCreateCollectionForUsers(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	hash, err := argon2id.CreateHash("pass@VAN1234", argon2id.DefaultParams)
+	hash, err := passlib.Hash("pass@VAN1234")
 	assert.NoError(t, err)
 	_, err = x.Db.Collection("users").InsertMany(
 		context.TODO(),

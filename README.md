@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/weplanx/server?style=flat-square)](https://goreportcard.com/report/github.com/weplanx/server)
 [![GitHub license](https://img.shields.io/github/license/weplanx/server?style=flat-square)](https://raw.githubusercontent.com/weplanx/utils/server/LICENSE)
 
-Backend service, based on Hertz's experimental project
+Backend service, based on Hertz's project
 
 ## License
 
