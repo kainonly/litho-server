@@ -28,6 +28,7 @@ import (
 
 func LoadStaticValues() (v *common.Values, err error) {
 	v = new(common.Values)
+	v.DynamicValues = &values.DEFAULT
 	if err = env.Parse(v); err != nil {
 		return
 	}
@@ -96,11 +97,12 @@ func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, err
 }
 
 func UseValues(v *common.Values, kv nats.KeyValue, cipher *cipher.Cipher) *values.Service {
-	return &values.Service{
-		KeyValue: kv,
-		Cipher:   cipher,
-		Values:   v.DynamicValues,
-	}
+	return values.New(
+		values.SetNamespace(v.Namespace),
+		values.SetKeyValue(kv),
+		values.SetCipher(cipher),
+		values.SetDynamicValues(v.DynamicValues),
+	)
 }
 
 func UseCsrf(v *common.Values) *csrf.Csrf {
@@ -146,18 +148,13 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
 	}
-
 	if os.Getenv("MODE") != "release" {
 		opts = append(opts, server.WithExitWaitTime(0))
 	}
-
 	opts = append(opts)
-
 	h = server.Default(opts...)
-
 	h.Use(
 		requestid.New(),
 	)
-
 	return
 }

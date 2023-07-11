@@ -8,13 +8,14 @@ require (
 	github.com/bytedance/sonic v1.9.1
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudwego/hertz v0.6.6
+	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/requestid v1.1.0
-	github.com/nats-io/nats.go v1.24.0
+	github.com/nats-io/nats.go v1.27.1
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/stretchr/testify v1.8.4
-	github.com/weplanx/go-wpx v0.3.0
+	github.com/weplanx/go-wpx v0.3.1
 	go.mongodb.org/mongo-driver v1.12.0
 )
 
@@ -30,9 +31,8 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
-	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
