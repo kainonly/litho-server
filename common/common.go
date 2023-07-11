@@ -33,6 +33,7 @@ type Values struct {
 	Key       string `env:"KEY,required"`
 	Database  `envPrefix:"DATABASE_"`
 	Nats      `envPrefix:"NATS_"`
+
 	*values.DynamicValues
 }
 

@@ -61,6 +61,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	csrf := UseCsrf(values2)
 	service := UseValues(values2, keyValue, cipher)
 	controller := &values.Controller{
 		Service: service,
@@ -70,20 +71,21 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Service: sessionsService,
 	}
 	indexService := &index.Service{
-		Inject:  inject,
-		Session: sessionsService,
+		Inject:   inject,
+		Sessions: sessionsService,
 	}
-	csrf := UseCsrf(values2)
 	indexController := &index.Controller{
 		IndexService: indexService,
 		Csrf:         csrf,
 	}
 	apiAPI := &api.API{
-		Inject:   inject,
-		Hertz:    hertz,
-		Values:   controller,
-		Sessions: sessionsController,
-		Index:    indexController,
+		Inject:       inject,
+		Hertz:        hertz,
+		Csrf:         csrf,
+		Values:       controller,
+		Sessions:     sessionsController,
+		Index:        indexController,
+		IndexService: indexService,
 	}
 	return apiAPI, nil
 }

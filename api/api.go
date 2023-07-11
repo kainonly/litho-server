@@ -10,12 +10,15 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
+	"github.com/weplanx/go-wpx/csrf"
 	"github.com/weplanx/go-wpx/sessions"
 	"github.com/weplanx/go-wpx/values"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"net/http"
+	"os"
 )
 
 var Provides = wire.NewSet(
@@ -27,15 +30,70 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz    *server.Hertz
-	Values   *values.Controller
-	Sessions *sessions.Controller
-	Index    *index.Controller
+	Hertz        *server.Hertz
+	Csrf         *csrf.Csrf
+	Values       *values.Controller
+	Sessions     *sessions.Controller
+	Index        *index.Controller
+	IndexService *index.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
+	release := os.Getenv("MODE") == "release"
+	csrfToken := x.Csrf.VerifyToken(!release)
+	auth := x.AuthGuard()
+
 	h.GET("", x.Index.Ping)
+	h.POST("login", csrfToken, x.Index.Login)
+	h.GET("verify", x.Index.Verify)
+	h.GET("code", auth, x.Index.GetRefreshCode)
+
+	universal := h.Group("", csrfToken, auth)
+	{
+		universal.POST("refresh_token", x.Index.RefreshToken)
+		universal.POST("logout", x.Index.Logout)
+	}
+
+	_values := h.Group("values", csrfToken, auth)
+	{
+		_values.GET("", x.Values.Get)
+		_values.PATCH("", x.Values.Set)
+		_values.DELETE(":key", x.Values.Remove)
+	}
+
+	_sessions := h.Group("sessions", csrfToken, auth)
+	{
+		_sessions.GET("", x.Sessions.Lists)
+		_sessions.DELETE(":uid", x.Sessions.Remove)
+		_sessions.POST("clear", x.Sessions.Clear)
+	}
 	return
+}
+
+func (x *API) AuthGuard() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		ts := c.Cookie("access_token")
+		if ts == nil {
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": "authentication has expired, please log in again",
+			})
+			return
+		}
+
+		claims, err := x.IndexService.Verify(ctx, string(ts))
+		if err != nil {
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": common.MsgAuthenticationExpired,
+			})
+			return
+		}
+
+		c.Set("identity", claims)
+		c.Next(ctx)
+	}
 }
 
 //func (x *API) AccessLogs() app.HandlerFunc {
@@ -124,6 +182,5 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h.Use(x.ErrHandler())
 
 	go x.Values.Service.Sync(nil)
-
 	return
 }
