@@ -6,6 +6,7 @@ import (
 	"github.com/caarlos0/env/v9"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -29,16 +30,16 @@ import (
 
 func LoadStaticValues() (v *common.Values, err error) {
 	v = new(common.Values)
+	if err = env.Parse(v); err != nil {
+		return
+	}
 	dv := &values.DEFAULT
 	dv.RestControls = map[string]*values.RestControl{
 		"users": {
 			Keys: []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
 		},
 	}
-
-	if err = env.Parse(v); err != nil {
-		return
-	}
+	v.DynamicValues = dv
 	return
 }
 
@@ -181,6 +182,14 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	h = server.Default(opts...)
 	h.Use(
 		requestid.New(),
+		cors.New(cors.Config{
+			AllowOrigins:     v.AllowOrigins,
+			AllowMethods:     v.AllowMethods,
+			AllowHeaders:     v.AllowHeaders,
+			ExposeHeaders:    v.ExposeHeaders,
+			AllowCredentials: v.AllowCredentials,
+			MaxAge:           v.MaxAge,
+		}),
 	)
 	return
 }
