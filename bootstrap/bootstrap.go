@@ -10,13 +10,14 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
-	"github.com/weplanx/go-wpx/captcha"
-	"github.com/weplanx/go-wpx/cipher"
-	"github.com/weplanx/go-wpx/csrf"
-	"github.com/weplanx/go-wpx/locker"
-	"github.com/weplanx/go-wpx/passport"
-	"github.com/weplanx/go-wpx/sessions"
-	"github.com/weplanx/go-wpx/values"
+	"github.com/weplanx/go/captcha"
+	"github.com/weplanx/go/cipher"
+	"github.com/weplanx/go/csrf"
+	"github.com/weplanx/go/locker"
+	"github.com/weplanx/go/passport"
+	"github.com/weplanx/go/rest"
+	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,7 +29,13 @@ import (
 
 func LoadStaticValues() (v *common.Values, err error) {
 	v = new(common.Values)
-	v.DynamicValues = &values.DEFAULT
+	dv := &values.DEFAULT
+	dv.RestControls = map[string]*values.RestControl{
+		"users": {
+			Keys: []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
+		},
+	}
+
 	if err = env.Parse(v); err != nil {
 		return
 	}
@@ -105,6 +112,33 @@ func UseValues(v *common.Values, kv nats.KeyValue, cipher *cipher.Cipher) *value
 	)
 }
 
+func UseSessions(v *common.Values, rdb *redis.Client) *sessions.Service {
+	return sessions.New(
+		sessions.SetNamespace(v.Namespace),
+		sessions.SetRedis(rdb),
+		sessions.SetDynamicValues(v.DynamicValues),
+	)
+}
+
+func UseRest(
+	v *common.Values,
+	mgo *mongo.Client,
+	db *mongo.Database,
+	rdb *redis.Client,
+	js nats.JetStreamContext,
+	keyvalue nats.KeyValue,
+) *rest.Service {
+	return rest.New(
+		rest.SetNamespace(v.Namespace),
+		rest.SetMongoClient(mgo),
+		rest.SetDatabase(db),
+		rest.SetRedis(rdb),
+		rest.SetJetStream(js),
+		rest.SetKeyValue(keyvalue),
+		rest.SetDynamicValues(v.DynamicValues),
+	)
+}
+
 func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
 		csrf.SetKey(v.Key),
@@ -113,14 +147,6 @@ func UseCsrf(v *common.Values) *csrf.Csrf {
 
 func UseCipher(v *common.Values) (*cipher.Cipher, error) {
 	return cipher.New(v.Key)
-}
-
-func UseSessions(v *common.Values, rdb *redis.Client) *sessions.Service {
-	return &sessions.Service{
-		Namespace: v.Namespace,
-		Redis:     rdb,
-		Values:    v.DynamicValues,
-	}
 }
 
 func UsePassport(v *common.Values) *passport.Passport {

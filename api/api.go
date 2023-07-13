@@ -12,9 +12,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
-	"github.com/weplanx/go-wpx/csrf"
-	"github.com/weplanx/go-wpx/sessions"
-	"github.com/weplanx/go-wpx/values"
+	"github.com/weplanx/go/csrf"
+	"github.com/weplanx/go/help"
+	"github.com/weplanx/go/rest"
+	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"net/http"
@@ -34,6 +36,7 @@ type API struct {
 	Csrf         *csrf.Csrf
 	Values       *values.Controller
 	Sessions     *sessions.Controller
+	Rest         *rest.Controller
 	Index        *index.Controller
 	IndexService *index.Service
 }
@@ -52,21 +55,12 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		universal.POST("refresh_token", x.Index.RefreshToken)
 		universal.POST("logout", x.Index.Logout)
+
+		help.ValuesRoutes(universal, x.Values)
+		help.SessionsRoutes(universal, x.Sessions)
+		help.RestRoutes(universal.Group("db"), x.Rest)
 	}
 
-	_values := h.Group("values", csrfToken, auth)
-	{
-		_values.GET("", x.Values.Get)
-		_values.PATCH("", x.Values.Set)
-		_values.DELETE(":key", x.Values.Remove)
-	}
-
-	_sessions := h.Group("sessions", csrfToken, auth)
-	{
-		_sessions.GET("", x.Sessions.Lists)
-		_sessions.DELETE(":uid", x.Sessions.Remove)
-		_sessions.POST("clear", x.Sessions.Clear)
-	}
 	return
 }
 
