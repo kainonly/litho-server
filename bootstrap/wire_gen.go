@@ -7,8 +7,8 @@
 package bootstrap
 
 import (
-	"github.com/weplanx/go-wpx/sessions"
-	"github.com/weplanx/go-wpx/values"
+	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"

@@ -12,10 +12,10 @@ type User struct {
 	Roles       []primitive.ObjectID `bson:"roles" json:"-"`
 	Name        string               `bson:"name" json:"name"`
 	Avatar      string               `bson:"avatar" json:"avatar"`
-	BackupEmail string               `bson:"backup_email" json:"backup_email"`
-	Lark        UserLark             `bson:"lark" json:"lark"`
-	Sessions    int64                `bson:"sessions" json:"sessions"`
-	History     UserHistory          `bson:"history" json:"history"`
+	BackupEmail string               `bson:"backup_email,omitempty" json:"backup_email"`
+	Lark        *UserLark            `bson:"lark,omitempty" json:"lark"`
+	Sessions    int64                `bson:"sessions,omitempty" json:"sessions"`
+	History     *UserHistory         `bson:"history,omitempty" json:"history"`
 	Status      bool                 `bson:"status" json:"status"`
 	CreateTime  time.Time            `bson:"create_time" json:"create_time"`
 	UpdateTime  time.Time            `bson:"update_time" json:"update_time"`

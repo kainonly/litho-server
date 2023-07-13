@@ -5,7 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol"
-	"github.com/weplanx/go-wpx/csrf"
+	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/server/common"
 	"net/http"
 	"time"

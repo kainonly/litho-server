@@ -21,6 +21,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseKeyValue,
 		UseValues,
 		UseSessions,
+		UseRest,
 		UseCsrf,
 		UseCipher,
 		UsePassport,

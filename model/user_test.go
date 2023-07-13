@@ -3,7 +3,7 @@ package model_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/go-wpx/passlib"
+	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

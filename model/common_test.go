@@ -1,17 +1,25 @@
 package model_test
 
 import (
-	"github.com/weplanx/server/common"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/bootstrap"
+	"os"
 	"testing"
 )
 
-type Inject struct {
-	V   *common.Values
-	Mgo *mongo.Client
-	Db  *mongo.Database
+var x *api.API
+
+func TestMain(m *testing.M) {
+	values, err := bootstrap.LoadStaticValues()
+	if err != nil {
+		panic(err)
+	}
+	if err != nil {
+		panic(err)
+	}
+	if x, err = bootstrap.NewAPI(values); err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
 }
-
-var x *Inject
-
-func TestMain(m *testing.M) {}

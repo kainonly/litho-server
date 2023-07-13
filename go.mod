@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.6
 	github.com/bytedance/gopkg v0.0.0-20221122125632-68358b8ecec6
-	github.com/bytedance/sonic v1.9.1
+	github.com/bytedance/sonic v1.9.2
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudwego/hertz v0.6.6
 	github.com/google/uuid v1.3.0
@@ -15,7 +15,7 @@ require (
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/stretchr/testify v1.8.4
-	github.com/weplanx/go-wpx v0.3.1
+	github.com/weplanx/go v0.4.1
 	go.mongodb.org/mongo-driver v1.12.0
 )
 
