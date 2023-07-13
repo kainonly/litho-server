@@ -77,7 +77,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 
 		claims, err := x.IndexService.Verify(ctx, string(ts))
 		if err != nil {
-			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteNoneMode, false, false)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
 				"message": common.MsgAuthenticationExpired,
