@@ -7,6 +7,7 @@
 package bootstrap
 
 import (
+	"github.com/weplanx/go/rest"
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
@@ -70,6 +71,10 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		Service: sessionsService,
 	}
+	restService := UseRest(values2, client, database, redisClient, jetStreamContext, keyValue)
+	restController := &rest.Controller{
+		Service: restService,
+	}
 	indexService := &index.Service{
 		Inject:   inject,
 		Sessions: sessionsService,
@@ -84,6 +89,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Csrf:         csrf,
 		Values:       controller,
 		Sessions:     sessionsController,
+		Rest:         restController,
 		Index:        indexController,
 		IndexService: indexService,
 	}

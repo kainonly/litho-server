@@ -20,13 +20,13 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"net/http"
-	"os"
 )
 
 var Provides = wire.NewSet(
 	index.Provides,
 	wire.Struct(new(values.Controller), "*"),
 	wire.Struct(new(sessions.Controller), "*"),
+	wire.Struct(new(rest.Controller), "*"),
 )
 
 type API struct {
@@ -42,16 +42,16 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	release := os.Getenv("MODE") == "release"
-	csrfToken := x.Csrf.VerifyToken(!release)
+	//release := os.Getenv("MODE") == "release"
+	//csrfToken := x.Csrf.VerifyToken(!release)
 	auth := x.AuthGuard()
 
 	h.GET("", x.Index.Ping)
-	h.POST("login", csrfToken, x.Index.Login)
+	h.POST("login", x.Index.Login)
 	h.GET("verify", x.Index.Verify)
 	h.GET("code", auth, x.Index.GetRefreshCode)
 
-	universal := h.Group("", csrfToken, auth)
+	universal := h.Group("", auth)
 	{
 		universal.POST("refresh_token", x.Index.RefreshToken)
 		universal.POST("logout", x.Index.Logout)
@@ -77,7 +77,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 
 		claims, err := x.IndexService.Verify(ctx, string(ts))
 		if err != nil {
-			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteNoneMode, false, false)
+			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
 				"message": common.MsgAuthenticationExpired,
