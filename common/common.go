@@ -12,7 +12,6 @@ import (
 	"github.com/weplanx/go/values"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
-	"time"
 )
 
 type Inject struct {
@@ -32,20 +31,10 @@ type Values struct {
 	Address   string `env:"ADDRESS" envDefault:":3000"`
 	Namespace string `env:"NAMESPACE,required"`
 	Key       string `env:"KEY,required"`
-	Cors      `envPrefix:"CORS_"`
 	Database  `envPrefix:"DATABASE_"`
 	Nats      `envPrefix:"NATS_"`
 
 	*values.DynamicValues
-}
-
-type Cors struct {
-	AllowOrigins     []string      `env:"ALLOW_ORIGINS,required" envSeparator:","`
-	AllowMethods     []string      `env:"ALLOW_METHODS,required" envSeparator:","`
-	AllowHeaders     []string      `env:"ALLOW_HEADERS,required" envSeparator:","`
-	ExposeHeaders    []string      `env:"EXPOSE_HEADERS,required" envSeparator:","`
-	AllowCredentials bool          `env:"ALLOW_CREDENTIALS,required"`
-	MaxAge           time.Duration `env:"MAX_AGE,required"`
 }
 
 type Database struct {

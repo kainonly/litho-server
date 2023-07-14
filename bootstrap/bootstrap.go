@@ -6,7 +6,6 @@ import (
 	"github.com/caarlos0/env/v9"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -182,14 +181,6 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	h = server.Default(opts...)
 	h.Use(
 		requestid.New(),
-		cors.New(cors.Config{
-			AllowOrigins:     v.AllowOrigins,
-			AllowMethods:     v.AllowMethods,
-			AllowHeaders:     v.AllowHeaders,
-			ExposeHeaders:    v.ExposeHeaders,
-			AllowCredentials: v.AllowCredentials,
-			MaxAge:           v.MaxAge,
-		}),
 	)
 	return
 }
