@@ -53,7 +53,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	if ts == nil {
 		c.JSON(401, utils.H{
 			"code":    0,
-			"message": common.MsgAuthenticationExpired,
+			"message": common.ErrAuthenticationExpired.Error(),
 		})
 		return
 	}
@@ -62,7 +62,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 		c.JSON(401, utils.H{
 			"code":    0,
-			"message": common.MsgAuthenticationExpired,
+			"message": common.ErrAuthenticationExpired.Error(),
 		})
 		return
 	}
@@ -113,11 +113,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.GetClaims(c)
-	if err := x.IndexService.Logout(ctx, claims.UserId); err != nil {
-		c.Error(err)
-		return
-	}
-
+	x.IndexService.Logout(ctx, claims.UserId)
 	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
