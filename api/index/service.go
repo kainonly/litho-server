@@ -2,8 +2,8 @@ package index
 
 import (
 	"context"
-	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/google/uuid"
+	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/sessions"
@@ -24,30 +24,26 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{"email": email, "status": true}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
-			err = errors.NewPublic("the user does not exist or has been frozen")
+			err = common.ErrLoginNotExists
 			return
 		}
-
 		return
 	}
 
 	userId := user.ID.Hex()
-
-	var maxLoginFailures bool
-	if maxLoginFailures, err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
-		return
-	}
-	if maxLoginFailures {
-		err = errors.NewPublic("the user has exceeded the maximum number of login failures")
+	if err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
+		if err == locker.ErrLocked {
+			err = common.ErrLoginMaxFailures
+			return
+		}
 		return
 	}
 
 	if err = passlib.Verify(password, user.Password); err != nil {
 		if err == passlib.ErrNotMatch {
-			if err = x.Locker.Update(ctx, userId, x.V.LoginTTL); err != nil {
-				return
-			}
-			err = errors.NewPublic("the user email or password is incorrect")
+			x.Locker.Update(ctx, userId, x.V.LoginTTL)
+			err = common.ErrLoginInvalid
+			return
 		}
 		return
 	}
@@ -56,13 +52,13 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
-	if err = x.Locker.Delete(ctx, userId); err != nil {
+	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
+		err = common.ErrSession
 		return
 	}
-	if err = x.Sessions.Set(ctx, userId, jti); err != nil {
-		return
-	}
+	x.Locker.Delete(ctx, userId)
 
+	// Refresh user cache
 	key := x.V.Name("users", userId)
 	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
 		return
@@ -75,29 +71,22 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 	if claims, err = x.Passport.Verify(ts); err != nil {
 		return
 	}
-	var result bool
-	if result, err = x.Sessions.Verify(ctx, claims.UserId, claims.ID); err != nil {
-		return
-	}
+	result := x.Sessions.Verify(ctx, claims.UserId, claims.ID)
 	if !result {
-		err = errors.NewPublic("the session token is inconsistent")
+		err = common.ErrSessionInconsistent
 		return
 	}
 
 	// TODO: Check User Status
 
-	if err = x.Sessions.Renew(ctx, claims.UserId); err != nil {
-		return
-	}
+	x.Sessions.Renew(ctx, claims.UserId)
 
 	return
 }
 
 func (x *Service) GetRefreshCode(ctx context.Context, userId string) (code string, err error) {
 	code = uuid.New().String()
-	if err = x.Captcha.Create(ctx, userId, code, 15*time.Second); err != nil {
-		return
-	}
+	x.Captcha.Create(ctx, userId, code, 15*time.Second)
 	return
 }
 
@@ -111,6 +100,6 @@ func (x *Service) RefreshToken(ctx context.Context, claims passport.Claims, code
 	return
 }
 
-func (x *Service) Logout(ctx context.Context, userId string) (err error) {
-	return x.Sessions.Remove(ctx, userId)
+func (x *Service) Logout(ctx context.Context, userId string) {
+	x.Sessions.Remove(ctx, userId)
 }

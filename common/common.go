@@ -28,6 +28,7 @@ type Inject struct {
 }
 
 type Values struct {
+	Mode      string `env:"MODE" envDefault:"debug"`
 	Address   string `env:"ADDRESS" envDefault:":3000"`
 	Namespace string `env:"NAMESPACE,required"`
 	Key       string `env:"KEY,required"`
@@ -46,6 +47,10 @@ type Database struct {
 type Nats struct {
 	Hosts []string `env:"HOSTS,required" envSeparator:","`
 	Nkey  string   `env:"NKEY,required"`
+}
+
+func (x Values) IsRelease() bool {
+	return x.Mode == "release"
 }
 
 func (x Values) Name(v ...string) string {

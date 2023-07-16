@@ -19,6 +19,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
@@ -42,8 +43,7 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	//release := os.Getenv("MODE") == "release"
-	//csrfToken := x.Csrf.VerifyToken(!release)
+	//csrfToken := x.Csrf.VerifyToken(!x.V.IsRelease())
 	auth := x.AuthGuard()
 
 	h.GET("", x.Index.Ping)
@@ -80,7 +80,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": common.MsgAuthenticationExpired,
+				"message": common.ErrAuthenticationExpired.Error(),
 			})
 			return
 		}
@@ -164,7 +164,20 @@ func (x *API) ErrHandler() app.HandlerFunc {
 				"message": e.Error(),
 			})
 			break
+		case mongo.ServerError:
+			c.JSON(http.StatusInternalServerError, utils.H{
+				"code":    0,
+				"message": e.Error(),
+			})
+			break
 		default:
+			if !x.V.IsRelease() {
+				c.JSON(http.StatusInternalServerError, utils.H{
+					"code":    0,
+					"message": e.Error(),
+				})
+				break
+			}
 			logger.Error(err)
 			c.Status(http.StatusInternalServerError)
 		}
