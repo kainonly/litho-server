@@ -35,7 +35,8 @@ func LoadStaticValues() (v *common.Values, err error) {
 	dv := &values.DEFAULT
 	dv.RestControls = map[string]*values.RestControl{
 		"users": {
-			Keys: []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
+			Keys:   []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
+			Status: true,
 		},
 	}
 	v.DynamicValues = dv
