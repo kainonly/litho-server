@@ -32,11 +32,15 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 
 	userId := user.ID.Hex()
 	if err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
-		if err == locker.ErrLocked {
+		switch err {
+		case locker.ErrLockerNotExists:
+			break
+		case locker.ErrLocked:
 			err = common.ErrLoginMaxFailures
 			return
+		default:
+			return
 		}
-		return
 	}
 
 	if err = passlib.Verify(password, user.Password); err != nil {
