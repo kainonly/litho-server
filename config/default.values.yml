@@ -1,0 +1,15 @@
+session_ttl: 1h
+login_ttl: 15m
+login_failures: 5
+ip_login_failures: 10
+ip_whitelist: [ ]
+ip_blacklist: [ ]
+pwd_strategy: 1
+pwd_ttl: 8760h
+rest_controls:
+  users:
+    keys: [ "_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time" ]
+    status: true
+  x_orders: # For experiment
+    status: true
+rest_txn_timeout: 3m

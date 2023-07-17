@@ -15,7 +15,7 @@ require (
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/stretchr/testify v1.8.4
-	github.com/weplanx/go v0.4.3
+	github.com/weplanx/go v0.4.4
 	go.mongodb.org/mongo-driver v1.12.0
 )
 

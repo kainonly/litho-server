@@ -22,6 +22,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 	"time"
@@ -32,14 +33,15 @@ func LoadStaticValues() (v *common.Values, err error) {
 	if err = env.Parse(v); err != nil {
 		return
 	}
-	dv := &values.DEFAULT
-	dv.RestControls = map[string]*values.RestControl{
-		"users": {
-			Keys:   []string{"_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time"},
-			Status: true,
-		},
+	var b []byte
+	if b, err = os.ReadFile("./config/default.values.yml"); err != nil {
+		return
 	}
-	v.DynamicValues = dv
+	var dv values.DynamicValues
+	if err = yaml.Unmarshal(b, &dv); err != nil {
+		return
+	}
+	v.DynamicValues = &dv
 	return
 }
 
