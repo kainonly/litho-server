@@ -61,6 +61,13 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		help.RestRoutes(universal.Group("db"), x.Rest)
 	}
 
+	_user := h.Group("user", auth)
+	{
+		_user.GET("", x.Index.GetUser)
+		_user.POST("", x.Index.SetUser)
+		_user.DELETE(":key", x.Index.UnsetUser)
+	}
+
 	return
 }
 

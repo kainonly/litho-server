@@ -10,6 +10,7 @@ import (
 var x *api.API
 
 func TestMain(m *testing.M) {
+	os.Chdir("../")
 	values, err := bootstrap.LoadStaticValues()
 	if err != nil {
 		panic(err)

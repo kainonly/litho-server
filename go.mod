@@ -11,12 +11,14 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/requestid v1.1.0
+	github.com/huandu/xstrings v1.4.0
 	github.com/nats-io/nats.go v1.27.1
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/weplanx/go v0.4.4
 	go.mongodb.org/mongo-driver v1.12.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -57,5 +59,4 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

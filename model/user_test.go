@@ -52,7 +52,7 @@ func TestCreateUser(t *testing.T) {
 	_, err = x.Db.Collection("users").InsertMany(
 		context.TODO(),
 		[]interface{}{
-			model.NewUser("kainonly@qq.com", hash),
+			model.NewUser("zhangtqx@qq.com", hash),
 		},
 	)
 	assert.NoError(t, err)

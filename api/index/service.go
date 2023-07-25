@@ -2,6 +2,7 @@ package index
 
 import (
 	"context"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/uuid"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
@@ -10,6 +11,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
@@ -106,4 +108,57 @@ func (x *Service) RefreshToken(ctx context.Context, claims passport.Claims, code
 
 func (x *Service) Logout(ctx context.Context, userId string) {
 	x.Sessions.Remove(ctx, userId)
+}
+
+func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	var user model.User
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&user); err != nil {
+		return
+	}
+
+	data = utils.H{
+		"email":        user.Email,
+		"name":         user.Name,
+		"avatar":       user.Avatar,
+		"backup_email": user.BackupEmail,
+		"sessions":     user.Sessions,
+		"history":      user.History,
+		"status":       user.Status,
+		"create_time":  user.CreateTime,
+		"update_time":  user.UpdateTime,
+	}
+
+	if user.Lark != nil {
+		lark := user.Lark
+		data["feishu"] = utils.H{
+			"name":          lark.Name,
+			"en_name":       lark.EnName,
+			"avatar_url":    lark.AvatarUrl,
+			"avatar_thumb":  lark.AvatarThumb,
+			"avatar_middle": lark.AvatarMiddle,
+			"avatar_big":    lark.AvatarBig,
+			"open_id":       lark.OpenId,
+		}
+	}
+
+	return
+}
+
+func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (result interface{}, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+
+	if result, err = x.Db.Collection("users").
+		UpdateByID(ctx, id, update); err != nil {
+		return
+	}
+
+	key := x.V.Name("users", userId)
+	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
+		return
+	}
+
+	return
 }

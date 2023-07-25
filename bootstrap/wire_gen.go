@@ -81,6 +81,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	}
 	indexController := &index.Controller{
 		IndexService: indexService,
+		V:            values2,
 		Csrf:         csrf,
 	}
 	apiAPI := &api.API{
