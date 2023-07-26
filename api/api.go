@@ -10,7 +10,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
@@ -87,7 +86,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 
 		claims, err := x.IndexService.Verify(ctx, string(ts))
 		if err != nil {
-			c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+			common.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
 				"message": common.ErrAuthenticationExpired.Error(),

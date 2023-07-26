@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/go/captcha"
@@ -57,10 +58,20 @@ func (x Values) Name(v ...string) string {
 	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
 
-func GetClaims(c *app.RequestContext) (claims passport.Claims) {
+func Claims(c *app.RequestContext) (claims passport.Claims) {
 	value, ok := c.Get("identity")
 	if !ok {
 		return
 	}
 	return value.(passport.Claims)
+}
+
+func SetAccessToken(c *app.RequestContext, ts string) {
+	c.SetCookie("access_token", ts, -1,
+		"/", "", protocol.CookieSameSiteStrictMode, true, true)
+}
+
+func ClearAccessToken(c *app.RequestContext) {
+	c.SetCookie("access_token", "", -1,
+		"/", "", protocol.CookieSameSiteStrictMode, true, true)
 }
