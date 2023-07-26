@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/huandu/xstrings"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/passlib"
@@ -47,7 +46,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.SetCookie("access_token", ts, -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	common.SetAccessToken(c, ts)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -65,7 +64,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	}
 
 	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
-		c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+		common.ClearAccessToken(c)
 		c.JSON(401, utils.H{
 			"code":    0,
 			"message": common.ErrAuthenticationExpired.Error(),
@@ -80,7 +79,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
@@ -103,14 +102,14 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.SetCookie("access_token", ts, 0, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	common.SetAccessToken(c, ts)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -118,9 +117,9 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	x.IndexService.Logout(ctx, claims.UserId)
-	c.SetCookie("access_token", "", -1, "/", "", protocol.CookieSameSiteStrictMode, true, true)
+	common.ClearAccessToken(c)
 	c.JSON(http.StatusOK, utils.H{
 		"code":    0,
 		"message": "ok",
@@ -128,7 +127,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	data, err := x.IndexService.GetUser(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
@@ -162,7 +161,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		data[dto.Set] = value
 	}
 
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
 		"$set": data,
 	})
@@ -188,7 +187,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	claims := common.GetClaims(c)
+	claims := common.Claims(c)
 	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
 		"$unset": bson.M{dto.Key: 1},
 	})
@@ -207,7 +206,6 @@ type OptionsDto struct {
 	Type string `query:"type"`
 }
 
-// Options 返回通用配置
 func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 	var dto OptionsDto
 	if err := c.BindAndValidate(&dto); err != nil {
