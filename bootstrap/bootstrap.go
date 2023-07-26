@@ -19,6 +19,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -170,6 +171,13 @@ func UseCaptcha(v *common.Values, client *redis.Client) *captcha.Captcha {
 	return captcha.New(
 		captcha.SetNamespace(v.Namespace),
 		captcha.SetRedis(client),
+	)
+}
+
+func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
+	return transfer.New(
+		transfer.SetNamespace(v.Namespace),
+		transfer.SetJetStream(js),
 	)
 }
 

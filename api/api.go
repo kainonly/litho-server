@@ -14,13 +14,16 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
+	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/rest"
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
+	"time"
 )
 
 var Provides = wire.NewSet(
@@ -35,6 +38,7 @@ type API struct {
 
 	Hertz        *server.Hertz
 	Csrf         *csrf.Csrf
+	Transfer     *transfer.Transfer
 	Values       *values.Controller
 	Sessions     *sessions.Controller
 	Rest         *rest.Controller
@@ -50,18 +54,17 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("login", x.Index.Login)
 	h.GET("verify", x.Index.Verify)
 	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", auth, x.Index.RefreshToken)
+	h.POST("logout", auth, x.Index.Logout)
 
-	universal := h.Group("", auth)
+	m := []app.HandlerFunc{auth, x.Audit()}
+	u := h.Group("", m...)
 	{
-		universal.POST("refresh_token", x.Index.RefreshToken)
-		universal.POST("logout", x.Index.Logout)
-
-		help.ValuesRoutes(universal, x.Values)
-		help.SessionsRoutes(universal, x.Sessions)
-		help.RestRoutes(universal.Group("db"), x.Rest)
+		help.ValuesRoutes(u, x.Values)
+		help.SessionsRoutes(u, x.Sessions)
+		help.RestRoutes(u.Group("db"), x.Rest)
 	}
-
-	_user := h.Group("user", auth)
+	_user := h.Group("user", m...)
 	{
 		_user.GET("", x.Index.GetUser)
 		_user.POST("", x.Index.SetUser)
@@ -97,37 +100,47 @@ func (x *API) AuthGuard() app.HandlerFunc {
 	}
 }
 
-//func (x *API) AccessLogs() app.HandlerFunc {
-//	return func(ctx context.Context, c *app.RequestContext) {
-//		now := time.Now()
-//		c.Next(ctx)
-//		method := string(c.Request.Header.Method())
-//		if method == "GET" {
-//			return
-//		}
-//		var userId string
-//		if value, ok := c.Get("identity"); ok {
-//			claims := value.(passport.Claims)
-//			userId = claims.UserId
-//		}
-//		x.Transfer.Publish(context.Background(), "access", transfer.Payload{
-//			Timestamp: now,
-//			Data: map[string]interface{}{
-//				"metadata": map[string]interface{}{
-//					"method":    method,
-//					"path":      string(c.Request.Path()),
-//					"user_id":   userId,
-//					"client_ip": c.ClientIP(),
-//				},
-//				"status":     c.Response.StatusCode(),
-//				"user_agent": string(c.Request.Header.UserAgent()),
-//			},
-//			Format: map[string]interface{}{
-//				"metadata.user_id": "oid",
-//			},
-//		})
-//	}
-//}
+func (x *API) Audit() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		now := time.Now()
+		c.Next(ctx)
+		method := string(c.Request.Header.Method())
+		if method == "GET" {
+			return
+		}
+		var userId string
+		if value, ok := c.Get("identity"); ok {
+			claims := value.(passport.Claims)
+			userId = claims.UserId
+		}
+
+		format := map[string]interface{}{
+			"body": "json",
+		}
+		if userId != "" {
+			format["metadata.user_id"] = "oid"
+		}
+		transferCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		x.Transfer.Publish(transferCtx, "logset_audit", transfer.Payload{
+			Timestamp: now,
+			Data: map[string]interface{}{
+				"metadata": map[string]interface{}{
+					"method":    method,
+					"path":      string(c.Request.Path()),
+					"user_id":   userId,
+					"client_ip": c.ClientIP(),
+				},
+				"params":     string(c.Request.QueryString()),
+				"body":       c.Request.Body(),
+				"status":     c.Response.StatusCode(),
+				"user_agent": string(c.Request.Header.UserAgent()),
+			},
+			Format: format,
+		})
+	}
+}
 
 func (x *API) ErrHandler() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
@@ -196,5 +209,12 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h.Use(x.ErrHandler())
 
 	go x.Values.Service.Sync(nil)
+
+	if err = x.Transfer.Set(ctx, transfer.LogOption{
+		Key: "logset_audit",
+	}); err != nil {
+		return
+	}
+
 	return
 }
