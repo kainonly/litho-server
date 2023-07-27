@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/huandu/xstrings"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/passlib"
@@ -26,13 +25,13 @@ type Controller struct {
 
 func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
 	if !x.V.IsRelease() {
-		c.JSON(http.StatusOK, utils.H{
+		c.JSON(http.StatusOK, M{
 			"extra": x.V.Extra,
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
 	})
@@ -57,7 +56,8 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	go func() {
-		data := model.NewLogsetLogined(r.User.ID, string(c.GetHeader("X-Forwarded-For")), "email", string(c.UserAgent()))
+		data := model.NewLogsetLogined(
+			r.User.ID, string(c.GetHeader("X-Forwarded-For")), "email", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
@@ -66,7 +66,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.JSON(200, utils.H{
+	c.JSON(200, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -75,7 +75,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("access_token")
 	if ts == nil {
-		c.JSON(401, utils.H{
+		c.JSON(401, M{
 			"code":    0,
 			"message": common.ErrAuthenticationExpired.Error(),
 		})
@@ -84,14 +84,14 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 
 	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
 		common.ClearAccessToken(c)
-		c.JSON(401, utils.H{
+		c.JSON(401, M{
 			"code":    0,
 			"message": common.ErrAuthenticationExpired.Error(),
 		})
 		return
 	}
 
-	c.JSON(200, utils.H{
+	c.JSON(200, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -105,7 +105,7 @@ func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) 
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"code": code,
 	})
 }
@@ -129,7 +129,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	}
 
 	common.SetAccessToken(c, ts)
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -139,7 +139,7 @@ func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
 	x.IndexService.Logout(ctx, claims.UserId)
 	common.ClearAccessToken(c)
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -189,7 +189,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -215,7 +215,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(http.StatusOK, M{
 		"code":    0,
 		"message": "ok",
 	})
@@ -235,7 +235,7 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 	case "upload":
 		switch x.V.Cloud {
 		case "tencent":
-			c.JSON(http.StatusOK, utils.H{
+			c.JSON(http.StatusOK, M{
 				"type": "cos",
 				"url": fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`,
 					x.V.TencentCosBucket, x.V.TencentCosRegion,
@@ -245,7 +245,7 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	case "collaboration":
-		c.JSON(http.StatusOK, utils.H{
+		c.JSON(http.StatusOK, M{
 			"url":      "https://open.larksuite.com/open-apis/authen/v1/index",
 			"redirect": x.V.RedirectUrl,
 			"app_id":   x.V.LarkAppId,

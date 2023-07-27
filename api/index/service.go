@@ -3,7 +3,6 @@ package index
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/uuid"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
@@ -83,7 +82,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 
 func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogined) (err error) {
 	var r *tencent.CityResult
-	if r, err = x.Tencent.GetCity(data.Metadata.ClientIP); err != nil {
+	if r, err = x.Tencent.GetCity(ctx, data.Metadata.ClientIP); err != nil {
 		return
 	}
 	if !r.Success {
@@ -141,7 +140,7 @@ func (x *Service) Logout(ctx context.Context, userId string) {
 	x.Sessions.Remove(ctx, userId)
 }
 
-func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err error) {
+func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
 	var user model.User
 	if err = x.Db.Collection("users").
@@ -150,7 +149,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err
 		return
 	}
 
-	data = utils.H{
+	data = M{
 		"email":        user.Email,
 		"name":         user.Name,
 		"avatar":       user.Avatar,
@@ -164,7 +163,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data utils.H, err
 
 	if user.Lark != nil {
 		lark := user.Lark
-		data["feishu"] = utils.H{
+		data["feishu"] = M{
 			"name":          lark.Name,
 			"en_name":       lark.EnName,
 			"avatar_url":    lark.AvatarUrl,

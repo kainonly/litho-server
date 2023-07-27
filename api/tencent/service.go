@@ -1,11 +1,16 @@
 package tencent
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
+	"github.com/google/uuid"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/server/common"
 	"net/http"
 	"net/url"
@@ -14,6 +19,68 @@ import (
 
 type Service struct {
 	*common.Inject
+}
+
+func (x *Service) Cos() (_ *cos.Client) {
+	u, _ := url.Parse(fmt.Sprintf(`https://%s.cos.%s.myqcloud.com`, x.V.TencentCosBucket, x.V.TencentCosRegion))
+	return cos.NewClient(&cos.BaseURL{BucketURL: u}, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  x.V.TencentSecretId,
+			SecretKey: x.V.TencentSecretKey,
+		},
+	})
+}
+
+func (x *Service) CosPresigned() (_ M, err error) {
+	date := time.Now()
+	expired := date.Add(time.Duration(x.V.TencentCosExpired) * time.Second)
+	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), expired.Unix())
+	name := uuid.New().String()
+	key := fmt.Sprintf(`%s/%s/%s`,
+		x.V.Namespace, date.Format("20060102"), name)
+	policy := M{
+		"expiration": expired.Format("2006-01-02T15:04:05.000Z"),
+		"conditions": []interface{}{
+			M{"bucket": x.V.TencentCosBucket},
+			[]interface{}{"starts-with", "$key", key},
+			M{"q-sign-algorithm": "sha1"},
+			M{"q-ak": x.V.TencentSecretId},
+			M{"q-sign-time": keyTime},
+		},
+	}
+	var policyText []byte
+	if policyText, err = sonic.Marshal(policy); err != nil {
+		return
+	}
+	signKeyHash := hmac.New(sha1.New, []byte(x.V.TencentSecretKey))
+	signKeyHash.Write([]byte(keyTime))
+	signKey := hex.EncodeToString(signKeyHash.Sum(nil))
+	stringToSignHash := sha1.New()
+	stringToSignHash.Write(policyText)
+	stringToSign := hex.EncodeToString(stringToSignHash.Sum(nil))
+	signatureHash := hmac.New(sha1.New, []byte(signKey))
+	signatureHash.Write([]byte(stringToSign))
+	signature := hex.EncodeToString(signatureHash.Sum(nil))
+	return M{
+		"key":              key,
+		"policy":           policyText,
+		"q-sign-algorithm": "sha1",
+		"q-ak":             x.V.TencentSecretId,
+		"q-key-time":       keyTime,
+		"q-signature":      signature,
+	}, nil
+}
+
+func (x *Service) CosImageInfo(ctx context.Context, url string) (r M, err error) {
+	client := x.Cos()
+	var res *cos.Response
+	if res, err = client.CI.Get(ctx, url, "imageInfo", nil); err != nil {
+		return
+	}
+	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
+		return
+	}
+	return
 }
 
 type KeyAuthResult struct {
@@ -33,7 +100,6 @@ func (x *Service) KeyAuth(source string) (r *KeyAuthResult, err error) {
 
 	r.Txt = fmt.Sprintf("hmac id=\"%s\", algorithm=\"hmac-sha1\", headers=\"x-date x-source\", signature=\"%s\"",
 		x.V.IpSecretId, sign)
-
 	return
 }
 
@@ -70,7 +136,7 @@ type Detail struct {
 	Source    string `bson:"source" json:"source"`
 }
 
-func (x *Service) GetCity(ip string) (r *CityResult, err error) {
+func (x *Service) GetCity(ctx context.Context, ip string) (r *CityResult, err error) {
 	source, kar := "market", new(KeyAuthResult)
 	if kar, err = x.KeyAuth(source); err != nil {
 		return
@@ -88,6 +154,7 @@ func (x *Service) GetCity(ip string) (r *CityResult, err error) {
 	req.Header.Set("X-Source", source)
 	req.Header.Set("X-Date", kar.Date)
 	req.Header.Set("Authorization", kar.Txt)
+	req.WithContext(ctx)
 
 	client := &http.Client{Timeout: time.Second * 5}
 	var res *http.Response

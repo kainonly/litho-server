@@ -93,6 +93,9 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Csrf:         csrf,
 		IndexService: indexService,
 	}
+	tencentController := &tencent.Controller{
+		TencentService: tencentService,
+	}
 	apiAPI := &api.API{
 		Inject:        inject,
 		Hertz:         hertz,
@@ -103,6 +106,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Rest:          restController,
 		Index:         indexController,
 		IndexService:  indexService,
+		Tencent:       tencentController,
 		TencentSerice: tencentService,
 	}
 	return apiAPI, nil
