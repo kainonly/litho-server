@@ -18,6 +18,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +28,7 @@ import (
 
 var Provides = wire.NewSet(
 	index.Provides,
+	tencent.Provides,
 	wire.Struct(new(values.Controller), "*"),
 	wire.Struct(new(sessions.Controller), "*"),
 	wire.Struct(new(rest.Controller), "*"),
@@ -35,14 +37,15 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz        *server.Hertz
-	Csrf         *csrf.Csrf
-	Transfer     *transfer.Transfer
-	Values       *values.Controller
-	Sessions     *sessions.Controller
-	Rest         *rest.Controller
-	Index        *index.Controller
-	IndexService *index.Service
+	Hertz         *server.Hertz
+	Csrf          *csrf.Csrf
+	Transfer      *transfer.Transfer
+	Values        *values.Controller
+	Sessions      *sessions.Controller
+	Rest          *rest.Controller
+	Index         *index.Controller
+	IndexService  *index.Service
+	TencentSerice *tencent.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -204,10 +207,12 @@ func (x *API) ErrHandler() app.HandlerFunc {
 }
 
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
+	help.RegValidate()
+
 	h = x.Hertz
 	h.Use(x.ErrHandler())
 
-	go x.Values.Service.Sync(nil)
+	go x.Values.Service.Sync(x.V.Extra, nil)
 
 	if err = x.Transfer.Set(ctx, transfer.LogOption{
 		Key: "logset_audit",

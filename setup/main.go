@@ -26,7 +26,7 @@ func main() {
 }
 
 func setup(ctx context.Context) (err error) {
-	if err = x.Values.Service.Update(x.V.DynamicValues); err != nil {
+	if err = x.Values.Service.Update(x.V.Extra); err != nil {
 		return
 	}
 	return

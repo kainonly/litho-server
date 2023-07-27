@@ -6,38 +6,34 @@ import (
 )
 
 type LogsetLogined struct {
-	Timestamp time.Time        `bson:"timestamp" json:"timestamp"`
-	Metadata  LoginLogMetadata `bson:"metadata" json:"metadata"`
-	Country   string           `bson:"country" json:"country"`
-	Province  string           `bson:"province" json:"province"`
-	City      string           `bson:"city" json:"city"`
-	Isp       string           `bson:"isp" json:"isp"`
-	UserAgent string           `bson:"user_agent"`
+	Timestamp time.Time             `bson:"timestamp" json:"timestamp"`
+	Metadata  LogsetLoginedMetadata `bson:"metadata" json:"metadata"`
+	UserAgent string                `bson:"user_agent"`
+	Detail    interface{}           `bson:"detail"`
 }
 
-func (x *LogsetLogined) SetUserID(v primitive.ObjectID) {
-	x.Metadata.UserID = v
-}
-
-type LoginLogMetadata struct {
+type LogsetLoginedMetadata struct {
 	UserID   primitive.ObjectID `bson:"user_id"`
 	ClientIP string             `bson:"client_ip"`
-	Channel  string             `bson:"channel" json:"channel"`
+	Version  string             `bson:"version"`
+	Source   string             `bson:"source" json:"source"`
 }
 
-func (x *LogsetLogined) SetLocation(v map[string]interface{}) {
-	x.Country = v["country"].(string)
-	x.Province = v["province"].(string)
-	x.City = v["city"].(string)
-	x.Isp = v["isp"].(string)
+func (x *LogsetLogined) SetDetail(v interface{}) {
+	x.Detail = v
 }
 
-func NewLogsetLogin(channel string, ip string, useragent string) *LogsetLogined {
+func (x *LogsetLogined) SetVersion(v string) {
+	x.Metadata.Version = v
+}
+
+func NewLogsetLogined(uid primitive.ObjectID, ip string, source string, useragent string) *LogsetLogined {
 	return &LogsetLogined{
 		Timestamp: time.Now(),
-		Metadata: LoginLogMetadata{
-			Channel:  channel,
+		Metadata: LogsetLoginedMetadata{
+			UserID:   uid,
 			ClientIP: ip,
+			Source:   source,
 		},
 		UserAgent: useragent,
 	}

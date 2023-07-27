@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/weplanx/go/help"
 	"github.com/weplanx/server/bootstrap"
 	"time"
 )
@@ -25,6 +24,5 @@ func main() {
 	if err = api.Routes(h); err != nil {
 		panic(err)
 	}
-	help.RegValidate()
 	h.Spin()
 }
