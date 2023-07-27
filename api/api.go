@@ -45,6 +45,7 @@ type API struct {
 	Rest          *rest.Controller
 	Index         *index.Controller
 	IndexService  *index.Service
+	Tencent       *tencent.Controller
 	TencentSerice *tencent.Service
 }
 
@@ -71,6 +72,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_user.GET("", x.Index.GetUser)
 		_user.POST("", x.Index.SetUser)
 		_user.DELETE(":key", x.Index.UnsetUser)
+	}
+	_tencent := h.Group("tencent", m...)
+	{
+		_tencent.GET("cos_presigned", x.Tencent.CosPresigned)
+		_tencent.GET("cos_image_info", x.Tencent.CosImageInfo)
 	}
 
 	return

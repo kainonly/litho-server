@@ -26,6 +26,7 @@ require (
 	github.com/andeya/goutil v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -34,17 +35,21 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/mozillazg/go-httpheader v0.2.1 // indirect
 	github.com/nats-io/jwt/v2 v2.4.1 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nyaruka/phonenumbers v1.1.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.42 // indirect
 	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
