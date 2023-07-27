@@ -2,12 +2,14 @@ package index
 
 import (
 	"context"
+	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/uuid"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,12 +21,18 @@ import (
 type Service struct {
 	*common.Inject
 	Sessions *sessions.Service
+	Tencent  *tencent.Service
 }
 
-func (x *Service) Login(ctx context.Context, email string, password string) (ts string, err error) {
-	var user model.User
+type LoginResult struct {
+	User        model.User
+	AccessToken string
+}
+
+func (x *Service) Login(ctx context.Context, email string, password string) (r *LoginResult, err error) {
+	r = new(LoginResult)
 	if err = x.Db.Collection("users").
-		FindOne(ctx, bson.M{"email": email, "status": true}).Decode(&user); err != nil {
+		FindOne(ctx, bson.M{"email": email, "status": true}).Decode(&r.User); err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = common.ErrLoginNotExists
 			return
@@ -32,7 +40,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 		return
 	}
 
-	userId := user.ID.Hex()
+	userId := r.User.ID.Hex()
 	if err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
 		switch err {
 		case locker.ErrLockerNotExists:
@@ -45,7 +53,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 		}
 	}
 
-	if err = passlib.Verify(password, user.Password); err != nil {
+	if err = passlib.Verify(password, r.User.Password); err != nil {
 		if err == passlib.ErrNotMatch {
 			x.Locker.Update(ctx, userId, x.V.LoginTTL)
 			err = common.ErrLoginInvalid
@@ -55,7 +63,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 	}
 
 	jti := uuid.New().String()
-	if ts, err = x.Passport.Create(userId, jti); err != nil {
+	if r.AccessToken, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
 	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
@@ -70,6 +78,29 @@ func (x *Service) Login(ctx context.Context, email string, password string) (ts 
 		return
 	}
 
+	return
+}
+
+func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogined) (err error) {
+	var r *tencent.CityResult
+	if r, err = x.Tencent.GetCity(data.Metadata.ClientIP); err != nil {
+		return
+	}
+	if !r.Success {
+		return errors.NewPublic(r.Msg)
+	}
+	data.SetVersion("shuliancloud.v4")
+	data.SetDetail(r.GetDetail())
+	if _, err = x.Db.Collection("logset_logined").InsertOne(ctx, data); err != nil {
+		return
+	}
+	filter := bson.M{"_id": data.Metadata.UserID}
+	if _, err = x.Db.Collection("users").UpdateOne(ctx, filter, bson.M{
+		"$inc": bson.M{"sessions": 1},
+		"$set": bson.M{"history": data},
+	}); err != nil {
+		return
+	}
 	return
 }
 

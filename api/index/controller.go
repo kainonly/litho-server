@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/huandu/xstrings"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"reflect"
@@ -16,12 +18,20 @@ import (
 )
 
 type Controller struct {
+	V    *common.Values
+	Csrf *csrf.Csrf
+
 	IndexService *Service
-	V            *common.Values
-	Csrf         *csrf.Csrf
 }
 
 func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
+	if !x.V.IsRelease() {
+		c.JSON(http.StatusOK, utils.H{
+			"extra": x.V.Extra,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, utils.H{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
@@ -40,13 +50,22 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	ts, err := x.IndexService.Login(ctx, dto.Email, dto.Password)
+	r, err := x.IndexService.Login(ctx, dto.Email, dto.Password)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	common.SetAccessToken(c, ts)
+	go func() {
+		data := model.NewLogsetLogined(r.User.ID, string(c.GetHeader("X-Forwarded-For")), "email", string(c.UserAgent()))
+		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+			hlog.Fatal(err)
+		}
+	}()
+
+	common.SetAccessToken(c, r.AccessToken)
 	c.JSON(200, utils.H{
 		"code":    0,
 		"message": "ok",

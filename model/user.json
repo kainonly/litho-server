@@ -43,27 +43,7 @@
         "bsonType": "number"
       },
       "history": {
-        "bsonType": "object",
-        "properties": {
-          "timestamp": {
-            "bsonType": "date"
-          },
-          "ip": {
-            "bsonType": "string"
-          },
-          "country": {
-            "bsonType": "string"
-          },
-          "province": {
-            "bsonType": "string"
-          },
-          "city": {
-            "bsonType": "string"
-          },
-          "isp": {
-            "bsonType": "string"
-          }
-        }
+        "bsonType": "object"
       },
       "status": {
         "bsonType": "bool"

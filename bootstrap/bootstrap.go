@@ -25,6 +25,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"gopkg.in/yaml.v3"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -42,7 +43,7 @@ func LoadStaticValues() (v *common.Values, err error) {
 	if err = yaml.Unmarshal(b, &dv); err != nil {
 		return
 	}
-	v.DynamicValues = &dv
+	v.Extra = &common.Extra{DynamicValues: &dv}
 	return
 }
 
@@ -112,7 +113,7 @@ func UseValues(v *common.Values, kv nats.KeyValue, cipher *cipher.Cipher) *value
 		values.SetNamespace(v.Namespace),
 		values.SetKeyValue(kv),
 		values.SetCipher(cipher),
-		values.SetDynamicValues(v.DynamicValues),
+		values.SetType(reflect.TypeOf(common.Extra{})),
 	)
 }
 
