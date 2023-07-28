@@ -163,7 +163,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 
 	if user.Lark != nil {
 		lark := user.Lark
-		data["feishu"] = M{
+		data["lark"] = M{
 			"name":          lark.Name,
 			"en_name":       lark.EnName,
 			"avatar_url":    lark.AvatarUrl,
