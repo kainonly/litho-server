@@ -23,7 +23,7 @@ type Controller struct {
 	IndexService *Service
 }
 
-func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
+func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	if !x.V.IsRelease() {
 		c.JSON(http.StatusOK, M{
 			"extra": x.V.Extra,
