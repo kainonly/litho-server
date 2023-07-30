@@ -159,8 +159,8 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 type SetUserDto struct {
 	Set         string `json:"$set,required" vd:"in($, 'email', 'name', 'avatar', 'password', 'backup_email')"`
 	Email       string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
-	BackupEmail string `json:"backup_email,omitempty" vd:"(Set)$!='BackupEmail' || email($);msg:'must be email'"`
 	Name        string `json:"name,omitempty"`
+	BackupEmail string `json:"backup_email,omitempty" vd:"(Set)$!='BackupEmail' || email($);msg:'must be email'"`
 	Avatar      string `json:"avatar,omitempty"`
 	Password    string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
 }
@@ -246,7 +246,7 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 		}
 	case "collaboration":
 		c.JSON(http.StatusOK, M{
-			"url":      "https://open.larksuite.com/open-apis/authen/v1/index",
+			"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
 			"redirect": x.V.RedirectUrl,
 			"app_id":   x.V.LarkAppId,
 		})

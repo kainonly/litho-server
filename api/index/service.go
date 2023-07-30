@@ -73,7 +73,7 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 
 	// Refresh user cache
 	key := x.V.Name("users", userId)
-	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
+	if err = x.RDb.Del(ctx, key).Err(); err != nil {
 		return
 	}
 

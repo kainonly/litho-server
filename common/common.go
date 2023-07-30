@@ -35,10 +35,10 @@ func Claims(c *app.RequestContext) (claims passport.Claims) {
 
 func SetAccessToken(c *app.RequestContext, ts string) {
 	c.SetCookie("access_token", ts, -1,
-		"/", "", protocol.CookieSameSiteStrictMode, true, true)
+		"/", "", protocol.CookieSameSiteLaxMode, true, true)
 }
 
 func ClearAccessToken(c *app.RequestContext) {
 	c.SetCookie("access_token", "", -1,
-		"/", "", protocol.CookieSameSiteStrictMode, true, true)
+		"/", "", protocol.CookieSameSiteLaxMode, true, true)
 }

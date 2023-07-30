@@ -27,6 +27,7 @@ type Values struct {
 }
 
 type Extra struct {
+	BaseUrl     string
 	IpAddress   string
 	IpSecretId  string
 	IpSecretKey string

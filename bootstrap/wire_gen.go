@@ -12,6 +12,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 )
@@ -96,6 +97,18 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	tencentController := &tencent.Controller{
 		TencentService: tencentService,
 	}
+	larkService := &lark.Service{
+		Inject:   inject,
+		Sessions: sessionsService,
+		Locker:   locker,
+		Passport: passport,
+	}
+	larkController := &lark.Controller{
+		Values:       values2,
+		Passport:     passport,
+		LarkService:  larkService,
+		IndexService: indexService,
+	}
 	apiAPI := &api.API{
 		Inject:        inject,
 		Hertz:         hertz,
@@ -108,6 +121,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		IndexService:  indexService,
 		Tencent:       tencentController,
 		TencentSerice: tencentService,
+		Lark:          larkController,
+		LarkService:   larkService,
 	}
 	return apiAPI, nil
 }
