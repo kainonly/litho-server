@@ -142,7 +142,7 @@ func (x *API) Audit() app.HandlerFunc {
 		transferCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
-		x.Transfer.Publish(transferCtx, "logset_audit", transfer.Payload{
+		x.Transfer.Publish(transferCtx, "logset_operates", transfer.Payload{
 			Timestamp: now,
 			Data: map[string]interface{}{
 				"metadata": map[string]interface{}{
@@ -232,7 +232,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	go x.Values.Service.Sync(x.V.Extra, nil)
 
 	if err = x.Transfer.Set(ctx, transfer.LogOption{
-		Key: "logset_audit",
+		Key: "logset_operates",
 	}); err != nil {
 		return
 	}

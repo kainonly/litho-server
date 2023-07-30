@@ -9,9 +9,9 @@ import (
 
 func TestCreateAccessLogCollection(t *testing.T) {
 	ctx := context.TODO()
-	err := x.Db.Collection("logset_audit").Drop(ctx)
+	err := x.Db.Collection("logset_operates").Drop(ctx)
 	assert.NoError(t, err)
-	err = x.Db.Collection("logset_audit_fail").Drop(ctx)
+	err = x.Db.Collection("logset_operates_fail").Drop(ctx)
 	assert.NoError(t, err)
 	option := options.CreateCollection().
 		SetTimeSeriesOptions(
@@ -20,8 +20,8 @@ func TestCreateAccessLogCollection(t *testing.T) {
 				SetMetaField("metadata"),
 		).
 		SetExpireAfterSeconds(15552000)
-	err = x.Db.CreateCollection(ctx, "logset_audit", option)
+	err = x.Db.CreateCollection(ctx, "logset_operates", option)
 	assert.NoError(t, err)
-	err = x.Db.CreateCollection(ctx, "logset_audit_fail", option)
+	err = x.Db.CreateCollection(ctx, "logset_operates_fail", option)
 	assert.NoError(t, err)
 }

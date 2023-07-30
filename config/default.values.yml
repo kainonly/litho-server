@@ -10,6 +10,10 @@ rest_controls:
   users:
     keys: [ "_id", "email", "name", "avatar", "status", "sessions", "history", "create_time", "update_time" ]
     status: true
+  logset_operates:
+    status: true
+  logset_logined:
+    status: true
   x_orders: # For experiment
     status: true
 rest_txn_timeout: 3m
