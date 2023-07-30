@@ -8,7 +8,7 @@ pwd_strategy: 1
 pwd_ttl: 8760h
 rest_controls:
   users:
-    keys: [ "_id", "email", "name", "avatar", "status", "sessions", "last", "create_time", "update_time" ]
+    keys: [ "_id", "email", "name", "avatar", "status", "sessions", "history", "create_time", "update_time" ]
     status: true
   x_orders: # For experiment
     status: true

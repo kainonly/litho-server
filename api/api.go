@@ -18,6 +18,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
+	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
@@ -29,6 +30,7 @@ import (
 var Provides = wire.NewSet(
 	index.Provides,
 	tencent.Provides,
+	lark.Provides,
 	wire.Struct(new(values.Controller), "*"),
 	wire.Struct(new(sessions.Controller), "*"),
 	wire.Struct(new(rest.Controller), "*"),
@@ -47,6 +49,8 @@ type API struct {
 	IndexService  *index.Service
 	Tencent       *tencent.Controller
 	TencentSerice *tencent.Service
+	Lark          *lark.Controller
+	LarkService   *lark.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -56,6 +60,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.GET("", x.Index.Ping)
 	h.POST("login", x.Index.Login)
 	h.GET("verify", x.Index.Verify)
+	h.GET("options", x.Index.Options)
 	h.GET("code", auth, x.Index.GetRefreshCode)
 	h.POST("refresh_token", auth, x.Index.RefreshToken)
 	h.POST("logout", auth, x.Index.Logout)
@@ -78,7 +83,13 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_tencent.GET("cos_presigned", x.Tencent.CosPresigned)
 		_tencent.GET("cos_image_info", x.Tencent.CosImageInfo)
 	}
-
+	h.POST("lark", x.Lark.Challenge)
+	h.GET("lark", x.Lark.OAuth)
+	_lark := h.Group("lark", m...)
+	{
+		_lark.POST("tasks", x.Lark.CreateTasks)
+		_lark.GET("tasks", x.Lark.GetTasks)
+	}
 	return
 }
 
