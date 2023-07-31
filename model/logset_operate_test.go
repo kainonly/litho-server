@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCreateAccessLogCollection(t *testing.T) {
+func TestCreateLogsetOperatesCollection(t *testing.T) {
 	ctx := context.TODO()
 	err := x.Db.Collection("logset_operates").Drop(ctx)
 	assert.NoError(t, err)

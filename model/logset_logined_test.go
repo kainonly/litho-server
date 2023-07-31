@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCreateLogsetLoginCollection(t *testing.T) {
+func TestCreateLogsetLoginedCollection(t *testing.T) {
 	ctx := context.TODO()
 	option := options.CreateCollection().
 		SetTimeSeriesOptions(

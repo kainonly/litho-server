@@ -14,7 +14,7 @@ import (
 
 func TestCreateCollectionForUsers(t *testing.T) {
 	ctx := context.TODO()
-	b, err := os.ReadFile("./user.json")
+	b, err := os.ReadFile("./model/user.json")
 	assert.NoError(t, err)
 	var jsonSchema bson.D
 	err = bson.UnmarshalExtJSON(b, true, &jsonSchema)
