@@ -38,12 +38,6 @@ func TestCreatePictures(t *testing.T) {
 			Keys:    bson.D{{"name", 1}},
 			Options: options.Index().SetName("idx_name"),
 		},
-		{
-			Keys: bson.D{{"url", 1}},
-			Options: options.Index().
-				SetUnique(true).
-				SetName("idx_url"),
-		},
 	}
 	r, err := x.Db.Collection("pictures").Indexes().CreateMany(ctx, index)
 	assert.NoError(t, err)
