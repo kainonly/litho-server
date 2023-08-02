@@ -4,7 +4,9 @@
     "bsonType": "object",
     "required": [
       "_id",
+      "type",
       "name",
+      "sort",
       "create_time",
       "update_time"
     ],
@@ -12,8 +14,14 @@
       "_id": {
         "bsonType": "objectId"
       },
+      "type": {
+        "bsonType": "string"
+      },
       "name": {
         "bsonType": "string"
+      },
+      "sort": {
+        "bsonType": "number"
       },
       "create_time": {
         "bsonType": "date"
