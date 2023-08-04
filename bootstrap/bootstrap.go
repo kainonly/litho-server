@@ -6,6 +6,8 @@ import (
 	"github.com/caarlos0/env/v9"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/hertz-contrib/obs-opentelemetry/provider"
+	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
@@ -182,9 +184,19 @@ func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Transfer
 	)
 }
 
+func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
+	return provider.NewOpenTelemetryProvider(
+		provider.WithServiceName(v.Namespace),
+		provider.WithExportEndpoint(v.Otlp.Endpoint),
+		provider.WithInsecure(),
+	)
+}
+
 func UseHertz(v *common.Values) (h *server.Hertz, err error) {
+	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
+		tracer,
 	}
 	if os.Getenv("MODE") != "release" {
 		opts = append(opts, server.WithExitWaitTime(0))
@@ -193,6 +205,7 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	h = server.Default(opts...)
 	h.Use(
 		requestid.New(),
+		tracing.ServerMiddleware(cfg),
 	)
 	return
 }
