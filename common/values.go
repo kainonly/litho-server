@@ -23,6 +23,11 @@ type Values struct {
 		Nkey  string   `env:"NKEY,required"`
 	} `envPrefix:"NATS_"`
 
+	Otlp struct {
+		Endpoint string `env:"ENDPOINT"`
+		// TODO: Improve other configuration later
+	} `envPrefix:"OTLP_"`
+
 	*Extra
 }
 

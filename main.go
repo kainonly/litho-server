@@ -24,5 +24,9 @@ func main() {
 	if err = api.Routes(h); err != nil {
 		panic(err)
 	}
+
+	otel := bootstrap.ProviderOpenTelemetry(values)
+	defer otel.Shutdown(ctx)
+
 	h.Spin()
 }
