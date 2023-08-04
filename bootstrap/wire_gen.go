@@ -13,6 +13,7 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
+	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 )
@@ -29,6 +30,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	influxdb2Client := UseInflux(values2)
 	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
@@ -53,6 +55,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Mgo:       client,
 		Db:        database,
 		RDb:       redisClient,
+		Flux:      influxdb2Client,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
 		Cipher:    cipher,
@@ -109,20 +112,28 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		LarkService:  larkService,
 		IndexService: indexService,
 	}
+	observabilityService := &observability.Service{
+		Inject: inject,
+	}
+	observabilityController := &observability.Controller{
+		ObservabilityService: observabilityService,
+	}
 	apiAPI := &api.API{
-		Inject:        inject,
-		Hertz:         hertz,
-		Csrf:          csrf,
-		Transfer:      transfer,
-		Values:        controller,
-		Sessions:      sessionsController,
-		Rest:          restController,
-		Index:         indexController,
-		IndexService:  indexService,
-		Tencent:       tencentController,
-		TencentSerice: tencentService,
-		Lark:          larkController,
-		LarkService:   larkService,
+		Inject:               inject,
+		Hertz:                hertz,
+		Csrf:                 csrf,
+		Transfer:             transfer,
+		Values:               controller,
+		Sessions:             sessionsController,
+		Rest:                 restController,
+		Index:                indexController,
+		IndexService:         indexService,
+		Tencent:              tencentController,
+		TencentSerice:        tencentService,
+		Lark:                 larkController,
+		LarkService:          larkService,
+		Observability:        observabilityController,
+		ObservabilityService: observabilityService,
 	}
 	return apiAPI, nil
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
+	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/transfer"
@@ -31,6 +32,7 @@ var Provides = wire.NewSet(
 	index.Provides,
 	tencent.Provides,
 	lark.Provides,
+	observability.Provides,
 	wire.Struct(new(values.Controller), "*"),
 	wire.Struct(new(sessions.Controller), "*"),
 	wire.Struct(new(rest.Controller), "*"),
@@ -39,18 +41,20 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz         *server.Hertz
-	Csrf          *csrf.Csrf
-	Transfer      *transfer.Transfer
-	Values        *values.Controller
-	Sessions      *sessions.Controller
-	Rest          *rest.Controller
-	Index         *index.Controller
-	IndexService  *index.Service
-	Tencent       *tencent.Controller
-	TencentSerice *tencent.Service
-	Lark          *lark.Controller
-	LarkService   *lark.Service
+	Hertz                *server.Hertz
+	Csrf                 *csrf.Csrf
+	Transfer             *transfer.Transfer
+	Values               *values.Controller
+	Sessions             *sessions.Controller
+	Rest                 *rest.Controller
+	Index                *index.Controller
+	IndexService         *index.Service
+	Tencent              *tencent.Controller
+	TencentSerice        *tencent.Service
+	Lark                 *lark.Controller
+	LarkService          *lark.Service
+	Observability        *observability.Controller
+	ObservabilityService *observability.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -89,6 +93,18 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_lark.POST("tasks", x.Lark.CreateTasks)
 		_lark.GET("tasks", x.Lark.GetTasks)
+	}
+	_observability := h.Group("observability", m...)
+	{
+		_observability.GET("cgo_calls", x.Observability.GetCgoCalls)
+		_observability.GET("mongo_uptime", x.Observability.GetMongoUptime)
+		_observability.GET("mongo_available_connections", x.Observability.GetMongoAvailableConnections)
+		_observability.GET("mongo_open_connections", x.Observability.GetMongoOpenConnections)
+		_observability.GET("mongo_commands_per_second", x.Observability.GetMongoCommandsPerSecond)
+		_observability.GET("mongo_query_operations", x.Observability.GetMongoQueryOperations)
+		_observability.GET("mongo_document_operations", x.Observability.GetMongoDocumentOperations)
+		_observability.GET("mongo_flushes", x.Observability.GetMongoFlushes)
+		_observability.GET("mongo_network_io", x.Observability.GetMongoNetworkIO)
 	}
 	return
 }

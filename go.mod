@@ -15,6 +15,7 @@ require (
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.2.2
 	github.com/hertz-contrib/requestid v1.1.0
 	github.com/huandu/xstrings v1.4.0
+	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/nats-io/nats.go v1.28.0
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
@@ -34,6 +35,7 @@ require (
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
@@ -44,6 +46,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/henrylee2cn/ameda v1.5.1 // indirect
+	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
@@ -53,6 +56,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.4.1 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nyaruka/phonenumbers v1.1.6 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
