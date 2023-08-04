@@ -41,11 +41,9 @@ func LoadStaticValues() (v *common.Values, err error) {
 	if b, err = os.ReadFile("./config/default.values.yml"); err != nil {
 		return
 	}
-	var dv values.DynamicValues
-	if err = yaml.Unmarshal(b, &dv); err != nil {
+	if err = yaml.Unmarshal(b, &v.Extra); err != nil {
 		return
 	}
-	v.Extra = &common.Extra{DynamicValues: &dv}
 	return
 }
 

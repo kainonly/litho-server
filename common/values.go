@@ -32,11 +32,11 @@ type Values struct {
 }
 
 type Extra struct {
-	BaseUrl     string
-	IpAddress   string
-	IpSecretId  string
-	IpSecretKey string
-	*values.DynamicValues
+	BaseUrl               string `yaml:"base_url"`
+	IpAddress             string `yaml:"ip_address"`
+	IpSecretId            string `yaml:"ip_secret_id"`
+	IpSecretKey           string `yaml:"ip_secret_key"`
+	*values.DynamicValues `yaml:"dynamic_values"`
 }
 
 func (x Values) IsRelease() bool {
