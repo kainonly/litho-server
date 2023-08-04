@@ -22,5 +22,5 @@
 !.vscode/extensions.json
 
 /vendor
-atlas.hcl
+/config/*.values.yml
 deployment.yml
