@@ -18,26 +18,8 @@ func TestService_GetErrorRate(t *testing.T) {
 	t.Log(data)
 }
 
-func TestService_GetGoroutines(t *testing.T) {
-	data, err := x.ObservabilityService.GetGoroutines(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
-func TestService_GetLookups(t *testing.T) {
-	data, err := x.ObservabilityService.GetLookups(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
-func TestService_GetCgCount(t *testing.T) {
-	data, err := x.ObservabilityService.GetGcCount(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
-func TestService_GetCgoCalls(t *testing.T) {
-	data, err := x.ObservabilityService.GetCgoCalls(context.TODO())
+func TestService_GetP99(t *testing.T) {
+	data, err := x.ObservabilityService.GetP99(context.TODO())
 	assert.NoError(t, err)
 	t.Log(data)
 }
@@ -164,6 +146,89 @@ func TestService_GetNatsMsgIO(t *testing.T) {
 
 func TestService_GetNatsBytesIO(t *testing.T) {
 	data, err := x.ObservabilityService.GetNatsBytesIO(context.TODO())
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapSys(t *testing.T) {
+	// 从操作系统获得的堆内存
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_sys")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapReleased(t *testing.T) {
+	// 已交还给操作系统的堆内存
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_released")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapAlloc(t *testing.T) {
+	// 分配的堆对象的字节数
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_alloc")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapInuse(t *testing.T) {
+	// 已使用的堆内存
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_inuse")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapIdle(t *testing.T) {
+	// 空闲（未使用）的堆内存
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_idle")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemHeapObjects(t *testing.T) {
+	// 已分配的堆对象数量
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.heap_objects")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemLiveObjects(t *testing.T) {
+	// 活动对象的数量
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "mem.live_objects")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetGoroutines(t *testing.T) {
+	data, err := x.ObservabilityService.GetRuntime(context.TODO(), "goroutines")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetCgCount(t *testing.T) {
+	// GC 累计
+	data, err := x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.gc.count")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetMemLookups(t *testing.T) {
+	// 指针查询
+	data, err := x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.mem.lookups")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetCgoCalls(t *testing.T) {
+	// CGO
+	data, err := x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.cgo.calls")
+	assert.NoError(t, err)
+	t.Log(data)
+}
+
+func TestService_GetUptime(t *testing.T) {
+	// CGO
+	data, err := x.ObservabilityService.GetRuntimeLast(context.TODO(), "runtime.uptime")
 	assert.NoError(t, err)
 	t.Log(data)
 }

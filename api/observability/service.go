@@ -103,14 +103,32 @@ func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err err
 	return
 }
 
-func (x *Service) GetGoroutines(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
+	query := fmt.Sprintf(`
+	import "experimental/json"
+	from(bucket: "%s")
 		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "prometheus")
-		|> filter(fn: (r) => r["_field"] == "process.runtime.go.goroutines")
+		|> filter(fn: (r) => r["_measurement"] == "spans")
 		|> filter(fn: (r) => r["service.name"] == "%s")
-		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
+		|> filter(fn: (r) => r["_field"] == "duration_nano" or r["_field"] == "attributes")
+		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> map(
+			fn: (r) => {
+				attributes = json.parse(data: bytes(v: r.attributes))
+				return {r with _value: r.duration_nano / 1000000,
+					method: attributes["http.method"],
+					target: attributes["http.target"],
+				}
+			},
+		)
+		|> group(columns: ["method", "target"])
+		|> aggregateWindow(
+			every: 10s,
+			fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
+			createEmpty: false,
+		)
+
 	`, x.V.Influx.Bucket, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -121,81 +139,10 @@ func (x *Service) GetGoroutines(ctx context.Context) (data []interface{}, err er
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
+			result.Record().ValueByKey("method"),
+			result.Record().ValueByKey("target"),
 		})
 	}
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-
-}
-
-func (x *Service) GetGcCount(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "prometheus")
-		|> filter(fn: (r) => r["_field"] == "process.runtime.go.gc.count")
-		|> filter(fn: (r) => r["service.name"] == "%s")
-	  	|> last()
-	`, x.V.Influx.Bucket, x.V.Namespace)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
-func (x *Service) GetLookups(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "prometheus")
-		|> filter(fn: (r) => r["_field"] == "process.runtime.go.mem.lookups")
-		|> filter(fn: (r) => r["service.name"] == "%s")
-	  	|> last()
-	`, x.V.Influx.Bucket, x.V.Namespace)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
-func (x *Service) GetCgoCalls(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "prometheus")
-		|> filter(fn: (r) => r["_field"] == "process.runtime.go.cgo.calls")
-		|> filter(fn: (r) => r["service.name"] == "%s")
-	  	|> last()
-	`, x.V.Influx.Bucket, x.V.Namespace)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
-	}
-
 	if result.Err() != nil {
 		hlog.Error(result.Err())
 	}
@@ -831,6 +778,54 @@ func (x *Service) GetNatsBytesIO(ctx context.Context) (data []interface{}, err e
 			index[result.Record().Field()],
 		})
 	}
+
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRuntime(ctx context.Context, field string) (data []interface{}, err error) {
+	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r["_measurement"] == "prometheus")
+		|> filter(fn: (r) => r["_field"] == "process.runtime.go.%s")
+		|> filter(fn: (r) => r["service.name"] == "%s")
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
+	`, x.V.Influx.Bucket, field, x.V.Namespace)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+	data = make([]interface{}, 0)
+	for result.Next() {
+		data = append(data, []interface{}{
+			result.Record().Time().Local().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
+	}
+	if result.Err() != nil {
+		hlog.Error(result.Err())
+	}
+	return
+}
+
+func (x *Service) GetRuntimeLast(ctx context.Context, field string) (value interface{}, err error) {
+	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
+	query := fmt.Sprintf(`from(bucket: "%s")
+		|> range(start: -15m, stop: now())
+		|> filter(fn: (r) => r["_measurement"] == "prometheus")
+		|> filter(fn: (r) => r["_field"] == "%s")
+		|> filter(fn: (r) => r["service.name"] == "%s")
+	  	|> last()
+	`, x.V.Influx.Bucket, field, x.V.Namespace)
+	var result *api.QueryTableResult
+	if result, err = queryAPI.Query(ctx, query); err != nil {
+		return
+	}
+	result.Next()
+	value = result.Record().Value()
 
 	if result.Err() != nil {
 		hlog.Error(result.Err())
