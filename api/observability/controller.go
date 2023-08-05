@@ -30,14 +30,8 @@ func (x *Controller) Exporters(ctx context.Context, c *app.RequestContext) {
 	case "error_rate":
 		data, err = x.ObservabilityService.GetErrorRate(ctx)
 		break
-	case "goroutines":
-		data, err = x.ObservabilityService.GetGoroutines(ctx)
-		break
-	case "gc_count":
-		data, err = x.ObservabilityService.GetGcCount(ctx)
-		break
-	case "cgo_calls":
-		data, err = x.ObservabilityService.GetCgoCalls(ctx)
+	case "p99":
+		data, err = x.ObservabilityService.GetP99(ctx)
 		break
 	case "mongo_available_connections":
 		data, err = x.ObservabilityService.GetMongoAvailableConnections(ctx)
@@ -101,6 +95,42 @@ func (x *Controller) Exporters(ctx context.Context, c *app.RequestContext) {
 		break
 	case "nats_bytes_io":
 		data, err = x.ObservabilityService.GetNatsBytesIO(ctx)
+		break
+	case "mem_heap_sys":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_sys")
+		break
+	case "mem_heap_released":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_released")
+		break
+	case "mem_heap_alloc":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_alloc")
+		break
+	case "mem_heap_inuse":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_inuse")
+		break
+	case "mem_heap_idle":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_idle")
+		break
+	case "mem_heap_objects":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.heap_objects")
+		break
+	case "mem_live_objects":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "mem.live_objects")
+		break
+	case "goroutines":
+		data, err = x.ObservabilityService.GetRuntime(ctx, "goroutines")
+		break
+	case "mem_lookups":
+		data, err = x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.mem.lookups")
+		break
+	case "cgo_calls":
+		data, err = x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.cgo.calls")
+		break
+	case "gc_count":
+		data, err = x.ObservabilityService.GetRuntimeLast(context.TODO(), "process.runtime.go.gc.count")
+		break
+	case "uptime":
+		data, err = x.ObservabilityService.GetRuntimeLast(context.TODO(), "runtime.uptime")
 		break
 	}
 
