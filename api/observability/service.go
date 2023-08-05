@@ -130,30 +130,6 @@ func (x *Service) GetGoroutines(ctx context.Context) (data []interface{}, err er
 
 }
 
-func (x *Service) GetUptime(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "prometheus")
-		|> filter(fn: (r) => r["_field"] == "runtime.uptime")
-		|> filter(fn: (r) => r["service.name"] == "%s")
-	  	|> last()
-	`, x.V.Influx.Bucket, x.V.Namespace)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
 func (x *Service) GetGcCount(ctx context.Context) (value interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
@@ -226,37 +202,13 @@ func (x *Service) GetCgoCalls(ctx context.Context) (value interface{}, err error
 	return
 }
 
-func (x *Service) GetMongoUptime(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "mongodb")
-		|> filter(fn: (r) => r["_field"] == "uptime_ns")
-	  	|> last()
-  		|> map(fn: (r) => ({r with _value: r._value / 3600000000000}))
-	`, x.V.Influx.Bucket)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
 func (x *Service) GetMongoAvailableConnections(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 		|> filter(fn: (r) => r["_field"] == "connections_available")
-	  	|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
+	  	|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	  	|> yield(name: "mean")
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
@@ -332,22 +284,6 @@ func (x *Service) GetMongoCommandsPerSecond(ctx context.Context) (data []interfa
 	return
 }
 
-func (x *Service) ToMongoQueryOperate(operate string) int {
-	switch operate {
-	case "commands":
-		return 0
-	case "getmores":
-		return 1
-	case "inserts":
-		return 2
-	case "updates":
-		return 3
-	case "deletes":
-		return 4
-	}
-	return 0
-}
-
 func (x *Service) GetMongoQueryOperations(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
@@ -362,11 +298,18 @@ func (x *Service) GetMongoQueryOperations(ctx context.Context) (data []interface
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"commands": 0,
+		"getmores": 1,
+		"inserts":  2,
+		"updates":  3,
+		"deletes":  4,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			x.ToMongoQueryOperate(result.Record().Field()),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -374,20 +317,6 @@ func (x *Service) GetMongoQueryOperations(ctx context.Context) (data []interface
 		hlog.Error(result.Err())
 	}
 	return
-}
-
-func (x *Service) ToMongoDocumentOperate(operate string) int {
-	switch operate {
-	case "document_returned":
-		return 0
-	case "document_inserted":
-		return 1
-	case "document_updated":
-		return 2
-	case "document_deleted":
-		return 3
-	}
-	return 0
 }
 
 func (x *Service) GetMongoDocumentOperations(ctx context.Context) (data []interface{}, err error) {
@@ -404,11 +333,17 @@ func (x *Service) GetMongoDocumentOperations(ctx context.Context) (data []interf
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"document_returned": 0,
+		"document_inserted": 1,
+		"document_updated":  2,
+		"document_deleted":  3,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			x.ToMongoDocumentOperate(result.Record().Field()),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -445,16 +380,6 @@ func (x *Service) GetMongoFlushes(ctx context.Context) (data []interface{}, err 
 	return
 }
 
-func (x *Service) ToMongoNetworkIO(v string) int {
-	switch v {
-	case "net_in_bytes":
-		return 0
-	case "net_out_bytes":
-		return 1
-	}
-	return 0
-}
-
 func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
@@ -470,11 +395,15 @@ func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, er
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"net_in_bytes":  0,
+		"net_out_bytes": 1,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			x.ToMongoNetworkIO(result.Record().Field()),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -484,41 +413,43 @@ func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, er
 	return
 }
 
-func (x *Service) GetRedisUptime(ctx context.Context) (value interface{}, err error) {
+func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r["_measurement"] == "redis")
-		|> filter(fn: (r) => r._field == "uptime")
-	  	|> last()
+		|> filter(fn: (r) => 
+			r["_field"] == "used_cpu_user" or 
+			r["_field"] == "used_cpu_sys" or 
+			r["_field"] == "used_cpu_sys_children" or 
+			r["_field"] == "used_cpu_user_children"
+		)
+  		|> derivative(unit: 10s, nonNegative: true)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
 	}
 
+	data = make([]interface{}, 0)
+	index := M{
+		"used_cpu_user":          0,
+		"used_cpu_sys":           1,
+		"used_cpu_sys_children":  2,
+		"used_cpu_user_children": 3,
+	}
 	for result.Next() {
-		value = result.Record().Value()
+		data = append(data, []interface{}{
+			result.Record().Time().Local().Format(time.TimeOnly),
+			result.Record().Value(),
+			index[result.Record().Field()],
+		})
 	}
 
 	if result.Err() != nil {
 		hlog.Error(result.Err())
 	}
 	return
-}
-
-func (x *Service) ToRedisMem(v string) int {
-	switch v {
-	case "used_memory":
-		return 0
-	case "used_memory_dataset":
-		return 1
-	case "used_memory_rss":
-		return 2
-	case "used_memory_lua":
-		return 3
-	}
-	return 0
 }
 
 func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err error) {
@@ -540,58 +471,17 @@ func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err erro
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"used_memory":         0,
+		"used_memory_dataset": 1,
+		"used_memory_rss":     2,
+		"used_memory_lua":     3,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			x.ToRedisMem(result.Record().Field()),
-		})
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
-func (x *Service) ToRedisCpu(v string) int {
-	switch v {
-	case "used_cpu_user":
-		return 0
-	case "used_cpu_sys":
-		return 1
-	case "used_cpu_sys_children":
-		return 2
-	case "used_cpu_user_children":
-		return 3
-	}
-	return 0
-}
-
-func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r["_measurement"] == "redis")
-		|> filter(fn: (r) => 
-			r["_field"] == "used_cpu_user" or 
-			r["_field"] == "used_cpu_sys" or 
-			r["_field"] == "used_cpu_sys_children" or 
-			r["_field"] == "used_cpu_user_children"
-		)
-  		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	data = make([]interface{}, 0)
-	for result.Next() {
-		data = append(data, []interface{}{
-			result.Record().Time().Local().Format(time.TimeOnly),
-			result.Record().Value(),
-			x.ToRedisCpu(result.Record().Field()),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -607,7 +497,7 @@ func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, er
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "instantaneous_ops_per_sec")
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -634,7 +524,7 @@ func (x *Service) GetRedisEviExpKeys(ctx context.Context) (data []interface{}, e
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "evicted_keys" or r._field == "expired_keys")
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -642,10 +532,15 @@ func (x *Service) GetRedisEviExpKeys(ctx context.Context) (data []interface{}, e
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"evicted_keys": 0,
+		"expired_keys": 1,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -661,7 +556,7 @@ func (x *Service) GetRedisCollectionsRate(ctx context.Context) (data []interface
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "total_connections_received" or r._field == "rejected_connections")
-		|> derivative(unit: 1s, nonNegative: false)
+		|> derivative(unit: 10s, nonNegative: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -674,30 +569,6 @@ func (x *Service) GetRedisCollectionsRate(ctx context.Context) (data []interface
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
 		})
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
-func (x *Service) GetRedisConnectedSlaves(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r._measurement == "redis")
-		|> filter(fn: (r) => r._field == "connected_slaves")
-		|> aggregateWindow(every: 1s, fn: min)
-		|> min()
-	`, x.V.Influx.Bucket)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
 	}
 
 	if result.Err() != nil {
@@ -712,7 +583,7 @@ func (x *Service) GetRedisHitRate(ctx context.Context) (data []interface{}, err 
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "keyspace_hitrate")
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -731,16 +602,6 @@ func (x *Service) GetRedisHitRate(ctx context.Context) (data []interface{}, err 
 		hlog.Error(result.Err())
 	}
 	return
-}
-
-func (x *Service) ToRedisNetworkIO(v string) int {
-	switch v {
-	case "total_net_output_bytes":
-		return 0
-	case "total_net_input_bytes":
-		return 1
-	}
-	return 0
 }
 
 func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, err error) {
@@ -749,7 +610,7 @@ func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, er
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "total_net_output_bytes" or r._field == "total_net_input_bytes")
-		|> derivative(unit: 1s, nonNegative: false)
+		|> derivative(unit: 10s, nonNegative: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -757,35 +618,16 @@ func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, er
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"total_net_input_bytes":  0,
+		"total_net_output_bytes": 1,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			x.ToRedisNetworkIO(result.Record().Field()),
+			index[result.Record().Field()],
 		})
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
-	return
-}
-
-func (x *Service) GetNatsUptime(ctx context.Context) (value interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
-		|> filter(fn: (r) => r._measurement == "nats")
-		|> filter(fn: (r) => r._field == "uptime")
-		|> last()
-	`, x.V.Influx.Bucket)
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
-
-	for result.Next() {
-		value = result.Record().Value()
 	}
 
 	if result.Err() != nil {

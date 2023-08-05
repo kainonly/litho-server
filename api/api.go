@@ -96,15 +96,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	}
 	_observability := h.Group("observability", m...)
 	{
-		_observability.GET("cgo_calls", x.Observability.GetCgoCalls)
-		_observability.GET("mongo_uptime", x.Observability.GetMongoUptime)
-		_observability.GET("mongo_available_connections", x.Observability.GetMongoAvailableConnections)
-		_observability.GET("mongo_open_connections", x.Observability.GetMongoOpenConnections)
-		_observability.GET("mongo_commands_per_second", x.Observability.GetMongoCommandsPerSecond)
-		_observability.GET("mongo_query_operations", x.Observability.GetMongoQueryOperations)
-		_observability.GET("mongo_document_operations", x.Observability.GetMongoDocumentOperations)
-		_observability.GET("mongo_flushes", x.Observability.GetMongoFlushes)
-		_observability.GET("mongo_network_io", x.Observability.GetMongoNetworkIO)
+		_observability.GET(":name", x.Observability.Exporters)
 	}
 	return
 }
