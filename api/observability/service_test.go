@@ -24,12 +24,6 @@ func TestService_GetGoroutines(t *testing.T) {
 	t.Log(data)
 }
 
-func TestService_GetUptime(t *testing.T) {
-	data, err := x.ObservabilityService.GetUptime(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
 func TestService_GetLookups(t *testing.T) {
 	data, err := x.ObservabilityService.GetLookups(context.TODO())
 	assert.NoError(t, err)
@@ -44,12 +38,6 @@ func TestService_GetCgCount(t *testing.T) {
 
 func TestService_GetCgoCalls(t *testing.T) {
 	data, err := x.ObservabilityService.GetCgoCalls(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
-func TestService_GetMongoUptime(t *testing.T) {
-	data, err := x.ObservabilityService.GetMongoUptime(context.TODO())
 	assert.NoError(t, err)
 	t.Log(data)
 }
@@ -96,12 +84,6 @@ func TestService_GetMongoNetworkIO(t *testing.T) {
 	t.Log(data)
 }
 
-func TestService_GetRedisUptime(t *testing.T) {
-	data, err := x.ObservabilityService.GetRedisUptime(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
 func TestService_GetRedisMem(t *testing.T) {
 	data, err := x.ObservabilityService.GetRedisMem(context.TODO())
 	assert.NoError(t, err)
@@ -132,12 +114,6 @@ func TestService_GetRedisCollectionsRate(t *testing.T) {
 	t.Log(data)
 }
 
-func TestService_GetRedisConnectedSlaves(t *testing.T) {
-	data, err := x.ObservabilityService.GetRedisConnectedSlaves(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
 func TestService_GetRedisHitRate(t *testing.T) {
 	data, err := x.ObservabilityService.GetRedisHitRate(context.TODO())
 	assert.NoError(t, err)
@@ -146,12 +122,6 @@ func TestService_GetRedisHitRate(t *testing.T) {
 
 func TestService_GetRedisNetworkIO(t *testing.T) {
 	data, err := x.ObservabilityService.GetRedisNetworkIO(context.TODO())
-	assert.NoError(t, err)
-	t.Log(data)
-}
-
-func TestService_GetNatsUptime(t *testing.T) {
-	data, err := x.ObservabilityService.GetNatsUptime(context.TODO())
 	assert.NoError(t, err)
 	t.Log(data)
 }
