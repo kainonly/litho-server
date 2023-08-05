@@ -638,15 +638,11 @@ func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, er
 
 func (x *Service) GetNatsCpu(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`
-		import "dict"
-		targets = ["http://nats1:8222": 1, "http://nats2:8222": 2, "http://nats3:8222": 3]
-		from(bucket: "%s")
+	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "cpu")
-		|> map(fn: (r) => ({r with server: dict.get(dict: targets, key: r.server, default: 0)}))
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -670,15 +666,11 @@ func (x *Service) GetNatsCpu(ctx context.Context) (data []interface{}, err error
 
 func (x *Service) GetNatsMem(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`
-		import "dict"
-		targets = ["http://nats1:8222": 1, "http://nats2:8222": 2, "http://nats3:8222": 3]
-		from(bucket: "%s")
+	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "mem")
-		|> map(fn: (r) => ({r with server: dict.get(dict: targets, key: r.server, default: 0)}))
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -702,15 +694,11 @@ func (x *Service) GetNatsMem(ctx context.Context) (data []interface{}, err error
 
 func (x *Service) GetNatsConnections(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`
-		import "dict"
-		targets = ["http://nats1:8222": 1, "http://nats2:8222": 2, "http://nats3:8222": 3]
-		from(bucket: "%s")
+	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "connections")
-		|> map(fn: (r) => ({r with server: dict.get(dict: targets, key: r.server, default: 0)}))
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -732,22 +720,25 @@ func (x *Service) GetNatsConnections(ctx context.Context) (data []interface{}, e
 	return
 }
 
-func (x *Service) GetNatsSubscriptions(ctx context.Context) (value interface{}, err error) {
+func (x *Service) GetNatsSubscriptions(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "subscriptions")
-		|> group(columns: ["host"])
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
 	}
 
+	data = make([]interface{}, 0)
 	for result.Next() {
-		value = result.Record().Value()
+		data = append(data, []interface{}{
+			result.Record().Time().Local().Format(time.TimeOnly),
+			result.Record().Value(),
+		})
 	}
 
 	if result.Err() != nil {
@@ -762,8 +753,7 @@ func (x *Service) GetNatsSlowConsumers(ctx context.Context) (data []interface{},
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "slow_consumers")
-		|> group(columns: ["host"])
-		|> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -786,16 +776,11 @@ func (x *Service) GetNatsSlowConsumers(ctx context.Context) (data []interface{},
 
 func (x *Service) GetNatsMsgIO(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`
-		import "dict"
-		targets = ["http://nats1:8222": 1, "http://nats2:8222": 2, "http://nats3:8222": 3]
-		from(bucket: "%s")
+	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "in_msgs" or r._field == "out_msgs")
-		|> map(fn: (r) => ({r with server: dict.get(dict: targets, key: r.server, default: 0)}))
-		|> derivative(unit: 1s, nonNegative: false)
-		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> derivative(unit: 10s, nonNegative: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -803,12 +788,15 @@ func (x *Service) GetNatsMsgIO(ctx context.Context) (data []interface{}, err err
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"in_msgs":  0,
+		"out_msgs": 1,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
-			result.Record().ValueByKey("in_msgs"),
-			result.Record().ValueByKey("out_msgs"),
-			result.Record().ValueByKey("server"),
+			result.Record().Value(),
+			index[result.Record().Field()],
 		})
 	}
 
@@ -820,16 +808,11 @@ func (x *Service) GetNatsMsgIO(ctx context.Context) (data []interface{}, err err
 
 func (x *Service) GetNatsBytesIO(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`
-		import "dict"
-		targets = ["http://nats1:8222": 1, "http://nats2:8222": 2, "http://nats3:8222": 3]
-		from(bucket: "%s")
+	query := fmt.Sprintf(`from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "in_bytes" or r._field == "out_bytes")
-		|> map(fn: (r) => ({r with server: dict.get(dict: targets, key: r.server, default: 0)}))
-		|> derivative(unit: 1s, nonNegative: false)
-		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> derivative(unit: 10s, nonNegative: false)
 	`, x.V.Influx.Bucket)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -837,12 +820,15 @@ func (x *Service) GetNatsBytesIO(ctx context.Context) (data []interface{}, err e
 	}
 
 	data = make([]interface{}, 0)
+	index := M{
+		"in_bytes":  0,
+		"out_bytes": 1,
+	}
 	for result.Next() {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
-			result.Record().ValueByKey("in_bytes"),
-			result.Record().ValueByKey("out_bytes"),
-			result.Record().ValueByKey("server"),
+			result.Record().Value(),
+			index[result.Record().Field()],
 		})
 	}
 
