@@ -26,11 +26,11 @@ func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error
 			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
 			|> set(key: "method", value: "ALL")
 			|> fill(value: 0.0)
-		method = data
+		methods = data
 			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name", "http.method"])
 			|> rename(columns: {"http.method": "method"})
 			|> fill(value: 0.0)
-		union(tables: [method, all])
+		union(tables: [all, methods])
 	`, x.V.Influx.Bucket, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
@@ -70,7 +70,7 @@ func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err err
 			|> fill(value: 0.0)
 		union(tables: [all, err])
 			|> pivot(rowKey: ["_time"], columnKey: ["type"], valueColumn: "_value")
-			|> map(fn: (r) => ({r with _value: r.ERR / r.ALL}))
+			|> map(fn: (r) => ({r with _value: if r.ERR != 0.0 and r.ALL != 0.0 then r.ERR / r.ALL else 0.0}))
 	`, x.V.Influx.Bucket, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
