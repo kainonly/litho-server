@@ -17,26 +17,19 @@ func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 		import "experimental/aggregate"
-
-		data =
-			from(bucket: "%s")
-				|> range(start: -15m, stop: now())
-				|> filter(fn: (r) => r["_measurement"] == "prometheus")
-				|> filter(fn: (r) => r["service.name"] == "%s")
-				|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
-
-		all =
-			data
-				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
-				|> set(key: "method", value: "ALL")
-				|> fill(value: 0.0)
-
-		method =
-			data
-				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name", "http.method"])
-				|> rename(columns: {"http.method": "method"})
-				|> fill(value: 0.0)
-		
+		data = from(bucket: "%s")
+			|> range(start: -15m, stop: now())
+			|> filter(fn: (r) => r["_measurement"] == "prometheus")
+			|> filter(fn: (r) => r["service.name"] == "%s")
+			|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
+		all = data
+			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+			|> set(key: "method", value: "ALL")
+			|> fill(value: 0.0)
+		method = data
+			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name", "http.method"])
+			|> rename(columns: {"http.method": "method"})
+			|> fill(value: 0.0)
 		union(tables: [method, all])
 	`, x.V.Influx.Bucket, x.V.Namespace)
 	var result *api.QueryTableResult
@@ -61,27 +54,20 @@ func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err err
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 		import "experimental/aggregate"
-
-		data =
-			from(bucket: "%s")
-				|> range(start: -15m, stop: now())
-				|> filter(fn: (r) => r["_measurement"] == "prometheus")
-				|> filter(fn: (r) => r["service.name"] == "%s")
-				|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
-
-		all =
-			data
-				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
-				|> set(key: "type", value: "ALL")
-				|> fill(value: 0.0)
-
-		err =
-			data
-				|> filter(fn: (r) => r["http.status_code"] =~ /^[4,5]/)
-				|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
-				|> set(key: "type", value: "ERR")
-				|> fill(value: 0.0)
-		
+		data = from(bucket: "%s")
+			|> range(start: -15m, stop: now())
+			|> filter(fn: (r) => r["_measurement"] == "prometheus")
+			|> filter(fn: (r) => r["service.name"] == "%s")
+			|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
+		all = data
+			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+			|> set(key: "type", value: "ALL")
+			|> fill(value: 0.0)
+		err = data
+			|> filter(fn: (r) => r["http.status_code"] =~ /^[4,5]/)
+			|> aggregate.rate(every: 10s, unit: 1s, groupColumns: ["service.name"])
+			|> set(key: "type", value: "ERR")
+			|> fill(value: 0.0)
 		union(tables: [all, err])
 			|> pivot(rowKey: ["_time"], columnKey: ["type"], valueColumn: "_value")
 			|> map(fn: (r) => ({r with _value: r.ERR / r.ALL}))
@@ -128,7 +114,6 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 			fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
 			createEmpty: false,
 		)
-
 	`, x.V.Influx.Bucket, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {

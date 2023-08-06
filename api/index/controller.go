@@ -37,6 +37,13 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	})
 }
 
+func (x *Controller) MockErr(_ context.Context, c *app.RequestContext) {
+	c.JSON(http.StatusBadRequest, M{
+		"code": 1000,
+		"msg":  "mock err",
+	})
+}
+
 type LoginDto struct {
 	Email    string `json:"email,required" vd:"email($)"`
 	Password string `json:"password,required" vd:"len($)>=8"`
