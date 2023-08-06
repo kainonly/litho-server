@@ -93,6 +93,7 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 	import "experimental/json"
+	import "strings"
 	from(bucket: "%s")
 		|> range(start: -15m, stop: now())
 		|> filter(fn: (r) => r["_measurement"] == "spans")
@@ -102,13 +103,18 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 		|> map(
 			fn: (r) => {
 				attributes = json.parse(data: bytes(v: r.attributes))
-				return {r with _value: r.duration_nano / 1000000,
-					method: attributes["http.method"],
-					target: attributes["http.target"],
-				}
+				return {
+					r with _value: r.duration_nano / 1000000,
+					route:
+						strings.joinStr(
+							arr: [attributes["http.method"], attributes["http.target"]],
+							v: " ",
+						),
+					}
 			},
 		)
-		|> group(columns: ["method", "target"])
+		|> filter(fn: (r) => r["route"] != "GET /code")
+		|> group(columns: ["route"])
 		|> aggregateWindow(
 			every: 1s,
 			fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
@@ -124,8 +130,7 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 		data = append(data, []interface{}{
 			result.Record().Time().Local().Format(time.TimeOnly),
 			result.Record().Value(),
-			result.Record().ValueByKey("method"),
-			result.Record().ValueByKey("target"),
+			result.Record().ValueByKey("route"),
 		})
 	}
 	if result.Err() != nil {
