@@ -98,7 +98,7 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 		|> filter(fn: (r) => r["_measurement"] == "spans")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 		|> filter(fn: (r) => r["_field"] == "duration_nano" or r["_field"] == "attributes")
-		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+		|> pivot(rowKey: ["_time", "span_id"], columnKey: ["_field"], valueColumn: "_value")
 		|> map(
 			fn: (r) => {
 				attributes = json.parse(data: bytes(v: r.attributes))
@@ -110,7 +110,7 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 		)
 		|> group(columns: ["method", "target"])
 		|> aggregateWindow(
-			every: 10s,
+			every: 1s,
 			fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
 			createEmpty: false,
 		)
