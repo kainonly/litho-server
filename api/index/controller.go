@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/huandu/xstrings"
+	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/server/common"
@@ -43,6 +44,8 @@ func (x *Controller) MockErr(_ context.Context, c *app.RequestContext) {
 		"msg":  "mock err",
 	})
 }
+
+//func (x *Controller) R
 
 type LoginDto struct {
 	Email    string `json:"email,required" vd:"email($)"`
@@ -256,6 +259,12 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 			"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
 			"redirect": x.V.RedirectUrl,
 			"app_id":   x.V.LarkAppId,
+		})
+		return
+	case "generate-secret":
+		c.JSON(http.StatusOK, M{
+			"id":  funk.RandomString(8),
+			"key": funk.RandomString(16),
 		})
 		return
 	}
