@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/weplanx/server/common"
+	"strings"
 	"time"
 )
 
@@ -13,12 +14,22 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) Range(v string) string {
+	if v == "" {
+		return `|> range(start: -15m, stop: now())`
+	}
+	dates := strings.Split(v, ",")
+	return fmt.Sprintf(`|> range(start: %s, stop: %s)`,
+		dates[0], dates[1],
+	)
+}
+
+func (x *Service) GetQpsRate(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 		import "experimental/aggregate"
 		data = from(bucket: "%s")
-			|> range(start: -15m, stop: now())
+			%s
 			|> filter(fn: (r) => r["_measurement"] == "prometheus")
 			|> filter(fn: (r) => r["service.name"] == "%s")
 			|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
@@ -31,7 +42,7 @@ func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error
 			|> rename(columns: {"http.method": "method"})
 			|> fill(value: 0.0)
 		union(tables: [all, methods])
-	`, x.V.Influx.Bucket, x.V.Namespace)
+	`, x.V.Influx.Bucket, x.Range(dates), x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -50,12 +61,12 @@ func (x *Service) GetQpsRate(ctx context.Context) (data []interface{}, err error
 	return
 }
 
-func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetErrorRate(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 		import "experimental/aggregate"
 		data = from(bucket: "%s")
-			|> range(start: -15m, stop: now())
+			%s
 			|> filter(fn: (r) => r["_measurement"] == "prometheus")
 			|> filter(fn: (r) => r["service.name"] == "%s")
 			|> filter(fn: (r) => r["_field"] == "http.server.duration_count")
@@ -71,7 +82,7 @@ func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err err
 		union(tables: [all, err])
 			|> pivot(rowKey: ["_time"], columnKey: ["type"], valueColumn: "_value")
 			|> map(fn: (r) => ({r with _value: if r.ERR != 0.0 and r.ALL != 0.0 then r.ERR / r.ALL else 0.0}))
-	`, x.V.Influx.Bucket, x.V.Namespace)
+	`, x.V.Influx.Bucket, x.Range(dates), x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -89,13 +100,13 @@ func (x *Service) GetErrorRate(ctx context.Context) (data []interface{}, err err
 	return
 }
 
-func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetP99(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`
 	import "experimental/json"
 	import "strings"
 	from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "spans")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 		|> filter(fn: (r) => r["_field"] == "duration_nano" or r["_field"] == "attributes")
@@ -120,7 +131,7 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 			fn: (column, tables=<-) => tables |> quantile(q: 0.99, column: column),
 			createEmpty: false,
 		)
-	`, x.V.Influx.Bucket, x.V.Namespace)
+	`, x.V.Influx.Bucket, x.Range(dates), x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -139,15 +150,15 @@ func (x *Service) GetP99(ctx context.Context) (data []interface{}, err error) {
 	return
 }
 
-func (x *Service) GetMongoAvailableConnections(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoAvailableConnections(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 		|> filter(fn: (r) => r["_field"] == "connections_available")
 	  	|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
 	  	|> yield(name: "mean")
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -167,14 +178,14 @@ func (x *Service) GetMongoAvailableConnections(ctx context.Context) (data []inte
 	return
 }
 
-func (x *Service) GetMongoOpenConnections(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoOpenConnections(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 	  	|> filter(fn: (r) => r["_field"] == "open_connections")
   		|> derivative(unit: 10s,nonNegative: true)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -193,15 +204,15 @@ func (x *Service) GetMongoOpenConnections(ctx context.Context) (data []interface
 	return
 }
 
-func (x *Service) GetMongoCommandsPerSecond(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoCommandsPerSecond(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 	  	|> filter(fn: (r) => r["_field"] == "commands_per_sec")
   		|> derivative(unit: 10s,nonNegative: true)
 		|> fill(value: float(v: 0))
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -221,14 +232,14 @@ func (x *Service) GetMongoCommandsPerSecond(ctx context.Context) (data []interfa
 	return
 }
 
-func (x *Service) GetMongoQueryOperations(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoQueryOperations(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 	  	|> filter(fn: (r) => r["_field"] == "commands" or r["_field"] == "deletes" or r["_field"] == "getmores" or r["_field"] == "inserts" or r["_field"] == "updates")
   		|> derivative(unit: 10s,nonNegative: true)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -256,14 +267,14 @@ func (x *Service) GetMongoQueryOperations(ctx context.Context) (data []interface
 	return
 }
 
-func (x *Service) GetMongoDocumentOperations(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoDocumentOperations(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 	  	|> filter(fn: (r) => r["_field"] == "document_deleted" or r["_field"] == "document_inserted" or r["_field"] == "document_returned" or r["_field"] == "document_updated")
   		|> derivative(unit: 10s,nonNegative: true)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -290,14 +301,14 @@ func (x *Service) GetMongoDocumentOperations(ctx context.Context) (data []interf
 	return
 }
 
-func (x *Service) GetMongoFlushes(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoFlushes(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 		|> filter(fn: (r) => r["_field"] == "flushes")
   		|> derivative(unit: 10s,nonNegative: true)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -317,15 +328,15 @@ func (x *Service) GetMongoFlushes(ctx context.Context) (data []interface{}, err 
 	return
 }
 
-func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetMongoNetworkIO(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "mongodb")
 		|> filter(fn: (r) => r["_field"] == "net_in_bytes" or r["_field"] == "net_out_bytes")
   		|> derivative(unit: 10s,nonNegative: true)
 		|> fill(value: float(v: 0))
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -350,10 +361,10 @@ func (x *Service) GetMongoNetworkIO(ctx context.Context) (data []interface{}, er
 	return
 }
 
-func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisCpu(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "redis")
 		|> filter(fn: (r) => 
 			r["_field"] == "used_cpu_user" or 
@@ -362,7 +373,7 @@ func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err erro
 			r["_field"] == "used_cpu_user_children"
 		)
   		|> derivative(unit: 10s, nonNegative: true)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -389,10 +400,10 @@ func (x *Service) GetRedisCpu(ctx context.Context) (data []interface{}, err erro
 	return
 }
 
-func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisMem(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "redis")
 		|> filter(fn: (r) => 
 			r["_field"] == "used_memory" or 
@@ -401,7 +412,7 @@ func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err erro
 			r["_field"] == "used_memory_lua"
 		)
   		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -428,14 +439,14 @@ func (x *Service) GetRedisMem(ctx context.Context) (data []interface{}, err erro
 	return
 }
 
-func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisOpsPerSec(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "instantaneous_ops_per_sec")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -455,14 +466,14 @@ func (x *Service) GetRedisOpsPerSec(ctx context.Context) (data []interface{}, er
 	return
 }
 
-func (x *Service) GetRedisEviExpKeys(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisEviExpKeys(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "evicted_keys" or r._field == "expired_keys")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -487,14 +498,14 @@ func (x *Service) GetRedisEviExpKeys(ctx context.Context) (data []interface{}, e
 	return
 }
 
-func (x *Service) GetRedisCollectionsRate(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisCollectionsRate(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "total_connections_received" or r._field == "rejected_connections")
 		|> derivative(unit: 10s, nonNegative: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -514,14 +525,14 @@ func (x *Service) GetRedisCollectionsRate(ctx context.Context) (data []interface
 	return
 }
 
-func (x *Service) GetRedisHitRate(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisHitRate(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "keyspace_hitrate")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -541,14 +552,14 @@ func (x *Service) GetRedisHitRate(ctx context.Context) (data []interface{}, err 
 	return
 }
 
-func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetRedisNetworkIO(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "redis")
 		|> filter(fn: (r) => r._field == "total_net_output_bytes" or r._field == "total_net_input_bytes")
 		|> derivative(unit: 10s, nonNegative: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -573,14 +584,14 @@ func (x *Service) GetRedisNetworkIO(ctx context.Context) (data []interface{}, er
 	return
 }
 
-func (x *Service) GetNatsCpu(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsCpu(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "cpu")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -601,14 +612,14 @@ func (x *Service) GetNatsCpu(ctx context.Context) (data []interface{}, err error
 	return
 }
 
-func (x *Service) GetNatsMem(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsMem(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "mem")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -629,14 +640,14 @@ func (x *Service) GetNatsMem(ctx context.Context) (data []interface{}, err error
 	return
 }
 
-func (x *Service) GetNatsConnections(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsConnections(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "connections")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -657,14 +668,14 @@ func (x *Service) GetNatsConnections(ctx context.Context) (data []interface{}, e
 	return
 }
 
-func (x *Service) GetNatsSubscriptions(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsSubscriptions(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "subscriptions")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -684,14 +695,14 @@ func (x *Service) GetNatsSubscriptions(ctx context.Context) (data []interface{},
 	return
 }
 
-func (x *Service) GetNatsSlowConsumers(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsSlowConsumers(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "slow_consumers")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -711,14 +722,14 @@ func (x *Service) GetNatsSlowConsumers(ctx context.Context) (data []interface{},
 	return
 }
 
-func (x *Service) GetNatsMsgIO(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsMsgIO(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "in_msgs" or r._field == "out_msgs")
 		|> derivative(unit: 10s, nonNegative: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -743,14 +754,14 @@ func (x *Service) GetNatsMsgIO(ctx context.Context) (data []interface{}, err err
 	return
 }
 
-func (x *Service) GetNatsBytesIO(ctx context.Context) (data []interface{}, err error) {
+func (x *Service) GetNatsBytesIO(ctx context.Context, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r._measurement == "nats")
 		|> filter(fn: (r) => r._field == "in_bytes" or r._field == "out_bytes")
 		|> derivative(unit: 10s, nonNegative: false)
-	`, x.V.Influx.Bucket)
+	`, x.V.Influx.Bucket, x.Range(dates))
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -775,15 +786,15 @@ func (x *Service) GetNatsBytesIO(ctx context.Context) (data []interface{}, err e
 	return
 }
 
-func (x *Service) GetRuntime(ctx context.Context, field string) (data []interface{}, err error) {
+func (x *Service) GetRuntime(ctx context.Context, field string, dates string) (data []interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "prometheus")
 		|> filter(fn: (r) => r["_field"] == "process.runtime.go.%s")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket, field, x.V.Namespace)
+	`, x.V.Influx.Bucket, field, x.Range(dates), x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -801,15 +812,15 @@ func (x *Service) GetRuntime(ctx context.Context, field string) (data []interfac
 	return
 }
 
-func (x *Service) GetRuntimeLast(ctx context.Context, field string) (value interface{}, err error) {
+func (x *Service) GetRuntimeLast(ctx context.Context, field string, dates string) (value interface{}, err error) {
 	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
 	query := fmt.Sprintf(`from(bucket: "%s")
-		|> range(start: -15m, stop: now())
+		%s
 		|> filter(fn: (r) => r["_measurement"] == "prometheus")
 		|> filter(fn: (r) => r["_field"] == "%s")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 	  	|> last()
-	`, x.V.Influx.Bucket, field, x.V.Namespace)
+	`, x.V.Influx.Bucket, field, x.Range(dates), x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
