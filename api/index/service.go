@@ -149,7 +149,14 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 		return
 	}
 
+	detail := M{}
+	for _, x := range user.History.Detail.(bson.D) {
+		detail[x.Key] = x.Value
+	}
+	user.History.Detail = detail
+
 	data = M{
+		"_id":          user.ID,
 		"email":        user.Email,
 		"name":         user.Name,
 		"avatar":       user.Avatar,

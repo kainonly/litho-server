@@ -15,7 +15,7 @@ type User struct {
 	BackupEmail string               `bson:"backup_email,omitempty" json:"backup_email"`
 	Lark        *UserLark            `bson:"lark,omitempty" json:"lark"`
 	Sessions    int64                `bson:"sessions,omitempty" json:"sessions"`
-	History     *UserHistory         `bson:"history,omitempty" json:"history"`
+	History     *LogsetLogined       `bson:"history,omitempty" json:"history"`
 	Status      bool                 `bson:"status" json:"status"`
 	CreateTime  time.Time            `bson:"create_time" json:"create_time"`
 	UpdateTime  time.Time            `bson:"update_time" json:"update_time"`
@@ -41,15 +41,6 @@ type UserLark struct {
 	RefreshExpiresIn uint64 `bson:"refresh_expires_in" json:"refresh_expires_in"`
 	RefreshToken     string `bson:"refresh_token" json:"refresh_token"`
 	Sid              string `bson:"sid" json:"sid"`
-}
-
-type UserHistory struct {
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	ClientIP  string    `bson:"client_ip" json:"client_ip"`
-	Country   string    `bson:"country" json:"country"`
-	Province  string    `bson:"province" json:"province"`
-	City      string    `bson:"city" json:"city"`
-	Isp       string    `bson:"isp" json:"isp"`
 }
 
 func NewUser(email string, password string) *User {
