@@ -794,7 +794,7 @@ func (x *Service) GetRuntime(ctx context.Context, field string, dates string) (d
 		|> filter(fn: (r) => r["_field"] == "process.runtime.go.%s")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 		|> aggregateWindow(every: 10s, fn: mean, createEmpty: false)
-	`, x.V.Influx.Bucket, field, x.Range(dates), x.V.Namespace)
+	`, x.V.Influx.Bucket, x.Range(dates), field, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
@@ -820,7 +820,7 @@ func (x *Service) GetRuntimeLast(ctx context.Context, field string, dates string
 		|> filter(fn: (r) => r["_field"] == "%s")
 		|> filter(fn: (r) => r["service.name"] == "%s")
 	  	|> last()
-	`, x.V.Influx.Bucket, field, x.Range(dates), x.V.Namespace)
+	`, x.V.Influx.Bucket, x.Range(dates), field, x.V.Namespace)
 	var result *api.QueryTableResult
 	if result, err = queryAPI.Query(ctx, query); err != nil {
 		return
