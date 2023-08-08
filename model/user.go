@@ -6,19 +6,20 @@ import (
 )
 
 type User struct {
-	ID          primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
-	Email       string               `bson:"email" json:"email"`
-	Password    string               `bson:"password" json:"-"`
-	Roles       []primitive.ObjectID `bson:"roles" json:"-"`
-	Name        string               `bson:"name" json:"name"`
-	Avatar      string               `bson:"avatar" json:"avatar"`
-	BackupEmail string               `bson:"backup_email,omitempty" json:"backup_email"`
-	Lark        *UserLark            `bson:"lark,omitempty" json:"lark"`
-	Sessions    int64                `bson:"sessions,omitempty" json:"sessions"`
-	History     *LogsetLogined       `bson:"history,omitempty" json:"history"`
-	Status      bool                 `bson:"status" json:"status"`
-	CreateTime  time.Time            `bson:"create_time" json:"create_time"`
-	UpdateTime  time.Time            `bson:"update_time" json:"update_time"`
+	ID         primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
+	Email      string               `bson:"email" json:"email"`
+	Password   string               `bson:"password" json:"-"`
+	Roles      []primitive.ObjectID `bson:"roles" json:"-"`
+	Name       string               `bson:"name" json:"name"`
+	Avatar     string               `bson:"avatar" json:"avatar"`
+	Phone      string               `bson:"phone,omitempty" json:"-"`
+	Secret     string               `bson:"secret" json:"-"`
+	Lark       *UserLark            `bson:"lark,omitempty" json:"lark"`
+	Sessions   int64                `bson:"sessions,omitempty" json:"sessions"`
+	History    *LogsetLogined       `bson:"history,omitempty" json:"history"`
+	Status     bool                 `bson:"status" json:"status"`
+	CreateTime time.Time            `bson:"create_time" json:"create_time"`
+	UpdateTime time.Time            `bson:"update_time" json:"update_time"`
 }
 
 type UserLark struct {

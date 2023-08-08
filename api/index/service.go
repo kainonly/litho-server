@@ -155,17 +155,22 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 	}
 	user.History.Detail = detail
 
+	phone := ""
+	if user.Phone != "" {
+		phone = "*"
+	}
+
 	data = M{
-		"_id":          user.ID,
-		"email":        user.Email,
-		"name":         user.Name,
-		"avatar":       user.Avatar,
-		"backup_email": user.BackupEmail,
-		"sessions":     user.Sessions,
-		"history":      user.History,
-		"status":       user.Status,
-		"create_time":  user.CreateTime,
-		"update_time":  user.UpdateTime,
+		"_id":         user.ID,
+		"email":       user.Email,
+		"name":        user.Name,
+		"avatar":      user.Avatar,
+		"phone":       phone,
+		"sessions":    user.Sessions,
+		"history":     user.History,
+		"status":      user.Status,
+		"create_time": user.CreateTime,
+		"update_time": user.UpdateTime,
 	}
 
 	if user.Lark != nil {
