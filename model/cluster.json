@@ -1,0 +1,34 @@
+{
+  "$jsonSchema": {
+    "title": "cluster",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "name",
+      "kind",
+      "config",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "kind": {
+        "bsonType": "string"
+      },
+      "config": {
+        "bsonType": "string"
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    }
+  }
+}

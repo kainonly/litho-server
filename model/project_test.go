@@ -50,7 +50,7 @@ func TestMockProjects(t *testing.T) {
 	assert.NoError(t, err)
 	data := make([]interface{}, 0)
 	now := time.Now()
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 2000; i++ {
 		var project model.Project
 		err = faker.FakeData(&project)
 		assert.NoError(t, err)

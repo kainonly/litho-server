@@ -33,7 +33,10 @@
       "avatar": {
         "bsonType": "string"
       },
-      "backup_email": {
+      "phone": {
+        "bsonType": "string"
+      },
+      "secret": {
         "bsonType": "string"
       },
       "lark": {
