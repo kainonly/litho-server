@@ -65,6 +65,63 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
+type GetLoginSmsDto struct {
+	Phone string `query:"phone,required"`
+}
+
+func (x *Controller) GetLoginSms(ctx context.Context, c *app.RequestContext) {
+	var dto GetLoginSmsDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if _, err := x.IndexService.GetLoginSms(ctx, dto.Phone); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type LoginSmsDto struct {
+	Phone string `json:"phone,required"`
+	Code  string `json:"code,required"`
+}
+
+func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
+	var dto LoginSmsDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	r, err := x.IndexService.LoginSms(ctx, dto.Phone, dto.Code)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	go func() {
+		data := model.NewLogsetLogined(
+			r.User.ID, string(c.GetHeader("X-Forwarded-For")), "sms", string(c.UserAgent()))
+		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+			hlog.Fatal(err)
+		}
+	}()
+
+	common.SetAccessToken(c, r.AccessToken)
+	c.JSON(200, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
 type LoginTotpDto struct {
 	Email string `json:"email,required" vd:"email($)"`
 	Code  string `json:"code,required"`
@@ -249,7 +306,7 @@ func (x *Controller) GetUserPhoneCode(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	if _, err := x.IndexService.GenerateSmsCode(ctx, "sms-bind", dto.Phone); err != nil {
+	if _, err := x.IndexService.GetUserPhoneCode(ctx, dto.Phone); err != nil {
 		c.Error(err)
 		return
 	}
@@ -286,7 +343,7 @@ func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 
 func (x *Controller) GetUserTotp(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	r, err := x.IndexService.GenerateTotp(ctx, claims.UserId)
+	r, err := x.IndexService.GetUserTotp(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return

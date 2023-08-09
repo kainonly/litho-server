@@ -100,6 +100,63 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 	return
 }
 
+func (x *Service) GetLoginSms(ctx context.Context, phone string) (code string, err error) {
+	keyLock := x.V.Name("phone", phone)
+	if err = x.Locker.Verify(ctx, keyLock, x.V.LoginFailures); err != nil {
+		switch err {
+		case locker.ErrLockerNotExists:
+			err = nil
+			break
+		case locker.ErrLocked:
+			err = common.ErrLoginMaxFailures
+			return
+		default:
+			return
+		}
+	}
+
+	var n int64
+	if n, err = x.Db.Collection("users").CountDocuments(ctx, bson.M{"phone": phone}); err != nil {
+		return
+	}
+	if n == 0 {
+		x.Locker.Update(ctx, keyLock, time.Hour*24)
+		err = errors.NewPublic("该手机号码尚未绑定")
+		return
+	}
+
+	code = funk.RandomString(6, []rune("0123456789"))
+	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889615", []string{code}, []string{phone}); err != nil {
+		return
+	}
+	key := x.V.Name("sms-login", phone)
+	if exists := x.Captcha.Exists(ctx, key); exists {
+		err = errors.NewPublic("您的验证码请求频繁，请稍后再试")
+		return
+	}
+	x.Captcha.Create(ctx, key, code, time.Minute*2)
+	return
+}
+
+func (x *Service) LoginSms(ctx context.Context, phone string, code string) (r *LoginResult, err error) {
+	r = new(LoginResult)
+	if r.User, err = x.Logining(ctx, bson.M{"phone": phone, "status": true}); err != nil {
+		return
+	}
+
+	userId := r.User.ID.Hex()
+	if err = x.Captcha.Verify(ctx, x.V.Name("sms-login", phone), code); err != nil {
+		x.Locker.Update(ctx, userId, x.V.LoginTTL)
+		err = common.ErrLoginInvalid
+		return
+	}
+
+	if r.AccessToken, err = x.CreateAccessToken(ctx, userId); err != nil {
+		return
+	}
+	return
+}
+
 func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *LoginResult, err error) {
 	r = new(LoginResult)
 	if r.User, err = x.Logining(ctx, bson.M{"email": email, "status": true}); err != nil {
@@ -286,12 +343,12 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 	})
 }
 
-func (x *Service) GenerateSmsCode(ctx context.Context, kind string, phone string) (code string, err error) {
+func (x *Service) GetUserPhoneCode(ctx context.Context, phone string) (code string, err error) {
 	code = funk.RandomString(6, []rune("0123456789"))
 	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889620", []string{code}, []string{phone}); err != nil {
 		return
 	}
-	key := x.V.Name(kind, phone)
+	key := x.V.Name("sms-bind", phone)
 	if exists := x.Captcha.Exists(ctx, key); exists {
 		err = errors.NewPublic("您的验证码请求频繁，请稍后再试")
 		return
@@ -312,7 +369,7 @@ func (x *Service) SetUserPhone(ctx context.Context, userId string, phone string,
 	})
 }
 
-func (x *Service) GenerateTotp(ctx context.Context, userId string) (totp string, err error) {
+func (x *Service) GetUserTotp(ctx context.Context, userId string) (totp string, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
 	var user model.User
 	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
