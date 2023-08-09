@@ -32,10 +32,8 @@ type LoginResult struct {
 	AccessToken string
 }
 
-func (x *Service) Login(ctx context.Context, email string, password string) (r *LoginResult, err error) {
-	r = new(LoginResult)
-	if err = x.Db.Collection("users").
-		FindOne(ctx, bson.M{"email": email, "status": true}).Decode(&r.User); err != nil {
+func (x *Service) Logining(ctx context.Context, filter bson.M) (u model.User, err error) {
+	if err = x.Db.Collection("users").FindOne(ctx, filter).Decode(&u); err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = common.ErrLoginNotExists
 			return
@@ -43,10 +41,10 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 		return
 	}
 
-	userId := r.User.ID.Hex()
-	if err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
+	if err = x.Locker.Verify(ctx, u.ID.Hex(), x.V.LoginFailures); err != nil {
 		switch err {
 		case locker.ErrLockerNotExists:
+			err = nil
 			break
 		case locker.ErrLocked:
 			err = common.ErrLoginMaxFailures
@@ -56,6 +54,35 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 		}
 	}
 
+	return
+}
+
+func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
+	jti := uuid.New().String()
+	if ts, err = x.Passport.Create(userId, jti); err != nil {
+		return
+	}
+	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
+		err = common.ErrSession
+		return
+	}
+	x.Locker.Delete(ctx, userId)
+
+	key := x.V.Name("users", userId)
+	if err = x.RDb.Del(ctx, key).Err(); err != nil {
+		return
+	}
+
+	return
+}
+
+func (x *Service) Login(ctx context.Context, email string, password string) (r *LoginResult, err error) {
+	r = new(LoginResult)
+	if r.User, err = x.Logining(ctx, bson.M{"email": email, "status": true}); err != nil {
+		return
+	}
+
+	userId := r.User.ID.Hex()
 	if err = passlib.Verify(password, r.User.Password); err != nil {
 		if err == passlib.ErrNotMatch {
 			x.Locker.Update(ctx, userId, x.V.LoginTTL)
@@ -65,22 +92,39 @@ func (x *Service) Login(ctx context.Context, email string, password string) (r *
 		return
 	}
 
-	jti := uuid.New().String()
-	if r.AccessToken, err = x.Passport.Create(userId, jti); err != nil {
-		return
-	}
-	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
-		err = common.ErrSession
-		return
-	}
-	x.Locker.Delete(ctx, userId)
-
-	// Refresh user cache
-	key := x.V.Name("users", userId)
-	if err = x.RDb.Del(ctx, key).Err(); err != nil {
+	if r.AccessToken, err = x.CreateAccessToken(ctx, userId); err != nil {
 		return
 	}
 
+	return
+}
+
+func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *LoginResult, err error) {
+	r = new(LoginResult)
+	if r.User, err = x.Logining(ctx, bson.M{"email": email, "status": true}); err != nil {
+		return
+	}
+
+	userId := r.User.ID.Hex()
+	otpc := &dgoogauth.OTPConfig{
+		Secret:      r.User.Totp,
+		WindowSize:  1,
+		HotpCounter: 0,
+		UTC:         true,
+	}
+	var check bool
+	if check, err = otpc.Authenticate(code); err != nil {
+		return
+	}
+	if !check {
+		x.Locker.Update(ctx, userId, x.V.LoginTTL)
+		err = common.ErrLoginInvalid
+		return
+	}
+
+	if r.AccessToken, err = x.CreateAccessToken(ctx, userId); err != nil {
+		return
+	}
 	return
 }
 

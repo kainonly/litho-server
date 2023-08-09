@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,9 +24,10 @@ import (
 
 type Service struct {
 	*common.Inject
-	Sessions *sessions.Service
-	Locker   *locker.Locker
-	Passport *passport.Passport
+	Sessions     *sessions.Service
+	Locker       *locker.Locker
+	Passport     *passport.Passport
+	IndexService *index.Service
 }
 
 // Lark BaseURL https://open.larksuite.com/open-apis
@@ -141,6 +142,10 @@ type LoginResult struct {
 
 func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err error) {
 	r = new(LoginResult)
+	if r.User, err = x.IndexService.Logining(ctx, bson.M{"lark.open_id": openId, "status": true}); err != nil {
+		return
+	}
+
 	if err = x.Db.Collection("users").
 		FindOne(ctx, bson.M{"lark.open_id": openId, "status": true}).Decode(&r.User); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -151,33 +156,10 @@ func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err
 	}
 
 	userId := r.User.ID.Hex()
-	if err = x.Locker.Verify(ctx, userId, x.V.LoginFailures); err != nil {
-		switch err {
-		case locker.ErrLockerNotExists:
-			break
-		case locker.ErrLocked:
-			err = common.ErrLoginMaxFailures
-			return
-		default:
-			return
-		}
+	if r.AccessToken, err = x.IndexService.CreateAccessToken(ctx, userId); err != nil {
+		return
 	}
 
-	jti := uuid.New().String()
-	if r.AccessToken, err = x.Passport.Create(userId, jti); err != nil {
-		return
-	}
-	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
-		err = common.ErrSession
-		return
-	}
-	x.Locker.Delete(ctx, userId)
-
-	// Refresh user cache
-	key := x.V.Name("users", userId)
-	if err = x.RDb.Del(ctx, key).Err(); err != nil {
-		return
-	}
 	return
 }
 
