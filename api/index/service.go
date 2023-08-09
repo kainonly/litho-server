@@ -259,7 +259,21 @@ func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (re
 	return
 }
 
-func (x *Service) SetUserPassword(ctx context.Context, userId string, password string) (r interface{}, err error) {
+func (x *Service) SetUserPassword(ctx context.Context, userId string, old string, password string) (r interface{}, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	var user model.User
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{"_id": id}).Decode(&user); err != nil {
+		return
+	}
+
+	if err = passlib.Verify(old, user.Password); err != nil {
+		if err == passlib.ErrNotMatch {
+			err = errors.NewPublic(passlib.ErrNotMatch.Error())
+			return
+		}
+	}
+
 	var hash string
 	if hash, err = passlib.Hash(password); err != nil {
 		return

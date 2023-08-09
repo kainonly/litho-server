@@ -101,10 +101,11 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		TencentService: tencentService,
 	}
 	larkService := &lark.Service{
-		Inject:   inject,
-		Sessions: sessionsService,
-		Locker:   locker,
-		Passport: passport,
+		Inject:       inject,
+		Sessions:     sessionsService,
+		Locker:       locker,
+		Passport:     passport,
+		IndexService: indexService,
 	}
 	larkController := &lark.Controller{
 		Values:       values2,

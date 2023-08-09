@@ -222,6 +222,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserPassword struct {
+	Old      string `json:"old,required" vd:"len($)>8;msg:'must be greater than 8 characters'"`
 	Password string `json:"password,required" vd:"len($)>8;msg:'must be greater than 8 characters'"`
 }
 
@@ -233,7 +234,7 @@ func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext)
 	}
 
 	claims := common.Claims(c)
-	if _, err := x.IndexService.SetUserPassword(ctx, claims.UserId, dto.Password); err != nil {
+	if _, err := x.IndexService.SetUserPassword(ctx, claims.UserId, dto.Old, dto.Password); err != nil {
 		c.Error(err)
 		return
 	}
