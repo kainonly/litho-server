@@ -82,6 +82,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_user.GET("", x.Index.GetUser)
 		_user.PATCH("", x.Index.SetUser)
 		_user.POST("password", x.Index.SetUserPassword)
+		_user.GET("phone_code", x.Index.GetUserPhoneCode)
 		_user.POST("phone", x.Index.SetUserPhone)
 		_user.GET("totp", x.Index.GetUserTotp)
 		_user.POST("totp", x.Index.SetUserTotp)

@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/dgryski/dgoogauth"
 	"github.com/google/uuid"
+	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/go/passport"
@@ -285,8 +286,24 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 	})
 }
 
+func (x *Service) GenerateSmsCode(ctx context.Context, kind string, phone string) (code string, err error) {
+	code = funk.RandomString(6, []rune("0123456789"))
+	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889620", []string{code}, []string{phone}); err != nil {
+		return
+	}
+	key := x.V.Name(kind, phone)
+	if exists := x.Captcha.Exists(ctx, key); exists {
+		err = errors.NewPublic("您的验证码请求频繁，请稍后再试")
+		return
+	}
+	x.Captcha.Create(ctx, key, code, time.Minute*2)
+	return
+}
+
 func (x *Service) SetUserPhone(ctx context.Context, userId string, phone string, code string) (r interface{}, err error) {
-	// TODO: SMS verify...
+	if err = x.Captcha.Verify(ctx, x.V.Name("sms-bind", phone), code); err != nil {
+		return
+	}
 
 	return x.SetUser(ctx, userId, bson.M{
 		"$set": bson.M{

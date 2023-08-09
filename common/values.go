@@ -43,6 +43,10 @@ type Extra struct {
 	IpAddress             string `yaml:"ip_address"`
 	IpSecretId            string `yaml:"ip_secret_id"`
 	IpSecretKey           string `yaml:"ip_secret_key"`
+	SmsSecretId           string `yaml:"sms_secret_id"`
+	SmsSecretKey          string `yaml:"sms_secret_key" secret:"*"`
+	SmsAppId              string `yaml:"sms_app_id"`
+	SmsRegion             string `yaml:"sms_region"`
 	*values.DynamicValues `yaml:"dynamic_values"`
 }
 
