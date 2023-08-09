@@ -10,6 +10,9 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
 	"github.com/google/uuid"
+	tcommon "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"github.com/weplanx/server/common"
 	"net/http"
@@ -165,5 +168,26 @@ func (x *Service) GetCity(ctx context.Context, ip string) (r *CityResult, err er
 		return
 	}
 
+	return
+}
+
+func (x *Service) SmsSend(ctx context.Context, sign string, tid string, params []string, phone []string) (err error) {
+	credential := tcommon.NewCredential(
+		x.V.SmsSecretId,
+		x.V.SmsSecretKey,
+	)
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.Endpoint = "sms.tencentcloudapi.com"
+	client, _ := sms.NewClient(credential, x.V.SmsRegion, cpf)
+	request := sms.NewSendSmsRequest()
+	request.SmsSdkAppId = tcommon.StringPtr(x.V.SmsAppId)
+	request.SignName = tcommon.StringPtr(sign)
+	request.TemplateId = tcommon.StringPtr(tid)
+	request.TemplateParamSet = tcommon.StringPtrs(params)
+	request.PhoneNumberSet = tcommon.StringPtrs(phone)
+	request.SetContext(ctx)
+	if _, err = client.SendSms(request); err != nil {
+		return
+	}
 	return
 }

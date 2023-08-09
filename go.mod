@@ -8,6 +8,8 @@ require (
 	github.com/bytedance/sonic v1.9.2
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudwego/hertz v0.6.6
+	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
+	github.com/go-faker/faker/v4 v4.1.1
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
@@ -20,7 +22,10 @@ require (
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/stretchr/testify v1.8.4
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.719
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.719
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.42
+	github.com/thoas/go-funk v0.9.3
 	github.com/weplanx/go v0.4.6
 	github.com/weplanx/transfer v1.8.2
 	go.mongodb.org/mongo-driver v1.12.0
@@ -36,10 +41,8 @@ require (
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
-	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-faker/faker/v4 v4.1.1 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
@@ -60,7 +63,6 @@ require (
 	github.com/nyaruka/phonenumbers v1.1.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

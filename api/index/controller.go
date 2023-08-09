@@ -24,13 +24,6 @@ type Controller struct {
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
-	if !x.V.IsRelease() {
-		c.JSON(http.StatusOK, M{
-			"extra": x.V.Extra,
-		})
-		return
-	}
-
 	c.JSON(http.StatusOK, M{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
@@ -235,6 +228,28 @@ func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext)
 
 	claims := common.Claims(c)
 	if _, err := x.IndexService.SetUserPassword(ctx, claims.UserId, dto.Old, dto.Password); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type GetUserPhone struct {
+	Phone string `query:"phone,required"`
+}
+
+func (x *Controller) GetUserPhoneCode(ctx context.Context, c *app.RequestContext) {
+	var dto GetUserPhone
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if _, err := x.IndexService.GenerateSmsCode(ctx, "sms-bind", dto.Phone); err != nil {
 		c.Error(err)
 		return
 	}
