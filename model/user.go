@@ -13,7 +13,7 @@ type User struct {
 	Name       string               `bson:"name" json:"name"`
 	Avatar     string               `bson:"avatar" json:"avatar"`
 	Phone      string               `bson:"phone,omitempty" json:"-"`
-	Secret     string               `bson:"secret" json:"-"`
+	Totp       string               `bson:"totp,omitempty" json:"-"`
 	Lark       *UserLark            `bson:"lark,omitempty" json:"lark"`
 	Sessions   int64                `bson:"sessions,omitempty" json:"sessions"`
 	History    *LogsetLogined       `bson:"history,omitempty" json:"history"`

@@ -2,7 +2,10 @@ package index
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/dgryski/dgoogauth"
 	"github.com/google/uuid"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
@@ -14,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"net/url"
 	"time"
 )
 
@@ -160,6 +164,11 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 		phone = "*"
 	}
 
+	totp := ""
+	if user.Totp != "" {
+		totp = "*"
+	}
+
 	data = M{
 		"_id":         user.ID,
 		"email":       user.Email,
@@ -168,6 +177,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 		"phone":       phone,
 		"sessions":    user.Sessions,
 		"history":     user.History,
+		"totp":        totp,
 		"status":      user.Status,
 		"create_time": user.CreateTime,
 		"update_time": user.UpdateTime,
@@ -203,4 +213,92 @@ func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (re
 	}
 
 	return
+}
+
+func (x *Service) SetUserPassword(ctx context.Context, userId string, password string) (r interface{}, err error) {
+	var hash string
+	if hash, err = passlib.Hash(password); err != nil {
+		return
+	}
+	return x.SetUser(ctx, userId, bson.M{
+		"$set": bson.M{
+			"password": hash,
+		},
+	})
+}
+
+func (x *Service) SetUserPhone(ctx context.Context, userId string, phone string, code string) (r interface{}, err error) {
+	// TODO: SMS verify...
+
+	return x.SetUser(ctx, userId, bson.M{
+		"$set": bson.M{
+			"phone": phone,
+		},
+	})
+}
+
+func (x *Service) GenerateTotp(ctx context.Context, userId string) (totp string, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	var user model.User
+	if err = x.Db.Collection("users").FindOne(ctx, bson.M{
+		"_id": id,
+	}).Decode(&user); err != nil {
+		return
+	}
+	random := make([]byte, 10)
+	if _, err = rand.Read(random); err != nil {
+		return
+	}
+	secret := base32.StdEncoding.EncodeToString(random)
+	var u *url.URL
+	if u, err = url.Parse("otpauth://totp"); err != nil {
+		return
+	}
+	u.Path += "/" + url.PathEscape(x.V.Namespace) + ":" + url.PathEscape(user.Email)
+	params := url.Values{}
+	params.Add("secret", secret)
+	params.Add("issuer", x.V.Namespace)
+	u.RawQuery = params.Encode()
+	totp = u.String()
+
+	if err = x.RDb.Set(ctx, totp, secret, time.Minute*5).Err(); err != nil {
+		return
+	}
+
+	return
+}
+
+func (x *Service) SetUserTotp(ctx context.Context, userId string, totp string, tss [2]string) (r interface{}, err error) {
+	if tss[0] == tss[1] {
+		return "", common.ErrTOTPInvalid
+	}
+	var secret string
+	if secret, err = x.RDb.Get(ctx, totp).Result(); err != nil {
+		return
+	}
+	otpc := &dgoogauth.OTPConfig{
+		Secret:      secret,
+		WindowSize:  2,
+		HotpCounter: 0,
+		UTC:         true,
+	}
+	for _, v := range tss {
+		var check bool
+		if check, err = otpc.Authenticate(v); err != nil {
+			return
+		}
+		if !check {
+			return "", common.ErrTOTPInvalid
+		}
+	}
+
+	if err = x.RDb.Del(ctx, totp).Err(); err != nil {
+		return
+	}
+
+	return x.SetUser(ctx, userId, bson.M{
+		"$set": bson.M{
+			"totp": secret,
+		},
+	})
 }

@@ -36,6 +36,7 @@ require (
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
+	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-faker/faker/v4 v4.1.1 // indirect
