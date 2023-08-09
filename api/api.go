@@ -80,7 +80,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_user := h.Group("user", m...)
 	{
 		_user.GET("", x.Index.GetUser)
-		_user.POST("", x.Index.SetUser)
+		_user.PATCH("", x.Index.SetUser)
+		_user.POST("password", x.Index.SetUserPassword)
+		_user.POST("phone", x.Index.SetUserPhone)
+		_user.GET("totp", x.Index.GetUserTotp)
+		_user.POST("totp", x.Index.SetUserTotp)
 		_user.DELETE(":key", x.Index.UnsetUser)
 	}
 	_tencent := h.Group("tencent", m...)

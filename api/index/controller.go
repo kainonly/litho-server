@@ -8,7 +8,6 @@ import (
 	"github.com/huandu/xstrings"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/csrf"
-	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -167,12 +166,10 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	Set         string `json:"$set,required" vd:"in($, 'email', 'name', 'avatar', 'password', 'backup_email')"`
-	Email       string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
-	Name        string `json:"name,omitempty"`
-	BackupEmail string `json:"backup_email,omitempty" vd:"(Set)$!='BackupEmail' || email($);msg:'must be email'"`
-	Avatar      string `json:"avatar,omitempty"`
-	Password    string `json:"password,omitempty" vd:"(Set)$!='Password' || len($)>8;msg:'must be greater than 8 characters'"`
+	Key    string `json:"key,required" vd:"in($, 'email', 'name', 'avatar')"`
+	Email  string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
+	Name   string `json:"name,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 }
 
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
@@ -181,20 +178,97 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
+
 	data := make(map[string]interface{})
-	path := xstrings.ToCamelCase(dto.Set)
-	value := reflect.ValueOf(dto).FieldByName(path).Interface()
-	if dto.Set == "password" {
-		data[dto.Set], _ = passlib.Hash(value.(string))
-	} else {
-		data[dto.Set] = value
+	path := xstrings.ToCamelCase(dto.Key)
+	data[dto.Key] = reflect.ValueOf(dto).FieldByName(path).Interface()
+
+	claims := common.Claims(c)
+	if _, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{"$set": data}); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type SetUserPassword struct {
+	Password string `json:"password,required" vd:"len($)>8;msg:'must be greater than 8 characters'"`
+}
+
+func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext) {
+	var dto SetUserPassword
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
 	}
 
 	claims := common.Claims(c)
-	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
-		"$set": data,
+	if _, err := x.IndexService.SetUserPassword(ctx, claims.UserId, dto.Password); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, M{
+		"code":    0,
+		"message": "ok",
 	})
+}
+
+type SetUserPhone struct {
+	Phone string `json:"phone,required"`
+	Code  string `json:"code,required"`
+}
+
+func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
+	var dto SetUserPhone
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	claims := common.Claims(c)
+	if _, err := x.IndexService.SetUserPhone(ctx, claims.UserId, dto.Phone, dto.Code); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+func (x *Controller) GetUserTotp(ctx context.Context, c *app.RequestContext) {
+	claims := common.Claims(c)
+	r, err := x.IndexService.GenerateTotp(ctx, claims.UserId)
 	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, M{
+		"totp": r,
+	})
+}
+
+type SetUserTotp struct {
+	Totp string    `json:"totp,required"`
+	Tss  [2]string `json:"tss,required"`
+}
+
+func (x *Controller) SetUserTotp(ctx context.Context, c *app.RequestContext) {
+	var dto SetUserTotp
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	claims := common.Claims(c)
+	if _, err := x.IndexService.SetUserTotp(ctx, claims.UserId, dto.Totp, dto.Tss); err != nil {
 		c.Error(err)
 		return
 	}
@@ -206,7 +280,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type UnsetUserDto struct {
-	Key string `path:"key,required" vd:"in($, 'lark')"`
+	Key string `path:"key,required" vd:"in($, 'phone', 'totp', 'lark')"`
 }
 
 func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
