@@ -63,6 +63,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 	h.GET("", x.Index.Ping)
 	h.POST("login", x.Index.Login)
+	h.GET("login/sms", x.Index.GetLoginSms)
+	h.POST("login/sms", x.Index.LoginSms)
 	h.POST("login/totp", x.Index.LoginTotp)
 	h.GET("verify", x.Index.Verify)
 	h.GET("options", x.Index.Options)
