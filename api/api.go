@@ -62,8 +62,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
 
 	h.GET("", x.Index.Ping)
-	h.GET("err", x.Index.MockErr)
 	h.POST("login", x.Index.Login)
+	h.POST("login/totp", x.Index.LoginTotp)
 	h.GET("verify", x.Index.Verify)
 	h.GET("options", x.Index.Options)
 	h.GET("code", auth, x.Index.GetRefreshCode)

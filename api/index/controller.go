@@ -37,15 +37,6 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	})
 }
 
-func (x *Controller) MockErr(_ context.Context, c *app.RequestContext) {
-	c.JSON(http.StatusBadRequest, M{
-		"code": 1000,
-		"msg":  "mock err",
-	})
-}
-
-//func (x *Controller) R
-
 type LoginDto struct {
 	Email    string `json:"email,required" vd:"email($)"`
 	Password string `json:"password,required" vd:"len($)>=8"`
@@ -67,6 +58,41 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogined(
 			r.User.ID, string(c.GetHeader("X-Forwarded-For")), "email", string(c.UserAgent()))
+		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+			hlog.Fatal(err)
+		}
+	}()
+
+	common.SetAccessToken(c, r.AccessToken)
+	c.JSON(200, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type LoginTotpDto struct {
+	Email string `json:"email,required" vd:"email($)"`
+	Code  string `json:"code,required"`
+}
+
+func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
+	var dto LoginTotpDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	r, err := x.IndexService.LoginTotp(ctx, dto.Email, dto.Code)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	go func() {
+		data := model.NewLogsetLogined(
+			r.User.ID, string(c.GetHeader("X-Forwarded-For")), "totp", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
