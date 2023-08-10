@@ -148,7 +148,8 @@ func (x *Service) LoginSms(ctx context.Context, phone string, code string) (r *L
 	}
 
 	userId := r.User.ID.Hex()
-	if err = x.Captcha.Verify(ctx, fmt.Sprintf(`sms-login:%s`, phone), code); err != nil {
+	key := fmt.Sprintf(`sms-login:%s`, phone)
+	if err = x.Captcha.Verify(ctx, key, code); err != nil {
 		x.Locker.Update(ctx, userId, x.V.LoginTTL)
 		err = common.ErrSmsInvalid
 		return
@@ -157,6 +158,7 @@ func (x *Service) LoginSms(ctx context.Context, phone string, code string) (r *L
 	if r.AccessToken, err = x.CreateAccessToken(ctx, userId); err != nil {
 		return
 	}
+	x.Captcha.Delete(ctx, key)
 	return
 }
 
@@ -458,6 +460,7 @@ func (x *Service) SetUserPhone(ctx context.Context, userId string, phone string,
 		return
 	}
 
+	x.Captcha.Delete(ctx, key)
 	return x.SetUser(ctx, userId, bson.M{
 		"$set": bson.M{
 			"phone": phone,
