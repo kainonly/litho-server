@@ -17,6 +17,7 @@ import (
 	"github.com/weplanx/go/rest"
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
+	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -29,13 +30,14 @@ import (
 )
 
 var Provides = wire.NewSet(
-	index.Provides,
-	tencent.Provides,
-	lark.Provides,
-	observability.Provides,
 	wire.Struct(new(values.Controller), "*"),
 	wire.Struct(new(sessions.Controller), "*"),
 	wire.Struct(new(rest.Controller), "*"),
+	index.Provides,
+	tencent.Provides,
+	lark.Provides,
+	clusters.Provides,
+	observability.Provides,
 )
 
 type API struct {
@@ -50,9 +52,11 @@ type API struct {
 	Index                *index.Controller
 	IndexService         *index.Service
 	Tencent              *tencent.Controller
-	TencentSerice        *tencent.Service
+	TencentService       *tencent.Service
 	Lark                 *lark.Controller
 	LarkService          *lark.Service
+	Clusters             *clusters.Controller
+	ClustersService      *clusters.Service
 	Observability        *observability.Controller
 	ObservabilityService *observability.Service
 }
