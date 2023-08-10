@@ -159,7 +159,6 @@ func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err
 	if r.AccessToken, err = x.Index.CreateAccessToken(ctx, userId); err != nil {
 		return
 	}
-
 	return
 }
 
