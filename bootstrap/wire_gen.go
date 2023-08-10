@@ -11,6 +11,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -113,6 +114,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		LarkService:  larkService,
 		IndexService: indexService,
 	}
+	clustersService := &clusters.Service{
+		Inject: inject,
+	}
+	clustersController := &clusters.Controller{
+		ClustersService: clustersService,
+	}
 	observabilityService := &observability.Service{
 		Inject: inject,
 	}
@@ -130,9 +137,11 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Index:                indexController,
 		IndexService:         indexService,
 		Tencent:              tencentController,
-		TencentSerice:        tencentService,
+		TencentService:       tencentService,
 		Lark:                 larkController,
 		LarkService:          larkService,
+		Clusters:             clustersController,
+		ClustersService:      clustersService,
 		Observability:        observabilityController,
 		ObservabilityService: observabilityService,
 	}
