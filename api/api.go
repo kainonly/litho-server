@@ -62,15 +62,20 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	auth := x.AuthGuard()
 
 	h.GET("", x.Index.Ping)
-	h.POST("login", x.Index.Login)
-	h.GET("login/sms", x.Index.GetLoginSms)
-	h.POST("login/sms", x.Index.LoginSms)
-	h.POST("login/totp", x.Index.LoginTotp)
+	_login := h.Group("login")
+	{
+		_login.POST("", x.Index.Login)
+		_login.GET("sms", x.Index.GetLoginSms)
+		_login.POST("sms", x.Index.LoginSms)
+		_login.POST("totp", x.Index.LoginTotp)
+	}
+	h.GET("forget_code", x.Index.GetForgetCode)
+	h.POST("forget_reset", x.Index.ForgetReset)
 	h.GET("verify", x.Index.Verify)
-	h.GET("options", x.Index.Options)
-	h.GET("code", auth, x.Index.GetRefreshCode)
+	h.GET("refresh_code", auth, x.Index.GetRefreshCode)
 	h.POST("refresh_token", auth, x.Index.RefreshToken)
 	h.POST("logout", auth, x.Index.Logout)
+	h.GET("options", x.Index.Options)
 
 	m := []app.HandlerFunc{auth, x.Audit()}
 	u := h.Group("", m...)

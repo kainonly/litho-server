@@ -157,6 +157,52 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
+type GetForgetCodeDto struct {
+	Email string `query:"email,required" vd:"email($)"`
+}
+
+func (x *Controller) GetForgetCode(ctx context.Context, c *app.RequestContext) {
+	var dto GetForgetCodeDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := x.IndexService.GetForgetCode(ctx, dto.Email); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
+type ForgetResetDto struct {
+	Email    string `json:"email,required" vd:"email($)"`
+	Code     string `json:"code,required"`
+	Password string `json:"password,required"`
+}
+
+func (x *Controller) ForgetReset(ctx context.Context, c *app.RequestContext) {
+	var dto ForgetResetDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := x.IndexService.ForgetReset(ctx, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, M{
+		"code":    0,
+		"message": "ok",
+	})
+}
+
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("access_token")
 	if ts == nil {
