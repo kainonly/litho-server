@@ -81,7 +81,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	sessionsController := &sessions.Controller{
 		Service: sessionsService,
 	}
-	restService := UseRest(values2, client, database, redisClient, jetStreamContext, keyValue)
+	restService := UseRest(values2, client, database, redisClient, jetStreamContext, keyValue, cipher)
 	restController := &rest.Controller{
 		Service: restService,
 	}

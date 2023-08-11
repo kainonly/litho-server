@@ -13,3 +13,10 @@ type Cluster struct {
 	CreateTime time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
 }
+
+type ClusterKubeConfig struct {
+	Host     string `json:"host"`
+	CAData   string `json:"ca_data"`
+	CertData string `json:"cert_data"`
+	KeyData  string `json:"key_data"`
+}

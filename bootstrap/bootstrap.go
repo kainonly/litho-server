@@ -13,6 +13,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
+	"github.com/weplanx/collector/transfer"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/csrf"
@@ -22,7 +23,6 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -30,7 +30,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"time"
 )
 
 func LoadStaticValues() (v *common.Values, err error) {
@@ -92,9 +91,6 @@ func UseNats(v *common.Values) (nc *nats.Conn, err error) {
 	}
 	if nc, err = nats.Connect(
 		strings.Join(v.Nats.Hosts, ","),
-		nats.MaxReconnects(5),
-		nats.ReconnectWait(2*time.Second),
-		nats.ReconnectJitter(500*time.Millisecond, 2*time.Second),
 		nats.Nkey(pub, func(nonce []byte) ([]byte, error) {
 			sig, _ := kp.Sign(nonce)
 			return sig, nil
@@ -137,6 +133,7 @@ func UseRest(
 	rdb *redis.Client,
 	js nats.JetStreamContext,
 	keyvalue nats.KeyValue,
+	xcipher *cipher.Cipher,
 ) *rest.Service {
 	return rest.New(
 		rest.SetNamespace(v.Namespace),
@@ -146,6 +143,7 @@ func UseRest(
 		rest.SetJetStream(js),
 		rest.SetKeyValue(keyvalue),
 		rest.SetDynamicValues(v.DynamicValues),
+		rest.SetCipher(xcipher),
 	)
 }
 
