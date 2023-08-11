@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
+	"github.com/weplanx/collector/transfer"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
@@ -23,7 +24,6 @@ import (
 	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/transfer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"time"
@@ -81,7 +81,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("logout", auth, x.Index.Logout)
 	h.GET("options", x.Index.Options)
 
-	m := []app.HandlerFunc{auth, x.Audit()}
+	m := []app.HandlerFunc{auth}
 	u := h.Group("", m...)
 	{
 		help.ValuesRoutes(u, x.Values)
@@ -181,7 +181,7 @@ func (x *API) Audit() app.HandlerFunc {
 				"status":     c.Response.StatusCode(),
 				"user_agent": string(c.Request.Header.UserAgent()),
 			},
-			Format: format,
+			XData: format,
 		})
 	}
 }
@@ -256,7 +256,7 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 
 	go x.Values.Service.Sync(x.V.Extra, nil)
 
-	if err = x.Transfer.Set(ctx, transfer.LogOption{
+	if err = x.Transfer.Set(ctx, transfer.StreamOption{
 		Key: "logset_operates",
 	}); err != nil {
 		return
