@@ -16,6 +16,7 @@ import (
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/tencent"
+	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
 )
 
@@ -51,6 +52,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	passport := UsePassport(values2)
 	captcha := UseCaptcha(values2, redisClient)
 	locker := UseLocker(values2, redisClient)
+	workflow := UseWorkflow(values2, conn, jetStreamContext)
 	inject := &common.Inject{
 		V:         values2,
 		Mgo:       client,
@@ -63,6 +65,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Passport:  passport,
 		Captcha:   captcha,
 		Locker:    locker,
+		Workflow:  workflow,
 	}
 	hertz, err := UseHertz(values2)
 	if err != nil {
@@ -120,6 +123,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	clustersController := &clusters.Controller{
 		ClustersService: clustersService,
 	}
+	workflowsService := &workflows.Service{
+		Inject: inject,
+	}
+	workflowsController := &workflows.Controller{
+		WorkflowService: workflowsService,
+	}
 	observabilityService := &observability.Service{
 		Inject: inject,
 	}
@@ -142,6 +151,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		LarkService:          larkService,
 		Clusters:             clustersController,
 		ClustersService:      clustersService,
+		Workflows:            workflowsController,
+		WorkflowsService:     workflowsService,
 		Observability:        observabilityController,
 		ObservabilityService: observabilityService,
 	}

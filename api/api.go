@@ -23,6 +23,7 @@ import (
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/tencent"
+	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
@@ -37,6 +38,7 @@ var Provides = wire.NewSet(
 	tencent.Provides,
 	lark.Provides,
 	clusters.Provides,
+	workflows.Provides,
 	observability.Provides,
 )
 
@@ -57,6 +59,8 @@ type API struct {
 	LarkService          *lark.Service
 	Clusters             *clusters.Controller
 	ClustersService      *clusters.Service
+	Workflows            *workflows.Controller
+	WorkflowsService     *workflows.Service
 	Observability        *observability.Controller
 	ObservabilityService *observability.Service
 }
@@ -176,10 +180,9 @@ func (x *API) Audit() app.HandlerFunc {
 					"user_id":   userId,
 					"client_ip": c.ClientIP(),
 				},
-				"params":     string(c.Request.QueryString()),
-				"body":       c.Request.Body(),
-				"status":     c.Response.StatusCode(),
-				"user_agent": string(c.Request.Header.UserAgent()),
+				"params": string(c.Request.QueryString()),
+				"body":   c.Request.Body(),
+				"status": c.Response.StatusCode(),
 			},
 			XData: format,
 		})
