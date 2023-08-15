@@ -7,11 +7,11 @@ import (
 	"testing"
 )
 
-func TestCreateLogsetOperatesCollection(t *testing.T) {
+func TestCreateLogsetJobsCollection(t *testing.T) {
 	ctx := context.TODO()
-	err := x.Db.Collection("logset_operates").Drop(ctx)
+	err := x.Db.Collection("logset_jobs").Drop(ctx)
 	assert.NoError(t, err)
-	err = x.Db.Collection("logset_operates_fail").Drop(ctx)
+	err = x.Db.Collection("logset_jobs_fail").Drop(ctx)
 	assert.NoError(t, err)
 	option := options.CreateCollection().
 		SetTimeSeriesOptions(
@@ -20,8 +20,8 @@ func TestCreateLogsetOperatesCollection(t *testing.T) {
 				SetMetaField("metadata"),
 		).
 		SetExpireAfterSeconds(31536000)
-	err = x.Db.CreateCollection(ctx, "logset_operates", option)
+	err = x.Db.CreateCollection(ctx, "logset_jobs", option)
 	assert.NoError(t, err)
-	err = x.Db.CreateCollection(ctx, "logset_operates_fail", option)
+	err = x.Db.CreateCollection(ctx, "logset_jobs_fail", option)
 	assert.NoError(t, err)
 }
