@@ -115,6 +115,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_lark.POST("tasks", x.Lark.CreateTasks)
 		_lark.GET("tasks", x.Lark.GetTasks)
 	}
+	_clusters := h.Group("clusters", m...)
+	{
+		_clusters.GET(":id/nodes", x.Clusters.GetNodes)
+	}
 	_observability := h.Group("observability", m...)
 	{
 		_observability.GET(":name", x.Observability.Exporters)
