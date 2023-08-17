@@ -18,7 +18,7 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (items []v1.Node, err error) {
+func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (data []interface{}, err error) {
 	var cluster model.Cluster
 	if err = x.Db.Collection("clusters").FindOne(ctx,
 		bson.M{"_id": id},
@@ -34,15 +34,20 @@ func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (items []
 	if nodes, err = kube.CoreV1().Nodes().List(ctx, meta.ListOptions{}); err != nil {
 		return
 	}
-	items = nodes.Items
-	var data []interface{}
 	for _, v := range nodes.Items {
 		data = append(data, M{
-			"name":           v.Name,
-			"KubeletVersion": v.Status.NodeInfo.KubeletVersion,
+			"name":         v.GetName(),
+			"create":       v.GetCreationTimestamp(),
+			"hostname":     v.Annotations["k3s.io/hostname"],
+			"ip":           v.Annotations["k3s.io/internal-ip"],
+			"version":      v.Status.NodeInfo.KubeletVersion,
+			"cpu":          v.Status.Allocatable.Cpu().Value(),
+			"mem":          v.Status.Allocatable.Memory().Value(),
+			"storage":      v.Status.Allocatable.StorageEphemeral().Value(),
+			"os":           v.Status.NodeInfo.OSImage,
+			"architecture": v.Status.NodeInfo.Architecture,
 		})
 	}
-
 	return
 }
 
