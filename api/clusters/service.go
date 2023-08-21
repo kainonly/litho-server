@@ -40,10 +40,22 @@ func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, e
 		return
 	}
 
+	cpu := int64(0)
+	mem := int64(0)
+	storage := int64(0)
+	for _, v := range nodes.Items {
+		cpu += v.Status.Allocatable.Cpu().Value()
+		mem += v.Status.Allocatable.Memory().Value()
+		storage += v.Status.Allocatable.StorageEphemeral().Value()
+	}
+
 	data = M{
 		"version":  info.String(),
 		"platform": info.Platform,
 		"nodes":    len(nodes.Items),
+		"cpu":      cpu,
+		"mem":      mem,
+		"storage":  storage,
 	}
 
 	return
