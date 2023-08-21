@@ -117,6 +117,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	}
 	_clusters := h.Group("clusters", m...)
 	{
+		_clusters.GET(":id/info", x.Clusters.GetInfo)
 		_clusters.GET(":id/nodes", x.Clusters.GetNodes)
 	}
 	_observability := h.Group("observability", m...)
