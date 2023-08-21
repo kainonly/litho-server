@@ -10,12 +10,43 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	v1 "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 type Service struct {
 	*common.Inject
+}
+
+func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, err error) {
+	var cluster model.Cluster
+	if err = x.Db.Collection("clusters").FindOne(ctx,
+		bson.M{"_id": id},
+	).Decode(&cluster); err != nil {
+		return
+	}
+
+	var kube *kubernetes.Clientset
+	if kube, err = x.GetKube(cluster.Config); err != nil {
+		return
+	}
+	var info *version.Info
+	if info, err = kube.ServerVersion(); err != nil {
+		return
+	}
+	var nodes *v1.NodeList
+	if nodes, err = kube.CoreV1().Nodes().List(ctx, meta.ListOptions{}); err != nil {
+		return
+	}
+
+	data = M{
+		"version":  info.String(),
+		"platform": info.Platform,
+		"nodes":    len(nodes.Items),
+	}
+
+	return
 }
 
 func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (data []interface{}, err error) {
