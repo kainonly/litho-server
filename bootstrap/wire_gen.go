@@ -132,6 +132,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	}
 	datasetsService := &datasets.Service{
 		Inject: inject,
+		Values: service,
 	}
 	datasetsController := &datasets.Controller{
 		DatasetsService: datasetsService,
