@@ -127,6 +127,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_datasets := h.Group("datasets", m...)
 	{
 		_datasets.GET("", x.Datasets.Lists)
+		_datasets.POST("create", x.Datasets.Create)
+		_datasets.DELETE(":name", x.Datasets.Delete)
 	}
 	_observability := h.Group("observability", m...)
 	{
