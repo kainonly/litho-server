@@ -12,6 +12,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/clusters"
+	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -129,6 +130,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	workflowsController := &workflows.Controller{
 		WorkflowService: workflowsService,
 	}
+	datasetsService := &datasets.Service{
+		Inject: inject,
+	}
+	datasetsController := &datasets.Controller{
+		DatasetsService: datasetsService,
+	}
 	observabilityService := &observability.Service{
 		Inject: inject,
 	}
@@ -153,6 +160,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		ClustersService:      clustersService,
 		Workflows:            workflowsController,
 		WorkflowsService:     workflowsService,
+		Datasets:             datasetsController,
+		DatasetsService:      datasetsService,
 		Observability:        observabilityController,
 		ObservabilityService: observabilityService,
 	}
