@@ -9,5 +9,4 @@ type Service struct {
 }
 
 func (x *Service) Get() {
-
 }

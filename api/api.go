@@ -19,6 +19,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/clusters"
+	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -39,6 +40,7 @@ var Provides = wire.NewSet(
 	lark.Provides,
 	clusters.Provides,
 	workflows.Provides,
+	datasets.Provides,
 	observability.Provides,
 )
 
@@ -61,6 +63,8 @@ type API struct {
 	ClustersService      *clusters.Service
 	Workflows            *workflows.Controller
 	WorkflowsService     *workflows.Service
+	Datasets             *datasets.Controller
+	DatasetsService      *datasets.Service
 	Observability        *observability.Controller
 	ObservabilityService *observability.Service
 }
@@ -119,6 +123,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_clusters.GET(":id/info", x.Clusters.GetInfo)
 		_clusters.GET(":id/nodes", x.Clusters.GetNodes)
+	}
+	_datasets := h.Group("datasets", m...)
+	{
+		_datasets.GET("", x.Datasets.Lists)
 	}
 	_observability := h.Group("observability", m...)
 	{
