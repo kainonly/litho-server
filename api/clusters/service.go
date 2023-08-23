@@ -50,12 +50,11 @@ func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, e
 	}
 
 	data = M{
-		"version":  info.String(),
-		"platform": info.Platform,
-		"nodes":    len(nodes.Items),
-		"cpu":      cpu,
-		"mem":      mem,
-		"storage":  storage,
+		"version": info.String(),
+		"nodes":   len(nodes.Items),
+		"cpu":     cpu,
+		"mem":     mem,
+		"storage": storage,
 	}
 
 	return

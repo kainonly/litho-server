@@ -16,12 +16,13 @@ type Service struct {
 }
 
 type Dataset struct {
-	Name    string   `bson:"name" json:"name"`
-	Type    string   `bson:"type" json:"type"`
-	Keys    []string `bson:"-" json:"keys"`
-	Status  bool     `bson:"-" json:"status"`
-	Event   bool     `bson:"-" json:"event"`
-	Options M        `bson:"options" json:"options"`
+	Name       string   `bson:"name" json:"name"`
+	Type       string   `bson:"type" json:"type"`
+	Keys       []string `bson:"-" json:"keys"`
+	Sensitives []string `bson:"-" json:"sensitives"`
+	Status     bool     `bson:"-" json:"status"`
+	Event      bool     `bson:"-" json:"event"`
+	Options    M        `bson:"options" json:"options"`
 }
 
 func (x *Service) Lists(ctx context.Context, name string) (data []Dataset, err error) {
@@ -49,6 +50,7 @@ func (x *Service) Lists(ctx context.Context, name string) (data []Dataset, err e
 		}
 		control := x.V.RestControls[v.Name]
 		v.Keys = control.Keys
+		v.Sensitives = control.Sensitives
 		v.Status = control.Status
 		v.Event = control.Event
 		data = append(data, v)
