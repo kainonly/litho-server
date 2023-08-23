@@ -5,12 +5,10 @@ import (
 	"time"
 )
 
-type Workflow struct {
+type Schedule struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	Project    primitive.ObjectID `bson:"project" json:"project"`
 	Name       string             `bson:"name" json:"name"`
-	Kind       string             `bson:"kind" json:"kind"`
-	Option     interface{}        `bson:"option" json:"option"`
+	NodeId     string             `bson:"node_id" json:"node_id"`
 	CreateTime time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
 }
