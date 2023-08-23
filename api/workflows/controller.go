@@ -1,5 +1,5 @@
 package workflows
 
 type Controller struct {
-	WorkflowService *Service
+	WorkflowsService *Service
 }

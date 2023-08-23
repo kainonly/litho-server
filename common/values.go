@@ -57,3 +57,7 @@ func (x Values) IsRelease() bool {
 func (x Values) Name(v ...string) string {
 	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
+
+func (x Values) NameX(sep string, v ...string) string {
+	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, sep))
+}

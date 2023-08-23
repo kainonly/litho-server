@@ -59,18 +59,25 @@ func (x *Service) Lists(ctx context.Context, name string) (data []Dataset, err e
 }
 
 func (x *Service) Create(ctx context.Context, dto CreateDto) (err error) {
-	option := options.CreateCollection()
-	if dto.Kind == "timeseries" {
-		option = option.
-			SetTimeSeriesOptions(
-				options.TimeSeries().
-					SetTimeField(dto.Option.Time).
-					SetMetaField(dto.Option.Meta),
-			).
-			SetExpireAfterSeconds(dto.Option.Expire * 86400)
-	}
-	if err = x.Db.CreateCollection(ctx, dto.Name, option); err != nil {
+	var names []string
+	if names, err = x.Db.ListCollectionNames(ctx, bson.M{"name": dto.Name}); err != nil {
 		return
+	}
+	if len(names) == 0 {
+		option := options.CreateCollection()
+		if dto.Kind == "timeseries" {
+			option = option.
+				SetTimeSeriesOptions(
+					options.TimeSeries().
+						SetTimeField(dto.Option.Time).
+						SetMetaField(dto.Option.Meta),
+				).
+				SetExpireAfterSeconds(dto.Option.Expire * 86400)
+		}
+
+		if err = x.Db.CreateCollection(ctx, dto.Name, option); err != nil {
+			return
+		}
 	}
 	controls := x.V.RestControls
 	controls[dto.Name] = &values.RestControl{

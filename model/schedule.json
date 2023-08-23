@@ -1,13 +1,11 @@
 {
   "$jsonSchema": {
-    "title": "workflow",
+    "title": "schedule",
     "bsonType": "object",
     "required": [
       "_id",
-      "project",
       "name",
-      "kind",
-      "option",
+      "node_id",
       "create_time",
       "update_time"
     ],
@@ -15,17 +13,11 @@
       "_id": {
         "bsonType": "objectId"
       },
-      "project": {
-        "bsonType": "objectId"
-      },
       "name": {
         "bsonType": "string"
       },
-      "kind": {
+      "node_id": {
         "bsonType": "string"
-      },
-      "option": {
-        "bsonType": "object"
       },
       "create_time": {
         "bsonType": "date"

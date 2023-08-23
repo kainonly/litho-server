@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestService_List(t *testing.T) {
+func TestService_Lists(t *testing.T) {
 	ctx := context.TODO()
-	data, err := x.DatasetsService.List(ctx)
+	data, err := x.DatasetsService.Lists(ctx, "")
 	assert.NoError(t, err)
 	t.Log(data)
 }
