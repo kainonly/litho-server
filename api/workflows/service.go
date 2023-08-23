@@ -41,6 +41,7 @@ func (x *Service) Event() (err error) {
 		case "bulk_delete":
 			break
 		}
+		msg.Ack()
 	}, nats.ManualAck()); err != nil {
 		return
 	}

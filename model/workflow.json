@@ -7,7 +7,6 @@
       "project",
       "name",
       "kind",
-      "option",
       "create_time",
       "update_time"
     ],
@@ -24,8 +23,43 @@
       "kind": {
         "bsonType": "string"
       },
-      "option": {
-        "bsonType": "object"
+      "schedule": {
+        "bsonType": "object",
+        "required": [
+          "schedule_id",
+          "status",
+          "jobs"
+        ],
+        "properties": {
+          "schedule_id": {
+            "bsonType": "objectId"
+          },
+          "status": {
+            "bsonType": "bool"
+          },
+          "jobs": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "required": [
+                "mode",
+                "spec",
+                "option"
+              ],
+              "properties": {
+                "mode": {
+                  "bsonType": "string"
+                },
+                "spec": {
+                  "bsonType": "string"
+                },
+                "option": {
+                  "bsonType": "object"
+                }
+              }
+            }
+          }
+        }
       },
       "create_time": {
         "bsonType": "date"
