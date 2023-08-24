@@ -125,12 +125,16 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	clustersController := &clusters.Controller{
 		ClustersService: clustersService,
 	}
-	schedulesService := schedules.NewService(inject)
+	schedulesService := &schedules.Service{
+		Inject:   inject,
+		Clusters: clustersService,
+	}
 	schedulesController := &schedules.Controller{
 		SchedulesService: schedulesService,
 	}
 	workflowsService := &workflows.Service{
-		Inject: inject,
+		Inject:    inject,
+		Schedules: schedulesService,
 	}
 	workflowsController := &workflows.Controller{
 		WorkflowsService: workflowsService,

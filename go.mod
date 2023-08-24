@@ -23,13 +23,13 @@ require (
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.1.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.729
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.729
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.730
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.730
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.42
 	github.com/thoas/go-funk v0.9.3
 	github.com/weplanx/collector v1.10.1
 	github.com/weplanx/go v0.5.1
-	github.com/weplanx/workflow v1.3.3
+	github.com/weplanx/workflow v1.3.4
 	go.mongodb.org/mongo-driver v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.0

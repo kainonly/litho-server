@@ -20,15 +20,8 @@ type Service struct {
 }
 
 func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, err error) {
-	var cluster model.Cluster
-	if err = x.Db.Collection("clusters").FindOne(ctx,
-		bson.M{"_id": id},
-	).Decode(&cluster); err != nil {
-		return
-	}
-
 	var kube *kubernetes.Clientset
-	if kube, err = x.GetKube(cluster.Config); err != nil {
+	if kube, err = x.GetKube(ctx, id); err != nil {
 		return
 	}
 	var info *version.Info
@@ -61,15 +54,8 @@ func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, e
 }
 
 func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (data []interface{}, err error) {
-	var cluster model.Cluster
-	if err = x.Db.Collection("clusters").FindOne(ctx,
-		bson.M{"_id": id},
-	).Decode(&cluster); err != nil {
-		return
-	}
-
 	var kube *kubernetes.Clientset
-	if kube, err = x.GetKube(cluster.Config); err != nil {
+	if kube, err = x.GetKube(ctx, id); err != nil {
 		return
 	}
 	var nodes *v1.NodeList
@@ -100,9 +86,15 @@ type Kubeconfig struct {
 	KeyData  string `json:"key_data"`
 }
 
-func (x *Service) GetKube(ciphertext string) (kube *kubernetes.Clientset, err error) {
+func (x *Service) GetKube(ctx context.Context, id primitive.ObjectID) (kube *kubernetes.Clientset, err error) {
+	var data model.Cluster
+	if err = x.Db.Collection("clusters").FindOne(ctx,
+		bson.M{"_id": id},
+	).Decode(&data); err != nil {
+		return
+	}
 	var b []byte
-	if b, err = x.Cipher.Decode(ciphertext); err != nil {
+	if b, err = x.Cipher.Decode(data.Config); err != nil {
 		return
 	}
 	var config Kubeconfig

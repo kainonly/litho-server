@@ -4,8 +4,9 @@
     "bsonType": "object",
     "required": [
       "_id",
+      "cluster_id",
       "name",
-      "node_id",
+      "image",
       "create_time",
       "update_time"
     ],
@@ -13,10 +14,13 @@
       "_id": {
         "bsonType": "objectId"
       },
+      "cluster_id": {
+        "bsonType": "objectId"
+      },
       "name": {
         "bsonType": "string"
       },
-      "node_id": {
+      "image": {
         "bsonType": "string"
       },
       "create_time": {
