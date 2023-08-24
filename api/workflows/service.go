@@ -14,11 +14,12 @@ type Service struct {
 }
 
 func (x *Service) Event() (err error) {
-	subj := x.V.NameX(".", "workflows")
-	queue := x.V.Name("workflows")
+	subj := x.V.NameX(".", "events", "workflows")
+	queue := x.V.Name("events", "workflows")
 	if _, err = x.JetStream.QueueSubscribe(subj, queue, func(msg *nats.Msg) {
 		//ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		//defer cancel()
+
 		var dto rest.PublishDto
 		if err = sonic.Unmarshal(msg.Data, &dto); err != nil {
 			hlog.Error(err)

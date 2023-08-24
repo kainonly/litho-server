@@ -9,8 +9,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 	"github.com/weplanx/collector/transfer"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
@@ -280,7 +282,9 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
 	h.Use(x.ErrHandler())
 
-	go x.Values.Service.Sync(x.V.Extra, nil)
+	update := make(chan interface{})
+	go x.Values.Service.Sync(x.V.Extra, update)
+	go x.ValuesChange(update)
 
 	if err = x.Transfer.Set(ctx, transfer.StreamOption{
 		Key: "logset_operates",
@@ -288,7 +292,28 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 		return
 	}
 
-	go x.WorkflowsService.Event()
+	go func() {
+		if err = x.WorkflowsService.Event(); err != nil {
+			hlog.Error(err)
+		}
+	}()
 
+	return
+}
+
+func (x *API) ValuesChange(ok chan interface{}) {
+	for range ok {
+		for k, v := range x.V.RestControls {
+			if v.Event {
+				if _, err := x.JetStream.AddStream(&nats.StreamConfig{
+					Name:      x.V.Name("events", k),
+					Subjects:  []string{x.V.NameX(".", "events", k)},
+					Retention: nats.WorkQueuePolicy,
+				}); err != nil {
+					hlog.Error(err)
+				}
+			}
+		}
+	}
 	return
 }

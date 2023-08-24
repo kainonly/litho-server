@@ -59,5 +59,7 @@ func (x Values) Name(v ...string) string {
 }
 
 func (x Values) NameX(sep string, v ...string) string {
-	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, sep))
+	elems := []string{x.Namespace}
+	elems = append(elems, v...)
+	return strings.Join(elems, sep)
 }
