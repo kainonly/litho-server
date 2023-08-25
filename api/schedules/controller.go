@@ -15,7 +15,7 @@ type PingDto struct {
 	Ids []string `json:"ids,required"`
 }
 
-func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
+func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	var dto PingDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -36,7 +36,7 @@ func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
 }
 
 type DeployDto struct {
-	Id string `json:"id,required"`
+	Id primitive.ObjectID `json:"id,required"`
 }
 
 func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
@@ -46,8 +46,7 @@ func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	if err := x.SchedulesService.Deploy(ctx, id); err != nil {
+	if err := x.SchedulesService.Deploy(ctx, dto.Id); err != nil {
 		c.Error(err)
 		return
 	}
@@ -56,7 +55,7 @@ func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
 }
 
 type UnDeployDto struct {
-	Id string `json:"id,required"`
+	Id primitive.ObjectID `json:"id,required"`
 }
 
 func (x *Controller) Undeploy(ctx context.Context, c *app.RequestContext) {
@@ -66,8 +65,27 @@ func (x *Controller) Undeploy(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	if err := x.SchedulesService.Undeploy(ctx, id); err != nil {
+	if err := x.SchedulesService.Undeploy(ctx, dto.Id); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+type RevokeDto struct {
+	Id  string `json:"id,required"`
+	Key string `json:"key,required"`
+}
+
+func (x *Controller) Revoke(_ context.Context, c *app.RequestContext) {
+	var dto RevokeDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := x.SchedulesService.Revoke(dto.Id, dto.Key); err != nil {
 		c.Error(err)
 		return
 	}

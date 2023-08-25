@@ -39,9 +39,6 @@
           "null"
         ]
       },
-      "logo": {
-        "bsonType": "string"
-      },
       "status": {
         "bsonType": "bool"
       },
