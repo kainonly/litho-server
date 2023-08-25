@@ -135,6 +135,12 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_schedules.POST("ping", x.Schedules.Ping)
 		_schedules.POST("deploy", x.Schedules.Deploy)
 		_schedules.POST("undeploy", x.Schedules.Undeploy)
+		_schedules.POST("revoke", x.Schedules.Revoke)
+	}
+	_workflows := h.Group("workflows", m...)
+	{
+		_workflows.POST("sync", x.Workflows.Sync)
+		_workflows.POST("states", x.Workflows.States)
 	}
 	_datasets := h.Group("datasets", m...)
 	{

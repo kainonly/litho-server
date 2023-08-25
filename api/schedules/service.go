@@ -10,6 +10,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"github.com/weplanx/workflow"
+	"github.com/weplanx/workflow/typ"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	apps "k8s.io/api/apps/v1"
@@ -107,6 +108,30 @@ func (x *Service) Undeploy(ctx context.Context, id primitive.ObjectID) (err erro
 	return kube.AppsV1().
 		Deployments("default").
 		Delete(ctx, data.Name, meta.DeleteOptions{})
+}
+
+func (x *Service) Set(id string, key string, option typ.ScheduleOption) (err error) {
+	var schedule *workflow.Schedule
+	if schedule, err = x.Workflow.NewSchedule(id); err != nil {
+		return
+	}
+	return schedule.Set(key, option)
+}
+
+func (x *Service) Get(id string, key string) (r typ.ScheduleOption, err error) {
+	var schedule *workflow.Schedule
+	if schedule, err = x.Workflow.NewSchedule(id); err != nil {
+		return
+	}
+	return schedule.Get(key)
+}
+
+func (x *Service) Revoke(id string, key string) (err error) {
+	var schedule *workflow.Schedule
+	if schedule, err = x.Workflow.NewSchedule(id); err != nil {
+		return
+	}
+	return schedule.Remove(key)
 }
 
 func (x *Service) Event() (err error) {
