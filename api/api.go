@@ -132,6 +132,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	}
 	_schedules := h.Group("schedules", m...)
 	{
+		_schedules.GET(":id/keys", x.Schedules.Keys)
 		_schedules.POST("ping", x.Schedules.Ping)
 		_schedules.POST("deploy", x.Schedules.Deploy)
 		_schedules.POST("undeploy", x.Schedules.Undeploy)

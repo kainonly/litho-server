@@ -73,6 +73,26 @@ func (x *Controller) Undeploy(ctx context.Context, c *app.RequestContext) {
 	c.Status(http.StatusOK)
 }
 
+type KeysDto struct {
+	Id string `path:"id,required"`
+}
+
+func (x *Controller) Keys(_ context.Context, c *app.RequestContext) {
+	var dto KeysDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	r, err := x.SchedulesService.Keys(dto.Id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, r)
+}
+
 type RevokeDto struct {
 	Id  string `json:"id,required"`
 	Key string `json:"key,required"`
