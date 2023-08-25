@@ -121,6 +121,7 @@ func (x *Service) Event() (err error) {
 			hlog.Error(err)
 			return
 		}
+
 		switch dto.Action {
 		case "create":
 			id, _ := primitive.ObjectIDFromHex(dto.Result.(M)["InsertedID"].(string))
@@ -129,8 +130,7 @@ func (x *Service) Event() (err error) {
 			}
 			break
 		}
-		msg.Ack()
-	}, nats.ManualAck()); err != nil {
+	}); err != nil {
 		return
 	}
 	return
