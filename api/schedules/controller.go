@@ -12,7 +12,7 @@ type Controller struct {
 }
 
 type PingDto struct {
-	Id string `path:"id,required"`
+	Ids []string `json:"ids,required"`
 }
 
 func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
@@ -22,16 +22,21 @@ func (x *Controller) Ping(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if _, err := x.SchedulesService.Ping(dto.Id); err != nil {
-		c.Error(err)
-		return
+	result := make(M)
+	for _, id := range dto.Ids {
+		r, err := x.SchedulesService.Ping(id)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		result[id] = r
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, result)
 }
 
 type DeployDto struct {
-	Id string `path:"id,required"`
+	Id string `json:"id,required"`
 }
 
 func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
@@ -51,7 +56,7 @@ func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
 }
 
 type UnDeployDto struct {
-	Id string `path:"id,required"`
+	Id string `json:"id,required"`
 }
 
 func (x *Controller) Undeploy(ctx context.Context, c *app.RequestContext) {
