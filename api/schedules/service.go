@@ -110,6 +110,14 @@ func (x *Service) Undeploy(ctx context.Context, id primitive.ObjectID) (err erro
 		Delete(ctx, data.Name, meta.DeleteOptions{})
 }
 
+func (x *Service) Keys(id string) (keys []string, err error) {
+	var schedule *workflow.Schedule
+	if schedule, err = x.Workflow.NewSchedule(id); err != nil {
+		return
+	}
+	return schedule.Lists()
+}
+
 func (x *Service) Set(id string, key string, option typ.ScheduleOption) (err error) {
 	var schedule *workflow.Schedule
 	if schedule, err = x.Workflow.NewSchedule(id); err != nil {
