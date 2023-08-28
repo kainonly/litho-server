@@ -1,0 +1,52 @@
+{
+  "$jsonSchema": {
+    "title": "queue",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "project",
+      "name",
+      "subjects",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "project": {
+        "bsonType": "objectId"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "description": {
+        "bsonType": "string"
+      },
+      "subjects": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "string"
+        }
+      },
+      "max_consumers": {
+        "bsonType": "number"
+      },
+      "max_msgs": {
+        "bsonType": "number"
+      },
+      "max_bytes": {
+        "bsonType": "number"
+      },
+      "max_age": {
+        "bsonType": "number"
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    }
+  }
+}

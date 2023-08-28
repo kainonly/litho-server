@@ -16,6 +16,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
+	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
@@ -139,6 +140,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	workflowsController := &workflows.Controller{
 		WorkflowsService: workflowsService,
 	}
+	queuesService := &queues.Service{
+		Inject: inject,
+	}
+	queuesController := &queues.Controller{
+		QueuesServices: queuesService,
+	}
 	datasetsService := &datasets.Service{
 		Inject: inject,
 		Values: service,
@@ -172,6 +179,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		SchedulesService:     schedulesService,
 		Workflows:            workflowsController,
 		WorkflowsService:     workflowsService,
+		Queues:               queuesController,
+		QueuesService:        queuesService,
 		Datasets:             datasetsController,
 		DatasetsService:      datasetsService,
 		Observability:        observabilityController,

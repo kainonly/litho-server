@@ -25,6 +25,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
+	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
@@ -44,6 +45,7 @@ var Provides = wire.NewSet(
 	clusters.Provides,
 	schedules.Provides,
 	workflows.Provides,
+	queues.Provides,
 	datasets.Provides,
 	observability.Provides,
 )
@@ -69,6 +71,8 @@ type API struct {
 	SchedulesService     *schedules.Service
 	Workflows            *workflows.Controller
 	WorkflowsService     *workflows.Service
+	Queues               *queues.Controller
+	QueuesService        *queues.Service
 	Datasets             *datasets.Controller
 	DatasetsService      *datasets.Service
 	Observability        *observability.Controller
