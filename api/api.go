@@ -147,6 +147,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_workflows.POST("sync", x.Workflows.Sync)
 		_workflows.POST("states", x.Workflows.States)
 	}
+	_queues := h.Group("queues", m...)
+	{
+		_queues.POST("sync", x.Queues.Sync)
+		_queues.POST("destroy", x.Queues.Destroy)
+	}
 	_datasets := h.Group("datasets", m...)
 	{
 		_datasets.GET("", x.Datasets.Lists)
@@ -310,6 +315,9 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 			hlog.Error(err)
 		}
 		if err = x.WorkflowsService.Event(); err != nil {
+			hlog.Error(err)
+		}
+		if err = x.QueuesService.Event(); err != nil {
 			hlog.Error(err)
 		}
 	}()
