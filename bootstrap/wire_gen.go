@@ -13,6 +13,7 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
+	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -146,6 +147,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	queuesController := &queues.Controller{
 		QueuesServices: queuesService,
 	}
+	imessagesService := &imessages.Service{
+		Inject: inject,
+	}
+	imessagesController := &imessages.Controller{
+		ImessagesServices: imessagesService,
+	}
 	datasetsService := &datasets.Service{
 		Inject: inject,
 		Values: service,
@@ -181,6 +188,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		WorkflowsService:     workflowsService,
 		Queues:               queuesController,
 		QueuesService:        queuesService,
+		Imessages:            imessagesController,
+		ImessagesService:     imessagesService,
 		Datasets:             datasetsController,
 		DatasetsService:      datasetsService,
 		Observability:        observabilityController,

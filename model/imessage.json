@@ -1,0 +1,37 @@
+{
+  "$jsonSchema": {
+    "title": "imessage",
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "topic",
+      "projects",
+      "create_time",
+      "update_time"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "topic": {
+        "bsonType": "string"
+      },
+      "description": {
+        "bsonType": "string"
+      },
+      "projects": {
+        "bsonType": "array",
+        "items": {
+          "bsonType": "objectId"
+        }
+      },
+      "create_time": {
+        "bsonType": "date"
+      },
+      "update_time": {
+        "bsonType": "date"
+      }
+    },
+    "additionalProperties": false
+  }
+}
