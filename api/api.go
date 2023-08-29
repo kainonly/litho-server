@@ -22,6 +22,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
+	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/observability"
@@ -46,6 +47,7 @@ var Provides = wire.NewSet(
 	schedules.Provides,
 	workflows.Provides,
 	queues.Provides,
+	imessages.Provides,
 	datasets.Provides,
 	observability.Provides,
 )
@@ -73,6 +75,8 @@ type API struct {
 	WorkflowsService     *workflows.Service
 	Queues               *queues.Controller
 	QueuesService        *queues.Service
+	Imessages            *imessages.Controller
+	ImessagesService     *imessages.Service
 	Datasets             *datasets.Controller
 	DatasetsService      *datasets.Service
 	Observability        *observability.Controller
