@@ -12,7 +12,7 @@ type Controller struct {
 }
 
 type GetInfoDto struct {
-	id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
 }
 
 func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
@@ -22,7 +22,7 @@ func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	id, _ := primitive.ObjectIDFromHex(dto.id)
+	id, _ := primitive.ObjectIDFromHex(dto.Id)
 	r, err := x.ClustersService.GetInfo(ctx, id)
 	if err != nil {
 		c.Error(err)
@@ -33,7 +33,7 @@ func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
 }
 
 type GetNodesDto struct {
-	id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
 }
 
 func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
@@ -43,7 +43,7 @@ func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	id, _ := primitive.ObjectIDFromHex(dto.id)
+	id, _ := primitive.ObjectIDFromHex(dto.Id)
 	r, err := x.ClustersService.GetNodes(ctx, id)
 	if err != nil {
 		c.Error(err)
