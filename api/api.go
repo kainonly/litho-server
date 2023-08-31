@@ -156,6 +156,13 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_queues.POST("sync", x.Queues.Sync)
 		_queues.POST("destroy", x.Queues.Destroy)
 	}
+	_imessages := h.Group("imessages", m...)
+	{
+		_imessages.GET("nodes", x.Imessages.GetNodes)
+		_imessages.GET(":id/metrics", x.Imessages.GetMetrics)
+		_imessages.PUT(":id/metrics", x.Imessages.CreateMetrics)
+		_imessages.DELETE(":id/metrics", x.Imessages.DeleteMetrics)
+	}
 	_datasets := h.Group("datasets", m...)
 	{
 		_datasets.GET("", x.Datasets.Lists)
@@ -322,6 +329,9 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 			hlog.Error(err)
 		}
 		if err = x.QueuesService.Event(); err != nil {
+			hlog.Error(err)
+		}
+		if err = x.ImessagesService.Event(); err != nil {
 			hlog.Error(err)
 		}
 	}()

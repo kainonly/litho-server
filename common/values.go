@@ -47,6 +47,9 @@ type Extra struct {
 	SmsSecretKey          string `yaml:"sms_secret_key" secret:"*"`
 	SmsAppId              string `yaml:"sms_app_id"`
 	SmsRegion             string `yaml:"sms_region"`
+	EmqxHost              string `yaml:"emqx_host"`
+	EmqxApiKey            string `yaml:"emqx_api_key"`
+	EmqxSecretKey         string `yaml:"emqx_secret_key" secret:"*"`
 	*values.DynamicValues `yaml:"dynamic_values"`
 }
 
