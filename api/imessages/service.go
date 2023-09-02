@@ -135,6 +135,16 @@ func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (res
 	return
 }
 
+type PublishDto struct {
+	Topic   string
+	Payload M
+}
+
+func (x *Service) Publish(ctx context.Context, dto PublishDto) (err error) {
+
+	return
+}
+
 func (x *Service) Event() (err error) {
 	subj := x.V.NameX(".", "events", "imessages")
 	queue := x.V.Name("events", "imessages")
