@@ -83,3 +83,24 @@ func (x *Controller) DeleteMetrics(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(http.StatusOK, r)
 }
+
+type PublishDto struct {
+	Topic   string `json:"topic,required""`
+	Payload M      `json:"payload,required"`
+}
+
+func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {
+	var dto PublishDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	r, err := x.ImessagesServices.Publish(ctx, dto)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, r)
+}
