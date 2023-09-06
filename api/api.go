@@ -149,7 +149,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_workflows := h.Group("workflows", m...)
 	{
 		_workflows.POST("sync", x.Workflows.Sync)
-		_workflows.POST("states", x.Workflows.States)
+		_workflows.POST("state", x.Workflows.State)
 	}
 	_queues := h.Group("queues", m...)
 	{

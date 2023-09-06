@@ -12,7 +12,6 @@ import (
 	"github.com/weplanx/workflow/typ"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
@@ -53,32 +52,18 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 	return
 }
 
-func (x *Service) States(ctx context.Context, ids []primitive.ObjectID) (r M, err error) {
-	var cursor *mongo.Cursor
-	if cursor, err = x.Db.Collection("workflows").Find(ctx, bson.M{
-		"_id":      bson.M{"$in": ids},
-		"schedule": bson.M{"$exists": true},
-	}); err != nil {
+func (x *Service) State(ctx context.Context, id primitive.ObjectID) (r typ.ScheduleOption, err error) {
+	var data model.Workflow
+	if err = x.Db.Collection("workflows").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
 		return
 	}
-	r = make(M)
-	for cursor.Next(ctx) {
-		var data model.Workflow
-		if err = cursor.Decode(&data); err != nil {
-			return
-		}
-		var opt typ.ScheduleOption
-		if opt, err = x.Schedules.Get(
-			data.Schedule.ScheduleId.Hex(),
-			data.ID.Hex(),
-		); err != nil {
-			if err == nats.ErrKeyNotFound {
-				err = nil
-				continue
-			}
-			return
-		}
-		r[data.ID.Hex()] = opt
+	if r, err = x.Schedules.Get(
+		data.Schedule.ScheduleId.Hex(),
+		data.ID.Hex(),
+	); err != nil {
+		return
 	}
 	return
 }
