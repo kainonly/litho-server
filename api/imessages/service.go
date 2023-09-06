@@ -116,13 +116,18 @@ func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 	return
 }
 
-type PublishDto struct {
-	Topic   string
-	Payload M
-}
-
-func (x *Service) Publish(ctx context.Context, dto PublishDto) (err error) {
-
+func (x *Service) Publish(ctx context.Context, dto PublishDto) (r interface{}, err error) {
+	var payload string
+	if payload, err = sonic.MarshalString(dto.Payload); err != nil {
+		return
+	}
+	if r, err = x.Send(ctx, "POST",
+		"publish", M{
+			"topic":   dto.Topic,
+			"payload": payload,
+		}); err != nil {
+		return
+	}
 	return
 }
 
