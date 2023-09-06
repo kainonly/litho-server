@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
-	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/rest"
@@ -23,26 +22,21 @@ type Service struct {
 	*common.Inject
 }
 
-type HttpOption struct {
-	Method string
-	Path   string
-	Data   interface{}
-	Result interface{}
-}
-
-func (x *Service) Send(ctx context.Context, option HttpOption) (err error) {
+func (x *Service) Send(ctx context.Context, method string, path string, data interface{}) (result interface{}, err error) {
 	var req *http.Request
 	var body io.Reader
-	if option.Data != nil {
+	if data != nil {
 		var b []byte
-		if b, err = sonic.Marshal(option.Data); err != nil {
+		if b, err = sonic.Marshal(data); err != nil {
 			return
 		}
 		body = bytes.NewBuffer(b)
 	}
-	if req, err = http.NewRequest(option.Method, x.V.EmqxHost+option.Path, body); err != nil {
+	url := fmt.Sprintf("%s/%s", x.V.EmqxHost, path)
+	if req, err = http.NewRequest(method, url, body); err != nil {
 		return
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(x.V.EmqxApiKey, x.V.EmqxSecretKey)
 	req.WithContext(ctx)
 
@@ -51,26 +45,22 @@ func (x *Service) Send(ctx context.Context, option HttpOption) (err error) {
 	if resp, err = client.Do(req); err != nil {
 		return
 	}
-	ok := map[int]bool{200: true, 201: true, 204: true}
-	if !ok[resp.StatusCode] {
-		err = errors.NewPublic(resp.Status)
-		return
-	}
-	return decoder.NewStreamDecoder(resp.Body).Decode(&option.Result)
-}
-
-func (x *Service) GetNodes(ctx context.Context) (r []M, err error) {
-	if err = x.Send(ctx, HttpOption{
-		Method: "GET",
-		Path:   "/nodes",
-		Result: &r,
-	}); err != nil {
+	if err = decoder.
+		NewStreamDecoder(resp.Body).
+		Decode(&result); err != nil {
 		return
 	}
 	return
 }
 
-func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (result []M, err error) {
+func (x *Service) GetNodes(ctx context.Context) (r interface{}, err error) {
+	if r, err = x.Send(ctx, "GET", "nodes", nil); err != nil {
+		return
+	}
+	return
+}
+
+func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -79,21 +69,18 @@ func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (result
 	}
 
 	for _, pid := range data.Projects {
-		var v M
-		if err = x.Send(ctx, HttpOption{
-			Method: "GET",
-			Path:   fmt.Sprintf(`topic_metrics/%s/%s`, data.Topic, pid.Hex()),
-			Result: &v,
-		}); err != nil {
+		var r interface{}
+		if r, err = x.Send(ctx, "GET",
+			fmt.Sprintf("mqtt/topic_metrics/%s%%2f%s", data.Topic, pid.Hex()), nil); err != nil {
 			return
 		}
-		result = append(result, v)
+		rs = append(rs, r)
 	}
 
 	return
 }
 
-func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (result []M, err error) {
+func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -101,20 +88,17 @@ func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (res
 		return
 	}
 	for _, pid := range data.Projects {
-		var v M
-		if err = x.Send(ctx, HttpOption{
-			Method: "POST",
-			Path:   fmt.Sprintf(`topic_metrics/%s/%s`, data.Topic, pid.Hex()),
-			Result: &v,
-		}); err != nil {
+		var r interface{}
+		if r, err = x.Send(ctx, "POST",
+			"mqtt/topic_metrics", M{"topic": fmt.Sprintf(`%s/%s`, data.Topic, pid.Hex())}); err != nil {
 			return
 		}
-		result = append(result, v)
+		rs = append(rs, r)
 	}
 	return
 }
 
-func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (result []M, err error) {
+func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -122,15 +106,12 @@ func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (res
 		return
 	}
 	for _, pid := range data.Projects {
-		var v M
-		if err = x.Send(ctx, HttpOption{
-			Method: "DELETE",
-			Path:   fmt.Sprintf(`topic_metrics/%s/%s`, data.Topic, pid.Hex()),
-			Result: &v,
-		}); err != nil {
+		var r interface{}
+		if r, err = x.Send(ctx, "DELETE",
+			fmt.Sprintf("mqtt/topic_metrics/%s%%2f%s", data.Topic, pid.Hex()), nil); err != nil {
 			return
 		}
-		result = append(result, v)
+		rs = append(rs, r)
 	}
 	return
 }
