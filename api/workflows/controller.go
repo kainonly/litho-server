@@ -31,17 +31,17 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 }
 
 type StatesDto struct {
-	Ids []primitive.ObjectID `json:"ids,required"`
+	Id primitive.ObjectID `json:"id,required"`
 }
 
-func (x *Controller) States(ctx context.Context, c *app.RequestContext) {
+func (x *Controller) State(ctx context.Context, c *app.RequestContext) {
 	var dto StatesDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	r, err := x.WorkflowsService.States(ctx, dto.Ids)
+	r, err := x.WorkflowsService.State(ctx, dto.Id)
 	if err != nil {
 		c.Error(err)
 		return
