@@ -31,10 +31,12 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 		}
 	}
 	cfg := &nats.StreamConfig{
-		Name:     data.Name,
-		MaxMsgs:  data.MaxMsgs,
-		MaxBytes: data.MaxBytes,
-		MaxAge:   data.MaxAge,
+		Name:      data.Name,
+		Subjects:  data.Subjects,
+		MaxMsgs:   data.MaxMsgs,
+		MaxBytes:  data.MaxBytes,
+		MaxAge:    data.MaxAge,
+		Retention: nats.WorkQueuePolicy,
 	}
 	if data.Description != "" {
 		cfg.Description = data.Description
@@ -86,6 +88,18 @@ func (x *Service) Info(ctx context.Context, id primitive.ObjectID) (r *nats.Stre
 		return
 	}
 	if r, err = x.JetStream.StreamInfo(data.Name); err != nil {
+		return
+	}
+	r.Cluster = nil
+	return
+}
+
+func (x *Service) Publish(ctx context.Context, dto PublishDto) (r interface{}, err error) {
+	var payload []byte
+	if payload, err = sonic.Marshal(dto.Payload); err != nil {
+		return
+	}
+	if r, err = x.JetStream.Publish(dto.Subject, payload, nats.Context(ctx)); err != nil {
 		return
 	}
 	return
