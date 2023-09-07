@@ -48,3 +48,24 @@ func (x *Controller) Destroy(ctx context.Context, c *app.RequestContext) {
 
 	c.Status(http.StatusOK)
 }
+
+type StateDto struct {
+	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+}
+
+func (x *Controller) Info(ctx context.Context, c *app.RequestContext) {
+	var dto StateDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	id, _ := primitive.ObjectIDFromHex(dto.Id)
+	r, err := x.QueuesServices.Info(ctx, id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, r)
+}

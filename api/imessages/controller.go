@@ -85,7 +85,7 @@ func (x *Controller) DeleteMetrics(ctx context.Context, c *app.RequestContext) {
 }
 
 type PublishDto struct {
-	Topic   string `json:"topic,required""`
+	Topic   string `json:"topic,required"`
 	Payload M      `json:"payload,required"`
 }
 
