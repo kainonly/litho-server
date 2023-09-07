@@ -31,11 +31,10 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 		}
 	}
 	cfg := &nats.StreamConfig{
-		Name:         data.Name,
-		MaxConsumers: data.MaxConsumers,
-		MaxMsgs:      data.MaxMsgs,
-		MaxBytes:     data.MaxBytes,
-		MaxAge:       data.MaxAge,
+		Name:     data.Name,
+		MaxMsgs:  data.MaxMsgs,
+		MaxBytes: data.MaxBytes,
+		MaxAge:   data.MaxAge,
 	}
 	if data.Description != "" {
 		cfg.Description = data.Description
@@ -75,6 +74,19 @@ func (x *Service) Destroy(ctx context.Context, ids []primitive.ObjectID) (err er
 		if err = x.JetStream.DeleteStream(data.Name); err != nil {
 			return
 		}
+	}
+	return
+}
+
+func (x *Service) Info(ctx context.Context, id primitive.ObjectID) (r *nats.StreamInfo, err error) {
+	var data model.Queue
+	if err = x.Db.Collection("queues").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+	if r, err = x.JetStream.StreamInfo(data.Name); err != nil {
+		return
 	}
 	return
 }

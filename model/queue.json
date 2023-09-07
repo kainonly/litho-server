@@ -7,7 +7,6 @@
       "project",
       "name",
       "subjects",
-      "max_consumers",
       "max_msgs",
       "max_bytes",
       "max_age",
@@ -32,9 +31,6 @@
         "items": {
           "bsonType": "string"
         }
-      },
-      "max_consumers": {
-        "bsonType": "number"
       },
       "max_msgs": {
         "bsonType": "number"
