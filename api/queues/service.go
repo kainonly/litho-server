@@ -87,7 +87,7 @@ func (x *Service) Info(ctx context.Context, id primitive.ObjectID) (r *nats.Stre
 		Decode(&data); err != nil {
 		return
 	}
-	if r, err = x.JetStream.StreamInfo(data.Name); err != nil {
+	if r, err = x.JetStream.StreamInfo(data.Name, nats.Context(ctx)); err != nil {
 		return
 	}
 	r.Cluster = nil
