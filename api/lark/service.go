@@ -162,7 +162,7 @@ func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err
 	return
 }
 
-func (x *Service) CreateTask(ctx context.Context) (result map[string]interface{}, err error) {
+func (x *Service) CreateTask(ctx context.Context) (result M, err error) {
 	var token string
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {
 		return
@@ -179,7 +179,7 @@ func (x *Service) CreateTask(ctx context.Context) (result map[string]interface{}
 	return
 }
 
-func (x *Service) GetTasks(ctx context.Context) (result map[string]interface{}, err error) {
+func (x *Service) GetTasks(ctx context.Context) (result M, err error) {
 	var token string
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {
 		return
