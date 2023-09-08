@@ -2,15 +2,12 @@ package model_test
 
 import (
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestCreateProjects(t *testing.T) {
@@ -42,24 +39,4 @@ func TestCreateProjects(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	t.Log(r)
-}
-
-func TestMockProjects(t *testing.T) {
-	ctx := context.TODO()
-	_, err := x.Db.Collection("projects").DeleteMany(ctx, bson.M{})
-	assert.NoError(t, err)
-	data := make([]interface{}, 0)
-	now := time.Now()
-	for i := 0; i < 2000; i++ {
-		var project model.Project
-		err = faker.FakeData(&project)
-		assert.NoError(t, err)
-		project.Entry = []string{}
-		project.Logo = ""
-		project.CreateTime = now
-		project.UpdateTime = now
-		data = append(data, project)
-	}
-	_, err = x.Db.Collection("projects").InsertMany(ctx, data)
-	assert.NoError(t, err)
 }

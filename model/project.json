@@ -6,6 +6,7 @@
       "_id",
       "name",
       "namespace",
+      "kind",
       "expire",
       "status",
       "create_time",
@@ -19,6 +20,9 @@
         "bsonType": "string"
       },
       "namespace": {
+        "bsonType": "string"
+      },
+      "kind": {
         "bsonType": "string"
       },
       "secret_id": {
