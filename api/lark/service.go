@@ -7,8 +7,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/go-resty/resty/v2"
+	"github.com/imroc/req/v3"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/sessions"
@@ -30,10 +31,11 @@ type Service struct {
 	Index    *index.Service
 }
 
-// Lark BaseURL https://open.larksuite.com/open-apis
-var client = resty.New().
-	SetTimeout(time.Second * 5).
-	SetBaseURL("https://open.feishu.cn/open-apis")
+var client = req.C().
+	SetBaseURL("https://open.feishu.cn/open-apis").
+	SetJsonMarshal(sonic.Marshal).
+	SetJsonUnmarshal(sonic.Unmarshal).
+	SetTimeout(time.Second * 5)
 
 func (x *Service) Decrypt(encrypt string, key string) (string, error) {
 	buf, err := base64.StdEncoding.DecodeString(encrypt)
@@ -81,15 +83,14 @@ func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err e
 		}
 		if _, err = client.R().
 			SetContext(ctx).
-			SetBody(map[string]interface{}{
+			SetBody(M{
 				"app_id":     x.V.LarkAppId,
 				"app_secret": x.V.LarkAppSecret,
 			}).
-			SetResult(&result).
+			SetSuccessResult(&result).
 			Post("/auth/v3/tenant_access_token/internal"); err != nil {
 			return
 		}
-
 		if err = x.RDb.Set(ctx, key,
 			result.TenantAccessToken,
 			time.Second*time.Duration(result.Expire)).Err(); err != nil {
@@ -111,12 +112,12 @@ func (x *Service) GetUserAccessToken(ctx context.Context, code string) (_ model.
 	}
 	if _, err = client.R().
 		SetContext(ctx).
-		SetAuthToken(token).
+		SetBearerAuthToken(token).
 		SetBody(map[string]interface{}{
 			"grant_type": "authorization_code",
 			"code":       code,
 		}).
-		SetResult(&result).
+		SetSuccessResult(&result).
 		Post("/authen/v1/access_token"); err != nil {
 		return
 	}
@@ -154,7 +155,6 @@ func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err
 		}
 		return
 	}
-
 	userId := r.User.ID.Hex()
 	if r.AccessToken, err = x.Index.CreateAccessToken(ctx, userId); err != nil {
 		return
@@ -167,36 +167,12 @@ func (x *Service) CreateTask(ctx context.Context) (result map[string]interface{}
 	if token, err = x.GetTenantAccessToken(ctx); err != nil {
 		return
 	}
-	body := `{
-		"summary": "每天喝八杯水，保持身心愉悦",
-		"description": "多吃水果，多运动，健康生活，快乐工作。",
-		"rich_summary": "富文本标题[飞书开放平台](https://open.feishu.cn)",
-		"rich_description": "富文本备注[飞书开放平台](https://open.feishu.cn)",
-		"extra": "dGVzdA==",
-		"due": {
-			"time": "1623124318",
-			"timezone": "Asia/Shanghai",
-			"is_all_day": false
-		},
-		"origin": {
-			"platform_i18n_name": "{\"zh_cn\": \"IT 工作台\", \"en_us\": \"IT Workspace\"}",
-			"href": {
-				"url": "https://support.feishu.com/internal/foo-bar",
-				"title": "反馈一个问题，需要协助排查"
-			}
-		},
-		"can_edit":true,
-		"custom": "{\"custom_complete\":{\"android\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}},\"ios\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}},\"pc\":{\"href\":\"https://www.feishu.cn/\",\"tip\":{\"zh_cn\":\"你好\",\"en_us\":\"hello\"}}}}",
-		"follower_ids": ["ou_13585843f02bc94923ed17a007cbc9b1", "ou_219a0611de2a639aa939ee97013f37a5"],
-		"collaborator_ids": ["ou_13585843f02bc94923ed17a007cbc9b1", "ou_219a0611de2a639aa939ee97013f37a5"],
-		"repeat_rule": "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR"
-	}`
-
+	body := `{}`
 	if _, err = client.R().
 		SetContext(ctx).
-		SetAuthToken(token).
+		SetBearerAuthToken(token).
 		SetBody(body).
-		SetResult(&result).
+		SetSuccessResult(&result).
 		Post("/task/v1/tasks"); err != nil {
 		return
 	}
@@ -210,8 +186,8 @@ func (x *Service) GetTasks(ctx context.Context) (result map[string]interface{}, 
 	}
 	if _, err = client.R().
 		SetContext(ctx).
-		SetAuthToken(token).
-		SetResult(&result).
+		SetBearerAuthToken(token).
+		SetSuccessResult(&result).
 		Get("/task/v1/tasks"); err != nil {
 		return
 	}
