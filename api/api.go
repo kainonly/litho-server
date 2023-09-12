@@ -84,11 +84,11 @@ type API struct {
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
-	//csrfToken := x.Csrf.VerifyToken(!x.V.IsRelease())
+	csrfToken := x.Csrf.VerifyToken(!x.V.IsRelease())
 	auth := x.AuthGuard()
 
 	h.GET("", x.Index.Ping)
-	_login := h.Group("login")
+	_login := h.Group("login", csrfToken)
 	{
 		_login.POST("", x.Index.Login)
 		_login.GET("sms", x.Index.GetLoginSms)
@@ -96,14 +96,14 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_login.POST("totp", x.Index.LoginTotp)
 	}
 	h.GET("forget_code", x.Index.GetForgetCode)
-	h.POST("forget_reset", x.Index.ForgetReset)
-	h.GET("verify", x.Index.Verify)
-	h.GET("refresh_code", auth, x.Index.GetRefreshCode)
-	h.POST("refresh_token", auth, x.Index.RefreshToken)
-	h.POST("logout", auth, x.Index.Logout)
+	h.POST("forget_reset", csrfToken, x.Index.ForgetReset)
+	h.GET("verify", csrfToken, x.Index.Verify)
+	h.GET("refresh_code", csrfToken, auth, x.Index.GetRefreshCode)
+	h.POST("refresh_token", csrfToken, auth, x.Index.RefreshToken)
+	h.POST("logout", csrfToken, auth, x.Index.Logout)
 	h.GET("options", x.Index.Options)
 
-	m := []app.HandlerFunc{auth}
+	m := []app.HandlerFunc{csrfToken, auth}
 	u := h.Group("", m...)
 	{
 		help.ValuesRoutes(u, x.Values)

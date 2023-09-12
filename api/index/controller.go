@@ -24,6 +24,7 @@ type Controller struct {
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
+	x.Csrf.SetToken(c)
 	c.JSON(http.StatusOK, M{
 		"ip":   c.ClientIP(),
 		"time": time.Now(),
