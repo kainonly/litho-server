@@ -1,11 +1,11 @@
 FROM alpine:edge
 
-RUN apk add tzdata
+WORKDIR /app
+
+RUN apk add tzdata & mkdir /app/model
 
 COPY dist /app
 COPY model/*.json /app/model
-
-WORKDIR /app
 
 EXPOSE 3000
 
