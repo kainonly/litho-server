@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  TCR_REGISTRY: ccr.ccs.tencentyun.com
+  ALIYUN_REGISTRY: registry.cn-shenzhen.aliyuncs.com
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -33,12 +33,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login TCR
+      - name: Login ALIYUN
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.TCR_REGISTRY }}
-          username: ${{ secrets.TCR_USERNAME }}
-          password: ${{ secrets.TCR_PASSWORD }}
+          registry: ${{ env.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
 
       - name: Get Metadata
         id: meta
@@ -46,7 +46,7 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.ALIYUN_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Push
         uses: docker/build-push-action@v5
