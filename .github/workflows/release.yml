@@ -20,7 +20,9 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ~1.21
-      - run: go build -o dist/main
+      - run: |
+          go mod tidy
+          go build -o dist/main
 
       - name: Login GitHub Container Hub
         uses: docker/login-action@v3
