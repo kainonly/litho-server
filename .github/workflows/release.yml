@@ -25,6 +25,10 @@ jobs:
           go build -o dist/main
         env:
           GOPROXY: https://goproxy.io
+          CGO_ENABLED: 1
+          GO111MODULE: on
+          GOARCH: amd64
+          GOOS: linux
 
       - name: Login GitHub Container Hub
         uses: docker/login-action@v3
@@ -33,7 +37,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login ALIYUN
+      - name: Login Aliyun
         uses: docker/login-action@v3
         with:
           registry: ${{ env.ALIYUN_REGISTRY }}
