@@ -33,13 +33,13 @@ import (
 	"strings"
 )
 
-func LoadStaticValues() (v *common.Values, err error) {
+func LoadStaticValues(path string) (v *common.Values, err error) {
 	v = new(common.Values)
 	if err = env.Parse(v); err != nil {
 		return
 	}
 	var b []byte
-	if b, err = os.ReadFile("./config/default.values.yml"); err != nil {
+	if b, err = os.ReadFile(path); err != nil {
 		return
 	}
 	if err = yaml.Unmarshal(b, &v.Extra); err != nil {

@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 	os.Chdir("../../")
 	var err error
 	var values *common.Values
-	if values, err = bootstrap.LoadStaticValues(); err != nil {
+	if values, err = bootstrap.LoadStaticValues("./config/default.values.yml"); err != nil {
 		panic(err)
 	}
 	x, err = bootstrap.NewAPI(values)
