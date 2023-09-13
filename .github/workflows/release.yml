@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  TCR_REGISTRY: ccr.ccs.tencentyun.com
+  TCR_REGISTRY: hkccr.ccs.tencentyun.com
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
