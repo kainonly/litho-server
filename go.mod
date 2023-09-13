@@ -9,6 +9,7 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudwego/hertz v0.6.8
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
+	github.com/fatih/color v1.15.0
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.2.2
@@ -21,6 +22,7 @@ require (
 	github.com/nats-io/nats.go v1.28.0
 	github.com/nats-io/nkeys v0.4.4
 	github.com/redis/go-redis/v9 v9.1.0
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.744
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.744
@@ -90,6 +92,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.17.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20210922203350-b1ad95c89adf // indirect
 	github.com/iris-contrib/schema v0.0.6 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -129,6 +132,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tdewolff/minify/v2 v2.12.9 // indirect
 	github.com/tdewolff/parse/v2 v2.6.8 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
