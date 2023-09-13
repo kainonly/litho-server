@@ -1,7 +1,12 @@
 package model
 
 import (
+	"context"
+	"github.com/weplanx/go/passlib"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -44,10 +49,48 @@ type UserLark struct {
 	Sid              string `bson:"sid" json:"sid"`
 }
 
+func SetupUser(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "users"}); err != nil {
+		return
+	}
+	var jsonSchema bson.D
+	if err = LoadJsonSchema("user", &jsonSchema); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		if err = db.CreateCollection(ctx, "users", option); err != nil {
+			return
+		}
+		index := mongo.IndexModel{
+			Keys: bson.D{{"email", 1}},
+			Options: options.Index().
+				SetUnique(true).
+				SetName("idx_email"),
+		}
+		if _, err = db.Collection("users").
+			Indexes().
+			CreateOne(ctx, index); err != nil {
+			return
+		}
+	} else {
+		if err = db.RunCommand(ctx, bson.D{
+			{"collMod", "users"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err(); err != nil {
+			return
+		}
+	}
+	return
+}
+
 func NewUser(email string, password string) *User {
+	hash, _ := passlib.Hash(password)
 	return &User{
 		Email:      email,
-		Password:   password,
+		Password:   hash,
 		Roles:      []primitive.ObjectID{},
 		Status:     true,
 		CreateTime: time.Now(),

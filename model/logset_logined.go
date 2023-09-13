@@ -1,7 +1,11 @@
 package model
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -37,4 +41,23 @@ func NewLogsetLogined(uid primitive.ObjectID, ip string, source string, useragen
 		},
 		UserAgent: useragent,
 	}
+}
+
+func SetupLogsetLogined(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "logset_logined"}); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().
+			SetTimeSeriesOptions(
+				options.TimeSeries().
+					SetTimeField("timestamp").
+					SetMetaField("metadata"),
+			)
+		if err = db.CreateCollection(ctx, "logset_logined", option); err != nil {
+			return
+		}
+	}
+	return
 }
