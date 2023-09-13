@@ -8,13 +8,15 @@ import (
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/model"
 	"os"
 	"time"
 )
 
+var values *common.Values
+
 func main() {
 	var config string
-	var values *common.Values
 	rootCmd := &cobra.Command{
 		Use:               "weplanx",
 		Short:             "API service, based on Hertz's project",
@@ -36,20 +38,6 @@ func main() {
 		"config", "c", "config/default.values.yml",
 		"The default configuration file of weplanx server values",
 	)
-	rootCmd.AddCommand(&cobra.Command{
-		Use:   "setup",
-		Short: "Initialize weplanx server",
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			var x *api.API
-			if x, err = bootstrap.NewAPI(values); err != nil {
-				return
-			}
-			if err = x.Values.Service.Update(x.V.Extra); err != nil {
-				return
-			}
-			return
-		},
-	})
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "api",
 		Short: "Start API service",
@@ -74,6 +62,92 @@ func main() {
 			return
 		},
 	})
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "openapi",
+		Short: "Start OpenAPI service",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			return
+		},
+	})
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "setup",
+		Short: "Initialize weplanx server",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			var x *api.API
+			if x, err = bootstrap.NewAPI(values); err != nil {
+				return
+			}
+			if err = x.Values.Service.Update(x.V.Extra); err != nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			defer cancel()
+			if err = model.SetupCategory(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupCluster(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupProject(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupImessage(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupLogsetLogined(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupPicture(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupQueue(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupSchedule(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupUser(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupUser(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupWorkflow(ctx, x.Db); err != nil {
+				return
+			}
+			return
+		},
+	})
+	var email string
+	var password string
+	userCmd := &cobra.Command{
+		Use:   "user",
+		Short: "Create an email account",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			var x *api.API
+			if x, err = bootstrap.NewAPI(values); err != nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			if _, err = x.Db.Collection("users").InsertOne(
+				ctx,
+				model.NewUser(email, password),
+			); err != nil {
+				return
+			}
+			return
+		},
+	}
+	userCmd.PersistentFlags().StringVarP(&email,
+		"email", "e", "",
+		"User's email",
+	)
+	userCmd.PersistentFlags().StringVarP(&password,
+		"password", "p", "",
+		"User's password <8~20>",
+	)
+	rootCmd.AddCommand(userCmd)
 	if err := rootCmd.Execute(); err != nil {
 		color.Red("%s", err.Error())
 		os.Exit(1)
