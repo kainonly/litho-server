@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  TCR_REGISTRY: hkccr.ccs.tencentyun.com
+  TCR_REGISTRY: ccr.ccs.tencentyun.com
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -20,24 +20,17 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ~1.21
-      - run: |
-          go mod tidy
-          go build -o dist/main
-        env:
-          CGO_ENABLED: 0
-          GO111MODULE: on
-          GOARCH: amd64
-          GOOS: linux
+      - run: go build -o dist/main
 
       - name: Login GitHub Container Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Login TCR
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.TCR_REGISTRY }}
           username: ${{ secrets.TCR_USERNAME }}
@@ -45,9 +38,11 @@ jobs:
 
       - name: Get Metadata
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Push
         uses: docker/build-push-action@v5
@@ -56,11 +51,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Copy to QCLOUD TCR
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
-          dst: |
-            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.meta.outputs.version}}
