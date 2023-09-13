@@ -140,12 +140,12 @@ func main() {
 		},
 	}
 	userCmd.PersistentFlags().StringVarP(&email,
-		"email", "e", "",
-		"User's email",
+		"email", "u", "",
+		"User's email <Must be email>",
 	)
 	userCmd.PersistentFlags().StringVarP(&password,
 		"password", "p", "",
-		"User's password <8~20>",
+		"User's password <between 8-20>",
 	)
 	rootCmd.AddCommand(userCmd)
 	if err := rootCmd.Execute(); err != nil {
