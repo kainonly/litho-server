@@ -1,8 +1,11 @@
 package model
 
 import (
+	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -26,4 +29,30 @@ type WorkflowScheduleJob struct {
 	Mode   string `bson:"mode" json:"mode"`
 	Spec   string `bson:"spec" json:"spec"`
 	Option bson.M `bson:"option" json:"option"`
+}
+
+func SetupWorkflow(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "workflows"}); err != nil {
+		return
+	}
+	var jsonSchema bson.D
+	if err = LoadJsonSchema("workflow", &jsonSchema); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		if err = db.CreateCollection(ctx, "workflows", option); err != nil {
+			return
+		}
+	} else {
+		if err = db.RunCommand(ctx, bson.D{
+			{"collMod", "workflows"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err(); err != nil {
+			return
+		}
+	}
+	return
 }

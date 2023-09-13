@@ -1,7 +1,11 @@
 package model
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -29,4 +33,43 @@ func NewProject(name string, namespace string) *Project {
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
+}
+
+func SetupProject(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "projects"}); err != nil {
+		return
+	}
+	var jsonSchema bson.D
+	if err = LoadJsonSchema("picture", &jsonSchema); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		if err = db.CreateCollection(ctx, "projects", option); err != nil {
+			return
+		}
+		index := []mongo.IndexModel{
+			{
+				Keys: bson.D{{"namespace", 1}},
+				Options: options.Index().
+					SetUnique(true).
+					SetName("idx_namespace"),
+			},
+		}
+		if _, err = db.Collection("projects").
+			Indexes().
+			CreateMany(ctx, index); err != nil {
+			return
+		}
+	} else {
+		if err = db.RunCommand(ctx, bson.D{
+			{"collMod", "projects"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err(); err != nil {
+			return
+		}
+	}
+	return
 }

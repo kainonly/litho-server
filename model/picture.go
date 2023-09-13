@@ -1,7 +1,11 @@
 package model
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -32,4 +36,41 @@ type PictureProcessCut struct {
 type PictureProcessZoom struct {
 	W int64 `bson:"w" json:"w"`
 	H int64 `bson:"h" json:"h"`
+}
+
+func SetupPicture(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "pictures"}); err != nil {
+		return
+	}
+	var jsonSchema bson.D
+	if err = LoadJsonSchema("picture", &jsonSchema); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		if err = db.CreateCollection(ctx, "pictures", option); err != nil {
+			return
+		}
+		index := []mongo.IndexModel{
+			{
+				Keys:    bson.D{{"name", 1}},
+				Options: options.Index().SetName("idx_name"),
+			},
+		}
+		if _, err = db.Collection("pictures").
+			Indexes().
+			CreateMany(ctx, index); err != nil {
+			return
+		}
+	} else {
+		if err = db.RunCommand(ctx, bson.D{
+			{"collMod", "pictures"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err(); err != nil {
+			return
+		}
+	}
+	return
 }

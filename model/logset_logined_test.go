@@ -3,18 +3,12 @@ package model_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/weplanx/server/model"
 	"testing"
 )
 
-func TestCreateLogsetLoginedCollection(t *testing.T) {
+func TestSetupLogsetLogined(t *testing.T) {
 	ctx := context.TODO()
-	option := options.CreateCollection().
-		SetTimeSeriesOptions(
-			options.TimeSeries().
-				SetTimeField("timestamp").
-				SetMetaField("metadata"),
-		)
-	err := x.Db.CreateCollection(ctx, "logset_logined", option)
+	err := model.SetupLogsetLogined(ctx, x.Db)
 	assert.NoError(t, err)
 }

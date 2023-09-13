@@ -1,7 +1,11 @@
 package model
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -19,4 +23,30 @@ type ClusterKubeConfig struct {
 	CAData   string `json:"ca_data"`
 	CertData string `json:"cert_data"`
 	KeyData  string `json:"key_data"`
+}
+
+func SetupCluster(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "clusters"}); err != nil {
+		return
+	}
+	var jsonSchema bson.D
+	if err = LoadJsonSchema("cluster", &jsonSchema); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().SetValidator(jsonSchema)
+		if err = db.CreateCollection(ctx, "clusters", option); err != nil {
+			return
+		}
+	} else {
+		if err = db.RunCommand(ctx, bson.D{
+			{"collMod", "clusters"},
+			{"validator", jsonSchema},
+			{"validationLevel", "strict"},
+		}).Err(); err != nil {
+			return
+		}
+	}
+	return
 }
