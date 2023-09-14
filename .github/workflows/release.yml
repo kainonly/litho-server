@@ -20,17 +20,13 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ~1.21
-      - run: |
-          go mod tidy
-          go build -o dist/main
-        env:
-          GOPROXY: https://goproxy.io
-          CGO_ENABLED: 1
-          GO111MODULE: on
-          GOARCH: amd64
-          GOOS: linux
 
-      - name: Login GitHub Container Hub
+      - name: Build
+        run: go build
+        env:
+          CGO_ENABLED: 1
+
+      - name: Login GitHub
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
