@@ -45,14 +45,14 @@ jobs:
 
       - name: Get Metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v4
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Push Images
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
