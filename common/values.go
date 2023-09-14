@@ -32,7 +32,6 @@ type Values struct {
 
 	Otlp struct {
 		Endpoint string `env:"ENDPOINT"`
-		// TODO: Improve other configuration later
 	} `envPrefix:"OTLP_"`
 
 	*Extra

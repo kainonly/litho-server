@@ -8,6 +8,7 @@ import (
 	"github.com/huandu/xstrings"
 	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/csrf"
+	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,15 +21,28 @@ type Controller struct {
 	V    *common.Values
 	Csrf *csrf.Csrf
 
-	IndexService *Service
+	IndexService  *Service
+	ValuesService *values.Service
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	x.Csrf.SetToken(c)
-	c.JSON(http.StatusOK, M{
+	r := M{
 		"ip":   string(c.GetHeader("X-Forwarded-For")),
 		"time": time.Now(),
-	})
+	}
+	if !x.V.IsRelease() {
+		data, err := x.ValuesService.Get()
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		r["values"] = M{
+			"runtime": x.V,
+			"storage": data,
+		}
+	}
+	c.JSON(http.StatusOK, r)
 }
 
 type LoginDto struct {

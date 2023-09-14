@@ -101,9 +101,10 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Tencent:  tencentService,
 	}
 	indexController := &index.Controller{
-		V:            values2,
-		Csrf:         csrf,
-		IndexService: indexService,
+		V:             values2,
+		Csrf:          csrf,
+		IndexService:  indexService,
+		ValuesService: service,
 	}
 	tencentController := &tencent.Controller{
 		TencentService: tencentService,
