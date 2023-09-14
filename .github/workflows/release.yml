@@ -49,7 +49,7 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.TCR_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Push Images
         uses: docker/build-push-action@v5
