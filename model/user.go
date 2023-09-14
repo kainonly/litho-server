@@ -54,7 +54,7 @@ func SetupUser(ctx context.Context, db *mongo.Database) (err error) {
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "users"}); err != nil {
 		return
 	}
-	var jsonSchema primitive.D
+	var jsonSchema bson.D
 	if err = LoadJsonSchema("user", &jsonSchema); err != nil {
 		return
 	}

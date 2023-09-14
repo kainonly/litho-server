@@ -97,6 +97,12 @@ func main() {
 			if err = model.SetupLogsetLogined(ctx, x.Db); err != nil {
 				return
 			}
+			if err = model.SetupLogsetJobs(ctx, x.Db); err != nil {
+				return
+			}
+			if err = model.SetupLogsetOperates(ctx, x.Db); err != nil {
+				return
+			}
 			if err = model.SetupPicture(ctx, x.Db); err != nil {
 				return
 			}
