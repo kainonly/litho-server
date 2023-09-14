@@ -4,5 +4,5 @@ WORKDIR /app
 
 RUN apk add tzdata & mkdir /app/model
 
-ADD server /app
+ADD server /app/
 ADD model/*.json /app/model/
