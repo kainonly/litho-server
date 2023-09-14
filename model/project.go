@@ -40,7 +40,7 @@ func SetupProject(ctx context.Context, db *mongo.Database) (err error) {
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "projects"}); err != nil {
 		return
 	}
-	var jsonSchema bson.D
+	var jsonSchema primitive.D
 	if err = LoadJsonSchema("picture", &jsonSchema); err != nil {
 		return
 	}
