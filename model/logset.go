@@ -61,3 +61,51 @@ func SetupLogsetLogined(ctx context.Context, db *mongo.Database) (err error) {
 	}
 	return
 }
+
+func SetupLogsetJobs(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	filter := bson.M{"name": bson.M{"$in": bson.A{"logset_jobs", "logset_jobs_fail"}}}
+	if ns, err = db.ListCollectionNames(ctx, filter); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().
+			SetTimeSeriesOptions(
+				options.TimeSeries().
+					SetTimeField("timestamp").
+					SetMetaField("metadata"),
+			).
+			SetExpireAfterSeconds(31536000)
+		if err = db.CreateCollection(ctx, "logset_jobs", option); err != nil {
+			return
+		}
+		if err = db.CreateCollection(ctx, "logset_jobs_fail", option); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func SetupLogsetOperates(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	filter := bson.M{"name": bson.M{"$in": bson.A{"logset_operates", "logset_operates_fail"}}}
+	if ns, err = db.ListCollectionNames(ctx, filter); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().
+			SetTimeSeriesOptions(
+				options.TimeSeries().
+					SetTimeField("timestamp").
+					SetMetaField("metadata"),
+			).
+			SetExpireAfterSeconds(31536000)
+		if err = db.CreateCollection(ctx, "logset_operates", option); err != nil {
+			return
+		}
+		if err = db.CreateCollection(ctx, "logset_operates_fail", option); err != nil {
+			return
+		}
+	}
+	return
+}

@@ -23,7 +23,7 @@ func SetupCategory(ctx context.Context, db *mongo.Database) (err error) {
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "categories"}); err != nil {
 		return
 	}
-	var jsonSchema primitive.D
+	var jsonSchema bson.D
 	if err = LoadJsonSchema("category", &jsonSchema); err != nil {
 		return
 	}

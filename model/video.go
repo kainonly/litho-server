@@ -23,7 +23,7 @@ func SetupVideo(ctx context.Context, db *mongo.Database) (err error) {
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "videos"}); err != nil {
 		return
 	}
-	var jsonSchema primitive.D
+	var jsonSchema bson.D
 	if err = LoadJsonSchema("video", &jsonSchema); err != nil {
 		return
 	}

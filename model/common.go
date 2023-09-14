@@ -11,5 +11,5 @@ func LoadJsonSchema(name string, i interface{}) (err error) {
 	if b, err = os.ReadFile(fmt.Sprintf("./model/%s.json", name)); err != nil {
 		return
 	}
-	return bson.UnmarshalExtJSON(b, true, &i)
+	return bson.UnmarshalExtJSON(b, true, i)
 }

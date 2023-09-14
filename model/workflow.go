@@ -36,7 +36,7 @@ func SetupWorkflow(ctx context.Context, db *mongo.Database) (err error) {
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "workflows"}); err != nil {
 		return
 	}
-	var jsonSchema primitive.D
+	var jsonSchema bson.D
 	if err = LoadJsonSchema("workflow", &jsonSchema); err != nil {
 		return
 	}
