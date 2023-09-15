@@ -93,7 +93,7 @@ type KeyAuthResult struct {
 
 func (x *Service) KeyAuth(source string) (r *KeyAuthResult, err error) {
 	r = new(KeyAuthResult)
-	location, _ := time.LoadLocation("Etc/GMT")
+	location, _ := time.LoadLocation("Etc/UTC")
 	r.Date = time.Now().In(location).Format("Mon, 02 Jan 2006 15:04:05 GMT")
 	signStr := fmt.Sprintf("x-date: %s\nx-source: %s", r.Date, source)
 
