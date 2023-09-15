@@ -29,16 +29,17 @@ func (x *Service) R(ctx context.Context) *req.Request {
 		R().SetContext(ctx)
 }
 
-func (x *Service) GetNodes(ctx context.Context) (r M, err error) {
+func (x *Service) GetNodes(ctx context.Context) (r interface{}, err error) {
 	if _, err = x.R(ctx).
 		SetSuccessResult(&r).
+		SetErrorResult(&r).
 		Get("nodes"); err != nil {
 		return
 	}
 	return
 }
 
-func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []M, err error) {
+func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -47,9 +48,10 @@ func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []M
 	}
 
 	for _, pid := range data.Projects {
-		var r M
+		var r interface{}
 		if _, err = x.R(ctx).
 			SetSuccessResult(&r).
+			SetErrorResult(&r).
 			Get(fmt.Sprintf("mqtt/topic_metrics/%s%%2f%s", data.Topic, pid.Hex())); err != nil {
 			return
 		}
@@ -59,7 +61,7 @@ func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []M
 	return
 }
 
-func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs []M, err error) {
+func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -67,10 +69,11 @@ func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 		return
 	}
 	for _, pid := range data.Projects {
-		var r M
+		var r interface{}
 		if _, err = x.R(ctx).
 			SetBody(M{"topic": fmt.Sprintf(`%s/%s`, data.Topic, pid.Hex())}).
 			SetSuccessResult(&r).
+			SetErrorResult(&r).
 			Post("mqtt/topic_metrics"); err != nil {
 			return
 		}
@@ -79,7 +82,7 @@ func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 	return
 }
 
-func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs []M, err error) {
+func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -90,6 +93,7 @@ func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 		var r M
 		if _, err = x.R(ctx).
 			SetSuccessResult(&r).
+			SetErrorResult(&r).
 			Delete(fmt.Sprintf("mqtt/topic_metrics/%s%%2f%s", data.Topic, pid.Hex())); err != nil {
 			return
 		}
@@ -98,7 +102,7 @@ func (x *Service) DeleteMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 	return
 }
 
-func (x *Service) Publish(ctx context.Context, dto PublishDto) (r M, err error) {
+func (x *Service) Publish(ctx context.Context, dto PublishDto) (r interface{}, err error) {
 	var payload string
 	if payload, err = sonic.MarshalString(dto.Payload); err != nil {
 		return
@@ -109,6 +113,7 @@ func (x *Service) Publish(ctx context.Context, dto PublishDto) (r M, err error) 
 			"payload": payload,
 		}).
 		SetSuccessResult(&r).
+		SetErrorResult(&r).
 		Post("publish"); err != nil {
 		return
 	}
