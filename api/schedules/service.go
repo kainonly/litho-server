@@ -59,7 +59,8 @@ func (x *Service) Deploy(ctx context.Context, id primitive.ObjectID) (err error)
 	}
 	deployment := &apps.Deployment{
 		ObjectMeta: meta.ObjectMeta{
-			Name: data.Name,
+			Namespace: "weplanx",
+			Name:      data.Name,
 		},
 		Spec: apps.DeploymentSpec{
 			Selector: &meta.LabelSelector{
