@@ -30,7 +30,7 @@ require (
 	github.com/thoas/go-funk v0.9.3
 	github.com/weplanx/collector v1.10.3
 	github.com/weplanx/go v0.5.2
-	github.com/weplanx/workflow v1.3.6
+	github.com/weplanx/schedule v1.4.0
 	go.mongodb.org/mongo-driver v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.2
@@ -162,6 +162,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.18.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect

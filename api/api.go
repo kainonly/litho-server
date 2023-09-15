@@ -142,14 +142,12 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_schedules.GET(":id/keys", x.Schedules.Keys)
 		_schedules.POST("ping", x.Schedules.Ping)
-		_schedules.POST("deploy", x.Schedules.Deploy)
-		_schedules.POST("undeploy", x.Schedules.Undeploy)
 		_schedules.POST("revoke", x.Schedules.Revoke)
+		_schedules.POST("state", x.Schedules.State)
 	}
 	_workflows := h.Group("workflows", m...)
 	{
 		_workflows.POST("sync", x.Workflows.Sync)
-		_workflows.POST("state", x.Workflows.State)
 	}
 	_queues := h.Group("queues", m...)
 	{
@@ -325,9 +323,6 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	}
 
 	go func() {
-		if err = x.SchedulesService.Event(); err != nil {
-			hlog.Error(err)
-		}
 		if err = x.WorkflowsService.Event(); err != nil {
 			hlog.Error(err)
 		}

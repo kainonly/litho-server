@@ -12,7 +12,7 @@ type Controller struct {
 }
 
 type PingDto struct {
-	Ids []string `json:"ids,required"`
+	Nodes []string `json:"nodes,required"`
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
@@ -23,68 +23,31 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	}
 
 	result := make(M)
-	for _, id := range dto.Ids {
-		r, err := x.SchedulesService.Ping(id)
+	for _, node := range dto.Nodes {
+		r, err := x.SchedulesService.Ping(node)
 		if err != nil {
 			c.Error(err)
 			return
 		}
-		result[id] = r
+		result[node] = r
 	}
 
 	c.JSON(http.StatusOK, result)
 }
 
-type DeployDto struct {
-	Id primitive.ObjectID `json:"id,required"`
-}
-
-func (x *Controller) Deploy(ctx context.Context, c *app.RequestContext) {
-	var dto DeployDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	if err := x.SchedulesService.Deploy(ctx, dto.Id); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
-type UnDeployDto struct {
-	Id primitive.ObjectID `json:"id,required"`
-}
-
-func (x *Controller) Undeploy(ctx context.Context, c *app.RequestContext) {
-	var dto UnDeployDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	if err := x.SchedulesService.Undeploy(ctx, dto.Id); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
 type KeysDto struct {
-	Id string `path:"id,required"`
+	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
 }
 
-func (x *Controller) Keys(_ context.Context, c *app.RequestContext) {
+func (x *Controller) Keys(ctx context.Context, c *app.RequestContext) {
 	var dto KeysDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	r, err := x.SchedulesService.Keys(dto.Id)
+	id, _ := primitive.ObjectIDFromHex(dto.Id)
+	r, err := x.SchedulesService.Keys(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -111,4 +74,25 @@ func (x *Controller) Revoke(_ context.Context, c *app.RequestContext) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+type StatesDto struct {
+	Node string `json:"node,required"`
+	Key  string `json:"key,required"`
+}
+
+func (x *Controller) State(_ context.Context, c *app.RequestContext) {
+	var dto StatesDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	r, err := x.SchedulesService.State(dto.Node, dto.Key)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, r)
 }

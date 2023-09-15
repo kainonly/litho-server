@@ -56,20 +56,19 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	passport := UsePassport(values2)
 	captcha := UseCaptcha(values2, redisClient)
 	locker := UseLocker(values2, redisClient)
-	workflow := UseWorkflow(values2, conn, jetStreamContext)
 	inject := &common.Inject{
 		V:         values2,
 		Mgo:       client,
 		Db:        database,
 		RDb:       redisClient,
 		Flux:      influxdb2Client,
+		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
 		Cipher:    cipher,
 		Passport:  passport,
 		Captcha:   captcha,
 		Locker:    locker,
-		Workflow:  workflow,
 	}
 	hertz, err := UseHertz(values2)
 	if err != nil {
@@ -129,8 +128,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		ClustersService: clustersService,
 	}
 	schedulesService := &schedules.Service{
-		Inject:   inject,
-		Clusters: clustersService,
+		Inject: inject,
 	}
 	schedulesController := &schedules.Controller{
 		SchedulesService: schedulesService,

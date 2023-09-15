@@ -29,23 +29,3 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 
 	c.Status(http.StatusOK)
 }
-
-type StatesDto struct {
-	Id primitive.ObjectID `json:"id,required"`
-}
-
-func (x *Controller) State(ctx context.Context, c *app.RequestContext) {
-	var dto StatesDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	r, err := x.WorkflowsService.State(ctx, dto.Id)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, r)
-}

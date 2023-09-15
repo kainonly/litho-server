@@ -29,7 +29,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseLocker,
 		UseCaptcha,
 		UseTransfer,
-		UseWorkflow,
 		UseHertz,
 		api.Provides,
 	)

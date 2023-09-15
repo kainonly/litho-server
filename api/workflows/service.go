@@ -6,10 +6,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/rest"
+	sctyp "github.com/weplanx/schedule/common"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
-	"github.com/weplanx/workflow/typ"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -30,40 +30,24 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 	}
 	if data.Schedule != nil {
 		schedule := data.Schedule
-		jobs := make([]typ.ScheduleJob, len(schedule.Jobs))
+		jobs := make([]sctyp.ScheduleJob, len(schedule.Jobs))
 		for i, v := range schedule.Jobs {
-			jobs[i] = typ.ScheduleJob{
+			jobs[i] = sctyp.ScheduleJob{
 				Mode:   v.Mode,
 				Spec:   v.Spec,
 				Option: v.Option,
 			}
 		}
-		if err = x.Schedules.Set(
-			schedule.ScheduleId.Hex(),
+		if err = x.Schedules.Set(ctx,
+			*schedule.ScheduleId,
 			id.Hex(),
-			typ.ScheduleOption{
+			sctyp.ScheduleOption{
 				Status: schedule.Status,
 				Jobs:   jobs,
 			},
 		); err != nil {
 			return
 		}
-	}
-	return
-}
-
-func (x *Service) State(ctx context.Context, id primitive.ObjectID) (r typ.ScheduleOption, err error) {
-	var data model.Workflow
-	if err = x.Db.Collection("workflows").
-		FindOne(ctx, bson.M{"_id": id}).
-		Decode(&data); err != nil {
-		return
-	}
-	if r, err = x.Schedules.Get(
-		data.Schedule.ScheduleId.Hex(),
-		data.ID.Hex(),
-	); err != nil {
-		return
 	}
 	return
 }
