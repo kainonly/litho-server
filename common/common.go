@@ -10,7 +10,6 @@ import (
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/workflow"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,13 +19,13 @@ type Inject struct {
 	Db        *mongo.Database
 	RDb       *redis.Client
 	Flux      influxdb2.Client
+	Nats      *nats.Conn
 	JetStream nats.JetStreamContext
 	KeyValue  nats.KeyValue
 	Cipher    *cipher.Cipher
 	Passport  *passport.Passport
 	Captcha   *captcha.Captcha
 	Locker    *locker.Locker
-	Workflow  *workflow.Workflow
 }
 
 func Claims(c *app.RequestContext) (claims passport.Claims) {

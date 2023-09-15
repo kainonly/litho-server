@@ -23,7 +23,6 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
-	"github.com/weplanx/workflow"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -183,14 +182,6 @@ func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Transfer
 	return transfer.New(
 		transfer.SetNamespace(v.Namespace),
 		transfer.SetJetStream(js),
-	)
-}
-
-func UseWorkflow(v *common.Values, nc *nats.Conn, js nats.JetStreamContext) *workflow.Workflow {
-	return workflow.New(
-		workflow.SetNamespace(v.Namespace),
-		workflow.SetNats(nc),
-		workflow.SetJetStream(js),
 	)
 }
 
