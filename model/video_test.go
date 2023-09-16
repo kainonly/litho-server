@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupVideo(t *testing.T) {
+func TestSetVideos(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupVideo(ctx, x.Db)
+	err := model.SetVideos(ctx, x.Db)
 	assert.NoError(t, err)
 }

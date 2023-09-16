@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupQueue(t *testing.T) {
+func TestSetQueues(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupQueue(ctx, x.Db)
+	err := model.SetQueues(ctx, x.Db)
 	assert.NoError(t, err)
 }

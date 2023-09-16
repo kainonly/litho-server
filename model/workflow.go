@@ -31,7 +31,7 @@ type WorkflowScheduleJob struct {
 	Option bson.M `bson:"option" json:"option"`
 }
 
-func SetupWorkflow(ctx context.Context, db *mongo.Database) (err error) {
+func SetWorkflows(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "workflows"}); err != nil {
 		return

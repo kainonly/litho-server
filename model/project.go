@@ -35,7 +35,7 @@ func NewProject(name string, namespace string) *Project {
 	}
 }
 
-func SetupProject(ctx context.Context, db *mongo.Database) (err error) {
+func SetProjects(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "projects"}); err != nil {
 		return

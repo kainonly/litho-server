@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupImessage(t *testing.T) {
+func TestSetImessages(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupImessage(ctx, x.Db)
+	err := model.SetImessages(ctx, x.Db)
 	assert.NoError(t, err)
 }

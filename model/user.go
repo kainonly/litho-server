@@ -49,7 +49,7 @@ type UserLark struct {
 	Sid              string `bson:"sid" json:"sid"`
 }
 
-func SetupUser(ctx context.Context, db *mongo.Database) (err error) {
+func SetUsers(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "users"}); err != nil {
 		return

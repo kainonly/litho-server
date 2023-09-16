@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestSetupUser(t *testing.T) {
+func TestSetUsers(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupUser(ctx, x.Db)
+	err := model.SetUsers(ctx, x.Db)
 	assert.NoError(t, err)
 }
 

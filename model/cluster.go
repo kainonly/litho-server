@@ -25,7 +25,7 @@ type ClusterKubeConfig struct {
 	KeyData  string `json:"key_data"`
 }
 
-func SetupCluster(ctx context.Context, db *mongo.Database) (err error) {
+func SetClusters(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "clusters"}); err != nil {
 		return

@@ -43,7 +43,7 @@ func NewLogsetLogined(uid primitive.ObjectID, ip string, source string, useragen
 	}
 }
 
-func SetupLogsetLogined(ctx context.Context, db *mongo.Database) (err error) {
+func SetLogsetLogined(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "logset_logined"}); err != nil {
 		return
@@ -62,7 +62,7 @@ func SetupLogsetLogined(ctx context.Context, db *mongo.Database) (err error) {
 	return
 }
 
-func SetupLogsetJobs(ctx context.Context, db *mongo.Database) (err error) {
+func SetLogsetJobs(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	filter := bson.M{"name": bson.M{"$in": bson.A{"logset_jobs", "logset_jobs_fail"}}}
 	if ns, err = db.ListCollectionNames(ctx, filter); err != nil {
@@ -86,7 +86,7 @@ func SetupLogsetJobs(ctx context.Context, db *mongo.Database) (err error) {
 	return
 }
 
-func SetupLogsetOperates(ctx context.Context, db *mongo.Database) (err error) {
+func SetLogsetOperates(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	filter := bson.M{"name": bson.M{"$in": bson.A{"logset_operates", "logset_operates_fail"}}}
 	if ns, err = db.ListCollectionNames(ctx, filter); err != nil {
