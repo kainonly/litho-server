@@ -117,7 +117,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 
 	go func() {
 		data := model.NewLogsetLogined(
-			r.User.ID, string(c.GetHeader("X-Forwarded-For")), "lark", string(c.UserAgent()))
+			r.User.ID, string(c.GetHeader("X-Real-Ip")), "lark", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
