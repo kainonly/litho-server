@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupSchedule(t *testing.T) {
+func TestSetSchedules(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupSchedule(ctx, x.Db)
+	err := model.SetSchedules(ctx, x.Db)
 	assert.NoError(t, err)
 }

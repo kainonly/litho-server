@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/fatih/color"
+	"github.com/gookit/goutil/fmtutil"
 	"github.com/spf13/cobra"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
@@ -82,43 +83,43 @@ func main() {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
-			if err = model.SetupCategory(ctx, x.Db); err != nil {
+			if err = model.SetCategories(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupCluster(ctx, x.Db); err != nil {
+			if err = model.SetClusters(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupProject(ctx, x.Db); err != nil {
+			if err = model.SetProjects(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupImessage(ctx, x.Db); err != nil {
+			if err = model.SetImessages(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupLogsetLogined(ctx, x.Db); err != nil {
+			if err = model.SetLogsetLogined(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupLogsetJobs(ctx, x.Db); err != nil {
+			if err = model.SetLogsetJobs(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupLogsetOperates(ctx, x.Db); err != nil {
+			if err = model.SetLogsetOperates(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupPicture(ctx, x.Db); err != nil {
+			if err = model.SetPictures(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupQueue(ctx, x.Db); err != nil {
+			if err = model.SetQueues(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupSchedule(ctx, x.Db); err != nil {
+			if err = model.SetSchedules(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupUser(ctx, x.Db); err != nil {
+			if err = model.SetUsers(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupUser(ctx, x.Db); err != nil {
+			if err = model.SetUsers(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetupWorkflow(ctx, x.Db); err != nil {
+			if err = model.SetWorkflows(ctx, x.Db); err != nil {
 				return
 			}
 			return
@@ -154,8 +155,24 @@ func main() {
 		"User's password <between 8-20>",
 	)
 	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "values",
+		Short: "Display the dynamic values of server distribution Kv",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			var x *api.API
+			if x, err = bootstrap.NewAPI(values); err != nil {
+				return
+			}
+			var output string
+			if output, err = fmtutil.PrettyJSON(x.V); err != nil {
+				return
+			}
+			fmt.Println(output)
+			return
+		},
+	})
 	if err := rootCmd.Execute(); err != nil {
-		color.Red("%s", err.Error())
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }

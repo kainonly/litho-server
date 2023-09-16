@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/huandu/xstrings"
-	"github.com/thoas/go-funk"
+	"github.com/gookit/goutil/strutil"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
@@ -28,19 +27,12 @@ type Controller struct {
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	x.Csrf.SetToken(c)
 	r := M{
+		"name": x.V.Hostname,
 		"ip":   string(c.GetHeader("X-Forwarded-For")),
-		"time": time.Now(),
+		"now":  time.Now(),
 	}
 	if !x.V.IsRelease() {
-		data, err := x.ValuesService.Get()
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		r["values"] = M{
-			"runtime": x.V,
-			"storage": data,
-		}
+		r["values"] = x.V
 	}
 	c.JSON(http.StatusOK, r)
 }
@@ -317,7 +309,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	data := make(map[string]interface{})
-	path := xstrings.ToCamelCase(dto.Key)
+	path := strutil.CamelCase(dto.Key)
 	data[dto.Key] = reflect.ValueOf(dto).FieldByName(path).Interface()
 
 	claims := common.Claims(c)
@@ -496,9 +488,11 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	case "generate-secret":
+		id, _ := strutil.RandomString(8)
+		key, _ := strutil.RandomString(16)
 		c.JSON(http.StatusOK, M{
-			"id":  funk.RandomString(8),
-			"key": funk.RandomString(16),
+			"id":  id,
+			"key": key,
 		})
 		return
 	}

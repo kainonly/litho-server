@@ -7,20 +7,20 @@ import (
 	"testing"
 )
 
-func TestSetupLogsetLogined(t *testing.T) {
+func TestSetLogsetLogined(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupLogsetLogined(ctx, x.Db)
+	err := model.SetLogsetLogined(ctx, x.Db)
 	assert.NoError(t, err)
 }
 
-func TestSetupLogsetJobs(t *testing.T) {
+func TestSetLogsetJobs(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupLogsetJobs(ctx, x.Db)
+	err := model.SetLogsetJobs(ctx, x.Db)
 	assert.NoError(t, err)
 }
 
-func TestSetupLogsetOperates(t *testing.T) {
+func TestSetLogsetOperates(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupLogsetOperates(ctx, x.Db)
+	err := model.SetLogsetOperates(ctx, x.Db)
 	assert.NoError(t, err)
 }

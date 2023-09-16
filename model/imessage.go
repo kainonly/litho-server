@@ -18,7 +18,7 @@ type Imessage struct {
 	UpdateTime  time.Time            `bson:"update_time" json:"update_time" farker:"-"`
 }
 
-func SetupImessage(ctx context.Context, db *mongo.Database) (err error) {
+func SetImessages(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "imessages"}); err != nil {
 		return

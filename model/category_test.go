@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupCategory(t *testing.T) {
+func TestSetCategories(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupCategory(ctx, x.Db)
+	err := model.SetCategories(ctx, x.Db)
 	assert.NoError(t, err)
 }

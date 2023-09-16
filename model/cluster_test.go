@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupCluster(t *testing.T) {
+func TestSetClusters(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupCluster(ctx, x.Db)
+	err := model.SetClusters(ctx, x.Db)
 	assert.NoError(t, err)
 }

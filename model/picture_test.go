@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupPicture(t *testing.T) {
+func TestSetPictures(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupPicture(ctx, x.Db)
+	err := model.SetPictures(ctx, x.Db)
 	assert.NoError(t, err)
 }

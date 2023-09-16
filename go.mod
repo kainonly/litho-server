@@ -9,14 +9,12 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cloudwego/hertz v0.6.8
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
-	github.com/fatih/color v1.15.0
-	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
+	github.com/gookit/goutil v0.6.12
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.2.2
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.2.2
 	github.com/hertz-contrib/requestid v1.1.0
-	github.com/huandu/xstrings v1.4.0
-	github.com/imroc/req/v3 v3.41.12
+	github.com/imroc/req/v3 v3.42.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/nats-io/nats.go v1.29.0
@@ -24,10 +22,9 @@ require (
 	github.com/redis/go-redis/v9 v9.1.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.748
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.748
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.749
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.749
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.43
-	github.com/thoas/go-funk v0.9.3
 	github.com/weplanx/collector v1.10.3
 	github.com/weplanx/go v0.5.2
 	github.com/weplanx/schedule v1.4.0
@@ -88,6 +85,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20230912144702-c363fe2c2ed8 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -135,6 +133,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tdewolff/minify/v2 v2.12.9 // indirect
 	github.com/tdewolff/parse/v2 v2.6.8 // indirect
+	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

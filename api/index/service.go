@@ -9,9 +9,8 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/dgryski/dgoogauth"
-	"github.com/google/uuid"
+	"github.com/gookit/goutil/strutil"
 	"github.com/jordan-wright/email"
-	"github.com/thoas/go-funk"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/go/passport"
@@ -65,7 +64,7 @@ func (x *Service) Logining(ctx context.Context, filter bson.M) (u model.User, er
 }
 
 func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
-	jti := uuid.New().String()
+	jti := strutil.MicroTimeHexID()
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
@@ -132,7 +131,8 @@ func (x *Service) GetLoginSms(ctx context.Context, phone string) (code string, e
 		return
 	}
 
-	code = funk.RandomString(6, []rune("0123456789"))
+	code = strutil.RandWithTpl(6, strutil.Numbers)
+	// TODO: Change to values...
 	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889615", []string{code}, []string{phone}); err != nil {
 		return
 	}
@@ -245,7 +245,7 @@ func (x *Service) GetForgetCode(ctx context.Context, username string) (err error
 		return
 	}
 
-	code := funk.RandomString(6, []rune("0123456789"))
+	code := strutil.RandWithTpl(6, strutil.Numbers)
 	var tpl *template.Template
 	if tpl, err = template.ParseFiles("./templates/email_code.gohtml"); err != nil {
 		return
@@ -323,7 +323,7 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 }
 
 func (x *Service) GetRefreshCode(ctx context.Context, userId string) (code string, err error) {
-	code = uuid.New().String()
+	code = strutil.MicroTimeHexID()
 	x.Captcha.Create(ctx, userId, code, 15*time.Second)
 	return
 }
@@ -440,7 +440,8 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 }
 
 func (x *Service) GetUserPhoneCode(ctx context.Context, phone string) (code string, err error) {
-	code = funk.RandomString(6, []rune("0123456789"))
+	code = strutil.RandWithTpl(6, strutil.Numbers)
+	// TODO: Change to values
 	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889620", []string{code}, []string{phone}); err != nil {
 		return
 	}

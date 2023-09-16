@@ -22,7 +22,7 @@ type Queue struct {
 	UpdateTime  time.Time          `bson:"update_time" json:"update_time" farker:"-"`
 }
 
-func SetupQueue(ctx context.Context, db *mongo.Database) (err error) {
+func SetQueues(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "queues"}); err != nil {
 		return

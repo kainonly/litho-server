@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupWorkflow(t *testing.T) {
+func TestSetWorkflows(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupWorkflow(ctx, x.Db)
+	err := model.SetWorkflows(ctx, x.Db)
 	assert.NoError(t, err)
 }

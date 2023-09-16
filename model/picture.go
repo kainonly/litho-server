@@ -38,7 +38,7 @@ type PictureProcessZoom struct {
 	H int64 `bson:"h" json:"h"`
 }
 
-func SetupPicture(ctx context.Context, db *mongo.Database) (err error) {
+func SetPictures(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "pictures"}); err != nil {
 		return

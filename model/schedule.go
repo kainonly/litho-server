@@ -17,7 +17,7 @@ type Schedule struct {
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
 }
 
-func SetupSchedule(ctx context.Context, db *mongo.Database) (err error) {
+func SetSchedules(ctx context.Context, db *mongo.Database) (err error) {
 	var ns []string
 	if ns, err = db.ListCollectionNames(ctx, bson.M{"name": "schedules"}); err != nil {
 		return

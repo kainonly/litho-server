@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestSetupProject(t *testing.T) {
+func TestSetProjects(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetupProject(ctx, x.Db)
+	err := model.SetProjects(ctx, x.Db)
 	assert.NoError(t, err)
 }
