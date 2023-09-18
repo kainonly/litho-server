@@ -12,3 +12,10 @@ func TestService_GetCity(t *testing.T) {
 	assert.NoError(t, err)
 	t.Log(dto)
 }
+
+func TestService_GetCityIpv6(t *testing.T) {
+	ctx := context.TODO()
+	dto, err := x.TencentService.GetCity(ctx, "240e:314:e441:9000:2d47:2c35:4fb:a883")
+	assert.NoError(t, err)
+	t.Log(dto)
+}
