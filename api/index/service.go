@@ -193,7 +193,7 @@ func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *
 
 func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogined) (err error) {
 	var r *tencent.CityResult
-	if r, err = x.Tencent.GetCity(ctx, data.Metadata.ClientIP); err != nil {
+	if r, err = x.Tencent.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
 		return
 	}
 	if !r.Success {

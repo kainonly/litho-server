@@ -91,18 +91,18 @@ type KeyAuthResult struct {
 	Txt  string
 }
 
-func (x *Service) KeyAuth(source string) (r *KeyAuthResult, err error) {
+func (x *Service) KeyAuth(source string, id string, key string) (r *KeyAuthResult, err error) {
 	r = new(KeyAuthResult)
 	location, _ := time.LoadLocation("Etc/UTC")
 	r.Date = time.Now().In(location).Format("Mon, 02 Jan 2006 15:04:05 GMT")
 	signStr := fmt.Sprintf("x-date: %s\nx-source: %s", r.Date, source)
 
-	mac := hmac.New(sha1.New, []byte(x.V.IpSecretKey))
+	mac := hmac.New(sha1.New, []byte(key))
 	mac.Write([]byte(signStr))
 	sign := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 
 	r.Txt = fmt.Sprintf("hmac id=\"%s\", algorithm=\"hmac-sha1\", headers=\"x-date x-source\", signature=\"%s\"",
-		x.V.IpSecretId, sign)
+		id, sign)
 	return
 }
 
@@ -139,14 +139,46 @@ type Detail struct {
 	Source    string `bson:"source" json:"source"`
 }
 
-func (x *Service) GetCity(ctx context.Context, ip string) (r *CityResult, err error) {
+func (x *Service) GetIpv4(ctx context.Context, ip string) (r *CityResult, err error) {
 	source, kar := "market", new(KeyAuthResult)
-	if kar, err = x.KeyAuth(source); err != nil {
+	if kar, err = x.KeyAuth(source, x.V.IpSecretId, x.V.IpSecretKey); err != nil {
 		return
 	}
 
 	baseUrl, _ := url.Parse(x.V.IpAddress)
 	u := baseUrl.JoinPath("/ip/city/query")
+	query := u.Query()
+	query.Add("ip", ip)
+	query.Encode()
+	u.RawQuery = query.Encode()
+
+	var req *http.Request
+	req, err = http.NewRequest("GET", u.String(), nil)
+	req.Header.Set("X-Source", source)
+	req.Header.Set("X-Date", kar.Date)
+	req.Header.Set("Authorization", kar.Txt)
+	req.WithContext(ctx)
+
+	client := &http.Client{Timeout: time.Second * 5}
+	var res *http.Response
+	if res, err = client.Do(req); err != nil {
+		return
+	}
+	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
+		return
+	}
+
+	return
+}
+
+func (x *Service) GetIpv6(ctx context.Context, ip string) (r *CityResult, err error) {
+	source, kar := "market", new(KeyAuthResult)
+	if kar, err = x.KeyAuth(source, x.V.Ipv6SecretId, x.V.Ipv6SecretKey); err != nil {
+		return
+	}
+
+	baseUrl, _ := url.Parse(x.V.Ipv6Address)
+	u := baseUrl.JoinPath("/ip/ipv6/query")
 	query := u.Query()
 	query.Add("ip", ip)
 	query.Encode()

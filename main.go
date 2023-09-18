@@ -163,6 +163,12 @@ func main() {
 			if x, err = bootstrap.NewAPI(values); err != nil {
 				return
 			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			if _, err = x.Initialize(ctx); err != nil {
+				return
+			}
+			time.Sleep(time.Second)
 			var output string
 			if output, err = fmtutil.PrettyJSON(x.V); err != nil {
 				return

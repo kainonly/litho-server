@@ -26,7 +26,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.749
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.43
 	github.com/weplanx/collector v1.10.3
-	github.com/weplanx/go v0.5.2
+	github.com/weplanx/go v0.5.3
 	github.com/weplanx/schedule v1.4.0
 	go.mongodb.org/mongo-driver v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -133,7 +133,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tdewolff/minify/v2 v2.12.9 // indirect
 	github.com/tdewolff/parse/v2 v2.6.8 // indirect
-	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
