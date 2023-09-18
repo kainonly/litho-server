@@ -28,7 +28,7 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	x.Csrf.SetToken(c)
 	r := M{
 		"name": x.V.Hostname,
-		"ip":   string(c.GetHeader("X-Real-Ip")),
+		"ip":   string(c.GetHeader(x.V.Ip)),
 		"now":  time.Now(),
 	}
 	if !x.V.IsRelease() {
@@ -57,7 +57,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 
 	go func() {
 		data := model.NewLogsetLogined(
-			r.User.ID, string(c.GetHeader("X-Real-Ip")), "email", string(c.UserAgent()))
+			r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
@@ -114,7 +114,7 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 
 	go func() {
 		data := model.NewLogsetLogined(
-			r.User.ID, string(c.GetHeader("X-Real-Ip")), "sms", string(c.UserAgent()))
+			r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
@@ -149,7 +149,7 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 
 	go func() {
 		data := model.NewLogsetLogined(
-			r.User.ID, string(c.GetHeader("X-Real-Ip")), "totp", string(c.UserAgent()))
+			r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {

@@ -22,6 +22,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"html/template"
+	"net"
 	"net/smtp"
 	"net/url"
 	"time"
@@ -192,9 +193,19 @@ func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *
 }
 
 func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogined) (err error) {
-	var r *tencent.CityResult
-	if r, err = x.Tencent.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
+	ip := net.ParseIP(data.Metadata.ClientIP)
+	if ip == nil {
 		return
+	}
+	var r *tencent.CityResult
+	if ip.To4() != nil {
+		if r, err = x.Tencent.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
+			return
+		}
+	} else {
+		if r, err = x.Tencent.GetIpv6(ctx, data.Metadata.ClientIP); err != nil {
+			return
+		}
 	}
 	if !r.Success {
 		return errors.NewPublic(r.Msg)

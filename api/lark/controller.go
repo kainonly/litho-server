@@ -17,7 +17,7 @@ import (
 )
 
 type Controller struct {
-	Values   *common.Values
+	V        *common.Values
 	Passport *passport.Passport
 
 	LarkService  *Service
@@ -34,7 +34,7 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	raw, err := x.LarkService.Decrypt(dto.Encrypt, x.Values.LarkEncryptKey)
+	raw, err := x.LarkService.Decrypt(dto.Encrypt, x.V.LarkEncryptKey)
 	if err != nil {
 		c.Error(err)
 		return
@@ -48,7 +48,7 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	if data.Token != x.Values.LarkVerificationToken {
+	if data.Token != x.V.LarkVerificationToken {
 		c.Error(errors.NewPublic("The local configuration token does not match the authentication token"))
 		return
 	}
@@ -105,19 +105,19 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/authorized`, x.Values.BaseUrl, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/authorized`, x.V.BaseUrl, dto.State.Locale)))
 		return
 	}
 
 	var r *LoginResult
 	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/unauthorize`, x.Values.BaseUrl, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/unauthorize`, x.V.BaseUrl, dto.State.Locale)))
 		return
 	}
 
 	go func() {
 		data := model.NewLogsetLogined(
-			r.User.ID, string(c.GetHeader("X-Real-Ip")), "lark", string(c.UserAgent()))
+			r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
 		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
@@ -126,7 +126,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s`, x.Values.BaseUrl, dto.State.Locale)))
+	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s`, x.V.BaseUrl, dto.State.Locale)))
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
