@@ -9,6 +9,7 @@ import (
 type Values struct {
 	Mode      string `env:"MODE" envDefault:"debug"`
 	Address   string `env:"ADDRESS" envDefault:":3000"`
+	Ip        string `env:"IP" envDefault:"X-Forwarded-For"`
 	Hostname  string `env:"HOSTNAME"`
 	Namespace string `env:"NAMESPACE,required"`
 	Key       string `env:"KEY,required"`

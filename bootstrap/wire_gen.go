@@ -116,7 +116,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Index:    indexService,
 	}
 	larkController := &lark.Controller{
-		Values:       values2,
+		V:            values2,
 		Passport:     passport,
 		LarkService:  larkService,
 		IndexService: indexService,
