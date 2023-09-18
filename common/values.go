@@ -42,7 +42,10 @@ type Extra struct {
 	BaseUrl               string `yaml:"base_url"`
 	IpAddress             string `yaml:"ip_address"`
 	IpSecretId            string `yaml:"ip_secret_id"`
-	IpSecretKey           string `yaml:"ip_secret_key"`
+	IpSecretKey           string `yaml:"ip_secret_key" secret:"*"`
+	Ipv6Address           string `yaml:"ipv6_address" json:"Ipv6Address"`
+	Ipv6SecretId          string `yaml:"ipv6_secret_id" json:"Ipv6SecretId"`
+	Ipv6SecretKey         string `yaml:"ipv6_secret_key" secret:"*" json:"Ipv6SecretKey"`
 	SmsSecretId           string `yaml:"sms_secret_id"`
 	SmsSecretKey          string `yaml:"sms_secret_key" secret:"*"`
 	SmsAppId              string `yaml:"sms_app_id"`

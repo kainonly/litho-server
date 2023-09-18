@@ -30,5 +30,6 @@ func TestMain(m *testing.M) {
 	if _, err = x.Initialize(ctx); err != nil {
 		panic(err)
 	}
+	time.Sleep(time.Second)
 	os.Exit(m.Run())
 }
