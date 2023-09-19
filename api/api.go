@@ -179,7 +179,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 
 func (x *API) AuthGuard() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		ts := c.Cookie("access_token")
+		ts := c.Cookie("TOKEN")
 		if ts == nil {
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,

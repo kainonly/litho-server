@@ -211,7 +211,7 @@ func (x *Controller) ForgetReset(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
-	ts := c.Cookie("access_token")
+	ts := c.Cookie("TOKEN")
 	if ts == nil {
 		c.JSON(401, M{
 			"code":    0,

@@ -105,13 +105,13 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/authorized`, x.V.BaseUrl, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/authorized`, x.V.Console, dto.State.Locale)))
 		return
 	}
 
 	var r *LoginResult
 	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/unauthorize`, x.V.BaseUrl, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/unauthorize`, x.V.Console, dto.State.Locale)))
 		return
 	}
 
@@ -126,7 +126,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s`, x.V.BaseUrl, dto.State.Locale)))
+	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s`, x.V.Console, dto.State.Locale)))
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
