@@ -8,9 +8,11 @@ import (
 
 type Values struct {
 	Mode      string `env:"MODE" envDefault:"debug"`
+	Hostname  string `env:"HOSTNAME,required"`
 	Address   string `env:"ADDRESS" envDefault:":3000"`
+	Console   string `env:"CONSOLE,required"`
 	Ip        string `env:"IP" envDefault:"X-Forwarded-For"`
-	Hostname  string `env:"HOSTNAME"`
+	XDomain   string `env:"XDOMAIN" envDefault:""`
 	Namespace string `env:"NAMESPACE,required"`
 	Key       string `env:"KEY,required"`
 
@@ -40,7 +42,6 @@ type Values struct {
 }
 
 type Extra struct {
-	BaseUrl               string `yaml:"base_url"`
 	IpAddress             string `yaml:"ip_address"`
 	IpSecretId            string `yaml:"ip_secret_id"`
 	IpSecretKey           string `yaml:"ip_secret_key" secret:"*"`

@@ -150,6 +150,7 @@ func UseRest(
 func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
 		csrf.SetKey(v.Key),
+		csrf.SetDomain(v.XDomain),
 	)
 }
 
