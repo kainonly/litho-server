@@ -13,7 +13,6 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"net/http"
-	"time"
 )
 
 type Controller struct {
@@ -118,9 +117,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogined(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
-		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
