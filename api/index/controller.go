@@ -58,9 +58,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogined(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
-		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -115,9 +113,7 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogined(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
-		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -150,9 +146,7 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogined(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
-		wctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err = x.IndexService.WriteLogsetLogined(wctx, data); err != nil {
+		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
