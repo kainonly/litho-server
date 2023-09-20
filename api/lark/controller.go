@@ -82,7 +82,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 
 	switch dto.State.Action {
 	case "link":
-		ts := c.Cookie("access_token")
+		ts := c.Cookie("TOKEN")
 		if ts == nil {
 			c.JSON(401, utils.H{
 				"code":    0,
@@ -105,13 +105,13 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/authorized`, x.V.Console, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/authorized`, x.V.Console, dto.State.Locale)))
 		return
 	}
 
 	var r *LoginResult
 	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/unauthorize`, x.V.Console, dto.State.Locale)))
+		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/unauthorize`, x.V.Console, dto.State.Locale)))
 		return
 	}
 
