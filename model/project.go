@@ -41,7 +41,7 @@ func SetProjects(ctx context.Context, db *mongo.Database) (err error) {
 		return
 	}
 	var jsonSchema bson.D
-	if err = LoadJsonSchema("picture", &jsonSchema); err != nil {
+	if err = LoadJsonSchema("project", &jsonSchema); err != nil {
 		return
 	}
 	if len(ns) == 0 {
