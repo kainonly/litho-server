@@ -123,7 +123,8 @@ func (x *CityResult) GetDetail() Detail {
 type Detail struct {
 	Continent string `bson:"continent" json:"continent"`
 	Country   string `bson:"country" json:"country"`
-	Prov      string `bson:"prov" json:"prov"`
+	Prov      string `bson:"prov,omitempty" json:"prov,omitempty"`
+	Province  string `bson:"prov,omitempty" json:"province,omitempty"`
 	City      string `bson:"city" json:"city"`
 	Owner     string `bson:"owner" json:"owner"`
 	ISP       string `bson:"isp" json:"isp"`

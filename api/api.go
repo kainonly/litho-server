@@ -86,6 +86,7 @@ type API struct {
 func (x *API) Routes(h *server.Hertz) (err error) {
 	csrfToken := x.Csrf.VerifyToken(!x.V.IsRelease())
 	auth := x.AuthGuard()
+	audit := x.Audit()
 
 	h.GET("", x.Index.Ping)
 	_login := h.Group("login", csrfToken)
@@ -103,12 +104,35 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.POST("logout", csrfToken, auth, x.Index.Logout)
 	h.GET("options", x.Index.Options)
 
-	m := []app.HandlerFunc{csrfToken, auth}
-	u := h.Group("", m...)
+	m := []app.HandlerFunc{csrfToken, auth, audit}
+	_values := h.Group("values", m...)
 	{
-		help.ValuesRoutes(u, x.Values)
-		help.SessionsRoutes(u, x.Sessions)
-		help.RestRoutes(u.Group("db"), x.Rest)
+		_values.GET("", x.Values.Get)
+		_values.PATCH("", x.Values.Set)
+		_values.DELETE(":key", x.Values.Remove)
+	}
+	_sessions := h.Group("sessions", m...)
+	{
+		_sessions.GET("", x.Sessions.Lists)
+		_sessions.DELETE(":uid", x.Sessions.Remove)
+		_sessions.POST("clear", x.Sessions.Clear)
+	}
+	_db := h.Group("db", csrfToken, auth)
+	{
+		_db.GET(":collection/:id", x.Rest.FindById)
+		_db.POST(":collection/create", audit, x.Rest.Create)
+		_db.POST(":collection/bulk_create", audit, x.Rest.BulkCreate)
+		_db.POST(":collection/size", x.Rest.Size)
+		_db.POST(":collection/find", x.Rest.Find)
+		_db.POST(":collection/find_one", x.Rest.FindOne)
+		_db.POST(":collection/update", audit, x.Rest.Update)
+		_db.POST(":collection/bulk_delete", audit, x.Rest.BulkDelete)
+		_db.POST(":collection/sort", audit, x.Rest.Sort)
+		_db.PATCH(":collection/:id", audit, x.Rest.UpdateById)
+		_db.PUT(":collection/:id", audit, x.Rest.Replace)
+		_db.DELETE(":collection/:id", audit, x.Rest.Delete)
+		_db.POST("transaction", audit, x.Rest.Transaction)
+		_db.POST("commit", audit, x.Rest.Commit)
 	}
 	_user := h.Group("user", m...)
 	{
@@ -223,7 +247,7 @@ func (x *API) Audit() app.HandlerFunc {
 		if userId != "" {
 			format["metadata.user_id"] = "oid"
 		}
-		transferCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		transferCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
 		x.Transfer.Publish(transferCtx, "logset_operates", transfer.Payload{
