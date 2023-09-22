@@ -106,25 +106,38 @@ func (x *Service) KeyAuth(source string, id string, key string) (r *KeyAuthResul
 	return
 }
 
-type CityResult struct {
+type IpResult interface {
+	GetMsg() string
+	IsSuccess() bool
+	GetDetail() interface{}
+}
+
+type Ipv4Result struct {
 	Msg     string `json:"msg"`
 	Success bool   `json:"success"`
 	Code    int    `json:"code"`
 	Data    struct {
-		OrderNo string `json:"orderNo"`
-		Result  Detail `json:"result"`
+		OrderNo string     `json:"orderNo"`
+		Result  Ipv4Detail `json:"result"`
 	} `json:"data"`
 }
 
-func (x *CityResult) GetDetail() Detail {
+func (x *Ipv4Result) GetMsg() string {
+	return x.Msg
+}
+
+func (x *Ipv4Result) IsSuccess() bool {
+	return x.Success
+}
+
+func (x *Ipv4Result) GetDetail() interface{} {
 	return x.Data.Result
 }
 
-type Detail struct {
+type Ipv4Detail struct {
 	Continent string `bson:"continent" json:"continent"`
 	Country   string `bson:"country" json:"country"`
-	Prov      string `bson:"prov,omitempty" json:"prov,omitempty"`
-	Province  string `bson:"prov,omitempty" json:"province,omitempty"`
+	Province  string `bson:"prov" json:"prov"`
 	City      string `bson:"city" json:"city"`
 	Owner     string `bson:"owner" json:"owner"`
 	ISP       string `bson:"isp" json:"isp"`
@@ -140,7 +153,7 @@ type Detail struct {
 	Source    string `bson:"source" json:"source"`
 }
 
-func (x *Service) GetIpv4(ctx context.Context, ip string) (r *CityResult, err error) {
+func (x *Service) GetIpv4(ctx context.Context, ip string) (_ IpResult, err error) {
 	source, kar := "market", new(KeyAuthResult)
 	if kar, err = x.KeyAuth(source, x.V.IpSecretId, x.V.IpSecretKey); err != nil {
 		return
@@ -165,14 +178,56 @@ func (x *Service) GetIpv4(ctx context.Context, ip string) (r *CityResult, err er
 	if res, err = client.Do(req); err != nil {
 		return
 	}
+	var r *Ipv4Result
 	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
 		return
 	}
 
-	return
+	return r, nil
 }
 
-func (x *Service) GetIpv6(ctx context.Context, ip string) (r *CityResult, err error) {
+type Ipv6Result struct {
+	Msg     string `json:"msg"`
+	Success bool   `json:"success"`
+	Code    int    `json:"code"`
+	Data    struct {
+		OrderNo string     `json:"orderNo"`
+		Result  Ipv6Detail `json:"result"`
+	} `json:"data"`
+}
+
+func (x *Ipv6Result) GetMsg() string {
+	return x.Msg
+}
+
+func (x *Ipv6Result) IsSuccess() bool {
+	return x.Success
+}
+
+func (x *Ipv6Result) GetDetail() interface{} {
+	return x.Data.Result
+}
+
+type Ipv6Detail struct {
+	Continent string `bson:"continent" json:"continent"`
+	Country   string `bson:"country" json:"country"`
+	Province  string `bson:"prov" json:"province"`
+	City      string `bson:"city" json:"city"`
+	Owner     string `bson:"owner" json:"owner"`
+	ISP       string `bson:"isp" json:"isp"`
+	Areacode  string `bson:"areacode" json:"areacode"`
+	Asnumber  string `bson:"asnumber" json:"asnumber"`
+	Adcode    string `bson:"adcode" json:"adcode"`
+	Zipcode   string `bson:"zipcode" json:"zipcode"`
+	Timezone  string `bson:"timezone" json:"timezone"`
+	Accuracy  string `bson:"accuracy" json:"accuracy"`
+	Lat       string `bson:"lat" json:"lat"`
+	Lng       string `bson:"lng" json:"lng"`
+	Radius    string `bson:"radius" json:"radius"`
+	Source    string `bson:"source" json:"source"`
+}
+
+func (x *Service) GetIpv6(ctx context.Context, ip string) (_ IpResult, err error) {
 	source, kar := "market", new(KeyAuthResult)
 	if kar, err = x.KeyAuth(source, x.V.Ipv6SecretId, x.V.Ipv6SecretKey); err != nil {
 		return
@@ -197,11 +252,11 @@ func (x *Service) GetIpv6(ctx context.Context, ip string) (r *CityResult, err er
 	if res, err = client.Do(req); err != nil {
 		return
 	}
+	var r *Ipv6Result
 	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
 		return
 	}
-
-	return
+	return r, nil
 }
 
 func (x *Service) SmsSend(ctx context.Context, sign string, tid string, params []string, phone []string) (err error) {
