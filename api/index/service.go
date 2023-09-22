@@ -197,7 +197,7 @@ func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogi
 	if ip == nil {
 		return
 	}
-	var r *tencent.CityResult
+	var r tencent.IpResult
 	if ip.To4() != nil {
 		if r, err = x.Tencent.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
 			return
@@ -207,9 +207,10 @@ func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogi
 			return
 		}
 	}
-	if !r.Success {
-		return errors.NewPublic(r.Msg)
+	if !r.(tencent.IpResult).IsSuccess() {
+		return errors.NewPublic(r.GetMsg())
 	}
+
 	data.SetVersion("shuliancloud.v4")
 	data.SetDetail(r.GetDetail())
 	if _, err = x.Db.Collection("logset_logined").InsertOne(ctx, data); err != nil {
