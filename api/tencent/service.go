@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
-	"github.com/gookit/goutil/strutil"
 	tcommon "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 	"github.com/tencentyun/cos-go-sdk-v5"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/server/common"
 	"net/http"
 	"net/url"
@@ -38,7 +38,7 @@ func (x *Service) CosPresigned() (_ M, err error) {
 	date := time.Now()
 	expired := date.Add(time.Duration(x.V.TencentCosExpired) * time.Second)
 	keyTime := fmt.Sprintf(`%d;%d`, date.Unix(), expired.Unix())
-	name := strutil.MicroTimeHexID()
+	name := help.Uuid()
 	key := fmt.Sprintf(`%s/%s/%s`,
 		x.V.Namespace, date.Format("20060102"), name)
 	policy := M{
