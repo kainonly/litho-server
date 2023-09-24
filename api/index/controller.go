@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/gookit/goutil/strutil"
 	"github.com/weplanx/go/csrf"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
@@ -289,7 +289,7 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	Key    string `json:"key,required" vd:"in($, 'email', 'name', 'avatar')"`
+	Key    string `json:"key,required" vd:"in($, 'Email', 'Name', 'Avatar')"`
 	Email  string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
 	Name   string `json:"name,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
@@ -303,8 +303,9 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	data := make(map[string]interface{})
-	path := strutil.CamelCase(dto.Key)
-	data[dto.Key] = reflect.ValueOf(dto).FieldByName(path).Interface()
+	data[dto.Key] = reflect.ValueOf(dto).
+		FieldByName(dto.Key).
+		Interface()
 
 	claims := common.Claims(c)
 	if _, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{"$set": data}); err != nil {
@@ -482,11 +483,9 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	case "generate-secret":
-		id, _ := strutil.RandomString(8)
-		key, _ := strutil.RandomString(16)
 		c.JSON(http.StatusOK, M{
-			"id":  id,
-			"key": key,
+			"id":  help.Random(8),
+			"key": help.Random(16),
 		})
 		return
 	}

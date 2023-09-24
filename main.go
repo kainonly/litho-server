@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/gookit/goutil/fmtutil"
+	"github.com/cloudwego/hertz/pkg/common/json"
 	"github.com/spf13/cobra"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
@@ -58,7 +58,6 @@ func main() {
 			}
 			defer bootstrap.ProviderOpenTelemetry(values).
 				Shutdown(ctx)
-
 			h.Spin()
 			return
 		},
@@ -169,11 +168,11 @@ func main() {
 				return
 			}
 			time.Sleep(time.Second)
-			var output string
-			if output, err = fmtutil.PrettyJSON(x.V); err != nil {
+			var output []byte
+			if output, err = json.MarshalIndent(x.V, "", "    "); err != nil {
 				return
 			}
-			fmt.Println(output)
+			fmt.Println(string(output))
 			return
 		},
 	})

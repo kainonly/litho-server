@@ -8,13 +8,13 @@ import (
 	"encoding/base32"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/dgryski/dgoogauth"
-	"github.com/gookit/goutil/strutil"
 	"github.com/jordan-wright/email"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passlib"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/sessions"
+	"github.com/weplanx/go/totp"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
@@ -65,7 +65,7 @@ func (x *Service) Logining(ctx context.Context, filter bson.M) (u model.User, er
 }
 
 func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
-	jti := strutil.MicroTimeHexID()
+	jti := help.Uuid()
 	if ts, err = x.Passport.Create(userId, jti); err != nil {
 		return
 	}
@@ -132,7 +132,7 @@ func (x *Service) GetLoginSms(ctx context.Context, phone string) (code string, e
 		return
 	}
 
-	code = strutil.RandWithTpl(6, strutil.Numbers)
+	code = help.RandomNumber(6)
 	// TODO: Change to values...
 	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889615", []string{code}, []string{phone}); err != nil {
 		return
@@ -170,11 +170,10 @@ func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *
 	}
 
 	userId := r.User.ID.Hex()
-	otpc := &dgoogauth.OTPConfig{
-		Secret:      r.User.Totp,
-		WindowSize:  1,
-		HotpCounter: 0,
-		UTC:         true,
+	otpc := &totp.Totp{
+		Secret:  r.User.Totp,
+		Window:  1,
+		Counter: 0,
 	}
 	var check bool
 	if check, err = otpc.Authenticate(code); err != nil {
@@ -257,7 +256,7 @@ func (x *Service) GetForgetCode(ctx context.Context, username string) (err error
 		return
 	}
 
-	code := strutil.RandWithTpl(6, strutil.Numbers)
+	code := help.RandomNumber(6)
 	var tpl *template.Template
 	if tpl, err = template.ParseFiles("./templates/email_code.gohtml"); err != nil {
 		return
@@ -335,7 +334,7 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 }
 
 func (x *Service) GetRefreshCode(ctx context.Context, userId string) (code string, err error) {
-	code = strutil.MicroTimeHexID()
+	code = help.Uuid()
 	x.Captcha.Create(ctx, userId, code, 15*time.Second)
 	return
 }
@@ -452,7 +451,7 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 }
 
 func (x *Service) GetUserPhoneCode(ctx context.Context, phone string) (code string, err error) {
-	code = strutil.RandWithTpl(6, strutil.Numbers)
+	code = help.RandomNumber(6)
 	// TODO: Change to values
 	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889620", []string{code}, []string{phone}); err != nil {
 		return
@@ -481,7 +480,7 @@ func (x *Service) SetUserPhone(ctx context.Context, userId string, phone string,
 	})
 }
 
-func (x *Service) GetUserTotp(ctx context.Context, userId string) (totp string, err error) {
+func (x *Service) GetUserTotp(ctx context.Context, userId string) (uri string, err error) {
 	id, _ := primitive.ObjectIDFromHex(userId)
 	var user model.User
 	if err = x.Db.Collection("users").
@@ -502,27 +501,26 @@ func (x *Service) GetUserTotp(ctx context.Context, userId string) (totp string, 
 	params.Add("secret", secret)
 	params.Add("issuer", x.V.Namespace)
 	u.RawQuery = params.Encode()
-	totp = u.String()
+	uri = u.String()
 
-	if err = x.RDb.Set(ctx, totp, secret, time.Minute*5).Err(); err != nil {
+	if err = x.RDb.Set(ctx, uri, secret, time.Minute*5).Err(); err != nil {
 		return
 	}
 	return
 }
 
-func (x *Service) SetUserTotp(ctx context.Context, userId string, totp string, tss [2]string) (r interface{}, err error) {
+func (x *Service) SetUserTotp(ctx context.Context, userId string, uri string, tss [2]string) (r interface{}, err error) {
 	if tss[0] == tss[1] {
 		return "", common.ErrTotpInvalid
 	}
 	var secret string
-	if secret, err = x.RDb.Get(ctx, totp).Result(); err != nil {
+	if secret, err = x.RDb.Get(ctx, uri).Result(); err != nil {
 		return
 	}
-	otpc := &dgoogauth.OTPConfig{
-		Secret:      secret,
-		WindowSize:  2,
-		HotpCounter: 0,
-		UTC:         true,
+	otpc := &totp.Totp{
+		Secret:  secret,
+		Window:  2,
+		Counter: 0,
 	}
 	for _, v := range tss {
 		var check bool
@@ -534,7 +532,7 @@ func (x *Service) SetUserTotp(ctx context.Context, userId string, totp string, t
 		}
 	}
 
-	if err = x.RDb.Del(ctx, totp).Err(); err != nil {
+	if err = x.RDb.Del(ctx, uri).Err(); err != nil {
 		return
 	}
 	return x.SetUser(ctx, userId, bson.M{
