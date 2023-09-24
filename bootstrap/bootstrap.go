@@ -13,7 +13,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
-	"github.com/weplanx/collector/transfer"
+	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/csrf"
@@ -91,6 +91,7 @@ func UseNats(v *common.Values) (nc *nats.Conn, err error) {
 	}
 	if nc, err = nats.Connect(
 		strings.Join(v.Nats.Hosts, ","),
+		nats.MaxReconnects(-1),
 		nats.Nkey(pub, func(nonce []byte) ([]byte, error) {
 			sig, _ := kp.Sign(nonce)
 			return sig, nil
@@ -179,7 +180,7 @@ func UseCaptcha(v *common.Values, client *redis.Client) *captcha.Captcha {
 	)
 }
 
-func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Transfer, error) {
+func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Client, error) {
 	return transfer.New(
 		transfer.SetNamespace(v.Namespace),
 		transfer.SetJetStream(js),

@@ -56,6 +56,10 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	passport := UsePassport(values2)
 	captcha := UseCaptcha(values2, redisClient)
 	locker := UseLocker(values2, redisClient)
+	clientClient, err := UseTransfer(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
 	inject := &common.Inject{
 		V:         values2,
 		Mgo:       client,
@@ -69,16 +73,13 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Passport:  passport,
 		Captcha:   captcha,
 		Locker:    locker,
+		Transfer:  clientClient,
 	}
 	hertz, err := UseHertz(values2)
 	if err != nil {
 		return nil, err
 	}
 	csrf := UseCsrf(values2)
-	transfer, err := UseTransfer(values2, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	service := UseValues(values2, keyValue, cipher)
 	controller := &values.Controller{
 		Service: service,
@@ -169,7 +170,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Inject:               inject,
 		Hertz:                hertz,
 		Csrf:                 csrf,
-		Transfer:             transfer,
 		Values:               controller,
 		Sessions:             sessionsController,
 		Rest:                 restController,

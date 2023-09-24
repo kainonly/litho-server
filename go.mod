@@ -23,7 +23,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.754
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.754
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.43
-	github.com/weplanx/collector v1.10.3
+	github.com/weplanx/collector v1.10.4
 	github.com/weplanx/go v0.6.0
 	github.com/weplanx/schedule v1.4.0
 	go.mongodb.org/mongo-driver v1.12.1
