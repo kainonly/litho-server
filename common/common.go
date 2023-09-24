@@ -6,6 +6,7 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
+	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/locker"
@@ -26,6 +27,7 @@ type Inject struct {
 	Passport  *passport.Passport
 	Captcha   *captcha.Captcha
 	Locker    *locker.Locker
+	Transfer  *transfer.Client
 }
 
 func Claims(c *app.RequestContext) (claims passport.Claims) {

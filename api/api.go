@@ -13,7 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/nats-io/nats.go"
-	"github.com/weplanx/collector/transfer"
+	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
@@ -57,7 +57,6 @@ type API struct {
 
 	Hertz                *server.Hertz
 	Csrf                 *csrf.Csrf
-	Transfer             *transfer.Transfer
 	Values               *values.Controller
 	Sessions             *sessions.Controller
 	Rest                 *rest.Controller
