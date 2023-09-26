@@ -111,5 +111,25 @@ func SetLogsetOperates(ctx context.Context, db *mongo.Database) (err error) {
 }
 
 func SetLogsetImessages(ctx context.Context, db *mongo.Database) (err error) {
+	var ns []string
+	filter := bson.M{"name": bson.M{"$in": bson.A{"logset_imessages", "logset_imessages_fail"}}}
+	if ns, err = db.ListCollectionNames(ctx, filter); err != nil {
+		return
+	}
+	if len(ns) == 0 {
+		option := options.CreateCollection().
+			SetTimeSeriesOptions(
+				options.TimeSeries().
+					SetTimeField("timestamp").
+					SetMetaField("metadata"),
+			).
+			SetExpireAfterSeconds(31536000)
+		if err = db.CreateCollection(ctx, "logset_imessages", option); err != nil {
+			return
+		}
+		if err = db.CreateCollection(ctx, "logset_imessages_fail", option); err != nil {
+			return
+		}
+	}
 	return
 }

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/common/errors"
+	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"strings"
+	"time"
 )
 
 type Service struct {
@@ -56,4 +58,17 @@ func (x *Service) Acl(ctx context.Context, dto AclDto) (err error) {
 		return errors.NewPublic(msg)
 	}
 	return
+}
+
+func (x *Service) Bridge(ctx context.Context, dto BridgeDto) (err error) {
+	return x.Transfer.Publish(ctx, "logset_imessages", transfer.Payload{
+		Timestamp: time.Now(),
+		Data: map[string]interface{}{
+			"metadata": map[string]interface{}{
+				"client": dto.Client,
+				"topic":  dto.Topic,
+			},
+			"payload": dto.Payload,
+		},
+	})
 }
