@@ -56,9 +56,9 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	go func() {
-		data := model.NewLogsetLogined(
+		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
+		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -111,9 +111,9 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 	}
 
 	go func() {
-		data := model.NewLogsetLogined(
+		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
+		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -144,9 +144,9 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 	}
 
 	go func() {
-		data := model.NewLogsetLogined(
+		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
+		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()

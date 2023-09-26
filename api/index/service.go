@@ -192,7 +192,7 @@ func (x *Service) LoginTotp(ctx context.Context, email string, code string) (r *
 	return
 }
 
-func (x *Service) WriteLogsetLogined(ctx context.Context, data *model.LogsetLogined) (err error) {
+func (x *Service) WriteLogsetLogin(ctx context.Context, data *model.LogsetLogin) (err error) {
 	ip := net.ParseIP(data.Metadata.ClientIP)
 	if ip == nil {
 		return
