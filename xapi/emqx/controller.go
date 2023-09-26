@@ -52,3 +52,24 @@ func (x *Controller) Acl(ctx context.Context, c *app.RequestContext) {
 
 	c.Status(204)
 }
+
+type BridgeDto struct {
+	Client  string `json:"client"`
+	Topic   string `json:"topic"`
+	Payload string `json:"payload"`
+}
+
+func (x *Controller) Bridge(ctx context.Context, c *app.RequestContext) {
+	var dto BridgeDto
+	if err := c.Bind(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := x.EmqxService.Bridge(ctx, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(204)
+}

@@ -24,3 +24,9 @@ func TestSetLogsetOperates(t *testing.T) {
 	err := model.SetLogsetOperates(ctx, x.Db)
 	assert.NoError(t, err)
 }
+
+func TestSetLogsetImessages(t *testing.T) {
+	ctx := context.TODO()
+	err := model.SetLogsetImessages(ctx, x.Db)
+	assert.NoError(t, err)
+}

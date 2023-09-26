@@ -127,6 +127,9 @@ func main() {
 			if err = model.SetLogsetOperates(ctx, x.Db); err != nil {
 				return
 			}
+			if err = model.SetLogsetImessages(ctx, x.Db); err != nil {
+				return
+			}
 			if err = model.SetPictures(ctx, x.Db); err != nil {
 				return
 			}

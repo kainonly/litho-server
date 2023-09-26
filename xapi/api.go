@@ -11,6 +11,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
+	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/xapi/emqx"
@@ -35,6 +36,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_emqx.POST("auth", x.Emqx.Auth)
 		_emqx.POST("acl", x.Emqx.Acl)
+		_emqx.POST("bridge", x.Emqx.Bridge)
 	}
 	return
 }
@@ -106,6 +108,12 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 
 	h = x.Hertz
 	h.Use(x.ErrHandler())
+
+	if err = x.Transfer.Set(ctx, transfer.StreamOption{
+		Key: "logset_imessages",
+	}); err != nil {
+		return
+	}
 
 	return
 }
