@@ -21,6 +21,7 @@ type Service struct {
 
 func (x *Service) R(ctx context.Context) *req.Request {
 	return req.C().
+		//DevMode().
 		SetBaseURL(x.V.EmqxHost).
 		SetCommonBasicAuth(x.V.EmqxApiKey, x.V.EmqxSecretKey).
 		SetJsonMarshal(sonic.Marshal).

@@ -22,6 +22,8 @@ import (
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/xapi"
+	"github.com/weplanx/server/xapi/emqx"
 )
 
 // Injectors from wire.go:
@@ -53,7 +55,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	passport := UsePassport(values2)
 	captcha := UseCaptcha(values2, redisClient)
 	locker := UseLocker(values2, redisClient)
 	clientClient, err := UseTransfer(values2, jetStreamContext)
@@ -70,7 +71,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
 		Cipher:    cipher,
-		Passport:  passport,
 		Captcha:   captcha,
 		Locker:    locker,
 		Transfer:  clientClient,
@@ -95,10 +95,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	tencentService := &tencent.Service{
 		Inject: inject,
 	}
+	passport := UseAPIPassport(values2)
 	indexService := &index.Service{
 		Inject:   inject,
 		Sessions: sessionsService,
 		Tencent:  tencentService,
+		Passport: passport,
 	}
 	indexController := &index.Controller{
 		V:             values2,
@@ -195,4 +197,70 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		ObservabilityService: observabilityService,
 	}
 	return apiAPI, nil
+}
+
+func NewXAPI(values2 *common.Values) (*xapi.API, error) {
+	client, err := UseMongoDB(values2)
+	if err != nil {
+		return nil, err
+	}
+	database := UseDatabase(values2, client)
+	redisClient, err := UseRedis(values2)
+	if err != nil {
+		return nil, err
+	}
+	influxdb2Client := UseInflux(values2)
+	conn, err := UseNats(values2)
+	if err != nil {
+		return nil, err
+	}
+	jetStreamContext, err := UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
+	keyValue, err := UseKeyValue(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	cipher, err := UseCipher(values2)
+	if err != nil {
+		return nil, err
+	}
+	captcha := UseCaptcha(values2, redisClient)
+	locker := UseLocker(values2, redisClient)
+	clientClient, err := UseTransfer(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	inject := &common.Inject{
+		V:         values2,
+		Mgo:       client,
+		Db:        database,
+		RDb:       redisClient,
+		Flux:      influxdb2Client,
+		Nats:      conn,
+		JetStream: jetStreamContext,
+		KeyValue:  keyValue,
+		Cipher:    cipher,
+		Captcha:   captcha,
+		Locker:    locker,
+		Transfer:  clientClient,
+	}
+	hertz, err := UseHertz(values2)
+	if err != nil {
+		return nil, err
+	}
+	service := &emqx.Service{
+		Inject: inject,
+	}
+	controller := &emqx.Controller{
+		EmqxService: service,
+	}
+	xapiAPI := &xapi.API{
+		Inject:      inject,
+		Hertz:       hertz,
+		Emqx:        controller,
+		EmqxService: service,
+	}
+	return xapiAPI, nil
 }

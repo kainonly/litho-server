@@ -159,9 +159,9 @@ func UseCipher(v *common.Values) (*cipher.Cipher, error) {
 	return cipher.New(v.Key)
 }
 
-func UsePassport(v *common.Values) *passport.Passport {
+func UseAPIPassport(v *common.Values) *common.APIPassport {
 	return passport.New(
-		passport.SetNamespace(v.Namespace),
+		passport.SetIssuer(v.Namespace),
 		passport.SetKey(v.Key),
 	)
 }
@@ -187,9 +187,10 @@ func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Client, 
 	)
 }
 
-func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
+func ProviderOpenTelemetry(v *common.Values, service string) provider.OtelProvider {
 	return provider.NewOpenTelemetryProvider(
-		provider.WithServiceName(v.Namespace),
+		provider.WithServiceNamespace(v.Namespace),
+		provider.WithServiceName(service),
 		provider.WithExportEndpoint(v.Otlp.Endpoint),
 		provider.WithInsecure(),
 	)

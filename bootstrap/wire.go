@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/xapi"
 )
 
 func NewAPI(values *common.Values) (*api.API, error) {
@@ -25,7 +26,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseRest,
 		UseCsrf,
 		UseCipher,
-		UsePassport,
+		UseAPIPassport,
 		UseLocker,
 		UseCaptcha,
 		UseTransfer,
@@ -33,4 +34,25 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		api.Provides,
 	)
 	return &api.API{}, nil
+}
+
+func NewXAPI(values *common.Values) (*xapi.API, error) {
+	wire.Build(
+		wire.Struct(new(xapi.API), "*"),
+		wire.Struct(new(common.Inject), "*"),
+		UseMongoDB,
+		UseDatabase,
+		UseRedis,
+		UseInflux,
+		UseNats,
+		UseJetStream,
+		UseKeyValue,
+		UseCipher,
+		UseLocker,
+		UseCaptcha,
+		UseTransfer,
+		UseHertz,
+		xapi.Provides,
+	)
+	return &xapi.API{}, nil
 }

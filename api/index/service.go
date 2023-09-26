@@ -32,6 +32,7 @@ type Service struct {
 	*common.Inject
 	Sessions *sessions.Service
 	Tencent  *tencent.Service
+	Passport *common.APIPassport
 }
 
 type LoginResult struct {
@@ -66,7 +67,7 @@ func (x *Service) Logining(ctx context.Context, filter bson.M) (u model.User, er
 
 func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
 	jti := help.Uuid()
-	if ts, err = x.Passport.Create(userId, jti); err != nil {
+	if ts, err = x.Passport.Create(userId, jti, time.Hour*2); err != nil {
 		return
 	}
 	if status := x.Sessions.Set(ctx, userId, jti); status != "OK" {
@@ -343,7 +344,7 @@ func (x *Service) RefreshToken(ctx context.Context, claims passport.Claims, code
 	if err = x.Captcha.Verify(ctx, claims.UserId, code); err != nil {
 		return
 	}
-	if ts, err = x.Passport.Create(claims.UserId, claims.ID); err != nil {
+	if ts, err = x.Passport.Create(claims.UserId, claims.ID, time.Hour*2); err != nil {
 		return
 	}
 	return

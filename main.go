@@ -10,6 +10,7 @@ import (
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
+	"github.com/weplanx/server/xapi"
 	"os"
 	"time"
 )
@@ -56,7 +57,30 @@ func main() {
 			if err = x.Routes(h); err != nil {
 				return
 			}
-			defer bootstrap.ProviderOpenTelemetry(values).
+			defer bootstrap.ProviderOpenTelemetry(values, "api").
+				Shutdown(ctx)
+			h.Spin()
+			return
+		},
+	})
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "xapi",
+		Short: "Start Internal API service",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			var x *xapi.API
+			if x, err = bootstrap.NewXAPI(values); err != nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			var h *server.Hertz
+			if h, err = x.Initialize(ctx); err != nil {
+				return
+			}
+			if err = x.Routes(h); err != nil {
+				return
+			}
+			defer bootstrap.ProviderOpenTelemetry(values, "xapi").
 				Shutdown(ctx)
 			h.Spin()
 			return
@@ -64,7 +88,7 @@ func main() {
 	})
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "openapi",
-		Short: "Start OpenAPI service",
+		Short: "Start Open API service",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return
 		},
