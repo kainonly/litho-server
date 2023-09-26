@@ -115,9 +115,9 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}
 
 	go func() {
-		data := model.NewLogsetLogined(
+		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogined(context.TODO(), data); err != nil {
+		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()

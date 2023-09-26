@@ -21,7 +21,7 @@ type User struct {
 	Totp       string               `bson:"totp,omitempty" json:"-"`
 	Lark       *UserLark            `bson:"lark,omitempty" json:"lark"`
 	Sessions   int64                `bson:"sessions,omitempty" json:"sessions"`
-	History    *LogsetLogined       `bson:"history,omitempty" json:"history"`
+	History    *LogsetLogin         `bson:"history,omitempty" json:"history"`
 	Status     bool                 `bson:"status" json:"status"`
 	CreateTime time.Time            `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time            `bson:"update_time" json:"update_time"`

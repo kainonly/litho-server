@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestSetLogsetLogined(t *testing.T) {
+func TestSetLogsetLogins(t *testing.T) {
 	ctx := context.TODO()
-	err := model.SetLogsetLogined(ctx, x.Db)
+	err := model.SetLogsetLogins(ctx, x.Db)
 	assert.NoError(t, err)
 }
 

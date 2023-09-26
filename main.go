@@ -118,7 +118,7 @@ func main() {
 			if err = model.SetImessages(ctx, x.Db); err != nil {
 				return
 			}
-			if err = model.SetLogsetLogined(ctx, x.Db); err != nil {
+			if err = model.SetLogsetLogins(ctx, x.Db); err != nil {
 				return
 			}
 			if err = model.SetLogsetJobs(ctx, x.Db); err != nil {
