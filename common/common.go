@@ -24,11 +24,12 @@ type Inject struct {
 	JetStream nats.JetStreamContext
 	KeyValue  nats.KeyValue
 	Cipher    *cipher.Cipher
-	Passport  *passport.Passport
 	Captcha   *captcha.Captcha
 	Locker    *locker.Locker
 	Transfer  *transfer.Client
 }
+
+type APIPassport = passport.Passport
 
 func Claims(c *app.RequestContext) (claims passport.Claims) {
 	value, ok := c.Get("identity")

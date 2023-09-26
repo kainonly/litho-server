@@ -383,8 +383,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/weplanx/collector v1.10.4 h1:tE67LNzkO0UqWBYCtizKgR28lCXS+OKjh3qRiVk8h4g=
 github.com/weplanx/collector v1.10.4/go.mod h1:2Jtj0Lf6RRKeNQRH8qZi+8tJjARefMAc2dktLIgF7nM=
-github.com/weplanx/go v0.6.0 h1:AVcHPOBI11mRXPQrzn0QDf8dTnry/SiP2NLaKVvNxDE=
-github.com/weplanx/go v0.6.0/go.mod h1:0HQcTYXzTgrsw2HaaZWEWZNFOqBmulijtLkk0t61cyA=
+github.com/weplanx/go v0.6.1 h1:N62qJY2nKPGoPDE5uyXiCNFReZ+iQXVgkRp1hCFK4Ds=
+github.com/weplanx/go v0.6.1/go.mod h1:0HQcTYXzTgrsw2HaaZWEWZNFOqBmulijtLkk0t61cyA=
 github.com/weplanx/schedule v1.4.0 h1:jDw7024NQEHUgY3+mYekRWLnC4jk9IFTXn4SmbuGOU4=
 github.com/weplanx/schedule v1.4.0/go.mod h1:I9xyW3CSPcBaUsyltMmpla/Fyxjm8ZLMEhinnew/m/0=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
