@@ -57,7 +57,7 @@ func main() {
 			if err = x.Routes(h); err != nil {
 				return
 			}
-			defer bootstrap.ProviderOpenTelemetry(values, "api").
+			defer bootstrap.ProviderOpenTelemetry(values).
 				Shutdown(ctx)
 			h.Spin()
 			return
@@ -80,8 +80,6 @@ func main() {
 			if err = x.Routes(h); err != nil {
 				return
 			}
-			defer bootstrap.ProviderOpenTelemetry(values, "xapi").
-				Shutdown(ctx)
 			h.Spin()
 			return
 		},
