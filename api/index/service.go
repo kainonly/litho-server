@@ -213,7 +213,7 @@ func (x *Service) WriteLogsetLogin(ctx context.Context, data *model.LogsetLogin)
 
 	data.SetVersion("shuliancloud.v4")
 	data.SetDetail(r.GetDetail())
-	if _, err = x.Db.Collection("logset_logined").InsertOne(ctx, data); err != nil {
+	if _, err = x.Db.Collection("logset_logins").InsertOne(ctx, data); err != nil {
 		return
 	}
 	filter := bson.M{"_id": data.Metadata.UserID}
