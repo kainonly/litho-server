@@ -187,10 +187,9 @@ func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Client, 
 	)
 }
 
-func ProviderOpenTelemetry(v *common.Values, service string) provider.OtelProvider {
+func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
 	return provider.NewOpenTelemetryProvider(
-		provider.WithServiceNamespace(v.Namespace),
-		provider.WithServiceName(service),
+		provider.WithServiceName(v.Namespace),
 		provider.WithExportEndpoint(v.Otlp.Endpoint),
 		provider.WithInsecure(),
 	)
