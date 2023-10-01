@@ -34,12 +34,12 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	if !x.V.IsRelease() {
 		r["values"] = x.V
 	}
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type LoginDto struct {
-	Email    string `json:"email,required" vd:"email($)"`
-	Password string `json:"password,required" vd:"len($)>=8"`
+	Email    string `json:"email" vd:"email"`
+	Password string `json:"password" vd:"min=8"`
 }
 
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
@@ -64,14 +64,11 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type GetLoginSmsDto struct {
-	Phone string `query:"phone,required"`
+	Phone string `query:"phone" vd:"required"`
 }
 
 func (x *Controller) GetLoginSms(ctx context.Context, c *app.RequestContext) {
@@ -86,15 +83,12 @@ func (x *Controller) GetLoginSms(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type LoginSmsDto struct {
-	Phone string `json:"phone,required"`
-	Code  string `json:"code,required"`
+	Phone string `json:"phone" vd:"required"`
+	Code  string `json:"code" vd:"required"`
 }
 
 func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
@@ -119,15 +113,12 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type LoginTotpDto struct {
-	Email string `json:"email,required" vd:"email($)"`
-	Code  string `json:"code,required"`
+	Email string `json:"email" vd:"email"`
+	Code  string `json:"code" vd:"required"`
 }
 
 func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
@@ -152,14 +143,11 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type GetForgetCodeDto struct {
-	Email string `query:"email,required" vd:"email($)"`
+	Email string `query:"email" vd:"email"`
 }
 
 func (x *Controller) GetForgetCode(ctx context.Context, c *app.RequestContext) {
@@ -174,16 +162,13 @@ func (x *Controller) GetForgetCode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type ForgetResetDto struct {
-	Email    string `json:"email,required" vd:"email($)"`
-	Code     string `json:"code,required"`
-	Password string `json:"password,required"`
+	Email    string `json:"email" vd:"email"`
+	Code     string `json:"code" vd:"required"`
+	Password string `json:"password" vd:"required"`
 }
 
 func (x *Controller) ForgetReset(ctx context.Context, c *app.RequestContext) {
@@ -198,10 +183,7 @@ func (x *Controller) ForgetReset(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
@@ -223,10 +205,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(200, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
@@ -243,7 +222,7 @@ func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) 
 }
 
 type RefreshTokenDto struct {
-	Code string `json:"code,required"`
+	Code string `json:"code" vd:"required"`
 }
 
 func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
@@ -261,20 +240,14 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	}
 
 	common.SetAccessToken(c, ts)
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
 	x.IndexService.Logout(ctx, claims.UserId)
 	common.ClearAccessToken(c)
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
@@ -285,14 +258,14 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	c.JSON(200, data)
 }
 
 type SetUserDto struct {
-	Key    string `json:"key,required" vd:"in($, 'Email', 'Name', 'Avatar')"`
-	Email  string `json:"email,omitempty" vd:"(Set)$!='Email' || email($);msg:'must be email'"`
-	Name   string `json:"name,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
+	Key    string `json:"key" vd:"oneof='Email' 'Name' 'Avatar'"`
+	Email  string `json:"email," vd:"required_if=Key 'Email',email"`
+	Name   string `json:"name" vd:"required_if=Key 'Name'"`
+	Avatar string `json:"avatar" vd:"required_if=Key 'Avatar'"`
 }
 
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
@@ -302,7 +275,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	data := make(map[string]interface{})
+	data := make(M)
 	data[dto.Key] = reflect.ValueOf(dto).
 		FieldByName(dto.Key).
 		Interface()
@@ -313,15 +286,12 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type SetUserPassword struct {
-	Old      string `json:"old,required" vd:"len($)>8;msg:'must be greater than 8 characters'"`
-	Password string `json:"password,required" vd:"len($)>8;msg:'must be greater than 8 characters'"`
+	Old      string `json:"old" vd:"min=8"`
+	Password string `json:"password" vd:"min=8"`
 }
 
 func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext) {
@@ -337,14 +307,11 @@ func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext)
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type GetUserPhone struct {
-	Phone string `query:"phone,required"`
+	Phone string `query:"phone" vd:"required"`
 }
 
 func (x *Controller) GetUserPhoneCode(ctx context.Context, c *app.RequestContext) {
@@ -359,15 +326,12 @@ func (x *Controller) GetUserPhoneCode(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type SetUserPhone struct {
-	Phone string `json:"phone,required"`
-	Code  string `json:"code,required"`
+	Phone string `json:"phone" vd:"required"`
+	Code  string `json:"code" vd:"required"`
 }
 
 func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
@@ -383,28 +347,25 @@ func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 func (x *Controller) GetUserTotp(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	r, err := x.IndexService.GetUserTotp(ctx, claims.UserId)
+	uri, err := x.IndexService.GetUserTotp(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"totp": r,
+	c.JSON(200, M{
+		"totp": uri,
 	})
 }
 
 type SetUserTotp struct {
-	Totp string    `json:"totp,required"`
-	Tss  [2]string `json:"tss,required"`
+	Totp string    `json:"totp" vd:"required"`
+	Tss  [2]string `json:"tss" vd:"len=2"`
 }
 
 func (x *Controller) SetUserTotp(ctx context.Context, c *app.RequestContext) {
@@ -420,14 +381,11 @@ func (x *Controller) SetUserTotp(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type UnsetUserDto struct {
-	Key string `path:"key,required" vd:"in($, 'phone', 'totp', 'lark')"`
+	Key string `path:"key" vd:"oneof='phone' 'totp' 'lark'"`
 }
 
 func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
@@ -446,10 +404,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, M{
-		"code":    0,
-		"message": "ok",
-	})
+	c.Status(204)
 }
 
 type OptionsDto struct {

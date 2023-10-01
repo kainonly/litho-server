@@ -3,7 +3,6 @@ package observability
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"net/http"
 )
 
 type Controller struct {
@@ -11,7 +10,7 @@ type Controller struct {
 }
 
 type ExportersDto struct {
-	Name  string `path:"name,required"`
+	Name  string `path:"name" vd:"required"`
 	Dates string `query:"dates"`
 }
 
@@ -140,5 +139,5 @@ func (x *Controller) Exporters(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, data)
+	c.JSON(200, data)
 }

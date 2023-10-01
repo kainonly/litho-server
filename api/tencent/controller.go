@@ -3,7 +3,6 @@ package tencent
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"net/http"
 )
 
 type Controller struct {
@@ -17,11 +16,11 @@ func (x *Controller) CosPresigned(_ context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type CosImageInfoDto struct {
-	Url string `query:"url,required"`
+	Url string `query:"url" vd:"required"`
 }
 
 func (x *Controller) CosImageInfo(ctx context.Context, c *app.RequestContext) {
@@ -37,5 +36,5 @@ func (x *Controller) CosImageInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }

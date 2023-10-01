@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type Controller struct {
@@ -12,7 +11,7 @@ type Controller struct {
 }
 
 type GetInfoDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
@@ -29,11 +28,11 @@ func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type GetNodesDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
@@ -50,5 +49,5 @@ func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type Controller struct {
@@ -18,11 +17,11 @@ func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type GetMetricsDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) GetMetrics(ctx context.Context, c *app.RequestContext) {
@@ -39,11 +38,11 @@ func (x *Controller) GetMetrics(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type CreateMetricsDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) CreateMetrics(ctx context.Context, c *app.RequestContext) {
@@ -60,11 +59,11 @@ func (x *Controller) CreateMetrics(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(201, r)
 }
 
 type DeleteMetricsDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) DeleteMetrics(ctx context.Context, c *app.RequestContext) {
@@ -81,12 +80,12 @@ func (x *Controller) DeleteMetrics(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type PublishDto struct {
-	Topic   string `json:"topic,required"`
-	Payload M      `json:"payload,required"`
+	Topic   string `json:"topic" vd:"required"`
+	Payload M      `json:"payload" vd:"required"`
 }
 
 func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {
@@ -102,5 +101,5 @@ func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(201, r)
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/nats-io/nats.go"
 	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/csrf"
-	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/rest"
 	"github.com/weplanx/go/sessions"
@@ -330,10 +329,7 @@ func (x *API) ErrHandler() app.HandlerFunc {
 }
 
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
-	help.RegValidate()
-
 	h = x.Hertz
-	h.Use(x.ErrHandler())
 
 	update := make(chan interface{})
 	go x.Values.Service.Sync(x.V.Extra, update)

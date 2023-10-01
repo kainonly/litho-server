@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
-	"net/http"
 )
 
 type Controller struct {
@@ -24,7 +23,7 @@ type Controller struct {
 }
 
 type ChallengeDto struct {
-	Encrypt string `json:"encrypt,required"`
+	Encrypt string `json:"encrypt" vd:"required"`
 }
 
 func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
@@ -48,17 +47,20 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	if data.Token != x.V.LarkVerificationToken {
-		c.Error(errors.NewPublic("The local configuration token does not match the authentication token"))
+		c.Error(help.E(
+			"lark.VerificationTokenNotMatch",
+			"the local configuration token does not match the authentication token"),
+		)
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.H{
+	c.JSON(200, utils.H{
 		"challenge": data.Challenge,
 	})
 }
 
 type OAuthDto struct {
-	Code  string   `query:"code,required"`
+	Code  string   `query:"code" vd:"required"`
 	State StateDto `query:"state"`
 }
 
@@ -92,10 +94,10 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		var claims passport.Claims
 		if claims, err = x.IndexService.Verify(ctx, string(ts)); err != nil {
 			common.ClearAccessToken(c)
-			c.JSON(401, utils.H{
-				"code":    0,
-				"message": common.ErrAuthenticationExpired.Error(),
-			})
+			c.JSON(401, help.E(
+				"lark.AuthenticationExpired",
+				common.ErrAuthenticationExpired.Error(),
+			))
 			return
 		}
 
@@ -133,7 +135,7 @@ func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(201, r)
 }
 
 func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
@@ -143,5 +145,5 @@ func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
