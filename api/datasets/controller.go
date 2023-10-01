@@ -3,7 +3,6 @@ package datasets
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
-	"net/http"
 )
 
 type Controller struct {
@@ -11,7 +10,7 @@ type Controller struct {
 }
 
 type ListsDto struct {
-	Name string `query:"name,required"`
+	Name string `query:"name" vd:"required"`
 }
 
 func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
@@ -27,19 +26,19 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type CreateDto struct {
-	Name   string          `json:"name"`
-	Kind   string          `json:"kind"`
-	Option CreateOptionDto `json:"option,omitempty"`
+	Name   string          `json:"name" vd:"required"`
+	Kind   string          `json:"kind" vd:"required"`
+	Option CreateOptionDto `json:"option"`
 }
 
 type CreateOptionDto struct {
-	Time   string `json:"time"`
-	Meta   string `json:"meta"`
-	Expire int64  `json:"expire"`
+	Time   string `json:"time" vd:"required"`
+	Meta   string `json:"meta" vd:"required"`
+	Expire int64  `json:"expire" vd:"required"`
 }
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
@@ -54,11 +53,11 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(201)
 }
 
 type DeleteDto struct {
-	Name string `path:"name,required"`
+	Name string `path:"name" vd:"required"`
 }
 
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
@@ -73,5 +72,5 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(204)
 }

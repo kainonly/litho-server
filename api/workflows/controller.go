@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type Controller struct {
@@ -12,7 +11,7 @@ type Controller struct {
 }
 
 type SyncDto struct {
-	Id primitive.ObjectID `json:"id,required"`
+	Id primitive.ObjectID `json:"id" vd:"required"`
 }
 
 func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
@@ -27,5 +26,5 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(200)
 }

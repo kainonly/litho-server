@@ -13,8 +13,8 @@ type Controller struct {
 }
 
 type AuthDto struct {
-	Identity primitive.ObjectID `json:"identity,required"`
-	Token    string             `json:"token,required"`
+	Identity primitive.ObjectID `json:"identity" vd:"mongodb"`
+	Token    string             `json:"token" vd:"required"`
 }
 
 func (x *Controller) Auth(ctx context.Context, c *app.RequestContext) {
@@ -33,8 +33,8 @@ func (x *Controller) Auth(ctx context.Context, c *app.RequestContext) {
 }
 
 type AclDto struct {
-	Identity primitive.ObjectID `json:"identity,required"`
-	Topic    string             `json:"topic,required"`
+	Identity primitive.ObjectID `json:"identity" vd:"mongodb"`
+	Topic    string             `json:"topic" vd:"required"`
 }
 
 func (x *Controller) Acl(ctx context.Context, c *app.RequestContext) {
@@ -54,9 +54,9 @@ func (x *Controller) Acl(ctx context.Context, c *app.RequestContext) {
 }
 
 type BridgeDto struct {
-	Client  string `json:"client"`
-	Topic   string `json:"topic"`
-	Payload string `json:"payload"`
+	Client  string `json:"client" vd:"required"`
+	Topic   string `json:"topic" vd:"required"`
+	Payload string `json:"payload" vd:"required"`
 }
 
 func (x *Controller) Bridge(ctx context.Context, c *app.RequestContext) {

@@ -17,6 +17,7 @@ import (
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/csrf"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/go/rest"
@@ -199,6 +200,7 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
+		server.WithCustomValidator(help.Validator()),
 		tracer,
 	}
 	if os.Getenv("MODE") != "release" {
@@ -208,6 +210,7 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	h = server.Default(opts...)
 	h.Use(
 		requestid.New(),
+		help.EHandler(),
 		tracing.ServerMiddleware(cfg),
 	)
 	return

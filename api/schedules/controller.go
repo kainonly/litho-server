@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 type Controller struct {
@@ -12,7 +11,7 @@ type Controller struct {
 }
 
 type PingDto struct {
-	Nodes []string `json:"nodes,required"`
+	Nodes []string `json:"nodes" vd:"gt=0"`
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
@@ -32,11 +31,11 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 		result[node] = r
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(200, result)
 }
 
 type KeysDto struct {
-	Id string `path:"id,required" vd:"mongoId($);msg:'the document id must be an ObjectId'"`
+	Id string `path:"id" vd:"mongodb"`
 }
 
 func (x *Controller) Keys(ctx context.Context, c *app.RequestContext) {
@@ -53,12 +52,12 @@ func (x *Controller) Keys(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }
 
 type RevokeDto struct {
-	Id  string `json:"id,required"`
-	Key string `json:"key,required"`
+	Id  string `json:"id" vd:"required"`
+	Key string `json:"key" vd:"required"`
 }
 
 func (x *Controller) Revoke(_ context.Context, c *app.RequestContext) {
@@ -73,12 +72,12 @@ func (x *Controller) Revoke(_ context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(204)
 }
 
 type StatesDto struct {
-	Node string `json:"node,required"`
-	Key  string `json:"key,required"`
+	Node string `json:"node" vd:"required"`
+	Key  string `json:"key" vd:"required"`
 }
 
 func (x *Controller) State(_ context.Context, c *app.RequestContext) {
@@ -94,5 +93,5 @@ func (x *Controller) State(_ context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(http.StatusOK, r)
+	c.JSON(200, r)
 }

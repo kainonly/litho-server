@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	transfer "github.com/weplanx/collector/client"
-	"github.com/weplanx/go/help"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/xapi/emqx"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -104,8 +103,6 @@ func (x *API) ErrHandler() app.HandlerFunc {
 }
 
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
-	help.RegValidate()
-
 	h = x.Hertz
 	h.Use(x.ErrHandler())
 
