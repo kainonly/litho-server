@@ -431,8 +431,9 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	case "collaboration":
+		// TODO: x.V.Collaboration
 		c.JSON(http.StatusOK, M{
-			"url":      "https://open.feishu.cn/open-apis/authen/v1/index",
+			"url":      "https://open.larksuite.com/open-apis/authen/v1/index",
 			"redirect": x.V.RedirectUrl,
 			"app_id":   x.V.LarkAppId,
 		})
