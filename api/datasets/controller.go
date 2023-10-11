@@ -10,7 +10,7 @@ type Controller struct {
 }
 
 type ListsDto struct {
-	Name string `query:"name" vd:"required"`
+	Name string `query:"name"`
 }
 
 func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
@@ -32,7 +32,7 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 type CreateDto struct {
 	Name   string          `json:"name" vd:"required"`
 	Kind   string          `json:"kind" vd:"required"`
-	Option CreateOptionDto `json:"option"`
+	Option CreateOptionDto `json:"option" vd:"omitempty"`
 }
 
 type CreateOptionDto struct {

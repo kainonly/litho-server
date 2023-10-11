@@ -8,7 +8,7 @@ import (
 
 type Values struct {
 	Mode      string `env:"MODE" envDefault:"debug"`
-	Hostname  string `env:"HOSTNAME,required"`
+	Hostname  string `env:"HOSTNAME"`
 	Address   string `env:"ADDRESS" envDefault:":3000"`
 	Console   string `env:"CONSOLE,required"`
 	Ip        string `env:"IP" envDefault:"X-Forwarded-For"`
@@ -22,17 +22,17 @@ type Values struct {
 		Redis string `env:"REDIS,required"`
 	} `envPrefix:"DATABASE_"`
 
+	Nats struct {
+		Hosts []string `env:"HOSTS,required" envSeparator:","`
+		Nkey  string   `env:"NKEY,required"`
+	} `envPrefix:"NATS_"`
+
 	Influx struct {
 		Url    string `env:"URL"`
 		Org    string `env:"ORG"`
 		Token  string `env:"TOKEN"`
 		Bucket string `env:"BUCKET"`
 	} `envPrefix:"INFLUX_"`
-
-	Nats struct {
-		Hosts []string `env:"HOSTS,required" envSeparator:","`
-		Nkey  string   `env:"NKEY,required"`
-	} `envPrefix:"NATS_"`
 
 	Otlp struct {
 		Endpoint string `env:"ENDPOINT"`

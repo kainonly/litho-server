@@ -2,13 +2,8 @@ package api
 
 import (
 	"context"
-	"github.com/bytedance/go-tagexpr/v2/binding"
-	"github.com/bytedance/go-tagexpr/v2/validator"
-	"github.com/bytedance/gopkg/util/logger"
-	"github.com/bytedance/sonic/decoder"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/errors"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
@@ -30,8 +25,6 @@ import (
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
-	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
 	"time"
 )
 
@@ -103,6 +96,17 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	h.GET("options", x.Index.Options)
 
 	m := []app.HandlerFunc{csrfToken, auth, audit}
+	_user := h.Group("user", m...)
+	{
+		_user.GET("", x.Index.GetUser)
+		_user.PATCH("", x.Index.SetUser)
+		_user.POST("password", x.Index.SetUserPassword)
+		_user.GET("phone_code", x.Index.GetUserPhoneCode)
+		_user.POST("phone", x.Index.SetUserPhone)
+		_user.GET("totp", x.Index.GetUserTotp)
+		_user.POST("totp", x.Index.SetUserTotp)
+		_user.DELETE(":key", x.Index.UnsetUser)
+	}
 	_values := h.Group("values", m...)
 	{
 		_values.GET("", x.Values.Get)
@@ -131,17 +135,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_db.DELETE(":collection/:id", audit, x.Rest.Delete)
 		_db.POST("transaction", audit, x.Rest.Transaction)
 		_db.POST("commit", audit, x.Rest.Commit)
-	}
-	_user := h.Group("user", m...)
-	{
-		_user.GET("", x.Index.GetUser)
-		_user.PATCH("", x.Index.SetUser)
-		_user.POST("password", x.Index.SetUserPassword)
-		_user.GET("phone_code", x.Index.GetUserPhoneCode)
-		_user.POST("phone", x.Index.SetUserPhone)
-		_user.GET("totp", x.Index.GetUserTotp)
-		_user.POST("totp", x.Index.SetUserTotp)
-		_user.DELETE(":key", x.Index.UnsetUser)
 	}
 	_tencent := h.Group("tencent", m...)
 	{
@@ -263,68 +256,6 @@ func (x *API) Audit() app.HandlerFunc {
 			},
 			XData: format,
 		})
-	}
-}
-
-func (x *API) ErrHandler() app.HandlerFunc {
-	return func(ctx context.Context, c *app.RequestContext) {
-		c.Next(ctx)
-		err := c.Errors.Last()
-		if err == nil {
-			return
-		}
-
-		if err.IsType(errors.ErrorTypePublic) {
-			statusCode := http.StatusBadRequest
-			result := utils.H{"message": err.Error()}
-			if meta, ok := err.Meta.(map[string]interface{}); ok {
-				if meta["statusCode"] != nil {
-					statusCode = meta["statusCode"].(int)
-				}
-				if meta["code"] != nil {
-					result["code"] = meta["code"]
-				}
-			}
-			c.JSON(statusCode, result)
-			return
-		}
-
-		switch e := err.Err.(type) {
-		case decoder.SyntaxError:
-			c.JSON(http.StatusBadRequest, utils.H{
-				"code":    0,
-				"message": e.Description(),
-			})
-			break
-		case *binding.Error:
-			c.JSON(http.StatusBadRequest, utils.H{
-				"code":    0,
-				"message": e.Error(),
-			})
-			break
-		case *validator.Error:
-			c.JSON(http.StatusBadRequest, utils.H{
-				"code":    0,
-				"message": e.Error(),
-			})
-			break
-		case mongo.ServerError:
-			c.JSON(http.StatusInternalServerError, utils.H{
-				"code":    0,
-				"message": e.Error(),
-			})
-			break
-		default:
-			if !x.V.IsRelease() {
-				c.JSON(http.StatusInternalServerError, utils.H{
-					"code":    0,
-					"message": e.Error(),
-				})
-				break
-			}
-			logger.Error(err)
-			c.Status(http.StatusInternalServerError)
-		}
 	}
 }
 
