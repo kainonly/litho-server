@@ -263,7 +263,7 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 
 type SetUserDto struct {
 	Key    string `json:"key" vd:"oneof='Email' 'Name' 'Avatar'"`
-	Email  string `json:"email," vd:"required_if=Key 'Email',email"`
+	Email  string `json:"email" vd:"required_if=Key 'Email',email"`
 	Name   string `json:"name" vd:"required_if=Key 'Name'"`
 	Avatar string `json:"avatar" vd:"required_if=Key 'Avatar'"`
 }
