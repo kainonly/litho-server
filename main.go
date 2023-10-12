@@ -57,6 +57,7 @@ func main() {
 			if err = x.Routes(h); err != nil {
 				return
 			}
+
 			defer bootstrap.ProviderOpenTelemetry(values).
 				Shutdown(ctx)
 			h.Spin()
