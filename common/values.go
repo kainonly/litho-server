@@ -28,7 +28,8 @@ type Values struct {
 	} `envPrefix:"NATS_"`
 
 	Otlp struct {
-		Endpoint string `env:"ENDPOINT"`
+		Endpoint string `env:"ENDPOINT,required"`
+		Token    string `env:"TOKEN,required"`
 	} `envPrefix:"OTLP_"`
 
 	*Extra

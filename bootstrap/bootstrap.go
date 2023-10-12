@@ -187,6 +187,13 @@ func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
 	return provider.NewOpenTelemetryProvider(
 		provider.WithServiceName(v.Namespace),
 		provider.WithExportEndpoint(v.Otlp.Endpoint),
+		provider.WithDeploymentEnvironment(v.Mode),
+		provider.WithHeaders(map[string]string{
+			"Authorization": fmt.Sprintf(`Bearer %s`, v.Otlp.Token),
+		}),
+		provider.WithEnableTracing(true),
+		provider.WithEnableMetrics(true),
+		provider.WithEnableCompression(),
 		provider.WithInsecure(),
 	)
 }
@@ -198,6 +205,7 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		server.WithCustomValidator(help.Validator()),
 		tracer,
 	}
+
 	if os.Getenv("MODE") != "release" {
 		opts = append(opts, server.WithExitWaitTime(0))
 	}
@@ -208,5 +216,6 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		help.EHandler(),
 		tracing.ServerMiddleware(cfg),
 	)
+
 	return
 }
