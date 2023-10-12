@@ -9,7 +9,6 @@ import (
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
@@ -71,10 +70,6 @@ func UseRedis(v *common.Values) (client *redis.Client, err error) {
 		return
 	}
 	return
-}
-
-func UseInflux(v *common.Values) influxdb2.Client {
-	return influxdb2.NewClient(v.Influx.Url, v.Influx.Token)
 }
 
 func UseNats(v *common.Values) (nc *nats.Conn, err error) {
