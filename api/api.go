@@ -19,7 +19,6 @@ import (
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
-	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -41,37 +40,34 @@ var Provides = wire.NewSet(
 	queues.Provides,
 	imessages.Provides,
 	datasets.Provides,
-	observability.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz                *server.Hertz
-	Csrf                 *csrf.Csrf
-	Values               *values.Controller
-	Sessions             *sessions.Controller
-	Rest                 *rest.Controller
-	Index                *index.Controller
-	IndexService         *index.Service
-	Tencent              *tencent.Controller
-	TencentService       *tencent.Service
-	Lark                 *lark.Controller
-	LarkService          *lark.Service
-	Clusters             *clusters.Controller
-	ClustersService      *clusters.Service
-	Schedules            *schedules.Controller
-	SchedulesService     *schedules.Service
-	Workflows            *workflows.Controller
-	WorkflowsService     *workflows.Service
-	Queues               *queues.Controller
-	QueuesService        *queues.Service
-	Imessages            *imessages.Controller
-	ImessagesService     *imessages.Service
-	Datasets             *datasets.Controller
-	DatasetsService      *datasets.Service
-	Observability        *observability.Controller
-	ObservabilityService *observability.Service
+	Hertz            *server.Hertz
+	Csrf             *csrf.Csrf
+	Values           *values.Controller
+	Sessions         *sessions.Controller
+	Rest             *rest.Controller
+	Index            *index.Controller
+	IndexService     *index.Service
+	Tencent          *tencent.Controller
+	TencentService   *tencent.Service
+	Lark             *lark.Controller
+	LarkService      *lark.Service
+	Clusters         *clusters.Controller
+	ClustersService  *clusters.Service
+	Schedules        *schedules.Controller
+	SchedulesService *schedules.Service
+	Workflows        *workflows.Controller
+	WorkflowsService *workflows.Service
+	Queues           *queues.Controller
+	QueuesService    *queues.Service
+	Imessages        *imessages.Controller
+	ImessagesService *imessages.Service
+	Datasets         *datasets.Controller
+	DatasetsService  *datasets.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -184,10 +180,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_datasets.GET("", x.Datasets.Lists)
 		_datasets.POST("create", x.Datasets.Create)
 		_datasets.DELETE(":name", x.Datasets.Delete)
-	}
-	_observability := h.Group("observability", m...)
-	{
-		_observability.GET(":name", x.Observability.Exporters)
 	}
 	return
 }

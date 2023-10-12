@@ -27,13 +27,6 @@ type Values struct {
 		Nkey  string   `env:"NKEY,required"`
 	} `envPrefix:"NATS_"`
 
-	Influx struct {
-		Url    string `env:"URL"`
-		Org    string `env:"ORG"`
-		Token  string `env:"TOKEN"`
-		Bucket string `env:"BUCKET"`
-	} `envPrefix:"INFLUX_"`
-
 	Otlp struct {
 		Endpoint string `env:"ENDPOINT"`
 	} `envPrefix:"OTLP_"`

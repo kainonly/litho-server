@@ -16,7 +16,6 @@ import (
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
-	"github.com/weplanx/server/api/observability"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -38,7 +37,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	influxdb2Client := UseInflux(values2)
 	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
@@ -66,7 +64,6 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Mgo:       client,
 		Db:        database,
 		RDb:       redisClient,
-		Flux:      influxdb2Client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
@@ -162,39 +159,31 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	datasetsController := &datasets.Controller{
 		DatasetsService: datasetsService,
 	}
-	observabilityService := &observability.Service{
-		Inject: inject,
-	}
-	observabilityController := &observability.Controller{
-		ObservabilityService: observabilityService,
-	}
 	apiAPI := &api.API{
-		Inject:               inject,
-		Hertz:                hertz,
-		Csrf:                 csrf,
-		Values:               controller,
-		Sessions:             sessionsController,
-		Rest:                 restController,
-		Index:                indexController,
-		IndexService:         indexService,
-		Tencent:              tencentController,
-		TencentService:       tencentService,
-		Lark:                 larkController,
-		LarkService:          larkService,
-		Clusters:             clustersController,
-		ClustersService:      clustersService,
-		Schedules:            schedulesController,
-		SchedulesService:     schedulesService,
-		Workflows:            workflowsController,
-		WorkflowsService:     workflowsService,
-		Queues:               queuesController,
-		QueuesService:        queuesService,
-		Imessages:            imessagesController,
-		ImessagesService:     imessagesService,
-		Datasets:             datasetsController,
-		DatasetsService:      datasetsService,
-		Observability:        observabilityController,
-		ObservabilityService: observabilityService,
+		Inject:           inject,
+		Hertz:            hertz,
+		Csrf:             csrf,
+		Values:           controller,
+		Sessions:         sessionsController,
+		Rest:             restController,
+		Index:            indexController,
+		IndexService:     indexService,
+		Tencent:          tencentController,
+		TencentService:   tencentService,
+		Lark:             larkController,
+		LarkService:      larkService,
+		Clusters:         clustersController,
+		ClustersService:  clustersService,
+		Schedules:        schedulesController,
+		SchedulesService: schedulesService,
+		Workflows:        workflowsController,
+		WorkflowsService: workflowsService,
+		Queues:           queuesController,
+		QueuesService:    queuesService,
+		Imessages:        imessagesController,
+		ImessagesService: imessagesService,
+		Datasets:         datasetsController,
+		DatasetsService:  datasetsService,
 	}
 	return apiAPI, nil
 }
@@ -209,7 +198,6 @@ func NewXAPI(values2 *common.Values) (*xapi.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	influxdb2Client := UseInflux(values2)
 	conn, err := UseNats(values2)
 	if err != nil {
 		return nil, err
@@ -237,7 +225,6 @@ func NewXAPI(values2 *common.Values) (*xapi.API, error) {
 		Mgo:       client,
 		Db:        database,
 		RDb:       redisClient,
-		Flux:      influxdb2Client,
 		Nats:      conn,
 		JetStream: jetStreamContext,
 		KeyValue:  keyValue,
