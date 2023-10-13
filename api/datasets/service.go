@@ -72,7 +72,7 @@ func (x *Service) Create(ctx context.Context, dto CreateDto) (err error) {
 						SetTimeField(dto.Option.Time).
 						SetMetaField(dto.Option.Meta),
 				).
-				SetExpireAfterSeconds(dto.Option.Expire * 86400)
+				SetExpireAfterSeconds(*dto.Option.Expire * 86400)
 		}
 
 		if err = x.Db.CreateCollection(ctx, dto.Name, option); err != nil {
