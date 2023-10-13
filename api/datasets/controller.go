@@ -31,14 +31,14 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 
 type CreateDto struct {
 	Name   string          `json:"name" vd:"required"`
-	Kind   string          `json:"kind" vd:"required"`
-	Option CreateOptionDto `json:"option" vd:"omitempty"`
+	Kind   string          `json:"kind" vd:"oneof='collection' 'timeseries'"`
+	Option CreateOptionDto `json:"option" vd:"required_if=Kind timeseries"`
 }
 
 type CreateOptionDto struct {
 	Time   string `json:"time" vd:"required"`
 	Meta   string `json:"meta" vd:"required"`
-	Expire int64  `json:"expire" vd:"required"`
+	Expire *int64 `json:"expire" vd:"required"`
 }
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
