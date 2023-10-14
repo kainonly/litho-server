@@ -9,6 +9,7 @@ import (
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
@@ -181,6 +182,10 @@ func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Client, 
 		transfer.SetNamespace(v.Namespace),
 		transfer.SetJetStream(js),
 	)
+}
+
+func UseInflux(v *common.Values) influxdb2.Client {
+	return influxdb2.NewClient(v.Influx.Url, v.Influx.Token)
 }
 
 func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
