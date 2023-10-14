@@ -19,6 +19,7 @@ import (
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
+	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -40,6 +41,7 @@ var Provides = wire.NewSet(
 	queues.Provides,
 	imessages.Provides,
 	datasets.Provides,
+	monitor.Provides,
 )
 
 type API struct {
@@ -68,6 +70,8 @@ type API struct {
 	ImessagesService *imessages.Service
 	Datasets         *datasets.Controller
 	DatasetsService  *datasets.Service
+	Monitor          *monitor.Controller
+	MonitorService   *monitor.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -180,6 +184,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_datasets.GET("", x.Datasets.Lists)
 		_datasets.POST("create", x.Datasets.Create)
 		_datasets.DELETE(":name", x.Datasets.Delete)
+	}
+	_monitor := h.Group("monitor", m...)
+	{
+		_monitor.GET(":name", x.Monitor.Exporters)
 	}
 	return
 }

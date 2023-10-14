@@ -16,6 +16,7 @@ import (
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
+	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -159,6 +160,14 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	datasetsController := &datasets.Controller{
 		DatasetsService: datasetsService,
 	}
+	influxdb2Client := UseInflux(values2)
+	monitorService := &monitor.Service{
+		Inject: inject,
+		Flux:   influxdb2Client,
+	}
+	monitorController := &monitor.Controller{
+		MonitorService: monitorService,
+	}
 	apiAPI := &api.API{
 		Inject:           inject,
 		Hertz:            hertz,
@@ -184,6 +193,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		ImessagesService: imessagesService,
 		Datasets:         datasetsController,
 		DatasetsService:  datasetsService,
+		Monitor:          monitorController,
+		MonitorService:   monitorService,
 	}
 	return apiAPI, nil
 }
