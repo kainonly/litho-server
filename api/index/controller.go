@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -262,8 +263,8 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type SetUserDto struct {
-	Key    string `json:"key" vd:"oneof='Email' 'Name' 'Avatar'"`
-	Email  string `json:"email" vd:"required_if=Key 'Email',email"`
+	Key    string `json:"key" vd:"oneof='email' 'name' 'avatar'"`
+	Email  string `json:"email" vd:"required_if=Key 'Email',omitempty,email"`
 	Name   string `json:"name" vd:"required_if=Key 'Name'"`
 	Avatar string `json:"avatar" vd:"required_if=Key 'Avatar'"`
 }
@@ -276,8 +277,9 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	data := make(M)
+	key := strings.ToUpper(dto.Key[:1]) + dto.Key[1:]
 	data[dto.Key] = reflect.ValueOf(dto).
-		FieldByName(dto.Key).
+		FieldByName(key).
 		Interface()
 
 	claims := common.Claims(c)
