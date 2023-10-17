@@ -56,18 +56,18 @@ func (x *Controller) Keys(ctx context.Context, c *app.RequestContext) {
 }
 
 type RevokeDto struct {
-	Id  string `json:"id" vd:"required"`
-	Key string `json:"key" vd:"required"`
+	Id  primitive.ObjectID `json:"id" vd:"required"`
+	Key string             `json:"key" vd:"required"`
 }
 
-func (x *Controller) Revoke(_ context.Context, c *app.RequestContext) {
+func (x *Controller) Revoke(ctx context.Context, c *app.RequestContext) {
 	var dto RevokeDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
-	if err := x.SchedulesService.Revoke(dto.Id, dto.Key); err != nil {
+	if err := x.SchedulesService.Revoke(ctx, dto.Id, dto.Key); err != nil {
 		c.Error(err)
 		return
 	}
