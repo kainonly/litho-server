@@ -69,9 +69,15 @@ func (x *Service) Set(ctx context.Context, id primitive.ObjectID, key string, op
 	return sc.Set(key, option)
 }
 
-func (x *Service) Revoke(node string, key string) (err error) {
+func (x *Service) Revoke(ctx context.Context, id primitive.ObjectID, key string) (err error) {
+	var data model.Schedule
+	if err = x.Db.Collection("schedules").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
 	var sc *schedule.Client
-	if sc, err = x.Client(node); err != nil {
+	if sc, err = x.Client(data.Node); err != nil {
 		return
 	}
 	return sc.Remove(key)
