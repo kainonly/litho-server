@@ -364,19 +364,21 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 	}
 
 	detail := M{}
-	for _, x := range user.History.Detail.(bson.D) {
-		detail[x.Key] = x.Value
+	if user.History != nil {
+		for _, v := range user.History.Detail.(bson.D) {
+			detail[v.Key] = v.Value
+		}
+		user.History.Detail = detail
 	}
-	user.History.Detail = detail
 
-	phone := ""
+	phoneStatus := ""
 	if user.Phone != "" {
-		phone = "*"
+		phoneStatus = "*"
 	}
 
-	totp := ""
+	totpStatus := ""
 	if user.Totp != "" {
-		totp = "*"
+		totpStatus = "*"
 	}
 
 	data = M{
@@ -384,10 +386,10 @@ func (x *Service) GetUser(ctx context.Context, userId string) (data M, err error
 		"email":       user.Email,
 		"name":        user.Name,
 		"avatar":      user.Avatar,
-		"phone":       phone,
+		"phone":       phoneStatus,
 		"sessions":    user.Sessions,
 		"history":     user.History,
-		"totp":        totp,
+		"totp":        totpStatus,
 		"status":      user.Status,
 		"create_time": user.CreateTime,
 		"update_time": user.UpdateTime,

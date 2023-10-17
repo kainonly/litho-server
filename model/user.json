@@ -6,7 +6,6 @@
       "_id",
       "email",
       "password",
-      "roles",
       "status",
       "create_time",
       "update_time"
