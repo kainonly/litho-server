@@ -7,21 +7,27 @@ import (
 	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/xapi/emqx"
+	"github.com/weplanx/server/xapi/index"
 )
 
 var Provides = wire.NewSet(
+	index.Provides,
 	emqx.Provides,
 )
 
 type API struct {
 	*common.Inject
 
-	Hertz       *server.Hertz
-	Emqx        *emqx.Controller
-	EmqxService *emqx.Service
+	Hertz        *server.Hertz
+	Index        *index.Controller
+	IndexService *index.Service
+	Emqx         *emqx.Controller
+	EmqxService  *emqx.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
+	h.GET("accelerate", x.Index.Accelerate)
+
 	_emqx := h.Group("emqx")
 	{
 		_emqx.POST("auth", x.Emqx.Auth)

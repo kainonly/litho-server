@@ -11,6 +11,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
+	"github.com/weplanx/server/api/acc_tasks"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/imessages"
@@ -22,8 +23,11 @@ import (
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/openapi"
+	index3 "github.com/weplanx/server/openapi/index"
 	"github.com/weplanx/server/xapi"
 	"github.com/weplanx/server/xapi/emqx"
+	index2 "github.com/weplanx/server/xapi/index"
 )
 
 // Injectors from wire.go:
@@ -153,6 +157,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	imessagesController := &imessages.Controller{
 		ImessagesServices: imessagesService,
 	}
+	acc_tasksService := &acc_tasks.Service{
+		Inject: inject,
+	}
+	acc_tasksController := &acc_tasks.Controller{
+		AccTasksService: acc_tasksService,
+	}
 	datasetsService := &datasets.Service{
 		Inject: inject,
 		Values: service,
@@ -191,6 +201,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		QueuesService:    queuesService,
 		Imessages:        imessagesController,
 		ImessagesService: imessagesService,
+		AccTasks:         acc_tasksController,
+		AccTasksService:  acc_tasksService,
 		Datasets:         datasetsController,
 		DatasetsService:  datasetsService,
 		Monitor:          monitorController,
@@ -248,17 +260,89 @@ func NewXAPI(values2 *common.Values) (*xapi.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := &emqx.Service{
+	service := &index2.Service{
 		Inject: inject,
 	}
-	controller := &emqx.Controller{
-		EmqxService: service,
+	controller := &index2.Controller{
+		IndexService: service,
+	}
+	emqxService := &emqx.Service{
+		Inject: inject,
+	}
+	emqxController := &emqx.Controller{
+		EmqxService: emqxService,
 	}
 	xapiAPI := &xapi.API{
-		Inject:      inject,
-		Hertz:       hertz,
-		Emqx:        controller,
-		EmqxService: service,
+		Inject:       inject,
+		Hertz:        hertz,
+		Index:        controller,
+		IndexService: service,
+		Emqx:         emqxController,
+		EmqxService:  emqxService,
 	}
 	return xapiAPI, nil
+}
+
+func NewOpenAPI(values2 *common.Values) (*openapi.API, error) {
+	client, err := UseMongoDB(values2)
+	if err != nil {
+		return nil, err
+	}
+	database := UseDatabase(values2, client)
+	redisClient, err := UseRedis(values2)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := UseNats(values2)
+	if err != nil {
+		return nil, err
+	}
+	jetStreamContext, err := UseJetStream(conn)
+	if err != nil {
+		return nil, err
+	}
+	keyValue, err := UseKeyValue(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	cipher, err := UseCipher(values2)
+	if err != nil {
+		return nil, err
+	}
+	captcha := UseCaptcha(values2, redisClient)
+	locker := UseLocker(values2, redisClient)
+	clientClient, err := UseTransfer(values2, jetStreamContext)
+	if err != nil {
+		return nil, err
+	}
+	inject := &common.Inject{
+		V:         values2,
+		Mgo:       client,
+		Db:        database,
+		RDb:       redisClient,
+		Nats:      conn,
+		JetStream: jetStreamContext,
+		KeyValue:  keyValue,
+		Cipher:    cipher,
+		Captcha:   captcha,
+		Locker:    locker,
+		Transfer:  clientClient,
+	}
+	hertz, err := UseHertz(values2)
+	if err != nil {
+		return nil, err
+	}
+	service := &index3.Service{
+		Inject: inject,
+	}
+	controller := &index3.Controller{
+		IndexService: service,
+	}
+	openapiAPI := &openapi.API{
+		Inject:       inject,
+		Hertz:        hertz,
+		Index:        controller,
+		IndexService: service,
+	}
+	return openapiAPI, nil
 }

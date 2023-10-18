@@ -7,6 +7,7 @@ import (
 	"github.com/google/wire"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/common"
+	"github.com/weplanx/server/openapi"
 	"github.com/weplanx/server/xapi"
 )
 
@@ -54,4 +55,24 @@ func NewXAPI(values *common.Values) (*xapi.API, error) {
 		xapi.Provides,
 	)
 	return &xapi.API{}, nil
+}
+
+func NewOpenAPI(values *common.Values) (*openapi.API, error) {
+	wire.Build(
+		wire.Struct(new(openapi.API), "*"),
+		wire.Struct(new(common.Inject), "*"),
+		UseMongoDB,
+		UseDatabase,
+		UseRedis,
+		UseNats,
+		UseJetStream,
+		UseKeyValue,
+		UseCipher,
+		UseLocker,
+		UseCaptcha,
+		UseTransfer,
+		UseHertz,
+		openapi.Provides,
+	)
+	return &openapi.API{}, nil
 }
