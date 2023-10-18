@@ -2,7 +2,6 @@ package lark
 
 import (
 	"context"
-	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -105,14 +104,13 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			c.Error(err)
 			return
 		}
-
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/authorized`, x.V.Console, dto.State.Locale)))
+		c.Redirect(302, x.RedirectUrl("/authorized", dto.State.Locale))
 		return
 	}
 
 	var r *LoginResult
 	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
-		c.Redirect(302, []byte(fmt.Sprintf(`%s/%s/#/unauthorize`, x.V.Console, dto.State.Locale)))
+		c.Redirect(302, x.RedirectUrl("/unauthorize", dto.State.Locale))
 		return
 	}
 
@@ -125,7 +123,15 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}()
 
 	common.SetAccessToken(c, r.AccessToken)
-	c.Redirect(302, []byte(fmt.Sprintf(`%s/%s`, x.V.Console, dto.State.Locale)))
+	c.Redirect(302, x.RedirectUrl("", dto.State.Locale))
+}
+
+func (x *Controller) RedirectUrl(path string, locale string) []byte {
+	u := x.V.Console
+	if locale != "" {
+		u += "/" + locale
+	}
+	return []byte(u + path)
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
