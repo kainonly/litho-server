@@ -104,13 +104,13 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			c.Error(err)
 			return
 		}
-		c.Redirect(302, x.RedirectUrl("/authorized", dto.State.Locale))
+		c.Redirect(302, x.RedirectUrl("/#/authorized", dto.State.Locale))
 		return
 	}
 
 	var r *LoginResult
 	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
-		c.Redirect(302, x.RedirectUrl("/unauthorize", dto.State.Locale))
+		c.Redirect(302, x.RedirectUrl("/#/unauthorize", dto.State.Locale))
 		return
 	}
 
