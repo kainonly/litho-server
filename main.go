@@ -10,6 +10,7 @@ import (
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
+	"github.com/weplanx/server/openapi"
 	"github.com/weplanx/server/xapi"
 	"os"
 	"time"
@@ -89,6 +90,20 @@ func main() {
 		Use:   "openapi",
 		Short: "Start Open API service",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			var x *openapi.API
+			if x, err = bootstrap.NewOpenAPI(values); err != nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			var h *server.Hertz
+			if h, err = x.Initialize(ctx); err != nil {
+				return
+			}
+			if err = x.Routes(h); err != nil {
+				return
+			}
+			h.Spin()
 			return
 		},
 	})

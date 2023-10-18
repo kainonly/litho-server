@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/go/rest"
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
+	"github.com/weplanx/server/api/acc_tasks"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/imessages"
@@ -40,6 +41,7 @@ var Provides = wire.NewSet(
 	workflows.Provides,
 	queues.Provides,
 	imessages.Provides,
+	acc_tasks.Provides,
 	datasets.Provides,
 	monitor.Provides,
 )
@@ -68,6 +70,8 @@ type API struct {
 	QueuesService    *queues.Service
 	Imessages        *imessages.Controller
 	ImessagesService *imessages.Service
+	AccTasks         *acc_tasks.Controller
+	AccTasksService  *acc_tasks.Service
 	Datasets         *datasets.Controller
 	DatasetsService  *datasets.Service
 	Monitor          *monitor.Controller
@@ -179,6 +183,9 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_imessages.DELETE(":id/metrics", x.Imessages.DeleteMetrics)
 		_imessages.POST("publish", x.Imessages.Publish)
 	}
+	//_acc_tasks := h.Group("acc_tasks", m...)
+	//{
+	//}
 	_datasets := h.Group("datasets", m...)
 	{
 		_datasets.GET("", x.Datasets.Lists)

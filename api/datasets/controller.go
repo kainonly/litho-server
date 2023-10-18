@@ -30,9 +30,9 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 }
 
 type CreateDto struct {
-	Name   string          `json:"name" vd:"required"`
-	Kind   string          `json:"kind" vd:"oneof='collection' 'timeseries'"`
-	Option CreateOptionDto `json:"option" vd:"required_if=Kind timeseries"`
+	Name   string           `json:"name" vd:"required"`
+	Kind   string           `json:"kind" vd:"oneof='collection' 'timeseries'"`
+	Option *CreateOptionDto `json:"option" vd:"required_if=kind 'timeseries'"`
 }
 
 type CreateOptionDto struct {
