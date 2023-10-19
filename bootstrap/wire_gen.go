@@ -158,7 +158,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		ImessagesServices: imessagesService,
 	}
 	acc_tasksService := &acc_tasks.Service{
-		Inject: inject,
+		Inject:         inject,
+		TencentService: tencentService,
 	}
 	acc_tasksController := &acc_tasks.Controller{
 		AccTasksService: acc_tasksService,

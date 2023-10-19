@@ -183,9 +183,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_imessages.DELETE(":id/metrics", x.Imessages.DeleteMetrics)
 		_imessages.POST("publish", x.Imessages.Publish)
 	}
-	//_acc_tasks := h.Group("acc_tasks", m...)
-	//{
-	//}
+	_accTasks := h.Group("acc_tasks", m...)
+	{
+		_accTasks.POST("invoke", x.AccTasks.Invoke)
+	}
 	_datasets := h.Group("datasets", m...)
 	{
 		_datasets.GET("", x.Datasets.Lists)
