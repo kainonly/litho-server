@@ -51,8 +51,11 @@ type Extra struct {
 	Ipv6SecretKey         string `yaml:"ipv6_secret_key" secret:"*" json:"Ipv6SecretKey"`
 	SmsSecretId           string `yaml:"sms_secret_id"`
 	SmsSecretKey          string `yaml:"sms_secret_key" secret:"*"`
+	SmsSign               string `yaml:"sms_sign"`
 	SmsAppId              string `yaml:"sms_app_id"`
 	SmsRegion             string `yaml:"sms_region"`
+	SmsPhoneBind          string `yaml:"sms_phone_bind"`
+	SmsLoginVerify        string `yaml:"sms_login_verify"`
 	EmqxHost              string `yaml:"emqx_host"`
 	EmqxApiKey            string `yaml:"emqx_api_key"`
 	EmqxSecretKey         string `yaml:"emqx_secret_key" secret:"*"`

@@ -135,7 +135,7 @@ func (x *Service) GetLoginSms(ctx context.Context, phone string) (code string, e
 
 	code = help.RandomNumber(6)
 	// TODO: Change to values...
-	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889615", []string{code}, []string{phone}); err != nil {
+	if err = x.Tencent.SmsSend(ctx, x.V.SmsSign, x.V.SmsLoginVerify, []string{code}, []string{phone}); err != nil {
 		return
 	}
 
@@ -456,7 +456,7 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 func (x *Service) GetUserPhoneCode(ctx context.Context, phone string) (code string, err error) {
 	code = help.RandomNumber(6)
 	// TODO: Change to values
-	if err = x.Tencent.SmsSend(ctx, "WEB应用技术分享网", "1889620", []string{code}, []string{phone}); err != nil {
+	if err = x.Tencent.SmsSend(ctx, x.V.SmsSign, x.V.SmsPhoneBind, []string{code}, []string{phone}); err != nil {
 		return
 	}
 	key := fmt.Sprintf(`sms-bind:%s`, phone)
