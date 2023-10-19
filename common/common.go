@@ -1,8 +1,13 @@
 package common
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/imroc/req/v3"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	transfer "github.com/weplanx/collector/client"
@@ -11,6 +16,7 @@ import (
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 type Inject struct {
@@ -45,4 +51,23 @@ func SetAccessToken(c *app.RequestContext, ts string) {
 func ClearAccessToken(c *app.RequestContext) {
 	c.SetCookie("TOKEN", "", -1,
 		"/", "", protocol.CookieSameSiteLaxMode, true, true)
+}
+
+func HttpClient(url string) *req.Client {
+	return req.C().
+		SetBaseURL(url).
+		SetJsonMarshal(sonic.Marshal).
+		SetJsonUnmarshal(sonic.Unmarshal).
+		SetTimeout(time.Second * 5)
+}
+
+func Sha256hex(s string) string {
+	b := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(b[:])
+}
+
+func Hmacsha256(s, key string) string {
+	hashed := hmac.New(sha256.New, []byte(key))
+	hashed.Write([]byte(s))
+	return string(hashed.Sum(nil))
 }

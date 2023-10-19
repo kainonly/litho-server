@@ -6,11 +6,25 @@ import (
 	"testing"
 )
 
+func TestService_InvokeAccelerate(t *testing.T) {
+	ctx := context.TODO()
+	r, err := x.TencentService.InvokeAccelerate(ctx)
+	assert.NoError(t, err)
+	t.Log(r)
+}
+
 func TestService_GetIpv4(t *testing.T) {
 	ctx := context.TODO()
 	dto, err := x.TencentService.GetIpv4(ctx, "119.41.34.152")
 	assert.NoError(t, err)
 	t.Log(dto)
+
+}
+
+func TestService_GetIpv4BadResp(t *testing.T) {
+	ctx := context.TODO()
+	_, err := x.TencentService.GetIpv4(ctx, "xa.41.34.152")
+	assert.Error(t, err)
 }
 
 func TestService_GetIpv6(t *testing.T) {

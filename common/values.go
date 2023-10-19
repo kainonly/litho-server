@@ -56,6 +56,8 @@ type Extra struct {
 	EmqxHost              string `yaml:"emqx_host"`
 	EmqxApiKey            string `yaml:"emqx_api_key"`
 	EmqxSecretKey         string `yaml:"emqx_secret_key" secret:"*"`
+	AccelerateAddress     string `yaml:"accelerate_address"`
+	CamUin                string `yaml:"cam_uin"`
 	*values.DynamicValues `yaml:"dynamic_values"`
 }
 
