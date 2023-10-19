@@ -17,6 +17,9 @@ import (
 	"github.com/weplanx/server/common"
 	"net/http"
 	"net/url"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -83,6 +86,95 @@ func (x *Service) CosImageInfo(ctx context.Context, url string) (r M, err error)
 	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
 		return
 	}
+	return
+}
+
+type TC3Option struct {
+	Service   string
+	Headers   map[string]string
+	Timestamp int64
+	Body      interface{}
+}
+
+func (x *Service) TC3Authorization(option TC3Option) string {
+	algorithm := "TC3-HMAC-SHA256"
+	canonicalURI := "/"
+	canonicalQueryString := ""
+
+	var keys []string
+	for key := range option.Headers {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	var canonicalHeaders string
+	var signedHeaders string
+	for _, key := range keys {
+		k, v := strings.ToLower(key), strings.ToLower(option.Headers[key])
+		canonicalHeaders += fmt.Sprintf("%s:%s\n", k, v)
+		signedHeaders += ";" + k
+	}
+
+	signedHeaders = signedHeaders[1:]
+
+	payload, _ := sonic.MarshalString(option.Body)
+	hashedRequestPayload := common.Sha256hex(payload)
+	canonicalRequest := fmt.Sprintf("POST\n%s\n%s\n%s\n%s\n%s",
+		canonicalURI,
+		canonicalQueryString,
+		canonicalHeaders,
+		signedHeaders,
+		hashedRequestPayload,
+	)
+
+	date := time.Unix(option.Timestamp, 0).UTC().Format("2006-01-02")
+	credentialScope := fmt.Sprintf("%s/%s/tc3_request", date, option.Service)
+	hashedCanonicalRequest := common.Sha256hex(canonicalRequest)
+	string2sign := fmt.Sprintf("%s\n%d\n%s\n%s",
+		algorithm,
+		option.Timestamp,
+		credentialScope,
+		hashedCanonicalRequest,
+	)
+
+	secretDate := common.Hmacsha256(date, "TC3"+x.V.TencentSecretKey)
+	secretService := common.Hmacsha256(option.Service, secretDate)
+	secretSigning := common.Hmacsha256("tc3_request", secretService)
+	signature := hex.EncodeToString([]byte(common.Hmacsha256(string2sign, secretSigning)))
+
+	return fmt.Sprintf("%s Credential=%s/%s, SignedHeaders=%s, Signature=%s",
+		algorithm,
+		x.V.TencentSecretId,
+		credentialScope,
+		signedHeaders,
+		signature,
+	)
+}
+
+func (x *Service) InvokeAccelerate(ctx context.Context) (r M, err error) {
+	u, _ := url.Parse(x.V.AccelerateAddress)
+	timestamp := time.Now().Unix()
+	headerx := map[string]string{
+		"Content-Type":  "application/json",
+		"Host":          u.Host,
+		"X-Scf-Cam-Uin": x.V.CamUin,
+	}
+	body := M{}
+	if _, err = common.HttpClient(u.String()).R().SetContext(ctx).
+		SetHeaders(headerx).
+		SetHeader("X-Scf-Cam-Timestamp", strconv.FormatInt(timestamp, 10)).
+		SetHeader("Authorization", x.TC3Authorization(TC3Option{
+			Service:   "scf",
+			Headers:   headerx,
+			Timestamp: timestamp,
+			Body:      body,
+		})).
+		SetBody(body).
+		SetSuccessResult(&r).
+		Post(""); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -158,31 +250,22 @@ func (x *Service) GetIpv4(ctx context.Context, ip string) (_ IpResult, err error
 	if kar, err = x.KeyAuth(source, x.V.IpSecretId, x.V.IpSecretKey); err != nil {
 		return
 	}
-
-	baseUrl, _ := url.Parse(x.V.IpAddress)
-	u := baseUrl.JoinPath("/ip/city/query")
-	query := u.Query()
-	query.Add("ip", ip)
-	query.Encode()
-	u.RawQuery = query.Encode()
-
-	var req *http.Request
-	req, err = http.NewRequest("GET", u.String(), nil)
-	req.Header.Set("X-Source", source)
-	req.Header.Set("X-Date", kar.Date)
-	req.Header.Set("Authorization", kar.Txt)
-	req.WithContext(ctx)
-
-	client := &http.Client{Timeout: time.Second * 5}
-	var res *http.Response
-	if res, err = client.Do(req); err != nil {
-		return
-	}
 	var r *Ipv4Result
-	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
-		return
+	var msg string
+	if _, err = common.HttpClient(x.V.IpAddress).R().
+		SetContext(ctx).
+		SetHeader("X-Source", source).
+		SetHeader("X-Date", kar.Date).
+		SetHeader("Authorization", kar.Txt).
+		SetQueryParam("ip", ip).
+		SetSuccessResult(&r).
+		SetErrorResult(&msg).
+		Get("/ip/city/query"); err != nil {
+		return nil, help.E("Tencent.GetIpv4Fail", err.Error())
 	}
-
+	if msg != "" {
+		return nil, help.E("Tencent.GetIpv4Fail", msg)
+	}
 	return r, nil
 }
 
@@ -233,29 +316,23 @@ func (x *Service) GetIpv6(ctx context.Context, ip string) (_ IpResult, err error
 		return
 	}
 
-	baseUrl, _ := url.Parse(x.V.Ipv6Address)
-	u := baseUrl.JoinPath("/ip/ipv6/query")
-	query := u.Query()
-	query.Add("ip", ip)
-	query.Encode()
-	u.RawQuery = query.Encode()
-
-	var req *http.Request
-	req, err = http.NewRequest("GET", u.String(), nil)
-	req.Header.Set("X-Source", source)
-	req.Header.Set("X-Date", kar.Date)
-	req.Header.Set("Authorization", kar.Txt)
-	req.WithContext(ctx)
-
-	client := &http.Client{Timeout: time.Second * 5}
-	var res *http.Response
-	if res, err = client.Do(req); err != nil {
-		return
-	}
 	var r *Ipv6Result
-	if err = decoder.NewStreamDecoder(res.Body).Decode(&r); err != nil {
-		return
+	var msg string
+	if _, err = common.HttpClient(x.V.Ipv6Address).R().
+		SetContext(ctx).
+		SetHeader("X-Source", source).
+		SetHeader("X-Date", kar.Date).
+		SetHeader("Authorization", kar.Txt).
+		SetQueryParam("ip", ip).
+		SetSuccessResult(&r).
+		SetErrorResult(&msg).
+		Get("/ip/ipv6/query"); err != nil {
+		return nil, help.E("Tencent.GetIpv6Fail", err.Error())
 	}
+	if msg != "" {
+		return nil, help.E("Tencent.GetIpv6Fail", msg)
+	}
+
 	return r, nil
 }
 
