@@ -178,6 +178,8 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_imessages := h.Group("imessages", m...)
 	{
 		_imessages.GET("nodes", x.Imessages.GetNodes)
+		_imessages.PUT(":id/rule", x.Imessages.CreateRule)
+		_imessages.DELETE(":id/rule", x.Imessages.DeleteRule)
 		_imessages.GET(":id/metrics", x.Imessages.GetMetrics)
 		_imessages.PUT(":id/metrics", x.Imessages.CreateMetrics)
 		_imessages.DELETE(":id/metrics", x.Imessages.DeleteMetrics)
