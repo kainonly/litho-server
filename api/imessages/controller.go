@@ -20,19 +20,19 @@ func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, r)
 }
 
-type CreateRuleDto struct {
+type UpdateRuleDto struct {
 	Id string `path:"id" vd:"mongodb"`
 }
 
-func (x *Controller) CreateRule(ctx context.Context, c *app.RequestContext) {
-	var dto CreateRuleDto
+func (x *Controller) UpdateRule(ctx context.Context, c *app.RequestContext) {
+	var dto UpdateRuleDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.CreateRule(ctx, id)
+	r, err := x.ImessagesServices.UpdateRule(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -82,19 +82,19 @@ func (x *Controller) GetMetrics(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, r)
 }
 
-type CreateMetricsDto struct {
+type UpdateMetricsDto struct {
 	Id string `path:"id" vd:"mongodb"`
 }
 
-func (x *Controller) CreateMetrics(ctx context.Context, c *app.RequestContext) {
-	var dto CreateMetricsDto
+func (x *Controller) UpdateMetrics(ctx context.Context, c *app.RequestContext) {
+	var dto UpdateMetricsDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.CreateMetrics(ctx, id)
+	r, err := x.ImessagesServices.UpdateMetrics(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
