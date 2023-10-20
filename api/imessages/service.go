@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/imroc/req/v3"
 	"github.com/nats-io/nats.go"
+	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/rest"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
@@ -20,13 +21,8 @@ type Service struct {
 }
 
 func (x *Service) R(ctx context.Context) *req.Request {
-	return req.C().
-		//DevMode().
-		SetBaseURL(x.V.EmqxHost).
+	return common.HttpClient(x.V.EmqxHost).
 		SetCommonBasicAuth(x.V.EmqxApiKey, x.V.EmqxSecretKey).
-		SetJsonMarshal(sonic.Marshal).
-		SetJsonUnmarshal(sonic.Unmarshal).
-		SetTimeout(time.Second * 5).
 		R().SetContext(ctx)
 }
 
@@ -37,6 +33,88 @@ func (x *Service) GetNodes(ctx context.Context) (r interface{}, err error) {
 		Get("nodes"); err != nil {
 		return
 	}
+	return
+}
+
+func (x *Service) CreateRule(ctx context.Context, id primitive.ObjectID) (r M, err error) {
+	var data model.Imessage
+	if err = x.Db.Collection("imessages").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+
+	var e string
+	if _, err = x.R(ctx).
+		SetBody(M{
+			"name": data.Topic,
+			"sql":  fmt.Sprintf(`SELECT * FROM "%s/#"`, data.Topic),
+			"actions": []interface{}{
+				"webhook:logset",
+			},
+			"enable":      true,
+			"description": data.Description,
+		}).
+		SetSuccessResult(&r).
+		SetErrorResult(&e).
+		Post("rules"); err != nil {
+		return
+	}
+	if e != "" {
+		return nil, help.E("Imessage.CreateRule", e)
+	}
+
+	if _, err = x.Db.Collection("imessages").
+		UpdateOne(ctx,
+			bson.M{"_id": id},
+			bson.M{"$set": bson.M{"rule": r["id"]}},
+		); err != nil {
+		return
+	}
+
+	return
+}
+
+func (x *Service) UpdateRule(ctx context.Context, id primitive.ObjectID) (r M, err error) {
+	var data model.Imessage
+	if err = x.Db.Collection("imessages").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+
+	if _, err = x.R(ctx).
+		SetBody(M{
+			"name": data.Topic,
+			"sql":  fmt.Sprintf(`SELECT * FROM "%s/#"`, data.Topic),
+			"actions": []interface{}{
+				"webhook:logset",
+			},
+			"enable":      true,
+			"description": data.Description,
+		}).
+		SetSuccessResult(&r).
+		SetErrorResult(&r).
+		Put(fmt.Sprintf(`rules/%s`, data.Rule)); err != nil {
+		return
+	}
+
+	return
+}
+
+func (x *Service) DeleteRule(ctx context.Context, id primitive.ObjectID) (err error) {
+	var data model.Imessage
+	if err = x.Db.Collection("imessages").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+
+	if _, err = x.R(ctx).
+		Delete(fmt.Sprintf(`rules/%s`, data.Rule)); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -69,6 +147,7 @@ func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs 
 		Decode(&data); err != nil {
 		return
 	}
+
 	for _, pid := range data.Projects {
 		var r interface{}
 		if _, err = x.R(ctx).
@@ -135,12 +214,18 @@ func (x *Service) Event() (err error) {
 		switch dto.Action {
 		case "create":
 			id, _ := primitive.ObjectIDFromHex(dto.Result.(M)["InsertedID"].(string))
+			if _, err = x.CreateRule(ctx, id); err != nil {
+				hlog.Error(err)
+			}
 			if _, err = x.CreateMetrics(ctx, id); err != nil {
 				hlog.Error(err)
 			}
 			break
 		case "update_by_id":
 			id, _ := primitive.ObjectIDFromHex(dto.Id)
+			if _, err = x.UpdateRule(ctx, id); err != nil {
+				hlog.Error(err)
+			}
 			if _, err = x.DeleteMetrics(ctx, id); err != nil {
 				hlog.Error(err)
 			}

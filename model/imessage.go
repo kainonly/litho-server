@@ -12,6 +12,7 @@ import (
 type Imessage struct {
 	ID          primitive.ObjectID   `bson:"_id,omitempty" json:"_id"`
 	Topic       string               `bson:"topic" json:"topic"`
+	Rule        string               `bson:"rule" json:"rule"`
 	Description string               `bson:"description" json:"description"`
 	Projects    []primitive.ObjectID `bson:"projects" json:"projects"`
 	CreateTime  time.Time            `bson:"create_time" json:"create_time" farker:"-"`

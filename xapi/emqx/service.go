@@ -9,6 +9,7 @@ import (
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 	"time"
 )
@@ -19,8 +20,9 @@ type Service struct {
 
 func (x *Service) Auth(ctx context.Context, dto AuthDto) (err error) {
 	var data model.Project
+	id, _ := primitive.ObjectIDFromHex(dto.Identity)
 	if err = x.Db.Collection("projects").
-		FindOne(ctx, bson.M{"_id": dto.Identity}).
+		FindOne(ctx, bson.M{"_id": id}).
 		Decode(&data); err != nil {
 		return
 	}
@@ -35,11 +37,11 @@ func (x *Service) Auth(ctx context.Context, dto AuthDto) (err error) {
 }
 
 func (x *Service) Acl(ctx context.Context, dto AclDto) (err error) {
-	identity, deny := dto.Identity.Hex(), true
+	deny := true
 	topic := strings.Split(dto.Topic, "/")
 	msg := fmt.Sprintf(`The user [%s] is not authorized for this topic [%s]`,
-		identity, dto.Topic)
-	if !(len(topic) >= 2 && topic[1] == identity) {
+		dto.Identity, dto.Topic)
+	if !(len(topic) >= 2 && topic[1] == dto.Identity) {
 		return errors.NewPublic(msg)
 	}
 	var data model.Imessage
@@ -49,7 +51,7 @@ func (x *Service) Acl(ctx context.Context, dto AclDto) (err error) {
 		return
 	}
 	for _, pid := range data.Projects {
-		if pid.Hex() == identity {
+		if pid.Hex() == dto.Identity {
 			deny = false
 			break
 		}

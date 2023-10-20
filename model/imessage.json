@@ -16,6 +16,9 @@
       "topic": {
         "bsonType": "string"
       },
+      "rule": {
+        "bsonType": "string"
+      },
       "description": {
         "bsonType": "string"
       },
