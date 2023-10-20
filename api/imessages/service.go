@@ -36,11 +36,30 @@ func (x *Service) GetNodes(ctx context.Context) (r interface{}, err error) {
 	return
 }
 
-func (x *Service) CreateRule(ctx context.Context, id primitive.ObjectID) (r M, err error) {
+func (x *Service) UpdateRule(ctx context.Context, id primitive.ObjectID) (r M, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
 		Decode(&data); err != nil {
+		return
+	}
+
+	if data.Rule != "" {
+		if _, err = x.R(ctx).
+			SetBody(M{
+				"name": data.Topic,
+				"sql":  fmt.Sprintf(`SELECT * FROM "%s/#"`, data.Topic),
+				"actions": []interface{}{
+					"webhook:logset",
+				},
+				"enable":      true,
+				"description": data.Description,
+			}).
+			SetSuccessResult(&r).
+			SetErrorResult(&r).
+			Put(fmt.Sprintf(`rules/%s`, data.Rule)); err != nil {
+			return
+		}
 		return
 	}
 
@@ -69,33 +88,6 @@ func (x *Service) CreateRule(ctx context.Context, id primitive.ObjectID) (r M, e
 			bson.M{"_id": id},
 			bson.M{"$set": bson.M{"rule": r["id"]}},
 		); err != nil {
-		return
-	}
-
-	return
-}
-
-func (x *Service) UpdateRule(ctx context.Context, id primitive.ObjectID) (r M, err error) {
-	var data model.Imessage
-	if err = x.Db.Collection("imessages").
-		FindOne(ctx, bson.M{"_id": id}).
-		Decode(&data); err != nil {
-		return
-	}
-
-	if _, err = x.R(ctx).
-		SetBody(M{
-			"name": data.Topic,
-			"sql":  fmt.Sprintf(`SELECT * FROM "%s/#"`, data.Topic),
-			"actions": []interface{}{
-				"webhook:logset",
-			},
-			"enable":      true,
-			"description": data.Description,
-		}).
-		SetSuccessResult(&r).
-		SetErrorResult(&r).
-		Put(fmt.Sprintf(`rules/%s`, data.Rule)); err != nil {
 		return
 	}
 
@@ -140,7 +132,7 @@ func (x *Service) GetMetrics(ctx context.Context, id primitive.ObjectID) (rs []i
 	return
 }
 
-func (x *Service) CreateMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
+func (x *Service) UpdateMetrics(ctx context.Context, id primitive.ObjectID) (rs []interface{}, err error) {
 	var data model.Imessage
 	if err = x.Db.Collection("imessages").
 		FindOne(ctx, bson.M{"_id": id}).
@@ -214,10 +206,10 @@ func (x *Service) Event() (err error) {
 		switch dto.Action {
 		case "create":
 			id, _ := primitive.ObjectIDFromHex(dto.Result.(M)["InsertedID"].(string))
-			if _, err = x.CreateRule(ctx, id); err != nil {
+			if _, err = x.UpdateRule(ctx, id); err != nil {
 				hlog.Error(err)
 			}
-			if _, err = x.CreateMetrics(ctx, id); err != nil {
+			if _, err = x.UpdateMetrics(ctx, id); err != nil {
 				hlog.Error(err)
 			}
 			break
@@ -229,7 +221,7 @@ func (x *Service) Event() (err error) {
 			if _, err = x.DeleteMetrics(ctx, id); err != nil {
 				hlog.Error(err)
 			}
-			if _, err = x.CreateMetrics(ctx, id); err != nil {
+			if _, err = x.UpdateMetrics(ctx, id); err != nil {
 				hlog.Error(err)
 			}
 			break
