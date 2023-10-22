@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"github.com/weplanx/go/values"
 	"strings"
 )
@@ -9,7 +8,7 @@ import (
 type Values struct {
 	Mode      string `env:"MODE" envDefault:"debug"`
 	Hostname  string `env:"HOSTNAME"`
-	Address   string `env:"ADDRESS" envDefault:":3000"`
+	Address   string `env:"ADDRESS"`
 	Console   string `env:"CONSOLE,required"`
 	Ip        string `env:"IP" envDefault:"X-Forwarded-For"`
 	XDomain   string `env:"XDOMAIN" envDefault:""`
@@ -66,10 +65,6 @@ type Extra struct {
 
 func (x Values) IsRelease() bool {
 	return x.Mode == "release"
-}
-
-func (x Values) Name(v ...string) string {
-	return fmt.Sprintf(`%s:%s`, x.Namespace, strings.Join(v, ":"))
 }
 
 func (x Values) NameX(sep string, v ...string) string {

@@ -21,12 +21,7 @@ func (x *Service) Client(node string) (client *schedule.Client, err error) {
 	if i, ok := clients.Load(node); ok {
 		return i.(*schedule.Client), nil
 	}
-	if client, err = schedule.New(
-		schedule.SetNamespace(x.V.Namespace),
-		schedule.SetNats(x.Nats),
-		schedule.SetJetStream(x.JetStream),
-		schedule.SetNode(node),
-	); err != nil {
+	if client, err = schedule.New(node, x.Nats); err != nil {
 		return
 	}
 	clients.Store(node, client)

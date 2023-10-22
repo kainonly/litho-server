@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -302,8 +303,8 @@ func (x *API) ValuesChange(ok chan interface{}) {
 		for k, v := range x.V.RestControls {
 			if v.Event {
 				if _, err := x.JetStream.AddStream(&nats.StreamConfig{
-					Name:      x.V.Name("events", k),
-					Subjects:  []string{x.V.NameX(".", "events", k)},
+					Name:      fmt.Sprintf(`EVENT_%s`, k),
+					Subjects:  []string{fmt.Sprintf(`events.%s`, k)},
 					Retention: nats.WorkQueuePolicy,
 				}); err != nil {
 					hlog.Error(err)
