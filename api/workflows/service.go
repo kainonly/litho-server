@@ -53,9 +53,7 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 }
 
 func (x *Service) Event() (err error) {
-	subj := x.V.NameX(".", "events", "workflows")
-	queue := x.V.Name("events", "workflows")
-	if _, err = x.JetStream.QueueSubscribe(subj, queue, func(msg *nats.Msg) {
+	if _, err = x.JetStream.QueueSubscribe(`events.workflows`, `EVENT_workflows`, func(msg *nats.Msg) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		var dto rest.PublishDto

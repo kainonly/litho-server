@@ -106,9 +106,7 @@ func (x *Service) Publish(ctx context.Context, dto PublishDto) (r interface{}, e
 }
 
 func (x *Service) Event() (err error) {
-	subj := x.V.NameX(".", "events", "queues")
-	queue := x.V.Name("events", "queues")
-	if _, err = x.JetStream.QueueSubscribe(subj, queue, func(msg *nats.Msg) {
+	if _, err = x.JetStream.QueueSubscribe(`events.queues`, `EVENT_queues`, func(msg *nats.Msg) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		var dto rest.PublishDto

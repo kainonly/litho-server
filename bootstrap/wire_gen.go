@@ -58,9 +58,9 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	captcha := UseCaptcha(values2, redisClient)
-	locker := UseLocker(values2, redisClient)
-	clientClient, err := UseTransfer(values2, jetStreamContext)
+	captcha := UseCaptcha(redisClient)
+	locker := UseLocker(redisClient)
+	clientClient, err := UseTransfer(jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		return nil, err
 	}
 	csrf := UseCsrf(values2)
-	service := UseValues(values2, keyValue, cipher)
+	service := UseValues(keyValue, cipher)
 	controller := &values.Controller{
 		Service: service,
 	}
@@ -238,9 +238,9 @@ func NewXAPI(values2 *common.Values) (*xapi.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	captcha := UseCaptcha(values2, redisClient)
-	locker := UseLocker(values2, redisClient)
-	clientClient, err := UseTransfer(values2, jetStreamContext)
+	captcha := UseCaptcha(redisClient)
+	locker := UseLocker(redisClient)
+	clientClient, err := UseTransfer(jetStreamContext)
 	if err != nil {
 		return nil, err
 	}
@@ -310,9 +310,9 @@ func NewOpenAPI(values2 *common.Values) (*openapi.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	captcha := UseCaptcha(values2, redisClient)
-	locker := UseLocker(values2, redisClient)
-	clientClient, err := UseTransfer(values2, jetStreamContext)
+	captcha := UseCaptcha(redisClient)
+	locker := UseLocker(redisClient)
+	clientClient, err := UseTransfer(jetStreamContext)
 	if err != nil {
 		return nil, err
 	}

@@ -107,9 +107,8 @@ func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, err
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: v.Namespace})
 }
 
-func UseValues(v *common.Values, kv nats.KeyValue, cipher *cipher.Cipher) *values.Service {
+func UseValues(kv nats.KeyValue, cipher *cipher.Cipher) *values.Service {
 	return values.New(
-		values.SetNamespace(v.Namespace),
 		values.SetKeyValue(kv),
 		values.SetCipher(cipher),
 		values.SetType(reflect.TypeOf(common.Extra{})),
@@ -118,7 +117,6 @@ func UseValues(v *common.Values, kv nats.KeyValue, cipher *cipher.Cipher) *value
 
 func UseSessions(v *common.Values, rdb *redis.Client) *sessions.Service {
 	return sessions.New(
-		sessions.SetNamespace(v.Namespace),
 		sessions.SetRedis(rdb),
 		sessions.SetDynamicValues(v.DynamicValues),
 	)
@@ -134,7 +132,6 @@ func UseRest(
 	xcipher *cipher.Cipher,
 ) *rest.Service {
 	return rest.New(
-		rest.SetNamespace(v.Namespace),
 		rest.SetMongoClient(mgo),
 		rest.SetDatabase(db),
 		rest.SetRedis(rdb),
@@ -163,25 +160,16 @@ func UseAPIPassport(v *common.Values) *common.APIPassport {
 	)
 }
 
-func UseLocker(v *common.Values, client *redis.Client) *locker.Locker {
-	return locker.New(
-		locker.SetNamespace(v.Namespace),
-		locker.SetRedis(client),
-	)
+func UseLocker(client *redis.Client) *locker.Locker {
+	return locker.New(client)
 }
 
-func UseCaptcha(v *common.Values, client *redis.Client) *captcha.Captcha {
-	return captcha.New(
-		captcha.SetNamespace(v.Namespace),
-		captcha.SetRedis(client),
-	)
+func UseCaptcha(client *redis.Client) *captcha.Captcha {
+	return captcha.New(client)
 }
 
-func UseTransfer(v *common.Values, js nats.JetStreamContext) (*transfer.Client, error) {
-	return transfer.New(
-		transfer.SetNamespace(v.Namespace),
-		transfer.SetJetStream(js),
-	)
+func UseTransfer(js nats.JetStreamContext) (*transfer.Client, error) {
+	return transfer.New(js)
 }
 
 func UseInflux(v *common.Values) influxdb2.Client {
@@ -204,6 +192,10 @@ func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
 }
 
 func UseHertz(v *common.Values) (h *server.Hertz, err error) {
+	if v.Address == "" {
+		return
+	}
+
 	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),

@@ -419,7 +419,7 @@ func (x *Service) SetUser(ctx context.Context, userId string, update bson.M) (re
 		return
 	}
 
-	key := x.V.Name("users", userId)
+	key := fmt.Sprintf(`users:%s`, userId)
 	if _, err = x.RDb.Del(ctx, key).Result(); err != nil {
 		return
 	}

@@ -69,7 +69,7 @@ func (x *Service) Decrypt(encrypt string, key string) (string, error) {
 }
 
 func (x *Service) GetTenantAccessToken(ctx context.Context) (token string, err error) {
-	key := x.V.Name("lark", "tenant_access_token")
+	key := fmt.Sprintf(`%s:%s`, "lark", "tenant_access_token")
 	var exists int64
 	if exists, err = x.RDb.Exists(ctx, key).Result(); err != nil {
 		return
