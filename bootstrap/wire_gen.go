@@ -18,6 +18,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/monitor"
+	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -129,6 +130,13 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	clustersService := &clusters.Service{
 		Inject: inject,
 	}
+	projectsService := &projects.Service{
+		Inject:   inject,
+		Clusters: clustersService,
+	}
+	projectsController := &projects.Controller{
+		ProjectsServices: projectsService,
+	}
 	clustersController := &clusters.Controller{
 		ClustersService: clustersService,
 	}
@@ -192,6 +200,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		TencentService:   tencentService,
 		Lark:             larkController,
 		LarkService:      larkService,
+		Projects:         projectsController,
+		ProjectsService:  projectsService,
 		Clusters:         clustersController,
 		ClustersService:  clustersService,
 		Schedules:        schedulesController,

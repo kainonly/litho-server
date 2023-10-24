@@ -20,6 +20,15 @@ type Service struct {
 	*common.Inject
 }
 
+func (x *Service) Get(ctx context.Context, id primitive.ObjectID) (data model.Cluster, err error) {
+	if err = x.Db.Collection("clusters").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+	return
+}
+
 var kubes = sync.Map{}
 
 type Kubeconfig struct {
@@ -29,14 +38,10 @@ type Kubeconfig struct {
 	KeyData  string `json:"key_data"`
 }
 
-func (x *Service) GetKube(ctx context.Context, id primitive.ObjectID) (kube *kubernetes.Clientset, err error) {
-	if i, ok := kubes.Load(id.Hex()); ok {
-		return i.(*kubernetes.Clientset), nil
-	}
-	var data model.Cluster
-	if err = x.Db.Collection("clusters").
-		FindOne(ctx, bson.M{"_id": id}).
-		Decode(&data); err != nil {
+func (x *Service) GetClient(data model.Cluster) (client *kubernetes.Clientset, err error) {
+	id := data.ID.Hex()
+	if i, ok := kubes.Load(id); ok {
+		client = i.(*kubernetes.Clientset)
 		return
 	}
 	var b []byte
@@ -59,7 +64,7 @@ func (x *Service) GetKube(ctx context.Context, id primitive.ObjectID) (kube *kub
 	if key, err = base64.StdEncoding.DecodeString(config.KeyData); err != nil {
 		return
 	}
-	if kube, err = kubernetes.NewForConfig(&rest.Config{
+	if client, err = kubernetes.NewForConfig(&rest.Config{
 		Host: config.Host,
 		TLSClientConfig: rest.TLSClientConfig{
 			CAData:   ca,
@@ -69,13 +74,17 @@ func (x *Service) GetKube(ctx context.Context, id primitive.ObjectID) (kube *kub
 	}); err != nil {
 		return
 	}
-	kubes.Store(id.Hex(), kube)
+	kubes.Store(id, client)
 	return
 }
 
-func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, err error) {
+func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (result M, err error) {
+	var data model.Cluster
+	if data, err = x.Get(ctx, id); err != nil {
+		return
+	}
 	var kube *kubernetes.Clientset
-	if kube, err = x.GetKube(ctx, id); err != nil {
+	if kube, err = x.GetClient(data); err != nil {
 		return
 	}
 	var info *version.Info
@@ -96,7 +105,7 @@ func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, e
 		storage += v.Status.Allocatable.StorageEphemeral().Value()
 	}
 
-	data = M{
+	result = M{
 		"version": info.String(),
 		"nodes":   len(nodes.Items),
 		"cpu":     cpu,
@@ -107,9 +116,13 @@ func (x *Service) GetInfo(ctx context.Context, id primitive.ObjectID) (data M, e
 	return
 }
 
-func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (data []interface{}, err error) {
+func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (result []interface{}, err error) {
+	var data model.Cluster
+	if data, err = x.Get(ctx, id); err != nil {
+		return
+	}
 	var kube *kubernetes.Clientset
-	if kube, err = x.GetKube(ctx, id); err != nil {
+	if kube, err = x.GetClient(data); err != nil {
 		return
 	}
 	var nodes *v1.NodeList
@@ -117,7 +130,7 @@ func (x *Service) GetNodes(ctx context.Context, id primitive.ObjectID) (data []i
 		return
 	}
 	for _, v := range nodes.Items {
-		data = append(data, M{
+		result = append(result, M{
 			"name":         v.GetName(),
 			"create":       v.GetCreationTimestamp(),
 			"hostname":     v.Annotations["k3s.io/hostname"],

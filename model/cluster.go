@@ -14,6 +14,7 @@ type Cluster struct {
 	Name       string             `bson:"name" json:"name"`
 	Kind       string             `bson:"kind" json:"kind"`
 	Config     string             `bson:"config" json:"config"`
+	Admin      bool               `bson:"admin" json:"admin"`
 	CreateTime time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
 }

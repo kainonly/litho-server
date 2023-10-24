@@ -22,6 +22,7 @@ import (
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
 	"github.com/weplanx/server/api/monitor"
+	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/queues"
 	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
@@ -37,6 +38,7 @@ var Provides = wire.NewSet(
 	index.Provides,
 	tencent.Provides,
 	lark.Provides,
+	projects.Provides,
 	clusters.Provides,
 	schedules.Provides,
 	workflows.Provides,
@@ -61,6 +63,8 @@ type API struct {
 	TencentService   *tencent.Service
 	Lark             *lark.Controller
 	LarkService      *lark.Service
+	Projects         *projects.Controller
+	ProjectsService  *projects.Service
 	Clusters         *clusters.Controller
 	ClustersService  *clusters.Service
 	Schedules        *schedules.Controller
@@ -152,6 +156,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	{
 		_lark.POST("tasks", x.Lark.CreateTasks)
 		_lark.GET("tasks", x.Lark.GetTasks)
+	}
+	_projects := h.Group("projects", m...)
+	{
+		_projects.POST("deploy_nats", x.Projects.DeployNats)
 	}
 	_clusters := h.Group("clusters", m...)
 	{

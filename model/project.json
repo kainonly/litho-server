@@ -43,6 +43,39 @@
           "null"
         ]
       },
+      "cluster": {
+        "bsonType": "objectId"
+      },
+      "nats": {
+        "bsonType": "object",
+        "required": [
+          "seed",
+          "pub"
+        ],
+        "properties": {
+          "seed": {
+            "bsonType": "string"
+          },
+          "pub": {
+            "bsonType": "string"
+          }
+        }
+      },
+      "redis": {
+        "bsonType": "object",
+        "required": [
+          "url",
+          "auth"
+        ],
+        "properties": {
+          "url": {
+            "bsonType": "string"
+          },
+          "auth": {
+            "bsonType": "string"
+          }
+        }
+      },
       "status": {
         "bsonType": "bool"
       },
