@@ -23,6 +23,7 @@ type Values struct {
 
 	Nats struct {
 		Hosts []string `env:"HOSTS,required" envSeparator:","`
+		Pub   string   `env:"PUB,required"`
 		Nkey  string   `env:"NKEY,required"`
 	} `envPrefix:"NATS_"`
 

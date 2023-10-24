@@ -23,6 +23,9 @@
       "config": {
         "bsonType": "string"
       },
+      "admin": {
+        "bsonType": "bool"
+      },
       "create_time": {
         "bsonType": "date"
       },
