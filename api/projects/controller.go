@@ -28,3 +28,25 @@ func (x *Controller) DeployNats(ctx context.Context, c *app.RequestContext) {
 
 	c.Status(204)
 }
+
+type GetTenantsDto struct {
+	Id string `path:"id" vd:"mongodb"`
+}
+
+func (x *Controller) GetTenants(ctx context.Context, c *app.RequestContext) {
+	var dto GetTenantsDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	id, _ := primitive.ObjectIDFromHex(dto.Id)
+	r, err := x.ProjectsServices.GetTenants(ctx, id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, r)
+
+}

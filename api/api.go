@@ -159,6 +159,7 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	}
 	_projects := h.Group("projects", m...)
 	{
+		_projects.GET(":id/tenants", x.Projects.GetTenants)
 		_projects.POST("deploy_nats", x.Projects.DeployNats)
 	}
 	_clusters := h.Group("clusters", m...)
