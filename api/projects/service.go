@@ -21,6 +21,26 @@ type Service struct {
 	Clusters *clusters.Service
 }
 
+func (x *Service) GetTenants(ctx context.Context, id primitive.ObjectID) (result M, err error) {
+	var project model.Project
+	if err = x.Db.Collection("projects").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&project); err != nil {
+		return
+	}
+
+	result = M{}
+	if project.Nats != nil {
+		var b []byte
+		if b, err = x.Cipher.Decode(project.Nats.Seed); err != nil {
+			return
+		}
+		result["nkey"] = string(b)
+	}
+
+	return
+}
+
 func (x *Service) DeployNats(ctx context.Context, id primitive.ObjectID) (err error) {
 	var project model.Project
 	if err = x.Db.Collection("projects").
@@ -31,24 +51,24 @@ func (x *Service) DeployNats(ctx context.Context, id primitive.ObjectID) (err er
 	if project.Cluster == nil {
 		return
 	}
-	var accounts []NatsAccount
-	if accounts, err = x.MakeNatsAccounts(ctx, project); err != nil {
-		return
-	}
-
 	var cluster model.Cluster
 	if cluster, err = x.Clusters.Get(ctx, *project.Cluster); err != nil {
 		return
 	}
+	var accounts []NatsAccount
 	if cluster.Admin {
 		accounts = append(accounts, NatsAccount{
 			Name:  "weplanx",
 			Users: []NatsUser{{Nkey: x.V.Nats.Pub}},
 		})
 	}
-	if err = x.AppendNatsAccounts(ctx, project, accounts); err != nil {
+	if err = x.MakeNatsAccount(ctx, project); err != nil {
 		return
 	}
+	if err = x.SyncNatsAccounts(ctx, project, &accounts); err != nil {
+		return
+	}
+
 	var tmpl *template.Template
 	if tmpl, err = template.ParseFiles("./templates/account.tpl"); err != nil {
 		return
@@ -67,7 +87,7 @@ func (x *Service) DeployNats(ctx context.Context, id primitive.ObjectID) (err er
 			Namespace: "nats-system",
 			Name:      "include",
 		},
-		Data: map[string][]byte{"data": buf.Bytes()},
+		Data: map[string][]byte{"accounts.conf": buf.Bytes()},
 		Type: "Opaque",
 	}
 	if _, err = kube.CoreV1().
@@ -88,9 +108,12 @@ type NatsUser struct {
 	Nkey string
 }
 
-func (x *Service) MakeNatsAccounts(ctx context.Context, project model.Project) (accounts []NatsAccount, err error) {
+func (x *Service) MakeNatsAccount(ctx context.Context, project model.Project) (err error) {
 	var user nkeys.KeyPair
 	if user, err = nkeys.CreateUser(); err != nil {
+		return
+	}
+	if _, err = user.Sign([]byte(project.Namespace)); err != nil {
 		return
 	}
 	var seed []byte
@@ -101,10 +124,6 @@ func (x *Service) MakeNatsAccounts(ctx context.Context, project model.Project) (
 	if pub, err = user.PublicKey(); err != nil {
 		return
 	}
-	accounts = append(accounts, NatsAccount{
-		Name:  project.Namespace,
-		Users: []NatsUser{{Nkey: pub}},
-	})
 	var xSeed string
 	if xSeed, err = x.Cipher.Encode(seed); err != nil {
 		return
@@ -126,11 +145,10 @@ func (x *Service) MakeNatsAccounts(ctx context.Context, project model.Project) (
 	return
 }
 
-func (x *Service) AppendNatsAccounts(ctx context.Context, project model.Project, accounts []NatsAccount) (err error) {
+func (x *Service) SyncNatsAccounts(ctx context.Context, project model.Project, accounts *[]NatsAccount) (err error) {
 	var cursor *mongo.Cursor
 	if cursor, err = x.Db.Collection("projects").
 		Find(ctx, bson.M{
-			"_id":     bson.M{"$ne": project.ID},
 			"cluster": *project.Cluster,
 			"nats":    bson.M{"$exists": 1},
 		}); err != nil {
@@ -147,7 +165,7 @@ func (x *Service) AppendNatsAccounts(ctx context.Context, project model.Project,
 			return
 		}
 		users = append(users, NatsUser{Nkey: string(pub)})
-		accounts = append(accounts, NatsAccount{
+		*accounts = append(*accounts, NatsAccount{
 			Name:  project.Namespace,
 			Users: users,
 		})
