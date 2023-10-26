@@ -155,18 +155,18 @@ func (x *Service) SyncNatsAccounts(ctx context.Context, project model.Project, a
 		return
 	}
 	for cursor.Next(ctx) {
-		var v model.Project
-		if err = cursor.Decode(&v); err != nil {
+		var data model.Project
+		if err = cursor.Decode(&data); err != nil {
 			return
 		}
 		var users []NatsUser
 		var pub []byte
-		if pub, err = x.Cipher.Decode(v.Nats.Pub); err != nil {
+		if pub, err = x.Cipher.Decode(data.Nats.Pub); err != nil {
 			return
 		}
 		users = append(users, NatsUser{Nkey: string(pub)})
 		*accounts = append(*accounts, NatsAccount{
-			Name:  project.Namespace,
+			Name:  data.Namespace,
 			Users: users,
 		})
 	}
