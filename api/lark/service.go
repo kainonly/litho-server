@@ -28,7 +28,7 @@ type Service struct {
 	Sessions *sessions.Service
 	Locker   *locker.Locker
 	Passport *passport.Passport
-	Index    *index.Service
+	IndexX   *index.Service
 }
 
 var client = req.C().
@@ -143,7 +143,7 @@ type LoginResult struct {
 
 func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err error) {
 	r = new(LoginResult)
-	if r.User, err = x.Index.Logining(ctx, bson.M{"lark.open_id": openId, "status": true}); err != nil {
+	if r.User, err = x.IndexX.Logining(ctx, bson.M{"lark.open_id": openId, "status": true}); err != nil {
 		return
 	}
 
@@ -156,7 +156,7 @@ func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err
 		return
 	}
 	userId := r.User.ID.Hex()
-	if r.AccessToken, err = x.Index.CreateAccessToken(ctx, userId); err != nil {
+	if r.AccessToken, err = x.IndexX.CreateAccessToken(ctx, userId); err != nil {
 		return
 	}
 	return

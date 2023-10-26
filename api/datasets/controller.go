@@ -6,7 +6,7 @@ import (
 )
 
 type Controller struct {
-	DatasetsService *Service
+	DatasetsX *Service
 }
 
 type ListsDto struct {
@@ -20,7 +20,7 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.DatasetsService.Lists(ctx, dto.Name)
+	r, err := x.DatasetsX.Lists(ctx, dto.Name)
 	if err != nil {
 		c.Error(err)
 		return
@@ -48,7 +48,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.DatasetsService.Create(ctx, dto); err != nil {
+	if err := x.DatasetsX.Create(ctx, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -67,7 +67,7 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.DatasetsService.Delete(ctx, dto.Name); err != nil {
+	if err := x.DatasetsX.Delete(ctx, dto.Name); err != nil {
 		c.Error(err)
 		return
 	}

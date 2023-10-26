@@ -7,7 +7,7 @@ import (
 )
 
 type Controller struct {
-	WorkflowsService *Service
+	WorkflowsX *Service
 }
 
 type SyncDto struct {
@@ -21,7 +21,7 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.WorkflowsService.Sync(ctx, dto.Id); err != nil {
+	if err := x.WorkflowsX.Sync(ctx, dto.Id); err != nil {
 		c.Error(err)
 		return
 	}

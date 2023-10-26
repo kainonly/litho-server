@@ -17,8 +17,8 @@ type Controller struct {
 	V        *common.Values
 	Passport *passport.Passport
 
-	LarkService  *Service
-	IndexService *index.Service
+	LarkX  *Service
+	IndexX *index.Service
 }
 
 type ChallengeDto struct {
@@ -31,7 +31,7 @@ func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	raw, err := x.LarkService.Decrypt(dto.Encrypt, x.V.LarkEncryptKey)
+	raw, err := x.LarkX.Decrypt(dto.Encrypt, x.V.LarkEncryptKey)
 	if err != nil {
 		c.Error(err)
 		return
@@ -74,7 +74,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	userData, err := x.LarkService.GetUserAccessToken(ctx, dto.Code)
+	userData, err := x.LarkX.GetUserAccessToken(ctx, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -91,7 +91,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 		var claims passport.Claims
-		if claims, err = x.IndexService.Verify(ctx, string(ts)); err != nil {
+		if claims, err = x.IndexX.Verify(ctx, string(ts)); err != nil {
 			common.ClearAccessToken(c)
 			c.JSON(401, help.E(
 				"lark.AuthenticationExpired",
@@ -100,7 +100,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		if _, err = x.LarkService.Link(ctx, claims.UserId, userData); err != nil {
+		if _, err = x.LarkX.Link(ctx, claims.UserId, userData); err != nil {
 			c.Error(err)
 			return
 		}
@@ -109,7 +109,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	}
 
 	var r *LoginResult
-	if r, err = x.LarkService.Login(ctx, userData.OpenId); err != nil {
+	if r, err = x.LarkX.Login(ctx, userData.OpenId); err != nil {
 		c.Redirect(302, x.RedirectUrl("/#/unauthorize", dto.State.Locale))
 		return
 	}
@@ -117,7 +117,7 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
+		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -135,7 +135,7 @@ func (x *Controller) RedirectUrl(path string, locale string) []byte {
 }
 
 func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
-	r, err := x.LarkService.CreateTask(ctx)
+	r, err := x.LarkX.CreateTask(ctx)
 	if err != nil {
 		c.Error(err)
 		return
@@ -145,7 +145,7 @@ func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
-	r, err := x.LarkService.GetTasks(ctx)
+	r, err := x.LarkX.GetTasks(ctx)
 	if err != nil {
 		c.Error(err)
 		return

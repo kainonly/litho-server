@@ -7,11 +7,11 @@ import (
 )
 
 type Controller struct {
-	ImessagesServices *Service
+	ImessagesX *Service
 }
 
 func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
-	r, err := x.ImessagesServices.GetNodes(ctx)
+	r, err := x.ImessagesX.GetNodes(ctx)
 	if err != nil {
 		c.Error(err)
 		return
@@ -32,7 +32,7 @@ func (x *Controller) UpdateRule(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.UpdateRule(ctx, id)
+	r, err := x.ImessagesX.UpdateRule(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -53,7 +53,7 @@ func (x *Controller) DeleteRule(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	if err := x.ImessagesServices.DeleteRule(ctx, id); err != nil {
+	if err := x.ImessagesX.DeleteRule(ctx, id); err != nil {
 		c.Error(err)
 		return
 	}
@@ -73,7 +73,7 @@ func (x *Controller) GetMetrics(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.GetMetrics(ctx, id)
+	r, err := x.ImessagesX.GetMetrics(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -94,7 +94,7 @@ func (x *Controller) UpdateMetrics(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.UpdateMetrics(ctx, id)
+	r, err := x.ImessagesX.UpdateMetrics(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -115,7 +115,7 @@ func (x *Controller) DeleteMetrics(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ImessagesServices.DeleteMetrics(ctx, id)
+	r, err := x.ImessagesX.DeleteMetrics(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -136,7 +136,7 @@ func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.ImessagesServices.Publish(ctx, dto)
+	r, err := x.ImessagesX.Publish(ctx, dto)
 	if err != nil {
 		c.Error(err)
 		return

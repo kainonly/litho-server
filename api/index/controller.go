@@ -7,7 +7,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,8 +20,7 @@ type Controller struct {
 	V    *common.Values
 	Csrf *csrf.Csrf
 
-	IndexService  *Service
-	ValuesService *values.Service
+	IndexX *Service
 }
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
@@ -50,7 +48,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.IndexService.Login(ctx, dto.Email, dto.Password)
+	r, err := x.IndexX.Login(ctx, dto.Email, dto.Password)
 	if err != nil {
 		c.Error(err)
 		return
@@ -59,7 +57,7 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
+		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -79,7 +77,7 @@ func (x *Controller) GetLoginSms(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if _, err := x.IndexService.GetLoginSms(ctx, dto.Phone); err != nil {
+	if _, err := x.IndexX.GetLoginSms(ctx, dto.Phone); err != nil {
 		c.Error(err)
 		return
 	}
@@ -99,7 +97,7 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.IndexService.LoginSms(ctx, dto.Phone, dto.Code)
+	r, err := x.IndexX.LoginSms(ctx, dto.Phone, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -108,7 +106,7 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
+		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -129,7 +127,7 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.IndexService.LoginTotp(ctx, dto.Email, dto.Code)
+	r, err := x.IndexX.LoginTotp(ctx, dto.Email, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -138,7 +136,7 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 	go func() {
 		data := model.NewLogsetLogin(
 			r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
-		if err = x.IndexService.WriteLogsetLogin(context.TODO(), data); err != nil {
+		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
 			hlog.Fatal(err)
 		}
 	}()
@@ -158,7 +156,7 @@ func (x *Controller) GetForgetCode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.IndexService.GetForgetCode(ctx, dto.Email); err != nil {
+	if err := x.IndexX.GetForgetCode(ctx, dto.Email); err != nil {
 		c.Error(err)
 		return
 	}
@@ -179,7 +177,7 @@ func (x *Controller) ForgetReset(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.IndexService.ForgetReset(ctx, dto); err != nil {
+	if err := x.IndexX.ForgetReset(ctx, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -197,7 +195,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if _, err := x.IndexService.Verify(ctx, string(ts)); err != nil {
+	if _, err := x.IndexX.Verify(ctx, string(ts)); err != nil {
 		common.ClearAccessToken(c)
 		c.JSON(401, M{
 			"code":    0,
@@ -211,7 +209,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 
 func (x *Controller) GetRefreshCode(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	code, err := x.IndexService.GetRefreshCode(ctx, claims.UserId)
+	code, err := x.IndexX.GetRefreshCode(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -234,7 +232,7 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.Claims(c)
-	ts, err := x.IndexService.RefreshToken(ctx, claims, dto.Code)
+	ts, err := x.IndexX.RefreshToken(ctx, claims, dto.Code)
 	if err != nil {
 		c.Error(err)
 		return
@@ -246,14 +244,14 @@ func (x *Controller) RefreshToken(ctx context.Context, c *app.RequestContext) {
 
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	x.IndexService.Logout(ctx, claims.UserId)
+	x.IndexX.Logout(ctx, claims.UserId)
 	common.ClearAccessToken(c)
 	c.Status(204)
 }
 
 func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	data, err := x.IndexService.GetUser(ctx, claims.UserId)
+	data, err := x.IndexX.GetUser(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -283,7 +281,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		Interface()
 
 	claims := common.Claims(c)
-	if _, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{"$set": data}); err != nil {
+	if _, err := x.IndexX.SetUser(ctx, claims.UserId, bson.M{"$set": data}); err != nil {
 		c.Error(err)
 		return
 	}
@@ -304,7 +302,7 @@ func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext)
 	}
 
 	claims := common.Claims(c)
-	if _, err := x.IndexService.SetUserPassword(ctx, claims.UserId, dto.Old, dto.Password); err != nil {
+	if _, err := x.IndexX.SetUserPassword(ctx, claims.UserId, dto.Old, dto.Password); err != nil {
 		c.Error(err)
 		return
 	}
@@ -323,7 +321,7 @@ func (x *Controller) GetUserPhoneCode(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	if _, err := x.IndexService.GetUserPhoneCode(ctx, dto.Phone); err != nil {
+	if _, err := x.IndexX.GetUserPhoneCode(ctx, dto.Phone); err != nil {
 		c.Error(err)
 		return
 	}
@@ -344,7 +342,7 @@ func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.Claims(c)
-	if _, err := x.IndexService.SetUserPhone(ctx, claims.UserId, dto.Phone, dto.Code); err != nil {
+	if _, err := x.IndexX.SetUserPhone(ctx, claims.UserId, dto.Phone, dto.Code); err != nil {
 		c.Error(err)
 		return
 	}
@@ -354,7 +352,7 @@ func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 
 func (x *Controller) GetUserTotp(ctx context.Context, c *app.RequestContext) {
 	claims := common.Claims(c)
-	uri, err := x.IndexService.GetUserTotp(ctx, claims.UserId)
+	uri, err := x.IndexX.GetUserTotp(ctx, claims.UserId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -378,7 +376,7 @@ func (x *Controller) SetUserTotp(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.Claims(c)
-	if _, err := x.IndexService.SetUserTotp(ctx, claims.UserId, dto.Totp, dto.Tss); err != nil {
+	if _, err := x.IndexX.SetUserTotp(ctx, claims.UserId, dto.Totp, dto.Tss); err != nil {
 		c.Error(err)
 		return
 	}
@@ -398,7 +396,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	claims := common.Claims(c)
-	_, err := x.IndexService.SetUser(ctx, claims.UserId, bson.M{
+	_, err := x.IndexX.SetUser(ctx, claims.UserId, bson.M{
 		"$unset": bson.M{dto.Key: 1},
 	})
 	if err != nil {
@@ -413,7 +411,7 @@ type OptionsDto struct {
 	Type string `query:"type"`
 }
 
-func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
+func (x *Controller) Options(_ context.Context, c *app.RequestContext) {
 	var dto OptionsDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
@@ -433,7 +431,6 @@ func (x *Controller) Options(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	case "collaboration":
-		// TODO: x.V.Collaboration
 		c.JSON(http.StatusOK, M{
 			"url":      "https://open.larksuite.com/open-apis/authen/v1/index",
 			"redirect": x.V.RedirectUrl,

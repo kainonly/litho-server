@@ -7,7 +7,7 @@ import (
 )
 
 type Controller struct {
-	QueuesServices *Service
+	QueuesX *Service
 }
 
 type SyncDto struct {
@@ -21,7 +21,7 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.QueuesServices.Sync(ctx, dto.Id); err != nil {
+	if err := x.QueuesX.Sync(ctx, dto.Id); err != nil {
 		c.Error(err)
 		return
 	}
@@ -40,7 +40,7 @@ func (x *Controller) Destroy(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.QueuesServices.Destroy(ctx, dto.Ids); err != nil {
+	if err := x.QueuesX.Destroy(ctx, dto.Ids); err != nil {
 		c.Error(err)
 		return
 	}
@@ -60,7 +60,7 @@ func (x *Controller) Info(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.QueuesServices.Info(ctx, id)
+	r, err := x.QueuesX.Info(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -81,7 +81,7 @@ func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.QueuesServices.Publish(ctx, dto)
+	r, err := x.QueuesX.Publish(ctx, dto)
 	if err != nil {
 		c.Error(err)
 		return

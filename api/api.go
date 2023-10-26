@@ -18,6 +18,7 @@ import (
 	"github.com/weplanx/server/api/acc_tasks"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
+	"github.com/weplanx/server/api/endpoints"
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
@@ -40,6 +41,7 @@ var Provides = wire.NewSet(
 	lark.Provides,
 	projects.Provides,
 	clusters.Provides,
+	endpoints.Provides,
 	schedules.Provides,
 	workflows.Provides,
 	queues.Provides,
@@ -52,35 +54,37 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz            *server.Hertz
-	Csrf             *csrf.Csrf
-	Values           *values.Controller
-	Sessions         *sessions.Controller
-	Rest             *rest.Controller
-	Index            *index.Controller
-	IndexService     *index.Service
-	Tencent          *tencent.Controller
-	TencentService   *tencent.Service
-	Lark             *lark.Controller
-	LarkService      *lark.Service
-	Projects         *projects.Controller
-	ProjectsService  *projects.Service
-	Clusters         *clusters.Controller
-	ClustersService  *clusters.Service
-	Schedules        *schedules.Controller
-	SchedulesService *schedules.Service
-	Workflows        *workflows.Controller
-	WorkflowsService *workflows.Service
-	Queues           *queues.Controller
-	QueuesService    *queues.Service
-	Imessages        *imessages.Controller
-	ImessagesService *imessages.Service
-	AccTasks         *acc_tasks.Controller
-	AccTasksService  *acc_tasks.Service
-	Datasets         *datasets.Controller
-	DatasetsService  *datasets.Service
-	Monitor          *monitor.Controller
-	MonitorService   *monitor.Service
+	Hertz      *server.Hertz
+	Csrf       *csrf.Csrf
+	Values     *values.Controller
+	Sessions   *sessions.Controller
+	Rest       *rest.Controller
+	Index      *index.Controller
+	IndexX     *index.Service
+	Tencent    *tencent.Controller
+	TencentX   *tencent.Service
+	Lark       *lark.Controller
+	LarkX      *lark.Service
+	Projects   *projects.Controller
+	ProjectsX  *projects.Service
+	Clusters   *clusters.Controller
+	ClustersX  *clusters.Service
+	Endpoints  *endpoints.Controller
+	EndpointsX *endpoints.Service
+	Schedules  *schedules.Controller
+	SchedulesX *schedules.Service
+	Workflows  *workflows.Controller
+	WorkflowsX *workflows.Service
+	Queues     *queues.Controller
+	QueuesX    *queues.Service
+	Imessages  *imessages.Controller
+	ImessagesX *imessages.Service
+	AccTasks   *acc_tasks.Controller
+	AccTasksX  *acc_tasks.Service
+	Datasets   *datasets.Controller
+	DatasetsX  *datasets.Service
+	Monitor    *monitor.Controller
+	MonitorX   *monitor.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -223,7 +227,7 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			return
 		}
 
-		claims, err := x.IndexService.Verify(ctx, string(ts))
+		claims, err := x.IndexX.Verify(ctx, string(ts))
 		if err != nil {
 			common.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, utils.H{
@@ -293,13 +297,13 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	}
 
 	go func() {
-		if err = x.WorkflowsService.Event(); err != nil {
+		if err = x.WorkflowsX.Event(); err != nil {
 			hlog.Error(err)
 		}
-		if err = x.QueuesService.Event(); err != nil {
+		if err = x.QueuesX.Event(); err != nil {
 			hlog.Error(err)
 		}
-		if err = x.ImessagesService.Event(); err != nil {
+		if err = x.ImessagesX.Event(); err != nil {
 			hlog.Error(err)
 		}
 	}()
