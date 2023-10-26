@@ -6,7 +6,6 @@
       "_id",
       "name",
       "kind",
-      "option",
       "create_time",
       "update_time"
     ],
@@ -20,7 +19,7 @@
       "kind": {
         "bsonType": "string"
       },
-      "option": {
+      "schedule": {
         "bsonType": "object"
       },
       "create_time": {

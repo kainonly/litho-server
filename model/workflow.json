@@ -26,12 +26,12 @@
       "schedule": {
         "bsonType": "object",
         "required": [
-          "schedule_id",
+          "ref",
           "status",
           "jobs"
         ],
         "properties": {
-          "schedule_id": {
+          "ref": {
             "bsonType": "objectId"
           },
           "status": {

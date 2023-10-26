@@ -28,7 +28,7 @@ var Sync = &cobra.Command{
 		if err = model.SetClusters(ctx, x.Db); err != nil {
 			return
 		}
-		if err = model.SetSchedules(ctx, x.Db); err != nil {
+		if err = model.SetEndpoints(ctx, x.Db); err != nil {
 			return
 		}
 		if err = model.SetWorkflows(ctx, x.Db); err != nil {
