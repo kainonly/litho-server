@@ -20,9 +20,9 @@ type Workflow struct {
 }
 
 type WorkflowSchedule struct {
-	ScheduleId *primitive.ObjectID   `bson:"schedule_id" json:"schedule_id"`
-	Status     bool                  `bson:"status" json:"status"`
-	Jobs       []WorkflowScheduleJob `bson:"jobs" json:"jobs"`
+	Ref    *primitive.ObjectID   `bson:"ref" json:"ref"`
+	Status bool                  `bson:"status" json:"status"`
+	Jobs   []WorkflowScheduleJob `bson:"jobs" json:"jobs"`
 }
 
 type WorkflowScheduleJob struct {

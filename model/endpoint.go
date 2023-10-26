@@ -13,9 +13,13 @@ type Endpoint struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Name       string             `bson:"name" json:"name"`
 	Kind       string             `bson:"kind" json:"kind"`
-	Option     bson.M             `bson:"option" json:"option"`
+	Schedule   *EndpointSchedule  `bson:"schedule" json:"schedule"`
 	CreateTime time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
+}
+
+type EndpointSchedule struct {
+	Node string `bson:"node" json:"node"`
 }
 
 func SetEndpoints(ctx context.Context, db *mongo.Database) (err error) {

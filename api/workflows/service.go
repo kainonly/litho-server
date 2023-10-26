@@ -7,7 +7,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/weplanx/go/rest"
 	sctyp "github.com/weplanx/schedule/common"
-	"github.com/weplanx/server/api/schedules"
+	"github.com/weplanx/server/api/endpoints"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,7 +18,7 @@ import (
 type Service struct {
 	*common.Inject
 
-	SchedulesX *schedules.Service
+	EndpointsX *endpoints.Service
 }
 
 func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
@@ -28,6 +28,7 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 	}).Decode(&data); err != nil {
 		return
 	}
+
 	if data.Schedule != nil {
 		schedule := data.Schedule
 		jobs := make([]sctyp.ScheduleJob, len(schedule.Jobs))
@@ -38,8 +39,8 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 				Option: v.Option,
 			}
 		}
-		if err = x.SchedulesX.Set(ctx,
-			*schedule.ScheduleId,
+		if err = x.EndpointsX.ScheduleSet(ctx,
+			*schedule.Ref,
 			id.Hex(),
 			sctyp.ScheduleOption{
 				Status: schedule.Status,
@@ -62,7 +63,7 @@ func (x *Service) Event() (err error) {
 			return
 		}
 		switch dto.Action {
-		case "update_by_id":
+		case rest.ActionUpdateById:
 			id, _ := primitive.ObjectIDFromHex(dto.Id)
 			if err = x.Sync(ctx, id); err != nil {
 				hlog.Error(err)

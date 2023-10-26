@@ -202,7 +202,7 @@ func (x *Service) Event() (err error) {
 			return
 		}
 		switch dto.Action {
-		case "create":
+		case rest.ActionCreate:
 			id, _ := primitive.ObjectIDFromHex(dto.Result.(M)["InsertedID"].(string))
 			if _, err = x.UpdateRule(ctx, id); err != nil {
 				hlog.Error(err)
@@ -211,7 +211,7 @@ func (x *Service) Event() (err error) {
 				hlog.Error(err)
 			}
 			break
-		case "update_by_id":
+		case rest.ActionUpdateById:
 			id, _ := primitive.ObjectIDFromHex(dto.Id)
 			if _, err = x.UpdateRule(ctx, id); err != nil {
 				hlog.Error(err)

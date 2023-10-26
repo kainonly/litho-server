@@ -25,7 +25,6 @@ import (
 	"github.com/weplanx/server/api/monitor"
 	"github.com/weplanx/server/api/projects"
 	"github.com/weplanx/server/api/queues"
-	"github.com/weplanx/server/api/schedules"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/api/workflows"
 	"github.com/weplanx/server/common"
@@ -42,7 +41,6 @@ var Provides = wire.NewSet(
 	projects.Provides,
 	clusters.Provides,
 	endpoints.Provides,
-	schedules.Provides,
 	workflows.Provides,
 	queues.Provides,
 	imessages.Provides,
@@ -71,8 +69,6 @@ type API struct {
 	ClustersX  *clusters.Service
 	Endpoints  *endpoints.Controller
 	EndpointsX *endpoints.Service
-	Schedules  *schedules.Controller
-	SchedulesX *schedules.Service
 	Workflows  *workflows.Controller
 	WorkflowsX *workflows.Service
 	Queues     *queues.Controller
@@ -171,12 +167,12 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_clusters.GET(":id/info", x.Clusters.GetInfo)
 		_clusters.GET(":id/nodes", x.Clusters.GetNodes)
 	}
-	_schedules := h.Group("schedules", m...)
+	_endpoints := h.Group("endpoints", m...)
 	{
-		_schedules.GET(":id/keys", x.Schedules.Keys)
-		_schedules.POST("ping", x.Schedules.Ping)
-		_schedules.POST("revoke", x.Schedules.Revoke)
-		_schedules.POST("state", x.Schedules.State)
+		_endpoints.GET(":id/schedule_keys", x.Endpoints.ScheduleKeys)
+		_endpoints.POST("schedule_ping", x.Endpoints.SchedulePing)
+		_endpoints.POST("schedule_revoke", x.Endpoints.ScheduleRevoke)
+		_endpoints.POST("schedule_state", x.Endpoints.ScheduleState)
 	}
 	_workflows := h.Group("workflows", m...)
 	{
