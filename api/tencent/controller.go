@@ -6,11 +6,11 @@ import (
 )
 
 type Controller struct {
-	TencentService *Service
+	TencentX *Service
 }
 
 func (x *Controller) CosPresigned(_ context.Context, c *app.RequestContext) {
-	r, err := x.TencentService.CosPresigned()
+	r, err := x.TencentX.CosPresigned()
 	if err != nil {
 		c.Error(err)
 		return
@@ -30,7 +30,7 @@ func (x *Controller) CosImageInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.TencentService.CosImageInfo(ctx, dto.Url)
+	r, err := x.TencentX.CosImageInfo(ctx, dto.Url)
 	if err != nil {
 		c.Error(err)
 		return

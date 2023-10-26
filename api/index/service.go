@@ -31,8 +31,8 @@ import (
 type Service struct {
 	*common.Inject
 	Sessions *sessions.Service
-	Tencent  *tencent.Service
 	Passport *common.APIPassport
+	TencentX *tencent.Service
 }
 
 type LoginResult struct {
@@ -135,7 +135,7 @@ func (x *Service) GetLoginSms(ctx context.Context, phone string) (code string, e
 
 	code = help.RandomNumber(6)
 	// TODO: Change to values...
-	if err = x.Tencent.SmsSend(ctx, x.V.SmsSign, x.V.SmsLoginVerify, []string{code}, []string{phone}); err != nil {
+	if err = x.TencentX.SmsSend(ctx, x.V.SmsSign, x.V.SmsLoginVerify, []string{code}, []string{phone}); err != nil {
 		return
 	}
 
@@ -199,11 +199,11 @@ func (x *Service) WriteLogsetLogin(ctx context.Context, data *model.LogsetLogin)
 	}
 	var r tencent.IpResult
 	if ip.To4() != nil {
-		if r, err = x.Tencent.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
+		if r, err = x.TencentX.GetIpv4(ctx, data.Metadata.ClientIP); err != nil {
 			return
 		}
 	} else {
-		if r, err = x.Tencent.GetIpv6(ctx, data.Metadata.ClientIP); err != nil {
+		if r, err = x.TencentX.GetIpv6(ctx, data.Metadata.ClientIP); err != nil {
 			return
 		}
 	}
@@ -456,7 +456,7 @@ func (x *Service) SetUserPassword(ctx context.Context, userId string, old string
 func (x *Service) GetUserPhoneCode(ctx context.Context, phone string) (code string, err error) {
 	code = help.RandomNumber(6)
 	// TODO: Change to values
-	if err = x.Tencent.SmsSend(ctx, x.V.SmsSign, x.V.SmsPhoneBind, []string{code}, []string{phone}); err != nil {
+	if err = x.TencentX.SmsSend(ctx, x.V.SmsSign, x.V.SmsPhoneBind, []string{code}, []string{phone}); err != nil {
 		return
 	}
 	key := fmt.Sprintf(`sms-bind:%s`, phone)

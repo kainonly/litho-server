@@ -14,6 +14,7 @@ import (
 	"github.com/weplanx/server/api/acc_tasks"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
+	"github.com/weplanx/server/api/endpoints"
 	"github.com/weplanx/server/api/imessages"
 	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/api/lark"
@@ -95,89 +96,94 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	restController := &rest.Controller{
 		Service: restService,
 	}
+	passport := UseAPIPassport(values2)
 	tencentService := &tencent.Service{
 		Inject: inject,
 	}
-	passport := UseAPIPassport(values2)
 	indexService := &index.Service{
 		Inject:   inject,
 		Sessions: sessionsService,
-		Tencent:  tencentService,
 		Passport: passport,
+		TencentX: tencentService,
 	}
 	indexController := &index.Controller{
-		V:             values2,
-		Csrf:          csrf,
-		IndexService:  indexService,
-		ValuesService: service,
+		V:      values2,
+		Csrf:   csrf,
+		IndexX: indexService,
 	}
 	tencentController := &tencent.Controller{
-		TencentService: tencentService,
+		TencentX: tencentService,
 	}
 	larkService := &lark.Service{
 		Inject:   inject,
 		Sessions: sessionsService,
 		Locker:   locker,
 		Passport: passport,
-		Index:    indexService,
+		IndexX:   indexService,
 	}
 	larkController := &lark.Controller{
-		V:            values2,
-		Passport:     passport,
-		LarkService:  larkService,
-		IndexService: indexService,
+		V:        values2,
+		Passport: passport,
+		LarkX:    larkService,
+		IndexX:   indexService,
 	}
 	clustersService := &clusters.Service{
 		Inject: inject,
 	}
 	projectsService := &projects.Service{
-		Inject:   inject,
-		Clusters: clustersService,
+		Inject:    inject,
+		ClustersX: clustersService,
 	}
 	projectsController := &projects.Controller{
-		ProjectsServices: projectsService,
+		ProjectsX: projectsService,
 	}
 	clustersController := &clusters.Controller{
-		ClustersService: clustersService,
+		ClustersX: clustersService,
+	}
+	endpointsService := &endpoints.Service{
+		Inject: inject,
+	}
+	endpointsController := &endpoints.Controller{
+		EndpointsX: endpointsService,
 	}
 	schedulesService := &schedules.Service{
 		Inject: inject,
 	}
 	schedulesController := &schedules.Controller{
-		SchedulesService: schedulesService,
+		SchedulesX: schedulesService,
 	}
 	workflowsService := &workflows.Service{
-		Inject:    inject,
-		Schedules: schedulesService,
+		Inject:     inject,
+		SchedulesX: schedulesService,
 	}
 	workflowsController := &workflows.Controller{
-		WorkflowsService: workflowsService,
+		WorkflowsX: workflowsService,
 	}
 	queuesService := &queues.Service{
 		Inject: inject,
 	}
 	queuesController := &queues.Controller{
-		QueuesServices: queuesService,
+		QueuesX: queuesService,
 	}
 	imessagesService := &imessages.Service{
 		Inject: inject,
 	}
 	imessagesController := &imessages.Controller{
-		ImessagesServices: imessagesService,
+		ImessagesX: imessagesService,
 	}
 	acc_tasksService := &acc_tasks.Service{
-		Inject:         inject,
-		TencentService: tencentService,
+		Inject:   inject,
+		TencentX: tencentService,
 	}
 	acc_tasksController := &acc_tasks.Controller{
-		AccTasksService: acc_tasksService,
+		AccTasksX: acc_tasksService,
 	}
 	datasetsService := &datasets.Service{
 		Inject: inject,
 		Values: service,
 	}
 	datasetsController := &datasets.Controller{
-		DatasetsService: datasetsService,
+		DatasetsX: datasetsService,
 	}
 	influxdb2Client := UseInflux(values2)
 	monitorService := &monitor.Service{
@@ -185,39 +191,41 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		Flux:   influxdb2Client,
 	}
 	monitorController := &monitor.Controller{
-		MonitorService: monitorService,
+		MonitorX: monitorService,
 	}
 	apiAPI := &api.API{
-		Inject:           inject,
-		Hertz:            hertz,
-		Csrf:             csrf,
-		Values:           controller,
-		Sessions:         sessionsController,
-		Rest:             restController,
-		Index:            indexController,
-		IndexService:     indexService,
-		Tencent:          tencentController,
-		TencentService:   tencentService,
-		Lark:             larkController,
-		LarkService:      larkService,
-		Projects:         projectsController,
-		ProjectsService:  projectsService,
-		Clusters:         clustersController,
-		ClustersService:  clustersService,
-		Schedules:        schedulesController,
-		SchedulesService: schedulesService,
-		Workflows:        workflowsController,
-		WorkflowsService: workflowsService,
-		Queues:           queuesController,
-		QueuesService:    queuesService,
-		Imessages:        imessagesController,
-		ImessagesService: imessagesService,
-		AccTasks:         acc_tasksController,
-		AccTasksService:  acc_tasksService,
-		Datasets:         datasetsController,
-		DatasetsService:  datasetsService,
-		Monitor:          monitorController,
-		MonitorService:   monitorService,
+		Inject:     inject,
+		Hertz:      hertz,
+		Csrf:       csrf,
+		Values:     controller,
+		Sessions:   sessionsController,
+		Rest:       restController,
+		Index:      indexController,
+		IndexX:     indexService,
+		Tencent:    tencentController,
+		TencentX:   tencentService,
+		Lark:       larkController,
+		LarkX:      larkService,
+		Projects:   projectsController,
+		ProjectsX:  projectsService,
+		Clusters:   clustersController,
+		ClustersX:  clustersService,
+		Endpoints:  endpointsController,
+		EndpointsX: endpointsService,
+		Schedules:  schedulesController,
+		SchedulesX: schedulesService,
+		Workflows:  workflowsController,
+		WorkflowsX: workflowsService,
+		Queues:     queuesController,
+		QueuesX:    queuesService,
+		Imessages:  imessagesController,
+		ImessagesX: imessagesService,
+		AccTasks:   acc_tasksController,
+		AccTasksX:  acc_tasksService,
+		Datasets:   datasetsController,
+		DatasetsX:  datasetsService,
+		Monitor:    monitorController,
+		MonitorX:   monitorService,
 	}
 	return apiAPI, nil
 }

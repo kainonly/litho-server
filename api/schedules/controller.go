@@ -7,7 +7,7 @@ import (
 )
 
 type Controller struct {
-	SchedulesService *Service
+	SchedulesX *Service
 }
 
 type PingDto struct {
@@ -23,7 +23,7 @@ func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 
 	result := make(M)
 	for _, node := range dto.Nodes {
-		r, err := x.SchedulesService.Ping(node)
+		r, err := x.SchedulesX.Ping(node)
 		if err != nil {
 			c.Error(err)
 			return
@@ -46,7 +46,7 @@ func (x *Controller) Keys(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.SchedulesService.Keys(ctx, id)
+	r, err := x.SchedulesX.Keys(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -67,7 +67,7 @@ func (x *Controller) Revoke(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.SchedulesService.Revoke(ctx, dto.Id, dto.Key); err != nil {
+	if err := x.SchedulesX.Revoke(ctx, dto.Id, dto.Key); err != nil {
 		c.Error(err)
 		return
 	}
@@ -87,7 +87,7 @@ func (x *Controller) State(_ context.Context, c *app.RequestContext) {
 		return
 	}
 
-	r, err := x.SchedulesService.State(dto.Node, dto.Key)
+	r, err := x.SchedulesX.State(dto.Node, dto.Key)
 	if err != nil {
 		c.Error(err)
 		return

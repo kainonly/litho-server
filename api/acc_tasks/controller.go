@@ -6,11 +6,11 @@ import (
 )
 
 type Controller struct {
-	AccTasksService *Service
+	AccTasksX *Service
 }
 
 func (x *Controller) Invoke(ctx context.Context, c *app.RequestContext) {
-	r, err := x.AccTasksService.Invoke(ctx)
+	r, err := x.AccTasksX.Invoke(ctx)
 
 	if err != nil {
 		c.Error(err)

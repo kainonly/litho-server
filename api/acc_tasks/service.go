@@ -11,7 +11,7 @@ import (
 
 type Service struct {
 	*common.Inject
-	TencentService *tencent.Service
+	TencentX *tencent.Service
 }
 
 func (x *Service) Invoke(ctx context.Context) (r M, err error) {
@@ -26,7 +26,7 @@ func (x *Service) Invoke(ctx context.Context) (r M, err error) {
 	if _, err = common.HttpClient(u.String()).R().SetContext(ctx).
 		SetHeaders(headerx).
 		SetHeader("X-Scf-Cam-Timestamp", strconv.FormatInt(timestamp, 10)).
-		SetHeader("Authorization", x.TencentService.TC3Authorization(tencent.TC3Option{
+		SetHeader("Authorization", x.TencentX.TC3Authorization(tencent.TC3Option{
 			Service:   "scf",
 			Headers:   headerx,
 			Timestamp: timestamp,

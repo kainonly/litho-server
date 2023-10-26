@@ -18,7 +18,7 @@ import (
 type Service struct {
 	*common.Inject
 
-	Schedules *schedules.Service
+	SchedulesX *schedules.Service
 }
 
 func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
@@ -38,7 +38,7 @@ func (x *Service) Sync(ctx context.Context, id primitive.ObjectID) (err error) {
 				Option: v.Option,
 			}
 		}
-		if err = x.Schedules.Set(ctx,
+		if err = x.SchedulesX.Set(ctx,
 			*schedule.ScheduleId,
 			id.Hex(),
 			sctyp.ScheduleOption{

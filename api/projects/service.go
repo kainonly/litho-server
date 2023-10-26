@@ -18,7 +18,7 @@ import (
 
 type Service struct {
 	*common.Inject
-	Clusters *clusters.Service
+	ClustersX *clusters.Service
 }
 
 func (x *Service) GetTenants(ctx context.Context, id primitive.ObjectID) (result M, err error) {
@@ -52,7 +52,7 @@ func (x *Service) DeployNats(ctx context.Context, id primitive.ObjectID) (err er
 		return
 	}
 	var cluster model.Cluster
-	if cluster, err = x.Clusters.Get(ctx, *project.Cluster); err != nil {
+	if cluster, err = x.ClustersX.Get(ctx, *project.Cluster); err != nil {
 		return
 	}
 	var accounts []NatsAccount
@@ -79,7 +79,7 @@ func (x *Service) DeployNats(ctx context.Context, id primitive.ObjectID) (err er
 	}
 
 	var kube *kubernetes.Clientset
-	if kube, err = x.Clusters.GetClient(cluster); err != nil {
+	if kube, err = x.ClustersX.GetClient(cluster); err != nil {
 		return
 	}
 	secret := &core.Secret{

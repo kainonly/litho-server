@@ -7,7 +7,7 @@ import (
 )
 
 type Controller struct {
-	ClustersService *Service
+	ClustersX *Service
 }
 
 type GetInfoDto struct {
@@ -22,7 +22,7 @@ func (x *Controller) GetInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ClustersService.GetInfo(ctx, id)
+	r, err := x.ClustersX.GetInfo(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
@@ -43,7 +43,7 @@ func (x *Controller) GetNodes(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ClustersService.GetNodes(ctx, id)
+	r, err := x.ClustersX.GetNodes(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return

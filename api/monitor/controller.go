@@ -6,7 +6,7 @@ import (
 )
 
 type Controller struct {
-	MonitorService *Service
+	MonitorX *Service
 }
 
 type ExportersDto struct {
@@ -25,67 +25,67 @@ func (x *Controller) Exporters(ctx context.Context, c *app.RequestContext) {
 	var data interface{}
 	switch dto.Name {
 	case "mongo_available_connections":
-		data, err = x.MonitorService.GetMongoAvailableConnections(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoAvailableConnections(ctx, dto.Dates)
 		break
 	case "mongo_open_connections":
-		data, err = x.MonitorService.GetMongoOpenConnections(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoOpenConnections(ctx, dto.Dates)
 		break
 	case "mongo_commands_per_second":
-		data, err = x.MonitorService.GetMongoCommandsPerSecond(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoCommandsPerSecond(ctx, dto.Dates)
 		break
 	case "mongo_query_operations":
-		data, err = x.MonitorService.GetMongoQueryOperations(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoQueryOperations(ctx, dto.Dates)
 		break
 	case "mongo_document_operations":
-		data, err = x.MonitorService.GetMongoDocumentOperations(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoDocumentOperations(ctx, dto.Dates)
 		break
 	case "mongo_flushes":
-		data, err = x.MonitorService.GetMongoFlushes(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoFlushes(ctx, dto.Dates)
 		break
 	case "mongo_network_io":
-		data, err = x.MonitorService.GetMongoNetworkIO(ctx, dto.Dates)
+		data, err = x.MonitorX.GetMongoNetworkIO(ctx, dto.Dates)
 		break
 	case "redis_mem":
-		data, err = x.MonitorService.GetRedisMem(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisMem(ctx, dto.Dates)
 		break
 	case "redis_cpu":
-		data, err = x.MonitorService.GetRedisCpu(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisCpu(ctx, dto.Dates)
 		break
 	case "redis_ops_per_sec":
-		data, err = x.MonitorService.GetRedisOpsPerSec(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisOpsPerSec(ctx, dto.Dates)
 		break
 	case "redis_evi_exp_keys":
-		data, err = x.MonitorService.GetRedisEviExpKeys(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisEviExpKeys(ctx, dto.Dates)
 		break
 	case "redis_collections_rate":
-		data, err = x.MonitorService.GetRedisCollectionsRate(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisCollectionsRate(ctx, dto.Dates)
 		break
 	case "redis_hit_rate":
-		data, err = x.MonitorService.GetRedisHitRate(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisHitRate(ctx, dto.Dates)
 		break
 	case "redis_network_io":
-		data, err = x.MonitorService.GetRedisNetworkIO(ctx, dto.Dates)
+		data, err = x.MonitorX.GetRedisNetworkIO(ctx, dto.Dates)
 		break
 	case "nats_cpu":
-		data, err = x.MonitorService.GetNatsCpu(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsCpu(ctx, dto.Dates)
 		break
 	case "nats_mem":
-		data, err = x.MonitorService.GetNatsMem(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsMem(ctx, dto.Dates)
 		break
 	case "nats_connections":
-		data, err = x.MonitorService.GetNatsConnections(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsConnections(ctx, dto.Dates)
 		break
 	case "nats_subscriptions":
-		data, err = x.MonitorService.GetNatsSubscriptions(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsSubscriptions(ctx, dto.Dates)
 		break
 	case "nats_slow_consumers":
-		data, err = x.MonitorService.GetNatsSlowConsumers(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsSlowConsumers(ctx, dto.Dates)
 		break
 	case "nats_msg_io":
-		data, err = x.MonitorService.GetNatsMsgIO(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsMsgIO(ctx, dto.Dates)
 		break
 	case "nats_bytes_io":
-		data, err = x.MonitorService.GetNatsBytesIO(ctx, dto.Dates)
+		data, err = x.MonitorX.GetNatsBytesIO(ctx, dto.Dates)
 		break
 	}
 

@@ -7,7 +7,7 @@ import (
 )
 
 type Controller struct {
-	ProjectsServices *Service
+	ProjectsX *Service
 }
 
 type DeployNatsDto struct {
@@ -21,7 +21,7 @@ func (x *Controller) DeployNats(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	if err := x.ProjectsServices.DeployNats(ctx, dto.Id); err != nil {
+	if err := x.ProjectsX.DeployNats(ctx, dto.Id); err != nil {
 		c.Error(err)
 		return
 	}
@@ -41,7 +41,7 @@ func (x *Controller) GetTenants(ctx context.Context, c *app.RequestContext) {
 	}
 
 	id, _ := primitive.ObjectIDFromHex(dto.Id)
-	r, err := x.ProjectsServices.GetTenants(ctx, id)
+	r, err := x.ProjectsX.GetTenants(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return
