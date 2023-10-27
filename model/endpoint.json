@@ -20,7 +20,15 @@
         "bsonType": "string"
       },
       "schedule": {
-        "bsonType": "object"
+        "bsonType": "object",
+        "required": [
+          "node"
+        ],
+        "properties": {
+          "node": {
+            "bsonType": "string"
+          }
+        }
       },
       "create_time": {
         "bsonType": "date"

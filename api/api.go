@@ -181,7 +181,6 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 	_queues := h.Group("queues", m...)
 	{
 		_queues.POST("sync", x.Queues.Sync)
-		_queues.POST("destroy", x.Queues.Destroy)
 		_queues.GET(":id/info", x.Queues.Info)
 		_queues.POST("publish", x.Queues.Publish)
 	}
