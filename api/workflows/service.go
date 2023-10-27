@@ -69,6 +69,22 @@ func (x *Service) Event() (err error) {
 				hlog.Error(err)
 			}
 			break
+		case rest.ActionDelete:
+			endpointId, _ := primitive.ObjectIDFromHex(dto.Data.(M)["schedule"].(M)["ref"].(string))
+			if err = x.EndpointsX.ScheduleRevoke(ctx, endpointId, dto.Id); err != nil {
+				hlog.Error(err)
+			}
+			break
+		case rest.ActionBulkDelete:
+			data := dto.Data.([]interface{})
+			for _, v := range data {
+				endpointId, _ := primitive.ObjectIDFromHex(v.(M)["schedule"].(M)["ref"].(string))
+				key := v.(M)["_id"].(string)
+				if err = x.EndpointsX.ScheduleRevoke(ctx, endpointId, key); err != nil {
+					hlog.Error(err)
+				}
+			}
+			break
 		}
 	}); err != nil {
 		return
