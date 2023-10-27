@@ -14,12 +14,19 @@ type Endpoint struct {
 	Name       string             `bson:"name" json:"name"`
 	Kind       string             `bson:"kind" json:"kind"`
 	Schedule   *EndpointSchedule  `bson:"schedule" json:"schedule"`
+	Emqx       *EndpointEmqx      `bson:"emqx" json:"emqx"`
 	CreateTime time.Time          `bson:"create_time" json:"create_time"`
 	UpdateTime time.Time          `bson:"update_time" json:"update_time"`
 }
 
 type EndpointSchedule struct {
 	Node string `bson:"node" json:"node"`
+}
+
+type EndpointEmqx struct {
+	Host      string `bson:"host" json:"host"`
+	ApiKey    string `bson:"api_key" json:"api_key"`
+	SecretKey string `bson:"secret_key" json:"secret_key"`
 }
 
 func SetEndpoints(ctx context.Context, db *mongo.Database) (err error) {

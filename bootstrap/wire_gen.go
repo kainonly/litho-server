@@ -153,7 +153,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		WorkflowsX: workflowsService,
 	}
 	queuesService := &queues.Service{
-		Inject: inject,
+		Inject:    inject,
+		ProjectsX: projectsService,
 	}
 	queuesController := &queues.Controller{
 		QueuesX: queuesService,

@@ -29,25 +29,6 @@ func (x *Controller) Sync(ctx context.Context, c *app.RequestContext) {
 	c.Status(204)
 }
 
-type DestroyDto struct {
-	Ids []primitive.ObjectID `json:"ids" vd:"gt=0,dive,mongodb"`
-}
-
-func (x *Controller) Destroy(ctx context.Context, c *app.RequestContext) {
-	var dto DestroyDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	if err := x.QueuesX.Destroy(ctx, dto.Ids); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.Status(204)
-}
-
 type StateDto struct {
 	Id string `path:"id" vd:"mongodb"`
 }
@@ -70,8 +51,9 @@ func (x *Controller) Info(ctx context.Context, c *app.RequestContext) {
 }
 
 type PublishDto struct {
-	Subject string `json:"subject" vd:"required"`
-	Payload M      `json:"payload" vd:"gt=0"`
+	Project primitive.ObjectID `json:"project" vd:"required"`
+	Subject string             `json:"subject" vd:"required"`
+	Payload M                  `json:"payload" vd:"gt=0"`
 }
 
 func (x *Controller) Publish(ctx context.Context, c *app.RequestContext) {

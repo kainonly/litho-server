@@ -21,6 +21,15 @@ type Service struct {
 	ClustersX *clusters.Service
 }
 
+func (x *Service) Get(ctx context.Context, id primitive.ObjectID) (data model.Project, err error) {
+	if err = x.Db.Collection("projects").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&data); err != nil {
+		return
+	}
+	return
+}
+
 func (x *Service) GetTenants(ctx context.Context, id primitive.ObjectID) (result M, err error) {
 	var project model.Project
 	if err = x.Db.Collection("projects").
