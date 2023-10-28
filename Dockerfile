@@ -6,7 +6,7 @@ RUN apk --no-cache add tzdata
 
 ADD server /app/
 ADD model/*.json /app/model/
-ADD templates /app/
+COPY templates /app/templates
 
 EXPOSE 3000
 
