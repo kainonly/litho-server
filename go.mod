@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/bytedance/gopkg v0.0.0-20230728082804-614d0af6619b
 	github.com/bytedance/sonic v1.10.2
-	github.com/caarlos0/env/v9 v9.0.0
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudwego/hertz v0.7.1
 	github.com/google/wire v0.5.0
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.2.2
