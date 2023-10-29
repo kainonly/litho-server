@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/server/common"
@@ -54,13 +53,11 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	go func() {
-		data := model.NewLogsetLogin(
-			r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
-		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
-			hlog.Fatal(err)
-		}
-	}()
+	data := model.NewLogsetLogin(r.User.ID, string(c.GetHeader(x.V.Ip)), "email", string(c.UserAgent()))
+	if err = x.IndexX.WriteLogsetLogin(ctx, data); err != nil {
+		c.Error(err)
+		return
+	}
 
 	common.SetAccessToken(c, r.AccessToken)
 	c.Status(204)
@@ -103,13 +100,11 @@ func (x *Controller) LoginSms(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	go func() {
-		data := model.NewLogsetLogin(
-			r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
-		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
-			hlog.Fatal(err)
-		}
-	}()
+	data := model.NewLogsetLogin(r.User.ID, string(c.GetHeader(x.V.Ip)), "sms", string(c.UserAgent()))
+	if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
+		c.Error(err)
+		return
+	}
 
 	common.SetAccessToken(c, r.AccessToken)
 	c.Status(204)
@@ -133,13 +128,11 @@ func (x *Controller) LoginTotp(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	go func() {
-		data := model.NewLogsetLogin(
-			r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
-		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
-			hlog.Fatal(err)
-		}
-	}()
+	data := model.NewLogsetLogin(r.User.ID, string(c.GetHeader(x.V.Ip)), "totp", string(c.UserAgent()))
+	if err = x.IndexX.WriteLogsetLogin(ctx, data); err != nil {
+		c.Error(err)
+		return
+	}
 
 	common.SetAccessToken(c, r.AccessToken)
 	c.Status(204)
