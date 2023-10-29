@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
@@ -114,13 +113,11 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	go func() {
-		data := model.NewLogsetLogin(
-			r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
-		if err = x.IndexX.WriteLogsetLogin(context.TODO(), data); err != nil {
-			hlog.Fatal(err)
-		}
-	}()
+	data := model.NewLogsetLogin(r.User.ID, string(c.GetHeader(x.V.Ip)), "lark", string(c.UserAgent()))
+	if err = x.IndexX.WriteLogsetLogin(ctx, data); err != nil {
+		c.Error(err)
+		return
+	}
 
 	common.SetAccessToken(c, r.AccessToken)
 	c.Redirect(302, x.RedirectUrl("", dto.State.Locale))
