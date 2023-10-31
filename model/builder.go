@@ -11,6 +11,7 @@ import (
 
 type Builder struct {
 	ID          primitive.ObjectID  `bson:"_id,omitempty" json:"_id"`
+	Project     primitive.ObjectID  `bson:"project" json:"project"`
 	Parent      *primitive.ObjectID `bson:"parent" json:"parent"`
 	Name        string              `bson:"name" json:"name"`
 	Kind        string              `bson:"kind" json:"kind"`
