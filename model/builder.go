@@ -25,6 +25,7 @@ type Builder struct {
 type BuilderSchema struct {
 	Key    string               `bson:"key" json:"key"`
 	Fields []BuilderSchemaField `bson:"fields" json:"fields"`
+	Rules  []BuilderSchemaRule  `bson:"rules" json:"rules"`
 }
 
 type BuilderSchemaField struct {
@@ -32,8 +33,8 @@ type BuilderSchemaField struct {
 	Key         string       `bson:"key" json:"key"`
 	Type        string       `bson:"type" json:"type"`
 	Required    bool         `bson:"required" json:"required"`
-	Private     bool         `bson:"private" json:"private"`
-	Default     interface{}  `bson:"default" json:"default"`
+	Visible     bool         `bson:"visible" json:"visible"`
+	DefaultTo   interface{}  `bson:"default_to" json:"default_to"`
 	Placeholder string       `bson:"placeholder" json:"placeholder"`
 	Description string       `bson:"description" json:"description"`
 	Option      *FieldOption `bson:"option" json:"option"`
@@ -48,7 +49,7 @@ type FieldOption struct {
 	// Type: date,dates
 	Time bool `bson:"time" json:"time"`
 	// Type: radio,checkbox,select
-	Enum []FieldOptionEnum `bson:"enum" json:"enum"`
+	Enums []FieldOptionEnum `bson:"enums" json:"enums"`
 	// Type: ref
 	Ref     string   `bson:"ref" json:"ref"`
 	RefKeys []string `bson:"ref_keys" json:"ref_keys"`
@@ -60,6 +61,18 @@ type FieldOption struct {
 
 type FieldOptionEnum struct {
 	Label string      `bson:"label" json:"label"`
+	Value interface{} `bson:"value" json:"value"`
+}
+
+type BuilderSchemaRule struct {
+	Logic      string          `bson:"logic" json:"logic"`
+	Conditions []RuleCondition `bson:"conditions" json:"conditions"`
+	Keys       []string        `bson:"keys" json:"keys"`
+}
+
+type RuleCondition struct {
+	Key   string      `bson:"key" json:"key"`
+	Op    string      `bson:"op" json:"op"`
 	Value interface{} `bson:"value" json:"value"`
 }
 
