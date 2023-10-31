@@ -4,6 +4,7 @@
     "bsonType": "object",
     "required": [
       "_id",
+      "project",
       "parent",
       "name",
       "kind",
@@ -13,6 +14,9 @@
     ],
     "properties": {
       "_id": {
+        "bsonType": "objectId"
+      },
+      "project": {
         "bsonType": "objectId"
       },
       "parent": {
