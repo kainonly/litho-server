@@ -4,8 +4,10 @@
     "bsonType": "object",
     "required": [
       "_id",
+      "parent",
       "name",
       "kind",
+      "sort",
       "create_time",
       "update_time"
     ],
@@ -13,11 +15,169 @@
       "_id": {
         "bsonType": "objectId"
       },
+      "parent": {
+        "bsonType": [
+          "objectId",
+          "null"
+        ]
+      },
       "name": {
         "bsonType": "string"
       },
       "kind": {
         "bsonType": "string"
+      },
+      "icon": {
+        "bsonType": "string"
+      },
+      "description": {
+        "bsonType": "string"
+      },
+      "schema": {
+        "bsonType": "object",
+        "required": [
+          "key",
+          "fields"
+        ],
+        "properties": {
+          "key": {
+            "bsonType": "string"
+          },
+          "fields": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "required": [
+                "name",
+                "key",
+                "type",
+                "required",
+                "visible",
+                "sort"
+              ],
+              "properties": {
+                "name": {
+                  "bsonType": "string"
+                },
+                "key": {
+                  "bsonType": "string"
+                },
+                "type": {
+                  "bsonType": "string"
+                },
+                "required": {
+                  "bsonType": "bool"
+                },
+                "visible": {
+                  "bsonType": "bool"
+                },
+                "default_to": {},
+                "placeholder": {
+                  "bsonType": "string"
+                },
+                "description": {
+                  "bsonType": "string"
+                },
+                "option": {
+                  "bsonType": "object",
+                  "properties": {
+                    "max": {
+                      "bsonType": "number"
+                    },
+                    "min": {
+                      "bsonType": "number"
+                    },
+                    "decimal": {
+                      "bsonType": "number"
+                    },
+                    "time": {
+                      "bsonType": "bool"
+                    },
+                    "enums": {
+                      "bsonType": "array",
+                      "items": {
+                        "bsonType": "object",
+                        "required": [
+                          "label",
+                          "value"
+                        ],
+                        "properties": {
+                          "label": {
+                            "bsonType": "string"
+                          },
+                          "value": {}
+                        }
+                      }
+                    },
+                    "ref": {
+                      "bsonType": "string"
+                    },
+                    "ref_keys": {
+                      "bsonType": "array",
+                      "items": {
+                        "bsonType": "string"
+                      }
+                    },
+                    "component": {
+                      "bsonType": "string"
+                    },
+                    "multiple": {
+                      "bsonType": "bool"
+                    }
+                  }
+                },
+                "sort": {
+                  "bsonType": "number"
+                }
+              }
+            }
+          },
+          "rules": {
+            "bsonType": "array",
+            "items": {
+              "bsonType": "object",
+              "required": [
+                "logic",
+                "conditions",
+                "keys"
+              ],
+              "properties": {
+                "logic": {
+                  "bsonType": "string"
+                },
+                "conditions": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "object",
+                    "required": [
+                      "key",
+                      "op",
+                      "value"
+                    ],
+                    "properties": {
+                      "key": {
+                        "bsonType": "string"
+                      },
+                      "op": {
+                        "bsonType": "string"
+                      },
+                      "value": {}
+                    }
+                  }
+                },
+                "keys": {
+                  "bsonType": "array",
+                  "items": {
+                    "bsonType": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sort": {
+        "bsonType": "number"
       },
       "create_time": {
         "bsonType": "date"
