@@ -8,6 +8,7 @@
       "parent",
       "name",
       "kind",
+      "status",
       "sort",
       "create_time",
       "update_time"
@@ -179,6 +180,9 @@
             }
           }
         }
+      },
+      "status": {
+        "bsonType": "bool"
       },
       "sort": {
         "bsonType": "number"
