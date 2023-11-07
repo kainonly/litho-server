@@ -12,6 +12,7 @@ import (
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/api/acc_tasks"
+	"github.com/weplanx/server/api/builders"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/endpoints"
@@ -187,6 +188,12 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 	monitorController := &monitor.Controller{
 		MonitorX: monitorService,
 	}
+	buildersService := &builders.Service{
+		Inject: inject,
+	}
+	buildersController := &builders.Controller{
+		BuildersX: buildersService,
+	}
 	apiAPI := &api.API{
 		Inject:     inject,
 		Hertz:      hertz,
@@ -218,6 +225,8 @@ func NewAPI(values2 *common.Values) (*api.API, error) {
 		DatasetsX:  datasetsService,
 		Monitor:    monitorController,
 		MonitorX:   monitorService,
+		Builders:   buildersController,
+		BuildersX:  buildersService,
 	}
 	return apiAPI, nil
 }
