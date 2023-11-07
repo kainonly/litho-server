@@ -39,8 +39,7 @@ type BuilderSchemaField struct {
 	DefaultTo   interface{}  `bson:"default_to" json:"default_to"`
 	Placeholder string       `bson:"placeholder" json:"placeholder"`
 	Description string       `bson:"description" json:"description"`
-	Option      *FieldOption `bson:"option" json:"option"`
-	Sort        int64        `bson:"sort" json:"sort"`
+	Option      *FieldOption `bson:"option,omitempty" json:"option,omitempty"`
 }
 
 type FieldOption struct {

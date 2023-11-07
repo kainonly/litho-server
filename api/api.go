@@ -16,6 +16,7 @@ import (
 	"github.com/weplanx/go/sessions"
 	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/api/acc_tasks"
+	"github.com/weplanx/server/api/builders"
 	"github.com/weplanx/server/api/clusters"
 	"github.com/weplanx/server/api/datasets"
 	"github.com/weplanx/server/api/endpoints"
@@ -41,12 +42,13 @@ var Provides = wire.NewSet(
 	projects.Provides,
 	clusters.Provides,
 	endpoints.Provides,
-	workflows.Provides,
-	queues.Provides,
-	imessages.Provides,
 	acc_tasks.Provides,
 	datasets.Provides,
 	monitor.Provides,
+	imessages.Provides,
+	queues.Provides,
+	workflows.Provides,
+	builders.Provides,
 )
 
 type API struct {
@@ -81,6 +83,8 @@ type API struct {
 	DatasetsX  *datasets.Service
 	Monitor    *monitor.Controller
 	MonitorX   *monitor.Service
+	Builders   *builders.Controller
+	BuildersX  *builders.Service
 }
 
 func (x *API) Routes(h *server.Hertz) (err error) {
@@ -183,6 +187,10 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_queues.POST("sync", x.Queues.Sync)
 		_queues.GET(":id/info", x.Queues.Info)
 		_queues.POST("publish", x.Queues.Publish)
+	}
+	_builders := h.Group("builders", m...)
+	{
+		_builders.POST("sort_fields", x.Builders.SortFields)
 	}
 	_imessages := h.Group("imessages", m...)
 	{
