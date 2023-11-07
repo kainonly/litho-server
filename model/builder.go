@@ -52,8 +52,8 @@ type FieldOption struct {
 	// Type: radio,checkbox,select
 	Enums []FieldOptionEnum `bson:"enums" json:"enums"`
 	// Type: ref
-	Ref     string   `bson:"ref" json:"ref"`
-	RefKeys []string `bson:"ref_keys" json:"ref_keys"`
+	Ref    string   `bson:"ref" json:"ref"`
+	RefKey []string `bson:"ref_key" json:"ref_key"`
 	// Type: manual
 	Component string `bson:"component" json:"component"`
 	// Type: other

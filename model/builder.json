@@ -57,8 +57,7 @@
                 "key",
                 "type",
                 "required",
-                "visible",
-                "sort"
+                "visible"
               ],
               "properties": {
                 "name": {
@@ -117,11 +116,8 @@
                     "ref": {
                       "bsonType": "string"
                     },
-                    "ref_keys": {
-                      "bsonType": "array",
-                      "items": {
-                        "bsonType": "string"
-                      }
+                    "ref_key": {
+                      "bsonType": "string"
                     },
                     "component": {
                       "bsonType": "string"
@@ -130,9 +126,6 @@
                       "bsonType": "bool"
                     }
                   }
-                },
-                "sort": {
-                  "bsonType": "number"
                 }
               }
             }
