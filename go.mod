@@ -19,13 +19,13 @@ require (
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.782
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.786
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.782
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45
 	github.com/weplanx/collector v1.11.2
 	github.com/weplanx/go v0.8.5
 	github.com/weplanx/schedule v1.5.2
-	go.mongodb.org/mongo-driver v1.12.1
+	go.mongodb.org/mongo-driver v1.13.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
