@@ -28,30 +28,31 @@ func (x *Service) Range(v string) string {
 }
 
 func (x *Service) GetMongoAvailableConnections(ctx context.Context, dates string) (data []interface{}, err error) {
-	queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
-	query := fmt.Sprintf(`from(bucket: "%s")
-		%s
-		|> filter(fn: (r) => r["_measurement"] == "mongodb")
-		|> filter(fn: (r) => r["_field"] == "connections_available")
-	  	|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
-	  	|> yield(name: "mean")
-	`, x.V.Influx.Bucket, x.Range(dates))
-	var result *api.QueryTableResult
-	if result, err = queryAPI.Query(ctx, query); err != nil {
-		return
-	}
+	//queryAPI := x.Flux.QueryAPI(x.V.Influx.Org)
+	//query := fmt.Sprintf(`from(bucket: "%s")
+	//	%s
+	//	|> filter(fn: (r) => r["_measurement"] == "mongodb")
+	//	|> filter(fn: (r) => r["_field"] == "connections_available")
+	//  	|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
+	//  	|> yield(name: "mean")
+	//`, x.V.Influx.Bucket, x.Range(dates))
+	//var result *api.QueryTableResult
+	//if result, err = queryAPI.Query(ctx, query); err != nil {
+	//	return
+	//}
+	//
+	//data = make([]interface{}, 0)
+	//for result.Next() {
+	//	data = append(data, []interface{}{
+	//		result.Record().Time().Local().Format(time.TimeOnly),
+	//		result.Record().Value(),
+	//	})
+	//}
+	//
+	//if result.Err() != nil {
+	//	hlog.Error(result.Err())
+	//}
 
-	data = make([]interface{}, 0)
-	for result.Next() {
-		data = append(data, []interface{}{
-			result.Record().Time().Local().Format(time.TimeOnly),
-			result.Record().Value(),
-		})
-	}
-
-	if result.Err() != nil {
-		hlog.Error(result.Err())
-	}
 	return
 }
 
