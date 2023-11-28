@@ -19,11 +19,11 @@ require (
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.802
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.802
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.805
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.805
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45
 	github.com/weplanx/collector v1.11.2
-	github.com/weplanx/go v0.8.5
+	github.com/weplanx/go v0.8.6
 	github.com/weplanx/schedule v1.5.2
 	go.mongodb.org/mongo-driver v1.13.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -115,7 +115,7 @@ require (
 	github.com/mozillazg/go-httpheader v0.4.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/nyaruka/phonenumbers v1.2.1 // indirect
+	github.com/nyaruka/phonenumbers v1.2.2 // indirect
 	github.com/onsi/ginkgo/v2 v2.13.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
