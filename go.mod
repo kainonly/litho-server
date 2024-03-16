@@ -24,7 +24,7 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.47
 	github.com/weplanx/collector v1.12.0
 	github.com/weplanx/go v0.8.6
-	github.com/weplanx/schedule v1.5.2
+	github.com/weplanx/schedule v1.6.0
 	go.mongodb.org/mongo-driver v1.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.29.3
