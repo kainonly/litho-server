@@ -288,8 +288,8 @@ github.com/weplanx/collector v1.12.0 h1:/fiqXIpq7PWUh5mHq25ck+eggOtLSyr+wJw8cz3W
 github.com/weplanx/collector v1.12.0/go.mod h1:bAG9bfOMduG+1IIuWppvSn1sf1CuQSBv3N1CBuDsInw=
 github.com/weplanx/go v0.8.6 h1:zoMxyKAZHbLf6whUoNZA5xYr5/Flu9PpNsUxt5vBzZg=
 github.com/weplanx/go v0.8.6/go.mod h1:h2pUbxyOXV/zCxRkdDt+JW+xtmdenXH8DeVunSg1ICs=
-github.com/weplanx/schedule v1.5.2 h1:DqmY65FAQ0wzAIEhrGabSXaMQZJbUxtfjuMEnvV5CLA=
-github.com/weplanx/schedule v1.5.2/go.mod h1:HxU97YM9UkruvZ8j0IkGU0UG2J98WG0/1Yo+c8gBwK4=
+github.com/weplanx/schedule v1.6.0 h1:3Ug2ll4eJBSq03SyeWsQ3R6Y5rDXms7Yq0ZQLn3DiOA=
+github.com/weplanx/schedule v1.6.0/go.mod h1:5QXP2Bt5nh0YuzbHK51S6q+FyLEtsWNbY4EALj6fu2Q=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.2 h1:FHX5I5B4i4hKRVRBCFRxq1iQRej7WO3hhBuJf+UUySY=
