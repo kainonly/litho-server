@@ -19,8 +19,8 @@ require (
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.878
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.878
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.879
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.879
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.47
 	github.com/weplanx/collector v1.12.0
 	github.com/weplanx/go v0.8.6
@@ -92,8 +92,9 @@ require (
 	github.com/onsi/ginkgo/v2 v2.16.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
-	github.com/quic-go/quic-go v0.41.0 // indirect
+	github.com/quic-go/quic-go v0.42.0 // indirect
 	github.com/refraction-networking/utls v1.6.3 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tidwall/gjson v1.17.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
