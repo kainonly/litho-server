@@ -35,8 +35,9 @@ type Values struct {
 	} `envPrefix:"INFLUX_"`
 
 	Otlp struct {
-		Endpoint string `env:"ENDPOINT,required"`
-		Token    string `env:"TOKEN,required"`
+		Enabled  *bool  `env:"ENABLED" envDefault:"true"`
+		Endpoint string `env:"ENDPOINT"`
+		Token    string `env:"TOKEN"`
 	} `envPrefix:"OTLP_"`
 
 	*Extra

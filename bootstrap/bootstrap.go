@@ -196,23 +196,32 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		return
 	}
 
-	tracer, cfg := tracing.NewServerTracer()
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
 		server.WithCustomValidator(help.Validator()),
-		tracer,
+	}
+
+	var tracer config.Option
+	var tracerCfg *tracing.Config
+	if *v.Otlp.Enabled {
+		tracer, tracerCfg = tracing.NewServerTracer()
+		opts = append(opts, tracer)
 	}
 
 	if os.Getenv("MODE") != "release" {
 		opts = append(opts, server.WithExitWaitTime(0))
 	}
+
 	opts = append(opts)
 	h = server.Default(opts...)
 	h.Use(
 		requestid.New(),
 		help.EHandler(),
-		tracing.ServerMiddleware(cfg),
 	)
+
+	if tracerCfg != nil {
+		h.Use(tracing.ServerMiddleware(tracerCfg))
+	}
 
 	return
 }

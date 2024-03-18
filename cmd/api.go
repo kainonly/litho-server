@@ -30,8 +30,11 @@ var API = &cobra.Command{
 			return
 		}
 
-		defer bootstrap.ProviderOpenTelemetry(values).
-			Shutdown(ctx)
+		if *values.Otlp.Enabled {
+			defer bootstrap.ProviderOpenTelemetry(values).
+				Shutdown(ctx)
+		}
+
 		h.Spin()
 		return
 	},
