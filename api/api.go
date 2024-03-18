@@ -212,9 +212,11 @@ func (x *API) Routes(h *server.Hertz) (err error) {
 		_datasets.POST("create", x.Datasets.Create)
 		_datasets.DELETE(":name", x.Datasets.Delete)
 	}
-	_monitor := h.Group("monitor", m...)
-	{
-		_monitor.GET(":name", x.Monitor.Exporters)
+	if *x.V.Influx.Enabled {
+		_monitor := h.Group("monitor", m...)
+		{
+			_monitor.GET(":name", x.Monitor.Exporters)
+		}
 	}
 	return
 }

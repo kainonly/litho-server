@@ -436,6 +436,11 @@ func (x *Controller) Options(_ context.Context, c *app.RequestContext) {
 			"key": help.Random(16),
 		})
 		return
+	case "monitor":
+		c.JSON(http.StatusOK, M{
+			"enabled": *x.V.Influx.Enabled,
+		})
+		return
 	}
 	return
 }
