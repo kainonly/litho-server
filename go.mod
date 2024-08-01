@@ -1,6 +1,6 @@
 module github.com/weplanx/server
 
-go 1.22.1
+go 1.22.4
 
 require (
 	github.com/bytedance/gopkg v0.0.0-20240507064146-197ded923ae3
