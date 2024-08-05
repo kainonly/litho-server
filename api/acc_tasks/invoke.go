@@ -2,6 +2,7 @@ package acc_tasks
 
 import (
 	"context"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/weplanx/server/api/tencent"
 	"github.com/weplanx/server/common"
 	"net/url"
@@ -9,9 +10,15 @@ import (
 	"time"
 )
 
-type Service struct {
-	*common.Inject
-	TencentX *tencent.Service
+func (x *Controller) Invoke(ctx context.Context, c *app.RequestContext) {
+	r, err := x.AccTasksX.Invoke(ctx)
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, r)
 }
 
 func (x *Service) Invoke(ctx context.Context) (r M, err error) {
