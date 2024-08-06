@@ -2,6 +2,7 @@ package datasets_test
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 	"github.com/weplanx/server/api"
 	"github.com/weplanx/server/bootstrap"
 	"github.com/weplanx/server/common"
@@ -31,4 +32,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	os.Exit(m.Run())
+}
+
+func TestService_Lists(t *testing.T) {
+	ctx := context.TODO()
+	data, err := x.DatasetsX.Lists(ctx, "")
+	assert.NoError(t, err)
+	t.Log(data)
 }
