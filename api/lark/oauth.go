@@ -2,60 +2,16 @@ package lark
 
 import (
 	"context"
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/server/api/index"
 	"github.com/weplanx/server/common"
 	"github.com/weplanx/server/model"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-type Controller struct {
-	V        *common.Values
-	Passport *passport.Passport
-
-	LarkX  *Service
-	IndexX *index.Service
-}
-
-type ChallengeDto struct {
-	Encrypt string `json:"encrypt" vd:"required"`
-}
-
-func (x *Controller) Challenge(ctx context.Context, c *app.RequestContext) {
-	var dto ChallengeDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-	raw, err := x.LarkX.Decrypt(dto.Encrypt, x.V.LarkEncryptKey)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	var data struct {
-		Challenge string `json:"challenge"`
-		Token     string `json:"token"`
-		Type      string `json:"type"`
-	}
-	if err = sonic.UnmarshalString(raw, &data); err != nil {
-		c.Error(err)
-		return
-	}
-	if data.Token != x.V.LarkVerificationToken {
-		c.Error(help.E(
-			"lark.VerificationTokenNotMatch",
-			"the local configuration token does not match the authentication token"),
-		)
-		return
-	}
-
-	c.JSON(200, utils.H{
-		"challenge": data.Challenge,
-	})
-}
 
 type OAuthDto struct {
 	Code  string   `query:"code" vd:"required"`
@@ -123,30 +79,31 @@ func (x *Controller) OAuth(ctx context.Context, c *app.RequestContext) {
 	c.Redirect(302, x.RedirectUrl("", dto.State.Locale))
 }
 
-func (x *Controller) RedirectUrl(path string, locale string) []byte {
-	u := x.V.Console
-	if locale != "" {
-		u += "/" + locale
-	}
-	return []byte(u + path)
+func (x *Service) Link(ctx context.Context, userId string, data model.UserLark) (_ *mongo.UpdateResult, err error) {
+	id, _ := primitive.ObjectIDFromHex(userId)
+	return x.Db.Collection("users").UpdateOne(ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": bson.M{"lark": data}},
+	)
 }
 
-func (x *Controller) CreateTasks(ctx context.Context, c *app.RequestContext) {
-	r, err := x.LarkX.CreateTask(ctx)
-	if err != nil {
-		c.Error(err)
+func (x *Service) Login(ctx context.Context, openId string) (r *LoginResult, err error) {
+	r = new(LoginResult)
+	if r.User, err = x.IndexX.Logining(ctx, bson.M{"lark.open_id": openId, "status": true}); err != nil {
 		return
 	}
 
-	c.JSON(201, r)
-}
-
-func (x *Controller) GetTasks(ctx context.Context, c *app.RequestContext) {
-	r, err := x.LarkX.GetTasks(ctx)
-	if err != nil {
-		c.Error(err)
+	if err = x.Db.Collection("users").
+		FindOne(ctx, bson.M{"lark.open_id": openId, "status": true}).Decode(&r.User); err != nil {
+		if err == mongo.ErrNoDocuments {
+			err = common.ErrLoginNotExists
+			return
+		}
 		return
 	}
-
-	c.JSON(200, r)
+	userId := r.User.ID.Hex()
+	if r.AccessToken, err = x.IndexX.CreateAccessToken(ctx, userId); err != nil {
+		return
+	}
+	return
 }
