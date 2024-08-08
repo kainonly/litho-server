@@ -3,31 +3,10 @@ package projects
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/weplanx/server/model"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-type Controller struct {
-	ProjectsX *Service
-}
-
-type DeployNatsDto struct {
-	Id primitive.ObjectID `json:"id" vd:"required"`
-}
-
-func (x *Controller) DeployNats(ctx context.Context, c *app.RequestContext) {
-	var dto DeployNatsDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.Error(err)
-		return
-	}
-
-	if err := x.ProjectsX.DeployNats(ctx, dto.Id); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.Status(204)
-}
 
 type GetTenantsDto struct {
 	Id string `path:"id" vd:"mongodb"`
@@ -48,5 +27,24 @@ func (x *Controller) GetTenants(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(200, r)
+}
 
+func (x *Service) GetTenants(ctx context.Context, id primitive.ObjectID) (result M, err error) {
+	var project model.Project
+	if err = x.Db.Collection("projects").
+		FindOne(ctx, bson.M{"_id": id}).
+		Decode(&project); err != nil {
+		return
+	}
+
+	result = M{}
+	if project.Nats != nil {
+		var b []byte
+		if b, err = x.Cipher.Decode(project.Nats.Seed); err != nil {
+			return
+		}
+		result["nkey"] = string(b)
+	}
+
+	return
 }
