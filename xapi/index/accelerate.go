@@ -2,14 +2,19 @@ package index
 
 import (
 	"context"
-	"github.com/weplanx/server/common"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/weplanx/server/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Service struct {
-	*common.Inject
+func (x *Controller) Accelerate(ctx context.Context, c *app.RequestContext) {
+	r, err := x.IndexService.Accelerate(ctx)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(200, r)
 }
 
 func (x *Service) Accelerate(ctx context.Context) (result []model.AccTask, err error) {
