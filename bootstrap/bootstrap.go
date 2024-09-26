@@ -9,27 +9,17 @@ import (
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/requestid"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
-	transfer "github.com/weplanx/collector/client"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/go/rest"
-	"github.com/weplanx/go/sessions"
-	"github.com/weplanx/go/values"
 	"github.com/weplanx/server/common"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"gopkg.in/yaml.v3"
 	"os"
-	"reflect"
 	"strings"
 )
 
@@ -38,27 +28,14 @@ func LoadStaticValues(path string) (v *common.Values, err error) {
 	if err = env.Parse(v); err != nil {
 		return
 	}
-	var b []byte
-	if b, err = os.ReadFile(path); err != nil {
-		return
-	}
-	if err = yaml.Unmarshal(b, &v.Extra); err != nil {
-		return
-	}
+	//var b []byte
+	//if b, err = os.ReadFile(path); err != nil {
+	//	return
+	//}
+	//if err = yaml.Unmarshal(b, &v.Extra); err != nil {
+	//	return
+	//}
 	return
-}
-
-func UseMongoDB(v *common.Values) (*mongo.Client, error) {
-	return mongo.Connect(
-		context.TODO(),
-		options.Client().ApplyURI(v.Database.Url),
-	)
-}
-
-func UseDatabase(v *common.Values, client *mongo.Client) (db *mongo.Database) {
-	option := options.Database().
-		SetWriteConcern(writeconcern.Majority())
-	return client.Database(v.Database.Name, option)
 }
 
 func UseRedis(v *common.Values) (client *redis.Client, err error) {
@@ -107,45 +84,9 @@ func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, err
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: v.Namespace})
 }
 
-func UseValues(kv nats.KeyValue, cipher *cipher.Cipher) *values.Service {
-	return values.New(
-		values.SetKeyValue(kv),
-		values.SetCipher(cipher),
-		values.SetType(reflect.TypeOf(common.Extra{})),
-	)
-}
-
-func UseSessions(v *common.Values, rdb *redis.Client) *sessions.Service {
-	return sessions.New(
-		sessions.SetRedis(rdb),
-		sessions.SetDynamicValues(v.DynamicValues),
-	)
-}
-
-func UseRest(
-	v *common.Values,
-	mgo *mongo.Client,
-	db *mongo.Database,
-	rdb *redis.Client,
-	js nats.JetStreamContext,
-	keyvalue nats.KeyValue,
-	xcipher *cipher.Cipher,
-) *rest.Service {
-	return rest.New(
-		rest.SetMongoClient(mgo),
-		rest.SetDatabase(db),
-		rest.SetRedis(rdb),
-		rest.SetJetStream(js),
-		rest.SetKeyValue(keyvalue),
-		rest.SetDynamicValues(v.DynamicValues),
-		rest.SetCipher(xcipher),
-	)
-}
-
 func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
 		csrf.SetKey(v.Key),
-		csrf.SetDomain(v.XDomain),
 	)
 }
 
@@ -166,14 +107,6 @@ func UseLocker(client *redis.Client) *locker.Locker {
 
 func UseCaptcha(client *redis.Client) *captcha.Captcha {
 	return captcha.New(client)
-}
-
-func UseTransfer(js nats.JetStreamContext) (*transfer.Client, error) {
-	return transfer.New(js)
-}
-
-func UseInflux(v *common.Values) influxdb2.Client {
-	return influxdb2.NewClient(v.Influx.Url, v.Influx.Token)
 }
 
 func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
