@@ -9,8 +9,7 @@ import (
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	x.Csrf.SetToken(c)
 	r := M{
-		"name": x.V.Hostname,
-		"now":  time.Now(),
+		"now": time.Now(),
 	}
 	if !x.V.IsRelease() {
 		r["values"] = x.V
