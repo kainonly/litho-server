@@ -22,4 +22,4 @@
 !.vscode/extensions.json
 
 /vendor
-config
+/config/values.yml

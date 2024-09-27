@@ -1,0 +1,11 @@
+mode: debug
+address: :9000
+namespace: weplanx
+key:
+database:
+  url: host=127.0.0.1 user=postgres password=postgres dbname=weplanx port=5432 sslmode=disable TimeZone=Asia/Shanghai
+  redis: redis://:@127.0.0.1:6379/0
+nats:
+  hosts:
+    - nats://127.0.0.1:4222
+  nkey:

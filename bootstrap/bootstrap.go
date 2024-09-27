@@ -3,12 +3,8 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	"github.com/caarlos0/env/v10"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/hertz-contrib/obs-opentelemetry/provider"
-	"github.com/hertz-contrib/obs-opentelemetry/tracing"
-	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
@@ -19,22 +15,20 @@ import (
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"github.com/weplanx/server/common"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 )
 
 func LoadStaticValues(path string) (v *common.Values, err error) {
 	v = new(common.Values)
-	if err = env.Parse(v); err != nil {
+	var b []byte
+	if b, err = os.ReadFile(path); err != nil {
 		return
 	}
-	//var b []byte
-	//if b, err = os.ReadFile(path); err != nil {
-	//	return
-	//}
-	//if err = yaml.Unmarshal(b, &v.Extra); err != nil {
-	//	return
-	//}
+	if err = yaml.Unmarshal(b, &v); err != nil {
+		return
+	}
 	return
 }
 
@@ -109,21 +103,6 @@ func UseCaptcha(client *redis.Client) *captcha.Captcha {
 	return captcha.New(client)
 }
 
-func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
-	return provider.NewOpenTelemetryProvider(
-		provider.WithServiceName(v.Namespace),
-		provider.WithExportEndpoint(v.Otlp.Endpoint),
-		provider.WithDeploymentEnvironment(v.Mode),
-		provider.WithHeaders(map[string]string{
-			"Authorization": fmt.Sprintf(`Bearer %s`, v.Otlp.Token),
-		}),
-		provider.WithEnableTracing(true),
-		provider.WithEnableMetrics(true),
-		provider.WithEnableCompression(),
-		provider.WithInsecure(),
-	)
-}
-
 func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	if v.Address == "" {
 		return
@@ -134,13 +113,6 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		server.WithCustomValidator(help.Validator()),
 	}
 
-	var tracer config.Option
-	var tracerCfg *tracing.Config
-	if *v.Otlp.Enabled {
-		tracer, tracerCfg = tracing.NewServerTracer()
-		opts = append(opts, tracer)
-	}
-
 	if os.Getenv("MODE") != "release" {
 		opts = append(opts, server.WithExitWaitTime(0))
 	}
@@ -148,13 +120,8 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	opts = append(opts)
 	h = server.Default(opts...)
 	h.Use(
-		requestid.New(),
 		help.EHandler(),
 	)
-
-	if tracerCfg != nil {
-		h.Use(tracing.ServerMiddleware(tracerCfg))
-	}
 
 	return
 }

@@ -1,28 +1,22 @@
 package common
 
 type Values struct {
-	Mode      string `env:"MODE" envDefault:"debug"`
-	Hostname  string `env:"HOSTNAME"`
-	Address   string `env:"ADDRESS"`
-	Namespace string `env:"NAMESPACE"`
-	Key       string `env:"KEY,required"`
+	Mode      string `yaml:"mode"`
+	Address   string `yaml:"address"`
+	Namespace string `yaml:"namespace"`
+	Key       string `yaml:"key"`
+	Database  `yaml:"database"`
+	Nats      `yaml:"nats"`
+}
 
-	Database struct {
-		Url   string `env:"URL,required"`
-		Redis string `env:"REDIS,required"`
-	} `envPrefix:"DATABASE_"`
+type Database struct {
+	Url   string `yaml:"url"`
+	Redis string `yaml:"redis"`
+}
 
-	Nats struct {
-		Hosts []string `env:"HOSTS,required" envSeparator:","`
-		Pub   string   `env:"PUB,required"`
-		Nkey  string   `env:"NKEY,required"`
-	} `envPrefix:"NATS_"`
-
-	Otlp struct {
-		Enabled  *bool  `env:"ENABLED" envDefault:"true"`
-		Endpoint string `env:"ENDPOINT"`
-		Token    string `env:"TOKEN"`
-	} `envPrefix:"OTLP_"`
+type Nats struct {
+	Hosts []string `yaml:"hosts"`
+	Nkey  string   `yaml:"nkey"`
 }
 
 func (x Values) IsRelease() bool {
