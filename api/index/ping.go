@@ -10,7 +10,7 @@ import (
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	data := M{
 		"hostname": os.Getenv("HOSTNAME"),
-		"endpoint": "flower-admin-api",
+		"endpoint": "hertz-server",
 		"ip":       string(c.GetHeader(x.V.Ip)),
 		"now":      time.Now(),
 	}

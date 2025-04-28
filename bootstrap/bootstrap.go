@@ -8,7 +8,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hertz-contrib/binding/go_playground"
 	"github.com/hertz-contrib/requestid"
-	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
@@ -23,7 +22,6 @@ import (
 	"os"
 	"regexp"
 	"server/common"
-	"strings"
 	"time"
 )
 
@@ -77,25 +75,6 @@ func UseRedis(v *common.Values) (client *redis.Client, err error) {
 		return
 	}
 	return
-}
-
-func UseNats(v *common.Values) (nc *nats.Conn, err error) {
-	if nc, err = nats.Connect(
-		strings.Join(v.Nats.Hosts, ","),
-		nats.MaxReconnects(-1),
-		nats.Token(v.Nats.Token),
-	); err != nil {
-		return
-	}
-	return
-}
-
-func UseJetStream(nc *nats.Conn) (nats.JetStreamContext, error) {
-	return nc.JetStream(nats.PublishAsyncMaxPending(256))
-}
-
-func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, error) {
-	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: v.Namespace})
 }
 
 func UsePassport(v *common.Values) *passport.Passport {

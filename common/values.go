@@ -10,9 +10,7 @@ type Values struct {
 	Key       string   `yaml:"key"`
 	Domain    string   `yaml:"domain"`
 	Database  Database `yaml:"database"`
-	Nats      Nats     `yaml:"nats"`
 	Cos       Cos      `yaml:"cos"`
-	Otlp      Otlp     `yaml:"otlp"`
 }
 
 type Database struct {
@@ -22,23 +20,11 @@ type Database struct {
 	Debug bool   `yaml:"debug"`
 }
 
-type Nats struct {
-	Hosts []string `yaml:"hosts"`
-	Token string   `yaml:"token"`
-}
-
 type Cos struct {
 	Bucket    string `yaml:"bucket"`
 	Region    string `yaml:"region"`
 	SecretId  string `yaml:"secret_id"`
 	SecretKey string `yaml:"secret_key"`
-}
-
-type Otlp struct {
-	Name        string `yaml:"name"`
-	Endpoint    string `yaml:"endpoint"`
-	Token       string `yaml:"token"`
-	Environment string `yaml:"environment"`
 }
 
 func (x Values) IsRelease() bool {
