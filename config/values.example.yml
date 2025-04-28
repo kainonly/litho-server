@@ -8,19 +8,8 @@ database:
   url: host=127.0.0.1 user=postgres password= dbname=hertz port=5432 sslmode=disable TimeZone=Asia/Shanghai
   redis: redis://:@127.0.0.1:6379
   debug: false
-nats:
-  hosts:
-    - nats://localhost:1222
-    - nats://localhost:1223
-    - nats://localhost:1224
-  token:
 cos:
   bucket:
   region: ap-chendu
   secret_id:
   secret_key:
-otlp:
-  name: hertz-server
-  endpoint: localhost:8200
-  token:
-  environment: main
