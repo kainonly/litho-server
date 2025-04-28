@@ -1,4 +1,4 @@
-# Hertz Server
+# Litho Server
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kainonly/hertz-server/release.yml?label=release&style=flat-square)](https://github.com/kainonly/hertz-server/actions/workflows/release.yml)
 [![Release](https://img.shields.io/github/v/release/kainonly/hertz-server.svg?style=flat-square&include_prereleases)](https://github.com/kainonly/hertz-server/releases)
