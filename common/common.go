@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
@@ -17,9 +16,6 @@ type Inject struct {
 	V       *Values
 	Db      *gorm.DB
 	RDb     *redis.Client
-	NC      *nats.Conn
-	Js      nats.JetStreamContext
-	Jv      nats.KeyValue
 	Cipher  *cipher.Cipher
 	Captcha *captcha.Captcha
 	Locker  *locker.Locker

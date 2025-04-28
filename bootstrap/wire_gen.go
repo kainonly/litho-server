@@ -23,18 +23,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn, err := UseNats(values)
-	if err != nil {
-		return nil, err
-	}
-	jetStreamContext, err := UseJetStream(conn)
-	if err != nil {
-		return nil, err
-	}
-	keyValue, err := UseKeyValue(values, jetStreamContext)
-	if err != nil {
-		return nil, err
-	}
 	cipher, err := UseCipher(values)
 	if err != nil {
 		return nil, err
@@ -45,9 +33,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		V:       values,
 		Db:      db,
 		RDb:     client,
-		NC:      conn,
-		Js:      jetStreamContext,
-		Jv:      keyValue,
 		Cipher:  cipher,
 		Captcha: captcha,
 		Locker:  locker,
