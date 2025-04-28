@@ -2,11 +2,13 @@ package bootstrap
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/go-playground/validator/v10"
+	"github.com/hertz-contrib/binding/go_playground"
+	"github.com/hertz-contrib/requestid"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nkeys"
 	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/cipher"
@@ -14,10 +16,15 @@ import (
 	"github.com/weplanx/go/help"
 	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
-	"github.com/weplanx/server/common"
 	"gopkg.in/yaml.v3"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
+	"regexp"
+	"server/common"
 	"strings"
+	"time"
 )
 
 func LoadStaticValues(path string) (v *common.Values, err error) {
@@ -29,6 +36,34 @@ func LoadStaticValues(path string) (v *common.Values, err error) {
 	if err = yaml.Unmarshal(b, &v); err != nil {
 		return
 	}
+	return
+}
+
+func UseGorm(v *common.Values) (orm *gorm.DB, err error) {
+	var log logger.Interface
+	if v.IsSqlDebug() {
+		log = logger.Default.LogMode(logger.Info)
+	}
+	if orm, err = gorm.Open(
+		postgres.New(postgres.Config{
+			DSN:                  v.Database.Url,
+			PreferSimpleProtocol: true,
+		}),
+		&gorm.Config{
+			Logger:                 log,
+			SkipDefaultTransaction: true,
+			PrepareStmt:            true,
+		},
+	); err != nil {
+		return
+	}
+	var db *sql.DB
+	if db, err = orm.DB(); err != nil {
+		return
+	}
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(100)
+	db.SetConnMaxLifetime(time.Hour)
 	return
 }
 
@@ -45,25 +80,10 @@ func UseRedis(v *common.Values) (client *redis.Client, err error) {
 }
 
 func UseNats(v *common.Values) (nc *nats.Conn, err error) {
-	var kp nkeys.KeyPair
-	if kp, err = nkeys.FromSeed([]byte(v.Nats.Nkey)); err != nil {
-		return
-	}
-	defer kp.Wipe()
-	var pub string
-	if pub, err = kp.PublicKey(); err != nil {
-		return
-	}
-	if !nkeys.IsValidPublicUserKey(pub) {
-		return nil, fmt.Errorf("nkey fail")
-	}
 	if nc, err = nats.Connect(
 		strings.Join(v.Nats.Hosts, ","),
 		nats.MaxReconnects(-1),
-		nats.Nkey(pub, func(nonce []byte) ([]byte, error) {
-			sig, _ := kp.Sign(nonce)
-			return sig, nil
-		}),
+		nats.Token(v.Nats.Token),
 	); err != nil {
 		return
 	}
@@ -78,21 +98,22 @@ func UseKeyValue(v *common.Values, js nats.JetStreamContext) (nats.KeyValue, err
 	return js.CreateKeyValue(&nats.KeyValueConfig{Bucket: v.Namespace})
 }
 
+func UsePassport(v *common.Values) *passport.Passport {
+	return passport.New(
+		passport.SetKey(v.Key),
+		passport.SetIssuer(v.Domain),
+	)
+}
+
 func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
 		csrf.SetKey(v.Key),
+		csrf.SetDomain(v.Domain),
 	)
 }
 
 func UseCipher(v *common.Values) (*cipher.Cipher, error) {
 	return cipher.New(v.Key)
-}
-
-func UseAPIPassport(v *common.Values) *common.APIPassport {
-	return passport.New(
-		passport.SetIssuer(v.Namespace),
-		passport.SetKey(v.Key),
-	)
 }
 
 func UseLocker(client *redis.Client) *locker.Locker {
@@ -107,10 +128,27 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	if v.Address == "" {
 		return
 	}
+	vd := go_playground.NewValidator()
+	vd.SetValidateTag("vd")
+	vdx := vd.Engine().(*validator.Validate)
+	vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
+		matched, errX := regexp.MatchString("^[a-z_]+$", fl.Field().Interface().(string))
+		if errX != nil {
+			return false
+		}
+		return matched
+	})
+	vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
+		matched, errX := regexp.MatchString("^[a-z_.]+:(-1|1)$", fl.Field().Interface().(string))
+		if errX != nil {
+			return false
+		}
+		return matched
+	})
 
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
-		server.WithCustomValidator(help.Validator()),
+		server.WithCustomValidator(vd),
 	}
 
 	if os.Getenv("MODE") != "release" {
@@ -120,7 +158,8 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	opts = append(opts)
 	h = server.Default(opts...)
 	h.Use(
-		help.EHandler(),
+		help.ErrorHandler(),
+		requestid.New(),
 	)
 
 	return

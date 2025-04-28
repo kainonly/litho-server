@@ -7,8 +7,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/weplanx/go/csrf"
-	"github.com/weplanx/server/api/index"
-	"github.com/weplanx/server/common"
+	"server/api/index"
+	"server/common"
 )
 
 var Provides = wire.NewSet(
@@ -24,10 +24,9 @@ type API struct {
 	IndexX *index.Service
 }
 
-func (x *API) Routes(h *server.Hertz) (err error) {
+func (x *API) SetupRoutes(h *server.Hertz) (err error) {
 	//csrfToken := x.Csrf.VerifyToken(!x.V.IsRelease())
 	//auth := x.AuthGuard()
-	//audit := x.Audit()
 
 	h.GET("", x.Index.Ping)
 
@@ -46,43 +45,9 @@ func (x *API) AuthGuard() app.HandlerFunc {
 			return
 		}
 
-		//claims, err := x.IndexX.Verify(ctx, string(ts))
-		//if err != nil {
-		//	common.ClearAccessToken(c)
-		//	c.AbortWithStatusJSON(401, utils.H{
-		//		"code":    0,
-		//		"message": common.ErrAuthenticationExpired.Error(),
-		//	})
-		//	return
-		//}
-
-		//c.Set("identity", claims)
 		c.Next(ctx)
 	}
 }
-
-//func (x *API) Audit() app.HandlerFunc {
-//	return func(ctx context.Context, c *app.RequestContext) {
-//		now := time.Now()
-//		c.Next(ctx)
-//		method := string(c.Request.Header.Method())
-//		if method == "GET" {
-//			return
-//		}
-//		var userId string
-//		if value, ok := c.Get("identity"); ok {
-//			claims := value.(passport.Claims)
-//			userId = claims.UserId
-//		}
-//
-//		format := map[string]interface{}{
-//			"body": "json",
-//		}
-//		if userId != "" {
-//			format["metadata.user_id"] = "oid"
-//		}
-//	}
-//}
 
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	h = x.Hertz
