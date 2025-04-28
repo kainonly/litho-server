@@ -2,8 +2,8 @@ package index
 
 import (
 	"github.com/google/wire"
-	"github.com/weplanx/go/csrf"
-	"github.com/weplanx/server/common"
+	"github.com/weplanx/go/passport"
+	"server/common"
 )
 
 var Provides = wire.NewSet(
@@ -12,8 +12,7 @@ var Provides = wire.NewSet(
 )
 
 type Controller struct {
-	V    *common.Values
-	Csrf *csrf.Csrf
+	V *common.Values
 
 	IndexX *Service
 }
@@ -21,7 +20,7 @@ type Controller struct {
 type Service struct {
 	*common.Inject
 
-	Passport *common.APIPassport
+	Passport *passport.Passport
 }
 
 type M = map[string]interface{}

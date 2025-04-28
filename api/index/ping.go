@@ -3,16 +3,16 @@ package index
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
+	"os"
 	"time"
 )
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
-	x.Csrf.SetToken(c)
-	r := M{
-		"now": time.Now(),
+	data := M{
+		"hostname": os.Getenv("HOSTNAME"),
+		"endpoint": "flower-admin-api",
+		"ip":       string(c.GetHeader(x.V.Ip)),
+		"now":      time.Now(),
 	}
-	if !x.V.IsRelease() {
-		r["values"] = x.V
-	}
-	c.JSON(200, r)
+	c.JSON(200, data)
 }

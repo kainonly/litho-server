@@ -1,11 +1,26 @@
 mode: debug
 address: :9000
-namespace: weplanx
-key:
+ip: X-Forwarded-For
+namespace: hertz
+key: g63vA7pBUjxJx4Ihcib1MU5rz3VCQ60W
+domain: localhost:9000
 database:
-  url: host=127.0.0.1 user=postgres password=postgres dbname=weplanx port=5432 sslmode=disable TimeZone=Asia/Shanghai
-  redis: redis://:@127.0.0.1:6379/0
+  url: host=127.0.0.1 user=postgres password= dbname=hertz port=5432 sslmode=disable TimeZone=Asia/Shanghai
+  redis: redis://:@127.0.0.1:6379
+  debug: false
 nats:
   hosts:
-    - nats://127.0.0.1:4222
-  nkey:
+    - nats://localhost:1222
+    - nats://localhost:1223
+    - nats://localhost:1224
+  token:
+cos:
+  bucket:
+  region: ap-chendu
+  secret_id:
+  secret_key:
+otlp:
+  name: hertz-server
+  endpoint: localhost:8200
+  token:
+  environment: main
