@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cloudwego/hertz/pkg/app/server"
 	"os"
 	"server/api"
 	"server/bootstrap"
 	"server/common"
+
+	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {

@@ -2,13 +2,14 @@ package api
 
 import (
 	"context"
+	"server/api/index"
+	"server/common"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/google/wire"
 	"github.com/weplanx/go/csrf"
-	"server/api/index"
-	"server/common"
 )
 
 var Provides = wire.NewSet(

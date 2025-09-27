@@ -15,27 +15,8 @@ import (
 // Injectors from wire.go:
 
 func NewAPI(values *common.Values) (*api.API, error) {
-	db, err := UseGorm(values)
-	if err != nil {
-		return nil, err
-	}
-	client, err := UseRedis(values)
-	if err != nil {
-		return nil, err
-	}
-	cipher, err := UseCipher(values)
-	if err != nil {
-		return nil, err
-	}
-	captcha := UseCaptcha(client)
-	locker := UseLocker(client)
 	inject := &common.Inject{
-		V:       values,
-		Db:      db,
-		RDb:     client,
-		Cipher:  cipher,
-		Captcha: captcha,
-		Locker:  locker,
+		V: values,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {

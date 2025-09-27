@@ -1,28 +1,18 @@
 package bootstrap
 
 import (
-	"context"
-	"database/sql"
+	"os"
+	"regexp"
+	"server/common"
+
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-playground/validator/v10"
 	"github.com/hertz-contrib/binding/go_playground"
-	"github.com/hertz-contrib/requestid"
-	"github.com/redis/go-redis/v9"
-	"github.com/weplanx/go/captcha"
-	"github.com/weplanx/go/cipher"
 	"github.com/weplanx/go/csrf"
 	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/locker"
 	"github.com/weplanx/go/passport"
 	"gopkg.in/yaml.v3"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"os"
-	"regexp"
-	"server/common"
-	"time"
 )
 
 func LoadStaticValues(path string) (v *common.Values, err error) {
@@ -32,46 +22,6 @@ func LoadStaticValues(path string) (v *common.Values, err error) {
 		return
 	}
 	if err = yaml.Unmarshal(b, &v); err != nil {
-		return
-	}
-	return
-}
-
-func UseGorm(v *common.Values) (orm *gorm.DB, err error) {
-	var log logger.Interface
-	if v.IsSqlDebug() {
-		log = logger.Default.LogMode(logger.Info)
-	}
-	if orm, err = gorm.Open(
-		postgres.New(postgres.Config{
-			DSN:                  v.Database.Url,
-			PreferSimpleProtocol: true,
-		}),
-		&gorm.Config{
-			Logger:                 log,
-			SkipDefaultTransaction: true,
-			PrepareStmt:            true,
-		},
-	); err != nil {
-		return
-	}
-	var db *sql.DB
-	if db, err = orm.DB(); err != nil {
-		return
-	}
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(time.Hour)
-	return
-}
-
-func UseRedis(v *common.Values) (client *redis.Client, err error) {
-	opts, err := redis.ParseURL(v.Database.Redis)
-	if err != nil {
-		return
-	}
-	client = redis.NewClient(opts)
-	if err = client.Ping(context.TODO()).Err(); err != nil {
 		return
 	}
 	return
@@ -89,18 +39,6 @@ func UseCsrf(v *common.Values) *csrf.Csrf {
 		csrf.SetKey(v.Key),
 		csrf.SetDomain(v.Domain),
 	)
-}
-
-func UseCipher(v *common.Values) (*cipher.Cipher, error) {
-	return cipher.New(v.Key)
-}
-
-func UseLocker(client *redis.Client) *locker.Locker {
-	return locker.New(client)
-}
-
-func UseCaptcha(client *redis.Client) *captcha.Captcha {
-	return captcha.New(client)
 }
 
 func UseHertz(v *common.Values) (h *server.Hertz, err error) {
@@ -130,16 +68,9 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		server.WithCustomValidator(vd),
 	}
 
-	if os.Getenv("MODE") != "release" {
-		opts = append(opts, server.WithExitWaitTime(0))
-	}
-
 	opts = append(opts)
 	h = server.Default(opts...)
-	h.Use(
-		help.ErrorHandler(),
-		requestid.New(),
-	)
+	h.Use(help.ErrorHandler())
 
 	return
 }

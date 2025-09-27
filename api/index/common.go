@@ -1,9 +1,10 @@
 package index
 
 import (
+	"server/common"
+
 	"github.com/google/wire"
 	"github.com/weplanx/go/passport"
-	"server/common"
 )
 
 var Provides = wire.NewSet(
