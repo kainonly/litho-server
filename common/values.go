@@ -4,6 +4,7 @@ type Values struct {
 	Address  string   `yaml:"address"`
 	Key      string   `yaml:"key"`
 	Domain   string   `yaml:"domain"`
+	Cors     Cors     `yaml:"cors"`
 	Database Database `yaml:"database"`
 }
 
