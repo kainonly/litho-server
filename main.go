@@ -33,9 +33,7 @@ func listen(path string) (err error) {
 	if h, err = x.Initialize(ctx); err != nil {
 		return
 	}
-	if err = x.SetupRoutes(h); err != nil {
-		return
-	}
+
 	h.Spin()
 	return
 }

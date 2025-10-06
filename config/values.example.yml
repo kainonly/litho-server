@@ -1,15 +1,6 @@
-mode: debug
-address: :9000
-ip: X-Forwarded-For
-namespace: hertz
-key: g63vA7pBUjxJx4Ihcib1MU5rz3VCQ60W
-domain: localhost:9000
+address: :3000
+key:
+domain: localhost:3000
 database:
-  url: host=127.0.0.1 user=postgres password= dbname=hertz port=5432 sslmode=disable TimeZone=Asia/Shanghai
-  redis: redis://:@127.0.0.1:6379
-  debug: false
-cos:
-  bucket:
-  region: ap-chendu
-  secret_id:
-  secret_key:
+  url: host= user=postgres password= dbname=litho port=5432 TimeZone=Asia/Shanghai
+  redis: redis://:6379
