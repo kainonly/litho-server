@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/go-playground/validator/v10"
 	"github.com/hertz-contrib/binding/go_playground"
+	"github.com/hertz-contrib/cors"
 	"github.com/redis/go-redis/v9"
 	"github.com/weplanx/go/captcha"
 	"github.com/weplanx/go/csrf"
@@ -121,7 +122,19 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 
 	opts = append(opts)
 	h = server.Default(opts...)
-	h.Use(help.ErrorHandler())
+	h.Use(
+		help.ErrorHandler(),
+		cors.New(cors.Config{
+			AllowOrigins: v.Cors.Origins,
+			AllowMethods: []string{"GET", "POST"},
+			AllowHeaders: []string{"Origin", "Content-Length", "Content-Type",
+				"X-Page", "X-Pagesize", "X-Requested-With",
+			},
+			ExposeHeaders:    []string{"X-Total"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}),
+	)
 
 	return
 }
