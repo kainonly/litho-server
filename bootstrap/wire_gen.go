@@ -9,14 +9,30 @@ package bootstrap
 import (
 	"server/api"
 	"server/api/index"
+	"server/api/sessions"
+	"server/api/users"
 	"server/common"
 )
 
 // Injectors from wire.go:
 
 func NewAPI(values *common.Values) (*api.API, error) {
+	db, err := UseGorm(values)
+	if err != nil {
+		return nil, err
+	}
+	client, err := UseRedis(values)
+	if err != nil {
+		return nil, err
+	}
+	captcha := UseCaptcha(client)
+	locker := UseLocker(client)
 	inject := &common.Inject{
-		V: values,
+		V:       values,
+		Db:      db,
+		RDb:     client,
+		Captcha: captcha,
+		Locker:  locker,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {
@@ -24,20 +40,39 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	csrf := UseCsrf(values)
 	passport := UsePassport(values)
-	service := &index.Service{
-		Inject:   inject,
-		Passport: passport,
+	service := &sessions.Service{
+		Inject: inject,
+	}
+	indexService := &index.Service{
+		Inject:    inject,
+		Passport:  passport,
+		SessionsX: service,
 	}
 	controller := &index.Controller{
 		V:      values,
-		IndexX: service,
+		IndexX: indexService,
+	}
+	sessionsController := &sessions.Controller{
+		V:         values,
+		SessionsX: service,
+	}
+	usersService := &users.Service{
+		Inject:    inject,
+		SessionsX: service,
+	}
+	usersController := &users.Controller{
+		V:      values,
+		UsersX: usersService,
 	}
 	apiAPI := &api.API{
-		Inject: inject,
-		Hertz:  hertz,
-		Csrf:   csrf,
-		Index:  controller,
-		IndexX: service,
+		Inject:   inject,
+		Hertz:    hertz,
+		Csrf:     csrf,
+		Index:    controller,
+		IndexX:   indexService,
+		Sessions: sessionsController,
+		Users:    usersController,
+		UsersX:   usersService,
 	}
 	return apiAPI, nil
 }

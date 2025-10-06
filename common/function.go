@@ -14,3 +14,8 @@ func ClearAccessToken(c *app.RequestContext) {
 	c.SetCookie("TOKEN", "", -1,
 		"/", "", protocol.CookieSameSiteStrictMode, true, true)
 }
+
+func GetIAM(c *app.RequestContext) *IAMUser {
+	v, _ := c.Get("identity")
+	return v.(*IAMUser)
+}

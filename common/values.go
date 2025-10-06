@@ -7,7 +7,13 @@ type Values struct {
 	Database Database `yaml:"database"`
 }
 
+type Cors struct {
+	Origins  []string `yaml:"origins"`
+	SameSite string   `yaml:"same_site,omitempty"`
+}
+
 type Database struct {
-	Url  string `yaml:"url"`
-	Name string `yaml:"name"`
+	Url   string `yaml:"url"`
+	Name  string `yaml:"name"`
+	Redis string `yaml:"redis"`
 }
