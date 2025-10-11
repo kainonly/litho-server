@@ -38,7 +38,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
-	csrf := UseCsrf(values)
 	passport := UsePassport(values)
 	service := &sessions.Service{
 		Inject: inject,
@@ -67,7 +66,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	apiAPI := &api.API{
 		Inject:   inject,
 		Hertz:    hertz,
-		Csrf:     csrf,
 		Index:    controller,
 		IndexX:   indexService,
 		Sessions: sessionsController,

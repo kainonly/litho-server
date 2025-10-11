@@ -6,7 +6,7 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/weplanx/go/help"
+	"github.com/kainonly/go/help"
 )
 
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {

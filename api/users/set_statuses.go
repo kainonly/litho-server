@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/weplanx/go/help"
+	"github.com/kainonly/go/help"
 	"gorm.io/gorm"
 )
 

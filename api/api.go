@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/google/wire"
-	"github.com/weplanx/go/csrf"
 )
 
 var Provides = wire.NewSet(
@@ -25,7 +24,6 @@ type API struct {
 	*common.Inject
 
 	Hertz    *server.Hertz
-	Csrf     *csrf.Csrf
 	Index    *index.Controller
 	IndexX   *index.Service
 	Sessions *sessions.Controller
@@ -34,14 +32,13 @@ type API struct {
 }
 
 func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
-	csrfx := x.Csrf.VerifyToken(false)
 	authx := x.Auth()
 
 	x.Hertz.GET("", x.Index.Ping)
-	x.Hertz.POST("login", csrfx, x.Index.Login)
-	x.Hertz.GET("verify", csrfx, x.Index.Verify)
-	x.Hertz.POST("logout", csrfx, authx, x.Index.Logout)
-	r := x.Hertz.Group("", csrfx, authx)
+	x.Hertz.POST("login", x.Index.Login)
+	x.Hertz.GET("verify", x.Index.Verify)
+	x.Hertz.POST("logout", authx, x.Index.Logout)
+	r := x.Hertz.Group("", authx)
 
 	binds := [][]interface{}{
 		{"GET", "user", x.Index.GetUser},

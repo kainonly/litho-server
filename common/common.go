@@ -1,9 +1,9 @@
 package common
 
 import (
+	"github.com/kainonly/go/captcha"
+	"github.com/kainonly/go/locker"
 	"github.com/redis/go-redis/v9"
-	"github.com/weplanx/go/captcha"
-	"github.com/weplanx/go/locker"
 	"gorm.io/gorm"
 )
 
