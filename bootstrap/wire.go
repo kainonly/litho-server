@@ -17,7 +17,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseGorm,
 		UseRedis,
 		UsePassport,
-		UseCsrf,
 		UseLocker,
 		UseCaptcha,
 		UseHertz,

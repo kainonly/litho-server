@@ -5,7 +5,7 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/weplanx/go/help"
+	"github.com/kainonly/go/help"
 )
 
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/errors"
-	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/passlib"
+	"github.com/kainonly/go/help"
+	"github.com/kainonly/go/passlib"
 )
 
 type SetUserPasswordDto struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/passport"
+	"github.com/kainonly/go/help"
+	"github.com/kainonly/go/passport"
 )
 
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {

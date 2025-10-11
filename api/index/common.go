@@ -10,8 +10,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/google/wire"
-	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/passport"
+	"github.com/kainonly/go/help"
+	"github.com/kainonly/go/passport"
 )
 
 var Provides = wire.NewSet(

@@ -6,8 +6,8 @@ import (
 	"os"
 	"server/model"
 
-	"github.com/weplanx/go/help"
-	"github.com/weplanx/go/passlib"
+	"github.com/kainonly/go/help"
+	"github.com/kainonly/go/passlib"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
