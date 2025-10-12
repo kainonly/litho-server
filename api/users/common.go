@@ -16,8 +16,6 @@ var Provides = wire.NewSet(
 	wire.Struct(new(Service), "*"),
 )
 
-const RES = "users"
-
 type Controller struct {
 	V *common.Values
 
