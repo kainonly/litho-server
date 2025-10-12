@@ -1,4 +1,4 @@
-package teams
+package jobs
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	data, err := x.TeamsX.FindById(ctx, user, dto)
+	data, err := x.JobsX.FindById(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -26,13 +26,15 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindByIdResult struct {
-	ID   string `json:"id"`
-	Key  string `json:"key"`
-	Name string `json:"name"`
+	ID          string    `json:"id"`
+	TeamID      string    `json:"team_id"`
+	SchedulerID string    `json:"scheduler_id"`
+	Name        string    `json:"name"`
+	Schema      *common.M `json:"schema"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
-	do := x.Db.Model(model.Team{}).WithContext(ctx)
+	do := x.Db.Model(model.Job{}).WithContext(ctx)
 	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return

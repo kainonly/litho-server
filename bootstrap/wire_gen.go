@@ -9,7 +9,10 @@ package bootstrap
 import (
 	"server/api"
 	"server/api/index"
+	"server/api/jobs"
+	"server/api/schedulers"
 	"server/api/sessions"
+	"server/api/teams"
 	"server/api/users"
 	"server/common"
 )
@@ -51,9 +54,30 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		V:      values,
 		IndexX: indexService,
 	}
+	jobsService := &jobs.Service{
+		Inject: inject,
+	}
+	jobsController := &jobs.Controller{
+		V:     values,
+		JobsX: jobsService,
+	}
+	schedulersService := &schedulers.Service{
+		Inject: inject,
+	}
+	schedulersController := &schedulers.Controller{
+		V:          values,
+		SchedulesX: schedulersService,
+	}
 	sessionsController := &sessions.Controller{
 		V:         values,
 		SessionsX: service,
+	}
+	teamsService := &teams.Service{
+		Inject: inject,
+	}
+	teamsController := &teams.Controller{
+		V:      values,
+		TeamsX: teamsService,
 	}
 	usersService := &users.Service{
 		Inject:    inject,
@@ -64,13 +88,16 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UsersX: usersService,
 	}
 	apiAPI := &api.API{
-		Inject:   inject,
-		Hertz:    hertz,
-		Index:    controller,
-		IndexX:   indexService,
-		Sessions: sessionsController,
-		Users:    usersController,
-		UsersX:   usersService,
+		Inject:     inject,
+		Hertz:      hertz,
+		Index:      controller,
+		IndexX:     indexService,
+		Jobs:       jobsController,
+		Schedulers: schedulersController,
+		Sessions:   sessionsController,
+		Teams:      teamsController,
+		Users:      usersController,
+		UsersX:     usersService,
 	}
 	return apiAPI, nil
 }

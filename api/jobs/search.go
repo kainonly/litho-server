@@ -1,4 +1,4 @@
-package teams
+package jobs
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func (x *Controller) Search(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	data, err := x.TeamsX.Search(ctx, user, dto)
+	data, err := x.JobsX.Search(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -36,7 +36,7 @@ type SearchResult struct {
 }
 
 func (x *Service) Search(ctx context.Context, user *common.IAMUser, dto SearchDto) (results []SearchResult, err error) {
-	do := x.Db.Model(model.Team{}).WithContext(ctx)
+	do := x.Db.Model(model.Job{}).WithContext(ctx)
 
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, fmt.Sprintf(`%%%s%%`, dto.Q))

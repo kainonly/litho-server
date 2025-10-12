@@ -1,4 +1,4 @@
-package teams
+package schedulers
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.TeamsX.Update(ctx, user, dto); err != nil {
+	if err := x.SchedulesX.Update(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -39,7 +39,7 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 		"name":        dto.Name,
 	}
 
-	if err = x.Db.Model(model.Team{}).WithContext(ctx).
+	if err = x.Db.Model(model.Scheduler{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(data).
 		Error; err != nil {
