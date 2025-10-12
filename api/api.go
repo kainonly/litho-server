@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"server/api/index"
 	"server/api/sessions"
+	"server/api/teams"
 	"server/api/users"
 	"server/common"
 
@@ -17,6 +18,7 @@ import (
 var Provides = wire.NewSet(
 	index.Provides,
 	sessions.Provides,
+	teams.Provides,
 	users.Provides,
 )
 
@@ -27,6 +29,7 @@ type API struct {
 	Index    *index.Controller
 	IndexX   *index.Service
 	Sessions *sessions.Controller
+	Teams    *teams.Controller
 	Users    *users.Controller
 	UsersX   *users.Service
 }
@@ -43,7 +46,10 @@ func (x *API) Initialize(ctx context.Context) (h *server.Hertz, err error) {
 	binds := [][]interface{}{
 		{"GET", "user", x.Index.GetUser},
 		{"POST", "user/set_password", x.Index.SetUserPassword},
-		//
+		// Resource API
+		{"CRUD", "teams", x.Teams},
+		{"GET", "teams/_exists", x.Users.Exists},
+		{"GET", "teams/_search", x.Users.Search},
 		{"CRUD", "users", x.Users},
 		{"GET", "users/_exists", x.Users.Exists},
 		{"GET", "users/_search", x.Users.Search},
