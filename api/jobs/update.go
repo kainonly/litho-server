@@ -1,4 +1,4 @@
-package teams
+package jobs
 
 import (
 	"context"
@@ -11,9 +11,10 @@ import (
 )
 
 type UpdateDto struct {
-	ID   string `json:"id" vd:"required"`
-	Key  string `json:"key" vd:"required"`
-	Name string `json:"name" vd:"required"`
+	ID          string    `json:"id" vd:"required"`
+	SchedulerID string    `json:"scheduler_id" vd:"required"`
+	Name        string    `json:"name" vd:"required"`
+	Schema      *common.M `json:"schema" vd:"required"`
 }
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
@@ -24,7 +25,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.TeamsX.Update(ctx, user, dto); err != nil {
+	if err := x.JobsX.Update(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -34,12 +35,13 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
 	data := M{
-		"update_time": time.Now(),
-		"key":         dto.Key,
-		"name":        dto.Name,
+		"update_time":  time.Now(),
+		"scheduler_id": dto.SchedulerID,
+		"name":         dto.Name,
+		"schema":       dto.Schema,
 	}
 
-	if err = x.Db.Model(model.Team{}).WithContext(ctx).
+	if err = x.Db.Model(model.Job{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(data).
 		Error; err != nil {

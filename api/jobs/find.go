@@ -1,8 +1,7 @@
-package users
+package jobs
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"server/common"
 	"server/model"
@@ -23,7 +22,7 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	total, data, err := x.UsersX.Find(ctx, user, dto)
+	total, data, err := x.JobsX.Find(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -34,16 +33,16 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindResult struct {
-	ID       string `json:"id"`
-	Status   *bool  `json:"status"`
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Sessions int32  `json:"sessions"`
+	ID          string    `json:"id"`
+	Status      *bool     `json:"status"`
+	TeamID      string    `json:"team_id"`
+	SchedulerID string    `json:"scheduler_id"`
+	Name        string    `json:"name"`
+	Schema      *common.M `json:"schema"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	results = make([]*FindResult, 0)
-	do := x.Db.Model(model.User{}).WithContext(ctx)
+	do := x.Db.Model(model.Job{}).WithContext(ctx)
 
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, fmt.Sprintf(`%%%s%%`, dto.Q))
@@ -53,20 +52,10 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 		return
 	}
 
-	var rows *sql.Rows
-	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs().
-		Omit("password", "create_time", "update_time"))
-	if rows, err = dto.Factory(ctx, do).Rows(); err != nil {
+	results = make([]*FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	if err = dto.Find(ctx, do, &results); err != nil {
 		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var data *FindResult
-		if err = x.Db.ScanRows(rows, &data); err != nil {
-			return
-		}
-		results = append(results, data)
 	}
 
 	return

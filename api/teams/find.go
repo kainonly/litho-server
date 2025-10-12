@@ -2,7 +2,7 @@ package teams
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"server/common"
 	"server/model"
 	"strconv"
@@ -33,37 +33,27 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindResult struct {
-	ID       string `json:"id"`
-	Status   *bool  `json:"status"`
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Sessions int32  `json:"sessions"`
+	ID     string `json:"id"`
+	Status *bool  `json:"status"`
+	Key    string `json:"key"`
+	Name   string `json:"name"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	results = make([]*FindResult, 0)
-	do := x.Db.Model(model.User{}).WithContext(ctx)
+	do := x.Db.Model(model.Team{}).WithContext(ctx)
 
 	if dto.Q != "" {
+		do = do.Where(`name like ?`, fmt.Sprintf(`%%%s%%`, dto.Q))
 	}
 
 	if err = do.Count(&total).Error; err != nil {
 		return
 	}
 
-	var rows *sql.Rows
+	results = make([]*FindResult, 0)
 	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	if rows, err = dto.Factory(ctx, do).Rows(); err != nil {
+	if err = dto.Find(ctx, do, &results); err != nil {
 		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var data *FindResult
-		if err = x.Db.ScanRows(rows, &data); err != nil {
-			return
-		}
-		results = append(results, data)
 	}
 
 	return
