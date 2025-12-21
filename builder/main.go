@@ -17,19 +17,11 @@ func main() {
 				},
 			})
 			g.ApplyBasic(
-				g.GenerateModelAs("job", "Job"),
-				g.GenerateModelAs("scheduler", "Scheduler",
-					gen.FieldType("thumbs", "common.M"),
-				),
-				g.GenerateModelAs("team", "Team"),
-				g.GenerateModelAs("team_user", "TeamUser"),
 				g.GenerateModelAs("user", "User"),
 			)
 		},
 		gen.FieldType("id", "string"),
 		gen.FieldType("user_id", "string"),
-		gen.FieldType("team_id", "string"),
-		gen.FieldType("scheduler_id", "string"),
 	); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
