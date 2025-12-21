@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/kainonly/litho-server?style=flat-square)](https://goreportcard.com/report/github.com/kainonly/litho-server)
 [![GitHub license](https://img.shields.io/github/license/kainonly/litho-server?style=flat-square)](https://raw.githubusercontent.com/kainonly/litho-server/LICENSE)
 
-An open-source hotel platform that balances business logic, data integrity, and developer experience.
+A pragmatic open-source hotel system for indie developers, focusing on clarity, correctness, and scalability.
 
 ## License
 
