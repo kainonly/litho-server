@@ -151,10 +151,6 @@ COMMANDS = {
         "desc": "查看迁移状态",
         "args": ["migrate", "status"],
     },
-    "lint": {
-        "desc": "检查迁移文件",
-        "args": ["migrate", "lint", "--latest", "1"],
-    },
     "inspect": {
         "desc": "查看数据库 schema",
         "args": ["schema", "inspect"],

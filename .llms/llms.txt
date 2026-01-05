@@ -26,7 +26,7 @@ import "time"
 // EntityName 实体注释（来自思维导图）
 type EntityName struct {
 	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
-	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null"`
+	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	// 业务字段按思维导图中的顺序排列...
 	FieldName string `gorm:"column:field_name;type:text;not null;comment:字段注释"` // 字段注释（来自思维导图）
@@ -75,7 +75,10 @@ GORM 模型必须使用 `comment` 标签为表和字段添加数据库级别的�
 - 必须包含 `CreatedAt` 和 `UpdatedAt`
 - 类型：`time.Time`
 - 必须显式指定 `type:timestamptz`（GORM 默认使用 `timestamp without time zone`，不符合规范）
-- Tag 格式：`gorm:"column:created_at;type:timestamptz;not null"`
+- `CreatedAt` 必须添加 `index` 索引，用于按创建时间排序查询
+- Tag 格式：
+  - `CreatedAt`：`gorm:"column:created_at;type:timestamptz;not null;index"`
+  - `UpdatedAt`：`gorm:"column:updated_at;type:timestamptz;not null"`
 
 ### 关联字段（逻辑外键）
 - 命名格式：`${Entity}ID`，如 `OrgID`、`UserID`
@@ -123,6 +126,75 @@ GORM 模型必须使用 `comment` 标签为表和字段添加数据库级别的�
 
 ---
 
+## 索引规范
+
+### 单字段索引
+- 普通索引：`index`
+- 唯一索引：`uniqueIndex`
+- 示例：`gorm:"column:email;type:text;not null;uniqueIndex;comment:邮箱"`
+
+### 联合索引
+
+思维导图中可能使用以下格式标注联合索引：
+
+```
+索引: (field1, field2)
+唯一索引: (field1, field2, field3)
+```
+
+#### 解析规则
+
+1. **识别联合索引标注**：在思维导图的表定义中查找 `索引:` 或 `唯一索引:` 标注
+2. **提取字段列表**：解析括号内的字段名，按顺序作为联合索引的列
+3. **生成索引名称**：`idx_表名_字段1_字段2` 或 `idx_表名_字段1_字段2_unique`
+
+#### GORM 联合索引语法
+
+使用 `index` 或 `uniqueIndex` 标签，通过 `priority` 指定字段在索引中的顺序：
+
+```go
+// 联合索引: (org_id, name)
+OrgID string `gorm:"column:org_id;type:bigint;not null;index:idx_role_org_name,priority:1;comment:组织ID"`
+Name  string `gorm:"column:name;type:text;not null;index:idx_role_org_name,priority:2;comment:名称"`
+
+// 联合唯一索引: (org_id, code)
+OrgID string `gorm:"column:org_id;type:bigint;not null;uniqueIndex:idx_resource_org_code,priority:1;comment:组织ID"`
+Code  string `gorm:"column:code;type:text;not null;uniqueIndex:idx_resource_org_code,priority:2;comment:编码"`
+```
+
+#### 完整示例
+
+思维导图定义：
+```
+Resource 资源表
+├── org_id: 组织ID
+├── code: 编码
+├── name: 名称
+└── 唯一索引: (org_id, code)
+```
+
+生成的模型：
+```go
+// Resource 资源表
+type Resource struct {
+	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
+	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
+	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
+	OrgID     string    `gorm:"column:org_id;type:bigint;not null;uniqueIndex:idx_resource_org_code,priority:1;comment:组织ID"`
+	Code      string    `gorm:"column:code;type:text;not null;uniqueIndex:idx_resource_org_code,priority:2;comment:编码"`
+	Name      string    `gorm:"column:name;type:text;not null;comment:名称"`
+}
+```
+
+#### 注意事项
+
+- 联合索引名称必须在所有参与字段上保持一致
+- `priority` 值决定字段在索引中的顺序，数值越小越靠前
+- 单字段索引使用简写 `index` 或 `uniqueIndex`，联合索引必须指定索引名称
+- 一个字段可以同时参与多个索引
+
+---
+
 ## 字段排列顺序
 
 1. **身份字段**：`ID`
@@ -156,7 +228,7 @@ GORM 模型必须使用 `comment` 标签为表和字段添加数据库级别的�
 // User 系统用户
 type User struct {
 	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
-	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null"`
+	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	Email     string    `gorm:"column:email;type:text;not null;uniqueIndex;comment:邮箱地址"` // 邮箱地址
 	Phone     string    `gorm:"column:phone;type:text;not null;index;comment:手机号码"`       // 手机号码
@@ -176,7 +248,7 @@ func (User) TableName() string {
 // Role 角色
 type Role struct {
 	ID          string    `gorm:"primaryKey;column:id;type:bigint"`
-	CreatedAt   time.Time `gorm:"column:created_at;type:timestamptz;not null"`
+	CreatedAt   time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	OrgID       string    `gorm:"column:org_id;type:bigint;not null;comment:所属组织"`        // 所属组织
 	Name        string    `gorm:"column:name;type:text;not null;comment:角色名称"`            // 角色名称
@@ -211,12 +283,14 @@ func (RolePermission) TableName() string {
 
 - [ ] 主键和关联字段使用 `string` 类型 + `type:bigint`（避免 JS 精度丢失）
 - [ ] 包含 `CreatedAt` 和 `UpdatedAt` 时间字段（`type:timestamptz`，紧跟在 `ID` 之后）
+- [ ] `CreatedAt` 字段包含 `index` 索引
 - [ ] 业务字段按思维导图中的顺序排列
 - [ ] 表注释和字段注释来自思维导图描述
 - [ ] 业务字段包含 `comment:xxx` 标签（数据库级别注释）
 - [ ] 文本字段使用 `string` + `type:text`
 - [ ] 所有字段显式指定 `column` 名称
 - [ ] 核心字段包含 `not null`
+- [ ] 联合索引已正确解析（索引名称一致、priority 顺序正确）
 - [ ] 实现 `TableName()` 方法返回小写下划线表名
 - [ ] 无外键关联定义
 - [ ] 无 `gorm.Model` 嵌入
@@ -262,7 +336,6 @@ func (RolePermission) TableName() string {
 | `diff` | 对比模型变更，生成迁移文件 | `scripts/migrate.py diff` |
 | `apply` | 应用迁移到数据库 | `scripts/migrate.py apply` |
 | `status` | 查看迁移状态 | `scripts/migrate.py status` |
-| `lint` | 检查最新迁移文件的安全性 | `scripts/migrate.py lint` |
 | `inspect` | 查看数据库当前 schema | `scripts/migrate.py inspect` |
 | `push` | 直接推送 schema（仅开发环境） | `scripts/migrate.py push` |
 | `hash` | 重新生成迁移文件哈希 | `scripts/migrate.py hash` |
@@ -287,16 +360,13 @@ scripts/migrate.py --env prod apply
 # 1. 生成迁移文件
 scripts/migrate.py diff
 
-# 2. 检查生成的 SQL（在 migrations/ 目录）
+# 2. 检查生成的 SQL（在 migrations/ 目录，人工审核破坏性变更）
 cat migrations/*.sql | tail -50
 
-# 3. 检查迁移文件安全性
-scripts/migrate.py lint
-
-# 4. 应用迁移到本地数据库
+# 3. 应用迁移到本地数据库
 scripts/migrate.py apply
 
-# 5. 验证迁移状态
+# 4. 验证迁移状态
 scripts/migrate.py status
 ```
 
@@ -362,17 +432,17 @@ LLM 在执行特定任务时，应自动触发相关命令：
 
 ### 新增模型后
 
-1. ✅ 在 `cmd/atlas-loader/main.go` 注册模型
-2. ✅ 执行 `scripts/migrate.py diff` 生成迁移
-3. ✅ 执行 `scripts/migrate.py lint` 检查安全性
-4. ✅ 执行 `scripts/migrate.py apply` 应用迁移
+1. ✅ 在 `cmd/atlas-loader/main.go` 的 `models` 切片中注册模型
+2. ✅ 在 `cmd/atlas-loader/main.go` 的 `tableComments` 中添加表注释
+3. ✅ 执行 `scripts/migrate.py diff` 生成迁移
+4. ✅ 人工审核生成的 SQL 文件
+5. ✅ 执行 `scripts/migrate.py apply` 应用迁移
 
 ### 修改模型字段后
 
 1. ✅ 执行 `scripts/migrate.py diff` 生成迁移
-2. ✅ 检查生成的 SQL 是否符合预期（特别关注破坏性变更）
-3. ✅ 执行 `scripts/migrate.py lint` 检查安全性
-4. ✅ 执行 `scripts/migrate.py apply` 应用迁移
+2. ✅ 人工审核生成的 SQL（特别关注破坏性变更）
+3. ✅ 执行 `scripts/migrate.py apply` 应用迁移
 
 ### 添加新依赖后
 
@@ -414,14 +484,16 @@ scripts/migrate.py hash
 curl -sSf https://atlasgo.sh | sh
 ```
 
-### Docker 容器问题
+### 表注释维护
 
-Atlas 使用 Docker 作为开发数据库，确保 Docker 服务运行中：
+表注释通过 `cmd/atlas-loader/main.go` 中的 `tableComments` 映射管理：
 
-```bash
-# 检查 Docker 状态
-docker info
-
-# 启动 Docker 服务（如需要）
-sudo systemctl start docker
+```go
+var tableComments = map[string]string{
+    "user": "用户表",
+    "org":  "组织表",
+    // 新增表时在此添加注释
+}
 ```
+
+新增模型时，需同时在 `models` 切片和 `tableComments` 映射中添加对应条目。

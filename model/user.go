@@ -5,7 +5,7 @@ import "time"
 // User 用户表
 type User struct {
 	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
-	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null"`
+	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	Active    bool      `gorm:"column:active;not null;default:true;comment:状态"`           // 状态
 	Email     string    `gorm:"column:email;type:text;not null;uniqueIndex;comment:电子邮件"` // 电子邮件
