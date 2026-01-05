@@ -9,6 +9,7 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"go.uber.org/fx"
 )
 
 func main() {
@@ -16,11 +17,15 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	fx.New().Run()
+
 }
 
 func listen(path string) (err error) {
 	ctx := context.TODO()
 	var v *common.Values
+
 	if v, err = bootstrap.LoadStaticValues(path); err != nil {
 		return
 	}
