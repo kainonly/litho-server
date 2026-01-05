@@ -1,177 +1,20 @@
-# PostgreSQL 工程实践规范
+# GORM 模型生成规范
 
-> 本文档整理自内部工程约束规范及 PostgreSQL 官方 Wiki 反模式指南，供 LLM 在生成 SQL 或数据库设计时参考。
+> 本文档定义 GORM 模型的生成规则，供 LLM 在生成模型代码时参考。
 
 ---
 
 ## 命名规范
 
-- 表名、字段名：小写字母 + 下划线，禁止大写（PostgreSQL 会将未加引号的标识符转为小写）
-- 逻辑表名不含数字；分区/分表仅体现在物理表层级
-- 关联字段：`${entity}_id` 格式，如 `user_id`, `role_id`
-- 层级自关联：使用 `pid` 表示父级
+- **表名**：小写字母 + 下划线，禁止大写和数字
+- **字段名（列名）**：小写字母 + 下划线
+- **Go 字段名**：大驼峰（PascalCase）
+- **关联字段**：列名 `${entity}_id`，Go 字段名 `${Entity}ID`，如 `org_id` / `OrgID`
+- **层级自关联**：列名 `pid`，Go 字段名 `PID`
 
 ---
 
-## 主键与标识符
-
-- 所有业务表必须包含 `id` 字段作为全局唯一标识
-- 使用应用程序生成的有序 ID（如 Sonyflake），禁止随机 UUID
-- 主键与关联字段统一采用 `bigint`
-- 分区表主键需包含分区键：`PRIMARY KEY (date, id)`
-- 新项目禁止使用 `serial`，使用 `IDENTITY` 列
-
----
-
-## 数据类型选择
-
-### 时间类型
-- 时间点：`${any}_at` 后缀，类型 `timestamptz`（禁止无时区的 `timestamp`）
-- 业务日期：`${any}_date` 后缀，类型 `date`
-- 禁止使用 `timetz` 和 `CURRENT_TIME`
-- 使用 `now()` 或 `CURRENT_TIMESTAMP` 获取当前时间
-
-### 文本类型
-- 禁止使用 `char(n)`（会补空格，比较行为异常）
-- 禁止默认使用 `varchar(n)`（与 `text` 存储相同但有不必要的长度限制）
-- 推荐使用 `text` + `CHECK` 约束
-
-### 数值类型
-- 禁止使用 `money` 类型，使用 `numeric` 或 `integer + 缩放`
-
-### 编码
-- 禁止使用 `SQL_ASCII` 编码，推荐 `UTF8`
-
----
-
-## 状态与控制字段
-
-- 启用/禁用：简单场景用 `active:boolean`
-- 业务流转状态：`state:smallint`，状态值从 1 开始，负值表示不可用/异常
-- 核心字段应使用 `NOT NULL`，仅在明确允许"未知/未设置"时使用 `NULL`
-
----
-
-## 字段分组建议
-
-1. **身份与边界**：`id`, `*_id`, 业务唯一键, 分区键
-2. **元数据**：`created_at`, `updated_at`
-3. **业务核心数据**：`total`, `amount` 等
-4. **业务状态/控制字段**：`state`, `active` 等
-
----
-
-## 约束与索引
-
-- 禁止定义外键、存储过程、触发器等强耦合机制
-- 数据一致性以应用层为主
-- 允许使用 `CHECK` 等轻量级约束保障数据基本合法性
-- 编码类字段仅用于展示，不作为主关联键
-
----
-
-## 时间戳维护
-
-- 附属表按需维护自身时间字段
-- 审计日志/事件流可不额外维护更新时间
-- 更新附属表不应级联更新主表的 `updated_at`
-
----
-
-## 事务使用规范
-
-### 何时使用显式事务
-- 多表写入
-- 状态流转
-- 库存/余额变更
-- 禁止依赖 ORM 的隐式事务
-
-### 事务中禁止的操作
-- HTTP/RPC/MQ 网络调用
-- 文件 IO
-- sleep、随机数、外部系统依赖等非确定性操作
-
-### 事务时长
-- 单个事务应尽可能短，禁止长事务（> 1s）
-- 长事务危害：阻塞 VACUUM、膨胀表与索引、放大锁冲突、增加回滚成本
-
-### 隔离级别
-- 默认使用 `READ COMMITTED`
-- 仅在明确理解并验证后使用 `REPEATABLE READ` / `SERIALIZABLE`
-
-### 锁与并发
-- 禁止使用 `SELECT ... FOR UPDATE` 作为"逻辑锁"
-- 正确方式：状态字段 + 条件更新
-
-### 幂等性
-- 所有写操作必须幂等，允许事务失败后安全重试
-- 推荐：状态机、业务唯一键、`INSERT ... ON CONFLICT`
-
-### 原子操作
-- 禁止「先查后写」的非原子逻辑，必须合并为单条原子 SQL
-- 计数/余额/库存等数值变更必须使用数据库原子操作，禁止应用层计算后回写
-
-### 时间函数
-- 禁止在事务中多次使用 `NOW()` / `CURRENT_TIMESTAMP` 作为业务判断依据
-- 应在事务开始时获取一次并复用
-
-### 跨系统一致性
-- 采用最终一致性模型（Outbox / MQ / 补偿）
-- 禁止使用"分布式事务"
-
----
-
-## SQL 反模式
-
-### 禁止使用 `NOT IN`
-原因：
-- 列表中有 `NULL` 时结果可能全为空
-- 不会优化成 anti-join，性能极差
-
-替代写法：
-```sql
-SELECT * FROM foo 
-WHERE NOT EXISTS (SELECT 1 FROM bar WHERE foo.col = bar.x);
-```
-
-### 禁止使用 `BETWEEN`（尤其是时间戳）
-原因：包含边界点，查询时间段可能多算或漏算
-
-替代写法：
-```sql
-WHERE ts >= '2024-01-01' AND ts < '2024-01-08'
-```
-
-### 禁止使用 Rules（规则）
-原因：通过查询重写实现，行为不符合预期
-
-替代：使用触发器（trigger）
-
-### 禁止使用表继承（Table Inheritance）
-原因：行为不符合 OO 预期，已有原生分区功能替代
-
----
-
-## 快速检查清单
-
-生成 PostgreSQL 相关代码时，确认：
-
-- [ ] 表名、字段名全小写 + 下划线
-- [ ] 主键使用 `bigint` + 应用生成的有序 ID
-- [ ] 时间字段使用 `timestamptz`
-- [ ] 文本字段使用 `text` 而非 `char(n)` / `varchar(n)`
-- [ ] 无外键、存储过程、触发器
-- [ ] 事务内无网络调用、文件 IO
-- [ ] 数值变更使用原子操作
-- [ ] 使用 `NOT EXISTS` 而非 `NOT IN`
-- [ ] 时间范围查询使用 `>=` 和 `<` 而非 `BETWEEN`
-- [ ] 写操作具备幂等性
-
----
-
-## GORM 模型生成规范
-
-### 基本结构
+## 基本结构
 
 所有模型必须遵循以下结构模板：
 
@@ -186,7 +29,7 @@ type EntityName struct {
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	// 业务字段按思维导图中的顺序排列...
-	FieldName string `gorm:"column:field_name;type:text;not null"` // 字段注释（来自思维导图）
+	FieldName string `gorm:"column:field_name;type:text;not null;comment:字段注释"` // 字段注释（来自思维导图）
 }
 
 func (EntityName) TableName() string {
@@ -194,50 +37,71 @@ func (EntityName) TableName() string {
 }
 ```
 
-### 注释规范
+---
 
-- **表注释**：在 `type` 声明上方添加注释，内容来自思维导图中的表/实体描述
-- **字段注释**：在字段行尾添加注释，内容来自思维导图中的字段描述
+## 注释规范
+
+- **表注释**：在 `type` 声明上方添加 Go 注释，内容来自思维导图中的表/实体描述
+- **字段注释**：在字段行尾添加 Go 注释，内容来自思维导图中的字段描述
 - 注释必须保留思维导图中的原始描述，不得省略或修改
 
-### 字段定义规则
+### 数据库注释（COMMENT）
 
-#### 主键
+GORM 模型必须使用 `comment` 标签为表和字段添加数据库级别的注释，便于数据库管理工具查看字段含义。
+
+#### 字段注释
+- 在 gorm tag 中添加 `comment:xxx` 标签
+- 注释内容与 Go 行尾注释保持一致
+- 示例：`gorm:"column:email;type:text;not null;uniqueIndex;comment:邮箱地址"`
+
+#### 表注释
+- 通过实现 `TableName()` 方法无法直接设置表注释
+- 需要在迁移时使用 `Migrator().SetComment()` 或在迁移 SQL 中添加 `COMMENT ON TABLE`
+- 推荐在 Atlas 迁移文件中统一管理表注释：
+  ```sql
+  COMMENT ON TABLE "user" IS '系统用户';
+  ```
+
+---
+
+## 字段定义规则
+
+### 主键
 - 必须使用 `ID string` 作为主键（使用 `string` 是因为 JavaScript 无法安全处理超过 `Number.MAX_SAFE_INTEGER` 的整数）
 - Tag 格式：`gorm:"primaryKey;column:id;type:bigint"`
 - 数据库存储为 `bigint`，Go 层使用 `string` 自动转换
 
-#### 时间字段
+### 时间字段
 - 必须包含 `CreatedAt` 和 `UpdatedAt`
 - 类型：`time.Time`
 - 必须显式指定 `type:timestamptz`（GORM 默认使用 `timestamp without time zone`，不符合规范）
 - Tag 格式：`gorm:"column:created_at;type:timestamptz;not null"`
 
-#### 关联字段（逻辑外键）
+### 关联字段（逻辑外键）
 - 命名格式：`${Entity}ID`，如 `OrgID`、`UserID`
 - 类型：`string`（与主键保持一致，避免前端精度丢失）
 - 列名格式：`${entity}_id`，如 `org_id`、`user_id`
 - Tag 格式：`gorm:"column:org_id;type:bigint;not null"`
 - 层级自关联使用 `PID string` + `gorm:"column:pid;type:bigint"`
 
-#### 文本字段
+### 文本字段
 - 类型：`string`
 - 必须显式指定 `type:text`
 - 示例：`gorm:"column:name;type:text;not null"`
 
-#### 布尔字段
+### 布尔字段
 - 启用/禁用统一使用 `Active bool`
 - 必须指定默认值：`gorm:"column:active;not null;default:true"`
 
-#### 状态字段
+### 状态字段
 - 业务流转状态使用 `State int16`
 - 状态值从 1 开始，负值表示异常
 
-#### 排序字段
+### 排序字段
 - 使用 `Sort int16`
 - 默认值为 0：`gorm:"column:sort;not null;default:0"`
 
-#### JSONB 字段
+### JSONB 字段
 - 对象类型：使用 `common.M`（`map[string]any`）
 - 数组类型：使用 `common.A`（`[]any`），适用于数组或数组对象
 - Tag 格式：`gorm:"column:xxx;type:jsonb;not null;default:'{}'"`（对象）或 `default:'[]'`（数组）
@@ -247,26 +111,35 @@ func (EntityName) TableName() string {
   Tags     common.A `gorm:"column:tags;type:jsonb;not null;default:'[]'"`
   ```
 
-### Tag 格式规范
+---
 
-- Tag 顺序：`gorm:"primaryKey;column:xxx;type:xxx;not null;default:xxx;index/uniqueIndex"`
+## Tag 格式规范
+
+- Tag 顺序：`gorm:"primaryKey;column:xxx;type:xxx;not null;default:xxx;index/uniqueIndex;comment:xxx"`
 - 所有字段必须显式指定 `column` 名称
 - 核心字段必须包含 `not null`
 - 有默认值的字段使用 `default:xxx`
+- 所有业务字段必须包含 `comment:xxx` 标签（`id`、`created_at`、`updated_at` 等通用字段可省略）
 
-### 字段排列顺序
+---
+
+## 字段排列顺序
 
 1. **身份字段**：`ID`
 2. **元数据字段**：`CreatedAt`、`UpdatedAt`
 3. **业务字段**：按思维导图中定义的顺序排列（不做额外分组或重排）
 
-### TableName 方法
+---
+
+## TableName 方法
 
 - 必须实现 `TableName() string` 方法
 - 返回小写下划线格式的表名
 - 使用值接收者：`func (EntityName) TableName() string`
 
-### 禁止事项
+---
+
+## 禁止事项
 
 - 禁止使用 GORM 的外键关联（`foreignKey`、`references`）
 - 禁止使用 `gorm.Model` 嵌入（字段命名不符合规范）
@@ -274,21 +147,23 @@ func (EntityName) TableName() string {
 - 禁止使用 `varchar(n)` 或 `char(n)`
 - 禁止省略 `column` 标签
 
-### 模型示例
+---
 
-#### 基础业务表
+## 模型示例
+
+### 基础业务表
 ```go
 // User 系统用户
 type User struct {
 	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
-	Email     string    `gorm:"column:email;type:text;not null;uniqueIndex"` // 邮箱地址
-	Phone     string    `gorm:"column:phone;type:text;not null;index"`       // 手机号码
-	Name      string    `gorm:"column:name;type:text;not null"`              // 用户姓名
-	Password  string    `gorm:"column:password;type:text;not null"`          // 登录密码
-	Avatar    string    `gorm:"column:avatar;type:text;not null"`            // 头像地址
-	Active    bool      `gorm:"column:active;not null;default:true"`         // 是否启用
+	Email     string    `gorm:"column:email;type:text;not null;uniqueIndex;comment:邮箱地址"` // 邮箱地址
+	Phone     string    `gorm:"column:phone;type:text;not null;index;comment:手机号码"`       // 手机号码
+	Name      string    `gorm:"column:name;type:text;not null;comment:用户姓名"`              // 用户姓名
+	Password  string    `gorm:"column:password;type:text;not null;comment:登录密码"`          // 登录密码
+	Avatar    string    `gorm:"column:avatar;type:text;not null;comment:头像地址"`            // 头像地址
+	Active    bool      `gorm:"column:active;not null;default:true;comment:是否启用"`         // 是否启用
 }
 
 func (User) TableName() string {
@@ -296,18 +171,18 @@ func (User) TableName() string {
 }
 ```
 
-#### 带关联的表
+### 带关联的表
 ```go
 // Role 角色
 type Role struct {
 	ID          string    `gorm:"primaryKey;column:id;type:bigint"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:timestamptz;not null"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
-	OrgID       string    `gorm:"column:org_id;type:bigint;not null"`        // 所属组织
-	Name        string    `gorm:"column:name;type:text;not null"`            // 角色名称
-	Description string    `gorm:"column:description;type:text;not null"`     // 角色描述
-	Sort        int16     `gorm:"column:sort;not null;default:0"`            // 排序权重
-	Active      bool      `gorm:"column:active;not null;default:true"`       // 是否启用
+	OrgID       string    `gorm:"column:org_id;type:bigint;not null;comment:所属组织"`        // 所属组织
+	Name        string    `gorm:"column:name;type:text;not null;comment:角色名称"`            // 角色名称
+	Description string    `gorm:"column:description;type:text;not null;comment:角色描述"`     // 角色描述
+	Sort        int16     `gorm:"column:sort;not null;default:0;comment:排序权重"`            // 排序权重
+	Active      bool      `gorm:"column:active;not null;default:true;comment:是否启用"`       // 是否启用
 }
 
 func (Role) TableName() string {
@@ -315,12 +190,12 @@ func (Role) TableName() string {
 }
 ```
 
-#### 关联表（多对多中间表）
+### 关联表（多对多中间表）
 ```go
 // RolePermission 角色权限关联
 type RolePermission struct {
-	RoleID       string `gorm:"primaryKey;column:role_id;type:bigint"`       // 角色ID
-	PermissionID string `gorm:"primaryKey;column:permission_id;type:bigint"` // 权限ID
+	RoleID       string `gorm:"primaryKey;column:role_id;type:bigint;comment:角色ID"`       // 角色ID
+	PermissionID string `gorm:"primaryKey;column:permission_id;type:bigint;comment:权限ID"` // 权限ID
 }
 
 func (RolePermission) TableName() string {
@@ -328,7 +203,9 @@ func (RolePermission) TableName() string {
 }
 ```
 
-### GORM 模型检查清单
+---
+
+## GORM 模型检查清单
 
 生成 GORM 模型时，确认：
 
@@ -336,9 +213,215 @@ func (RolePermission) TableName() string {
 - [ ] 包含 `CreatedAt` 和 `UpdatedAt` 时间字段（`type:timestamptz`，紧跟在 `ID` 之后）
 - [ ] 业务字段按思维导图中的顺序排列
 - [ ] 表注释和字段注释来自思维导图描述
+- [ ] 业务字段包含 `comment:xxx` 标签（数据库级别注释）
 - [ ] 文本字段使用 `string` + `type:text`
 - [ ] 所有字段显式指定 `column` 名称
 - [ ] 核心字段包含 `not null`
 - [ ] 实现 `TableName()` 方法返回小写下划线表名
 - [ ] 无外键关联定义
 - [ ] 无 `gorm.Model` 嵌入
+
+---
+
+# 命令自动化引导
+
+> 本节定义项目中常用命令的执行规则和工作流程，供 LLM 在协助开发时参考。
+
+---
+
+## 环境准备
+
+### 前置依赖
+
+在执行任何命令前，确保以下工具已安装：
+
+- **Go 1.24+**：项目运行时
+- **Atlas CLI**：数据库迁移工具
+  ```bash
+  curl -sSf https://atlasgo.sh | sh
+  ```
+- **Python 3.10+**：迁移脚本运行时
+- **Docker**：Atlas 开发数据库容器
+
+### 配置文件
+
+1. 复制 `.env.example` 为 `.env`
+2. 填入实际的数据库连接信息
+3. `.env` 文件不应提交到版本控制
+
+---
+
+## 数据库迁移工作流
+
+### 核心命令
+
+所有迁移命令通过 `scripts/migrate.py` 执行：
+
+| 命令 | 用途 | 示例 |
+|------|------|------|
+| `diff` | 对比模型变更，生成迁移文件 | `scripts/migrate.py diff` |
+| `apply` | 应用迁移到数据库 | `scripts/migrate.py apply` |
+| `status` | 查看迁移状态 | `scripts/migrate.py status` |
+| `lint` | 检查最新迁移文件的安全性 | `scripts/migrate.py lint` |
+| `inspect` | 查看数据库当前 schema | `scripts/migrate.py inspect` |
+| `push` | 直接推送 schema（仅开发环境） | `scripts/migrate.py push` |
+| `hash` | 重新生成迁移文件哈希 | `scripts/migrate.py hash` |
+
+### 环境切换
+
+默认使用 `local` 环境，生产环境需显式指定：
+
+```bash
+# 本地环境（默认）
+scripts/migrate.py diff
+
+# 生产环境
+scripts/migrate.py --env prod apply
+```
+
+### 模型变更后的标准流程
+
+当 GORM 模型发生变更时，按以下步骤操作：
+
+```bash
+# 1. 生成迁移文件
+scripts/migrate.py diff
+
+# 2. 检查生成的 SQL（在 migrations/ 目录）
+cat migrations/*.sql | tail -50
+
+# 3. 检查迁移文件安全性
+scripts/migrate.py lint
+
+# 4. 应用迁移到本地数据库
+scripts/migrate.py apply
+
+# 5. 验证迁移状态
+scripts/migrate.py status
+```
+
+---
+
+## Atlas Loader 模型注册
+
+当新增模型时，必须在 `cmd/atlas-loader/main.go` 中注册：
+
+```go
+models := []any{
+    &model.User{},
+    &model.Org{},
+    // 新增模型在此处添加
+    &model.NewEntity{},
+}
+```
+
+**重要**：未注册的模型不会被 Atlas 识别，迁移时将被忽略。
+
+---
+
+## Go 项目常用命令
+
+### 依赖管理
+
+```bash
+# 下载依赖
+go mod download
+
+# 整理依赖（移除未使用、添加缺失）
+go mod tidy
+
+# 更新特定依赖
+go get -u github.com/example/package
+```
+
+### 代码生成
+
+```bash
+# Wire 依赖注入生成（如使用）
+go generate ./...
+```
+
+### 运行与测试
+
+```bash
+# 运行应用
+go run .
+
+# 运行测试
+go test ./...
+
+# 带覆盖率的测试
+go test -cover ./...
+```
+
+---
+
+## 自动化任务清单
+
+LLM 在执行特定任务时，应自动触发相关命令：
+
+### 新增模型后
+
+1. ✅ 在 `cmd/atlas-loader/main.go` 注册模型
+2. ✅ 执行 `scripts/migrate.py diff` 生成迁移
+3. ✅ 执行 `scripts/migrate.py lint` 检查安全性
+4. ✅ 执行 `scripts/migrate.py apply` 应用迁移
+
+### 修改模型字段后
+
+1. ✅ 执行 `scripts/migrate.py diff` 生成迁移
+2. ✅ 检查生成的 SQL 是否符合预期（特别关注破坏性变更）
+3. ✅ 执行 `scripts/migrate.py lint` 检查安全性
+4. ✅ 执行 `scripts/migrate.py apply` 应用迁移
+
+### 添加新依赖后
+
+1. ✅ 执行 `go mod tidy` 整理依赖
+
+---
+
+## 危险操作警告
+
+以下操作需要用户明确确认：
+
+- ⚠️ `--env prod` 任何生产环境操作
+- ⚠️ 删除列或表的迁移（数据丢失风险）
+- ⚠️ 修改列类型（可能导致数据转换失败）
+- ⚠️ 删除索引（可能影响查询性能）
+
+执行前必须：
+1. 明确告知用户操作风险
+2. 等待用户确认
+3. 建议先在本地环境验证
+
+---
+
+## 常见问题处理
+
+### 迁移冲突
+
+如果迁移文件哈希不匹配：
+
+```bash
+# 重新计算哈希
+scripts/migrate.py hash
+```
+
+### Atlas 命令未找到
+
+```bash
+# 安装 Atlas CLI
+curl -sSf https://atlasgo.sh | sh
+```
+
+### Docker 容器问题
+
+Atlas 使用 Docker 作为开发数据库，确保 Docker 服务运行中：
+
+```bash
+# 检查 Docker 状态
+docker info
+
+# 启动 Docker 服务（如需要）
+sudo systemctl start docker
+```

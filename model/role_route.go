@@ -2,8 +2,9 @@ package model
 
 // RoleRoute 权限路由表
 type RoleRoute struct {
-	RoleID  string `gorm:"primaryKey;column:role_id;type:bigint"`  // 权限ID
-	RouteID string `gorm:"primaryKey;column:route_id;type:bigint"` // 路由ID
+	ID      string `gorm:"primaryKey;column:id;type:bigint"`
+	RoleID  string `gorm:"column:role_id;type:bigint;not null;comment:权限ID"`  // 权限ID
+	RouteID string `gorm:"column:route_id;type:bigint;not null;comment:路由ID"` // 路由ID
 }
 
 func (RoleRoute) TableName() string {

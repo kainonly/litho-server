@@ -2,8 +2,9 @@ package model
 
 // RoleMenu 权限导航表
 type RoleMenu struct {
-	RoleID string `gorm:"primaryKey;column:role_id;type:bigint"` // 权限ID
-	MenuID string `gorm:"primaryKey;column:menu_id;type:bigint"` // 导航ID
+	ID     string `gorm:"primaryKey;column:id;type:bigint"`
+	RoleID string `gorm:"column:role_id;type:bigint;not null;comment:权限ID"` // 权限ID
+	MenuID string `gorm:"column:menu_id;type:bigint;not null;comment:导航ID"` // 导航ID
 }
 
 func (RoleMenu) TableName() string {
