@@ -9,7 +9,7 @@ import (
 )
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
-	data := M{
+	data := map[string]any{
 		"hostname": os.Getenv("HOSTNAME"),
 		"endpoint": "litho-server",
 		"now":      time.Now(),

@@ -2,43 +2,32 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"server/api"
 	"server/bootstrap"
-	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"go.uber.org/fx"
 )
 
 func main() {
-	if err := listen("./config/values.yml"); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	fx.New().Run()
+	fx.New(
+		bootstrap.Provides,
+		api.Options,
+	).Run()
 
 }
 
-func listen(path string) (err error) {
-	ctx := context.TODO()
-	var v *common.Values
-
-	if v, err = bootstrap.LoadStaticValues(path); err != nil {
-		return
-	}
-	var x *api.API
-	if x, err = bootstrap.NewAPI(v); err != nil {
-		return
-	}
-
-	var h *server.Hertz
-	if h, err = x.Initialize(ctx); err != nil {
-		return
-	}
-
-	h.Spin()
-	return
+func RegisterServer(lc fx.Lifecycle, h *server.Hertz) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go h.Spin()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			if h != nil {
+				return h.Shutdown(ctx)
+			}
+			return nil
+		},
+	})
 }

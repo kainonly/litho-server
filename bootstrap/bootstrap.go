@@ -19,15 +19,27 @@ import (
 	"github.com/kainonly/go/locker"
 	"github.com/kainonly/go/passport"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func LoadStaticValues(path string) (v *common.Values, err error) {
+var Provides = fx.Provide(
+	NewStaticValues,
+	NewGorm,
+	NewRedis,
+	NewPassport,
+	NewCsrf,
+	NewLocker,
+	NewCaptcha,
+	NewHertz,
+)
+
+func NewStaticValues() (v *common.Values, err error) {
 	v = new(common.Values)
 	var b []byte
-	if b, err = os.ReadFile(path); err != nil {
+	if b, err = os.ReadFile(`./config/values.yml`); err != nil {
 		return
 	}
 	if err = yaml.Unmarshal(b, &v); err != nil {
@@ -36,7 +48,7 @@ func LoadStaticValues(path string) (v *common.Values, err error) {
 	return
 }
 
-func UseGorm(v *common.Values) (orm *gorm.DB, err error) {
+func NewGorm(lc fx.Lifecycle, v *common.Values) (orm *gorm.DB, err error) {
 	if orm, err = gorm.Open(
 		postgres.New(postgres.Config{
 			DSN:                  v.Database.Url,
@@ -56,10 +68,15 @@ func UseGorm(v *common.Values) (orm *gorm.DB, err error) {
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(100)
 	db.SetConnMaxLifetime(time.Hour)
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return db.Close()
+		},
+	})
 	return
 }
 
-func UseRedis(v *common.Values) (client *redis.Client, err error) {
+func NewRedis(lc fx.Lifecycle, v *common.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(v.Database.Redis)
 	if err != nil {
 		return
@@ -68,32 +85,37 @@ func UseRedis(v *common.Values) (client *redis.Client, err error) {
 	if err = client.Ping(context.TODO()).Err(); err != nil {
 		return
 	}
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return client.Close()
+		},
+	})
 	return
 }
 
-func UsePassport(v *common.Values) *passport.Passport {
+func NewPassport(v *common.Values) *passport.Passport {
 	return passport.New(
 		passport.SetKey(v.Key),
 		passport.SetIssuer(v.Domain),
 	)
 }
 
-func UseCsrf(v *common.Values) *csrf.Csrf {
+func NewCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
 		csrf.SetKey(v.Key),
 		csrf.SetDomain(v.Domain),
 	)
 }
 
-func UseLocker(client *redis.Client) *locker.Locker {
+func NewLocker(client *redis.Client) *locker.Locker {
 	return locker.New(client)
 }
 
-func UseCaptcha(client *redis.Client) *captcha.Captcha {
+func NewCaptcha(client *redis.Client) *captcha.Captcha {
 	return captcha.New(client)
 }
 
-func UseHertz(v *common.Values) (h *server.Hertz, err error) {
+func NewHertz(v *common.Values) (h *server.Hertz, err error) {
 	if v.Address == "" {
 		return
 	}
@@ -135,6 +157,5 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 			MaxAge:           12 * time.Hour,
 		}),
 	)
-
 	return
 }
