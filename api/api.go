@@ -13,7 +13,7 @@ var Options = fx.Options(
 	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, indexX *index.Service) {
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller) {
 	h.GET("", index.Ping)
 
 	lc.Append(fx.Hook{

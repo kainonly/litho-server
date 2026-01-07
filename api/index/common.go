@@ -6,14 +6,6 @@ import (
 	"go.uber.org/fx"
 )
 
-type Controller struct {
-	IndexX *Service
-}
-
-type Service struct {
-	*common.Inject
-}
-
 var Provides = fx.Provide(
 	func(i *Service) *Controller {
 		return &Controller{IndexX: i}
@@ -22,3 +14,11 @@ var Provides = fx.Provide(
 		return &Service{Inject: &i}
 	},
 )
+
+type Controller struct {
+	IndexX *Service
+}
+
+type Service struct {
+	*common.Inject
+}
