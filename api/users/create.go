@@ -4,10 +4,8 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/kainonly/go/snowflake"
 )
 
 type CreateDto struct {
@@ -34,18 +32,5 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.User{
-		ID:       snowflake.GenerateString(),
-		Email:    dto.Email,
-		Phone:    dto.Phone,
-		Name:     dto.Name,
-		Password: dto.Password, // 实际应用需要加密
-		Avatar:   dto.Avatar,
-	}
-	if dto.Active != nil {
-		data.Active = *dto.Active
-	} else {
-		data.Active = true
-	}
-	return x.Db.Create(&data).Error
+	return
 }

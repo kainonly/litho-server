@@ -25,7 +25,5 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.Role, err error) {
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
-	err = dto.Take(ctx, x.Db.Model(&model.Role{}), &data)
 	return
 }

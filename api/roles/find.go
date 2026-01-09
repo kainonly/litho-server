@@ -25,11 +25,5 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto common.FindDto) (data []model.Role, err error) {
-	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	do := x.Db.Model(&model.Role{}).Where(`org_id = ?`, user.OrgID)
-	if dto.Q != "" {
-		do = do.Where(`name ILIKE ?`, dto.GetKeyword())
-	}
-	err = dto.Find(ctx, do, &data)
 	return
 }

@@ -4,10 +4,8 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/kainonly/go/snowflake"
 )
 
 type CreateDto struct {
@@ -31,13 +29,5 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Role{
-		ID:          snowflake.GenerateString(),
-		OrgID:       user.OrgID,
-		Name:        dto.Name,
-		Description: dto.Description,
-		Sort:        dto.Sort,
-		Active:      true,
-	}
-	return x.Db.Create(&data).Error
+	return
 }

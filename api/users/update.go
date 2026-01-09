@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -34,24 +33,5 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	updates := make(map[string]interface{})
-	if dto.Active != nil {
-		updates["active"] = *dto.Active
-	}
-	if dto.Email != "" {
-		updates["email"] = dto.Email
-	}
-	if dto.Phone != "" {
-		updates["phone"] = dto.Phone
-	}
-	if dto.Name != "" {
-		updates["name"] = dto.Name
-	}
-	if dto.Password != "" {
-		updates["password"] = dto.Password // 实际应用需要加密
-	}
-	if dto.Avatar != "" {
-		updates["avatar"] = dto.Avatar
-	}
-	return x.Db.Model(&model.User{}).Where("id = ?", dto.ID).Updates(updates).Error
+	return
 }

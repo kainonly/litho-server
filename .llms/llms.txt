@@ -807,6 +807,22 @@ api/users/
 - `Controller` 方法：处理 HTTP 请求，参数绑定，调用 Service
 - `Service` 方法：业务逻辑实现，数据库操作，**必须包含 `user *common.IAMUser` 参数**
 
+**重要：Service 方法初始化为空实现**
+
+生成 API 模块时，Service 方法必须保持空实现，仅包含方法签名和返回语句。业务逻辑由开发者后续手动填充，LLM 不得自作主张添加任何实现代码。
+
+```go
+// 正确：空实现
+func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
+	return
+}
+
+// 错误：不要添加任何业务逻辑
+func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
+	return x.Db.Where(`id in (?)`, dto.IDs).Delete(&model.User{}).Error  // ❌ 禁止
+}
+```
+
 ### common.IAMUser 结构
 
 ```go
@@ -828,7 +844,6 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -848,9 +863,9 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, map[string]any{"ok": true})
 }
 
-// Service 方法：业务逻辑（必须包含 user 参数）
+// Service 方法：空实现（业务逻辑由开发者后续填充）
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.Where(`id in (?)`, dto.IDs).Delete(&model.User{}).Error
+	return
 }
 ```
 
@@ -883,9 +898,8 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, data)
 }
 
+// Service 方法：空实现（业务逻辑由开发者后续填充）
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.User, err error) {
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
-	err = dto.Take(ctx, x.Db.Model(&model.User{}), &data)
 	return
 }
 ```
@@ -899,10 +913,8 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/kainonly/go/snowflake"
 )
 
 type CreateDto struct {
@@ -925,14 +937,9 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	c.JSON(201, map[string]any{"ok": true})
 }
 
+// Service 方法：空实现（业务逻辑由开发者后续填充）
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.User{
-		ID:       snowflake.GenerateString(),
-		Email:    dto.Email,
-		Name:     dto.Name,
-		Password: dto.Password, // 实际应用需要加密
-	}
-	return x.Db.Create(&data).Error
+	return
 }
 ```
 

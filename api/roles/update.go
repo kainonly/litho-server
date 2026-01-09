@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -32,18 +31,5 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	data := make(map[string]any)
-	if dto.Name != nil {
-		data["name"] = *dto.Name
-	}
-	if dto.Description != nil {
-		data["description"] = *dto.Description
-	}
-	if dto.Sort != nil {
-		data["sort"] = *dto.Sort
-	}
-	if dto.Active != nil {
-		data["active"] = *dto.Active
-	}
-	return x.Db.Model(&model.Role{}).Where(`id = ?`, dto.ID).Updates(data).Error
+	return
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -24,5 +23,5 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.Where("id IN (?)", dto.IDs).Delete(&model.User{}).Error
+	return
 }

@@ -25,7 +25,5 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.User, err error) {
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().Omit("password"))
-	err = dto.Take(ctx, x.Db.Model(&model.User{}), &data)
 	return
 }

@@ -32,21 +32,5 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (data []model.User, err error) {
-	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	do := x.Db.Model(&model.User{}).Omit("password")
-	if dto.Active != nil {
-		do = do.Where("active = ?", *dto.Active)
-	}
-	if dto.Email != "" {
-		do = do.Where("email = ?", dto.Email)
-	}
-	if dto.Phone != "" {
-		do = do.Where("phone = ?", dto.Phone)
-	}
-	if dto.Q != "" {
-		do = do.Where("name LIKE ? OR email LIKE ? OR phone LIKE ?",
-			dto.GetKeyword(), dto.GetKeyword(), dto.GetKeyword())
-	}
-	err = dto.FindDto.Find(ctx, do, &data)
 	return
 }
