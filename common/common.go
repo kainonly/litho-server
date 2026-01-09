@@ -19,3 +19,11 @@ type Inject struct {
 }
 
 type HandleFunc func(do *gorm.DB) *gorm.DB
+
+type IAMUser struct {
+	ID     string `json:"id"`
+	OrgID  string `json:"org_id"`
+	RoleID string `json:"role_id"`
+	Active bool   `json:"active"`
+	Ip     string `json:"-"`
+}

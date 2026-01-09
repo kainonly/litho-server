@@ -497,3 +497,498 @@ var tableComments = map[string]string{
 ```
 
 新增模型时，需同时在 `models` 切片和 `tableComments` 映射中添加对应条目。
+
+---
+
+# API 模块规范
+
+> 本节定义 API 模块的结构规则，供 LLM 在生成 API 代码时参考。
+
+---
+
+## 目录结构
+
+每个 API 模块位于 `api/` 目录下的独立子目录中，模块名称对应 API 路由路径：
+
+```
+api/
+├── api.go              # 路由聚合与生命周期管理
+├── index/              # 根路由模块
+│   ├── common.go       # 模块通用定义（Provides、Controller、Service）
+│   └── ping.go         # 具体的 API 处理方法
+├── users/              # /users 路由模块
+│   ├── common.go
+│   └── ...
+└── projects/           # /projects 路由模块
+    ├── common.go
+    └── ...
+```
+
+---
+
+## common.go 模板
+
+每个模块必须包含 `common.go` 文件，定义依赖注入和核心结构：
+
+```go
+package {module}
+
+import (
+	"server/common"
+
+	"go.uber.org/fx"
+)
+
+var Provides = fx.Provide(
+	func(i *Service) *Controller {
+		return &Controller{{Module}X: i}
+	},
+	func(i common.Inject) *Service {
+		return &Service{Inject: &i}
+	},
+)
+
+type Controller struct {
+	{Module}X *Service
+}
+
+type Service struct {
+	*common.Inject
+}
+```
+
+### 命名规则
+
+| 元素 | 命名格式 | 示例 |
+|------|----------|------|
+| 包名 | 小写模块名 | `users`、`projects`、`index` |
+| Controller 服务字段 | `{Module}X`（首字母大写） | `UsersX`、`ProjectsX`、`IndexX` |
+| Service 注入字段 | `Inject` | 固定使用 `*common.Inject` |
+
+### 示例
+
+#### users 模块（对应 `/users` 路由）
+
+```go
+package users
+
+import (
+	"server/common"
+
+	"go.uber.org/fx"
+)
+
+var Provides = fx.Provide(
+	func(i *Service) *Controller {
+		return &Controller{UsersX: i}
+	},
+	func(i common.Inject) *Service {
+		return &Service{Inject: &i}
+	},
+)
+
+type Controller struct {
+	UsersX *Service
+}
+
+type Service struct {
+	*common.Inject
+}
+```
+
+#### projects 模块（对应 `/projects` 路由）
+
+```go
+package projects
+
+import (
+	"server/common"
+
+	"go.uber.org/fx"
+)
+
+var Provides = fx.Provide(
+	func(i *Service) *Controller {
+		return &Controller{ProjectsX: i}
+	},
+	func(i common.Inject) *Service {
+		return &Service{Inject: &i}
+	},
+)
+
+type Controller struct {
+	ProjectsX *Service
+}
+
+type Service struct {
+	*common.Inject
+}
+```
+
+---
+
+## 路由与模块映射规则
+
+**特殊模块：**
+- `index` 模块可以定义自定义路径，不受模块名限制
+  - 例如：`POST /login` => `index.Login`，`GET /user` => `index.GetUser`
+
+**普通模块：**
+- 模块名称必须与路由前缀一致
+  - `users` 模块 => `/users/*`
+  - `roles` 模块 => `/roles/*`
+  - `projects` 模块 => `/projects/*`
+
+---
+
+## 标准路由约定
+
+每个模块默认拥有 5 个标准 CRUD 路由，读取操作使用 `GET`，写入操作使用 `POST`：
+
+| 路由 | Method | 方法 | 说明 |
+|------|--------|------|------|
+| `/{module}/:id` | GET | `FindById` | 根据 ID 获取单条记录 |
+| `/{module}` | GET | `Find` | 获取列表（支持分页、筛选） |
+| `/{module}/create` | POST | `Create` | 创建记录 |
+| `/{module}/bulk_create` | POST | `BulkCreate` | 批量创建记录（可选） |
+| `/{module}/update` | POST | `Update` | 更新记录 |
+| `/{module}/delete` | POST | `Delete` | 删除记录 |
+
+### 可选路由
+
+模块可根据需要添加以下可选路由（使用 `_` 前缀标识）：
+
+| 路由 | Method | 方法 | 说明 |
+|------|--------|------|------|
+| `/{module}/_search` | GET | `Search` | 异步搜索（用于下拉框、自动补全） |
+| `/{module}/_exists` | GET | `Exists` | 异步验证（检查字段值是否存在） |
+
+### 操作类路由
+
+对模块记录进行特定操作的路由采用 `POST` 请求：
+
+**命名规则：**
+- 设置名词属性时使用 `set_` 前缀：`set_active`、`set_role`
+- 本身就是动词时直接使用：`sort`、`save`、`export`、`check`
+
+| 路由格式 | Method | 方法格式 | 说明 |
+|----------|--------|----------|------|
+| `/{module}/set_{noun}` | POST | `Set{Noun}` | 设置名词属性 |
+| `/{module}/{verb}` | POST | `{Verb}` | 执行动词操作 |
+
+示例：
+
+| 路由 | Method | 方法 | 说明 |
+|------|--------|------|------|
+| `/{module}/set_active` | POST | `SetActive` | 设置启用/禁用状态 |
+| `/{module}/set_role` | POST | `SetRole` | 设置角色 |
+| `/{module}/sort` | POST | `Sort` | 排序 |
+| `/{module}/save` | POST | `Save` | 保存 |
+| `/{module}/export` | POST | `Export` | 导出 |
+| `/{module}/check` | POST | `Check` | 检查 |
+
+### 数据获取路由
+
+特定数据的查询与返回（逻辑上只读，但需要传递复杂参数）使用 `fetch_` 前缀，采用 `POST` 请求：
+
+| 路由格式 | Method | 方法格式 | 说明 |
+|----------|--------|----------|------|
+| `/{module}/fetch_{data}` | POST | `Fetch{Data}` | 获取特定数据 |
+
+示例：
+
+| 路由 | Method | 方法 | 说明 |
+|------|--------|------|------|
+| `/{module}/fetch_today_sales` | POST | `FetchTodaySales` | 获取今日销售数据 |
+| `/{module}/fetch_infos` | POST | `FetchInfos` | 获取详细信息 |
+| `/{module}/fetch_statistics` | POST | `FetchStatistics` | 获取统计数据 |
+
+### 统计类路由
+
+统计相关的接口使用 `_sum` 后缀表示合计，采用 `GET` 请求：
+
+| 路由格式 | Method | 方法格式 | 说明 |
+|----------|--------|----------|------|
+| `/{module}/{scope}_stats/_sum` | GET | `{Scope}StatsSum` | 获取统计合计 |
+
+示例：
+
+| 路由 | Method | 方法 | 说明 |
+|------|--------|------|------|
+| `/{module}/today_stats/_sum` | GET | `TodayStatsSum` | 今日统计合计 |
+| `/{module}/monthly_stats/_sum` | GET | `MonthlyStatsSum` | 月度统计合计 |
+| `/{module}/sales_stats/_sum` | GET | `SalesStatsSum` | 销售统计合计 |
+
+### 示例：users 模块路由
+
+| 路由 | Method | 方法 |
+|------|--------|------|
+| `/users/:id` | GET | `users.FindById` |
+| `/users` | GET | `users.Find` |
+| `/users/create` | POST | `users.Create` |
+| `/users/update` | POST | `users.Update` |
+| `/users/delete` | POST | `users.Delete` |
+| `/users/_search` | GET | `users.Search`（可选） |
+| `/users/_exists` | GET | `users.Exists`（可选） |
+| `/users/set_active` | POST | `users.SetActive`（可选） |
+| `/users/set_role` | POST | `users.SetRole`（可选） |
+
+---
+
+## 注册模块到 api.go
+
+新模块需要在 `api/api.go` 中注册，模块目录名对应路由前缀：
+
+```go
+package api
+
+import (
+	"context"
+	"server/api/index"
+	"server/api/users"     // 新增模块导入
+
+	"github.com/cloudwego/hertz/pkg/app/server"
+	"go.uber.org/fx"
+)
+
+var Options = fx.Options(
+	index.Provides,
+	users.Provides,  // 新增模块注册
+	fx.Invoke(Routes),
+)
+
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, users *users.Controller) {
+	// index 模块 -> 根路由
+	h.GET("", index.Ping)
+
+	// users 模块 -> 标准 CRUD 路由
+	h.GET("/users/:id", users.FindById)
+	h.GET("/users", users.Find)
+	h.POST("/users/create", users.Create)
+	h.POST("/users/update", users.Update)
+	h.POST("/users/delete", users.Delete)
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go h.Spin()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			if h != nil {
+				return h.Shutdown(ctx)
+			}
+			return nil
+		},
+	})
+}
+```
+
+---
+
+## API 处理方法
+
+每个请求在模块内是一个独立文件，包含 `Controller` 方法和 `Service` 方法。
+
+### 文件结构
+
+```
+api/users/
+├── common.go       # Provides、Controller、Service 定义
+├── find.go         # Find 方法
+├── find_by_id.go   # FindById 方法
+├── create.go       # Create 方法
+├── update.go       # Update 方法
+└── delete.go       # Delete 方法
+```
+
+### 方法定义规范
+
+每个文件包含两个方法：
+- `Controller` 方法：处理 HTTP 请求，参数绑定，调用 Service
+- `Service` 方法：业务逻辑实现，数据库操作，**必须包含 `user *common.IAMUser` 参数**
+
+### common.IAMUser 结构
+
+```go
+type IAMUser struct {
+	ID     string `json:"id"`      // 用户 ID
+	OrgID  string `json:"org_id"`  // 组织 ID
+	RoleID string `json:"role_id"` // 角色 ID
+	Active bool   `json:"active"`  // 是否启用
+	Ip     string `json:"-"`       // 客户端 IP
+}
+```
+
+### 示例：delete.go
+
+```go
+package users
+
+import (
+	"context"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+)
+
+// Controller 方法：处理 HTTP 请求
+func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
+	var dto common.DeleteDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.JSON(400, map[string]any{"error": err.Error()})
+		return
+	}
+	user := c.MustGet("user").(*common.IAMUser)
+	if err := x.UsersX.Delete(ctx, user, dto); err != nil {
+		c.JSON(500, map[string]any{"error": err.Error()})
+		return
+	}
+	c.JSON(200, map[string]any{"ok": true})
+}
+
+// Service 方法：业务逻辑（必须包含 user 参数）
+func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
+	return x.Db.Where(`id in (?)`, dto.IDs).Delete(&model.User{}).Error
+}
+```
+
+### 示例：find_by_id.go
+
+```go
+package users
+
+import (
+	"context"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+)
+
+func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
+	var dto common.FindByIdDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.JSON(400, map[string]any{"error": err.Error()})
+		return
+	}
+	user := c.MustGet("user").(*common.IAMUser)
+	data, err := x.UsersX.FindById(ctx, user, dto)
+	if err != nil {
+		c.JSON(500, map[string]any{"error": err.Error()})
+		return
+	}
+	c.JSON(200, data)
+}
+
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.User, err error) {
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	err = dto.Take(ctx, x.Db.Model(&model.User{}), &data)
+	return
+}
+```
+
+### 示例：create.go
+
+```go
+package users
+
+import (
+	"context"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/kainonly/go/snowflake"
+)
+
+type CreateDto struct {
+	Email    string `json:"email" vd:"required,email"`
+	Name     string `json:"name" vd:"required"`
+	Password string `json:"password" vd:"required,min=6"`
+}
+
+func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
+	var dto CreateDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.JSON(400, map[string]any{"error": err.Error()})
+		return
+	}
+	user := c.MustGet("user").(*common.IAMUser)
+	if err := x.UsersX.Create(ctx, user, dto); err != nil {
+		c.JSON(500, map[string]any{"error": err.Error()})
+		return
+	}
+	c.JSON(201, map[string]any{"ok": true})
+}
+
+func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
+	data := model.User{
+		ID:       snowflake.GenerateString(),
+		Email:    dto.Email,
+		Name:     dto.Name,
+		Password: dto.Password, // 实际应用需要加密
+	}
+	return x.Db.Create(&data).Error
+}
+```
+
+### 通用 DTO 类型
+
+`common` 包提供以下通用 DTO：
+
+| DTO | 说明 |
+|-----|------|
+| `common.FindDto` | 列表查询（分页、排序、关键词） |
+| `common.FindByIdDto` | 根据 ID 查询单条记录 |
+| `common.SearchDto` | 异步搜索（下拉框、自动补全） |
+| `common.ExistsDto` | 异步验证（检查字段值是否存在） |
+| `common.DeleteDto` | 批量删除（`IDs []string`） |
+
+### Service 可用依赖
+
+在 Service 方法中直接访问注入的依赖：
+
+- `x.Db` -> `*gorm.DB`
+- `x.RDb` -> `*redis.Client`
+- `x.V` -> `*Values`（配置）
+- `x.Captcha` -> `*captcha.Captcha`
+- `x.Locker` -> `*locker.Locker`
+
+在 Controller 方法中通过 `x.{Module}X` 访问 Service：
+
+- `x.UsersX.Delete(ctx, dto)`
+- `x.UsersX.FindById(ctx, dto)`
+
+---
+
+## 新增模块检查清单
+
+新增 API 模块时，确认：
+
+- [ ] 在 `api/` 下创建模块目录（目录名即路由前缀，如 `api/users/` 对应 `/users`）
+- [ ] 创建 `common.go`，包含 `Provides`、`Controller`、`Service`
+- [ ] Controller 服务字段命名为 `{Module}X`（首字母大写，如 `UsersX`）
+- [ ] Service 嵌入 `*common.Inject`
+- [ ] 在 `api/api.go` 的 `Options` 中注册 `{module}.Provides`
+- [ ] 在 `api/api.go` 的 `Routes` 函数参数中添加 `*{module}.Controller`
+- [ ] 注册标准 CRUD 路由（GET: `/:id`, `/`；POST: `/create`, `/update`, `/delete`）
+
+---
+
+## common.Inject 可用依赖
+
+`Service` 通过嵌入 `*common.Inject` 获得以下依赖：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `V` | `*Values` | 应用配置 |
+| `Db` | `*gorm.DB` | 数据库连接 |
+| `RDb` | `*redis.Client` | Redis 连接 |
+| `Captcha` | `*captcha.Captcha` | 验证码服务 |
+| `Locker` | `*locker.Locker` | 分布式锁服务 |
+
+在 Controller 方法中通过 `x.{Module}X.{Field}` 访问，如 `x.UsersX.Db`。
