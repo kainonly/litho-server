@@ -8,7 +8,7 @@ type Permission struct {
 	CreatedAt   time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
 	Active      bool      `gorm:"column:active;not null;default:true;comment:状态"`          // 状态
-	Code        string    `gorm:"column:code;type:text;not null;uniqueIndex;comment:授权编码"` // 授权编码
+	Code        string    `gorm:"column:code;type:text;not null;uniqueIndex;comment:授权标识"` // 授权标识
 	Description string    `gorm:"column:description;type:text;not null;comment:描述"`        // 描述
 }
 
