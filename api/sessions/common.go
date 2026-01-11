@@ -10,12 +10,8 @@ import (
 )
 
 var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{SessionsX: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
+	func(i *Service) *Controller { return &Controller{SessionsX: i} },
+	func(i common.Inject) *Service { return &Service{Inject: &i} },
 )
 
 type Controller struct {

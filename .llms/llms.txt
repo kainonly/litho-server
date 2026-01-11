@@ -540,12 +540,8 @@ import (
 )
 
 var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{{Module}X: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
+	func(i *Service) *Controller { return &Controller{{Module}X: i} },
+	func(i common.Inject) *Service { return &Service{Inject: &i} },
 )
 
 type Controller struct {
@@ -557,6 +553,12 @@ type Service struct {
 }
 ```
 
+### Provides 规范
+
+- 匿名注入函数应尽可能简洁，**每个占一行**
+- 优先使用 `common.Inject` 作为 Service 的依赖注入
+- 如需额外依赖，直接在参数中添加
+
 ### 命名规则
 
 | 元素 | 命名格式 | 示例 |
@@ -567,7 +569,7 @@ type Service struct {
 
 ### 示例
 
-#### orgs 模块（对应 `/orgs` 路由）- 模板基础
+#### 基础模块（仅需 common.Inject）
 
 ```go
 package orgs
@@ -579,12 +581,8 @@ import (
 )
 
 var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{OrgsX: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
+	func(i *Service) *Controller { return &Controller{OrgsX: i} },
+	func(i common.Inject) *Service { return &Service{Inject: &i} },
 )
 
 type Controller struct {
@@ -596,24 +594,21 @@ type Service struct {
 }
 ```
 
-#### users 模块（对应 `/users` 路由）
+#### 带额外依赖的模块
 
 ```go
 package users
 
 import (
+	"server/api/sessions"
 	"server/common"
 
 	"go.uber.org/fx"
 )
 
 var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{UsersX: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
+	func(i *Service) *Controller { return &Controller{UsersX: i} },
+	func(i common.Inject, s *sessions.Service) *Service { return &Service{Inject: &i, SessionsX: s} },
 )
 
 type Controller struct {
@@ -622,6 +617,8 @@ type Controller struct {
 
 type Service struct {
 	*common.Inject
+
+	SessionsX *sessions.Service
 }
 ```
 
@@ -736,7 +733,11 @@ type Service struct {
 
 ## 注册模块到 api.go
 
-新模块需要在 `api/api.go` 中注册，模块目录名对应路由前缀：
+新模块需要在 `api/api.go` 中注册，模块目录名对应路由前缀。
+
+### api.go 结构
+
+`api/api.go` 使用以下结构：
 
 ```go
 package api
@@ -744,42 +745,86 @@ package api
 import (
 	"context"
 	"server/api/index"
-	"server/api/orgs"      // 新增模块导入
+	"server/api/orgs"
+	"server/api/sessions"
+	"server/api/users"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"go.uber.org/fx"
 )
 
 var Options = fx.Options(
+	fx.Provide(func(i Inject) *API { return &API{Inject: &i} }),
 	index.Provides,
-	orgs.Provides,  // 新增模块注册
-	fx.Invoke(Routes),
+	sessions.Provides,
+	orgs.Provides,
+	users.Provides,
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller) {
-	// index 模块 -> 根路由
-	h.GET("", index.Ping)
+type Inject struct {
+	fx.In
 
-	// orgs 模块 -> 标准 CRUD 路由
-	h.GET("/orgs/:id", orgs.FindById)
-	h.GET("/orgs", orgs.Find)
-	h.POST("/orgs/create", orgs.Create)
-	h.POST("/orgs/update", orgs.Update)
-	h.POST("/orgs/delete", orgs.Delete)
-
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go h.Spin()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			if h != nil {
-				return h.Shutdown(ctx)
-			}
-			return nil
-		},
-	})
+	Hertz    *server.Hertz
+	Index    *index.Controller
+	IndexX   *index.Service      // 需要在 Auth 中使用的 Service
+	Orgs     *orgs.Controller
+	Sessions *sessions.Controller
+	Users    *users.Controller
+	UsersX   *users.Service      // 需要在 Auth 中使用的 Service
 }
+
+type API struct{ *Inject }
+
+func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
+	authx := x.Auth()
+
+	// index 模块 -> 根路由（无需认证）
+	x.Hertz.GET("", x.Index.Ping)
+
+	// 需要认证的路由组
+	m := x.Hertz.Group(``, authx)
+	{
+		// orgs 模块 -> 标准 CRUD 路由
+		m.GET("/orgs/:id", x.Orgs.FindById)
+		m.GET("/orgs", x.Orgs.Find)
+		m.POST("/orgs/create", x.Orgs.Create)
+		m.POST("/orgs/update", x.Orgs.Update)
+		m.POST("/orgs/delete", x.Orgs.Delete)
+
+		// users 模块 -> 标准 CRUD 路由
+		m.GET("/users/:id", x.Users.FindById)
+		m.GET("/users", x.Users.Find)
+		m.POST("/users/create", x.Users.Create)
+		m.POST("/users/update", x.Users.Update)
+		m.POST("/users/delete", x.Users.Delete)
+	}
+
+	return x.Hertz, nil
+}
+```
+
+### 注册新模块步骤
+
+1. **导入模块包**：在 `import` 中添加新模块路径
+2. **注册 Provides**：在 `Options` 的 `fx.Options()` 中添加 `{module}.Provides`
+3. **注入 Controller**：在 `Inject` 结构体中添加 `{Module} *{module}.Controller`
+4. **注入 Service（可选）**：如果需要在 `Auth` 或其他地方使用 Service，添加 `{Module}X *{module}.Service`
+5. **注册路由**：在 `Initialize` 方法的路由组中添加路由
+
+### Inject 命名规则
+
+| 元素 | 命名格式 | 示例 |
+|------|----------|------|
+| Controller 字段 | `{Module}`（首字母大写） | `Orgs`、`Users`、`Sessions` |
+| Service 字段 | `{Module}X`（首字母大写 + X） | `IndexX`、`UsersX`、`SessionsX` |
+
+### 路由访问方式
+
+在 `Initialize` 方法中通过 `x.{Module}.{Method}` 访问 Controller 方法：
+
+```go
+m.GET("/orgs/:id", x.Orgs.FindById)
+m.POST("/orgs/create", x.Orgs.Create)
 ```
 
 ---
@@ -1156,9 +1201,103 @@ err = dto.Take(ctx, do, &result)
 
 ---
 
+## Auth 中间件
+
+`api/auth.go` 定义了认证中间件，用于保护需要登录的路由。
+
+### auth.go 结构
+
+```go
+package api
+
+import (
+	"context"
+	"server/common"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
+)
+
+func (x *API) Auth() app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		ts := c.Cookie("TOKEN")
+		if ts == nil {
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": `Authentication expired, please login again`,
+			})
+			return
+		}
+
+		claims, err := x.IndexX.Verify(ctx, string(ts))
+		if err != nil {
+			x.IndexX.ClearAccessToken(c)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": `Authentication expired, please login again`,
+			})
+			return
+		}
+
+		// 获取登录用户信息
+		var user *common.IAMUser
+		if user, err = x.UsersX.GetIAMUser(ctx, claims.ActiveId); err != nil {
+			x.IndexX.ClearAccessToken(c)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": `Authentication expired, please login again`,
+			})
+			return
+		}
+
+		// 检测用户状态
+		if !user.Active {
+			x.IndexX.ClearAccessToken(c)
+			c.AbortWithStatusJSON(401, utils.H{
+				"code":    0,
+				"message": `Authentication expired, your account has been disabled`,
+			})
+			return
+		}
+
+		// 检测角色
+		if user.RoleID == "0" {
+			x.IndexX.ClearAccessToken(c)
+			c.AbortWithStatusJSON(403, utils.H{
+				"code":    0,
+				"message": `Login disabled, your account has no role assigned`,
+			})
+			return
+		}
+
+		c.Set("identity", user)
+		c.Next(ctx)
+	}
+}
+```
+
+### 认证流程
+
+1. 从 Cookie 中获取 `TOKEN`
+2. 调用 `IndexX.Verify` 验证 Token 有效性
+3. 调用 `UsersX.GetIAMUser` 获取用户信息
+4. 检查用户是否启用 (`Active`)
+5. 检查用户是否分配角色 (`RoleID != "0"`)
+6. 将用户信息存入上下文 `c.Set("identity", user)`
+
+### 在 Controller 中获取用户
+
+```go
+user := common.GetIAM(c)
+```
+
+---
+
 ## 新增模块检查清单
 
 新增 API 模块时，以 `api/orgs/` 为模板基础，确认：
+
+### 模块文件创建
 
 - [ ] 在 `api/` 下创建模块目录（目录名即路由前缀，如 `api/orgs/` 对应 `/orgs`）
 - [ ] 创建 `common.go`，包含 `Provides`、`Controller`、`Service`（参考 `api/orgs/common.go`）
@@ -1169,11 +1308,33 @@ err = dto.Take(ctx, do, &result)
 - [ ] 创建 `create.go`，包含 `CreateDto` 结构体和 `Create` 方法（参考 `api/orgs/create.go`）
 - [ ] 创建 `update.go`，包含 `UpdateDto` 结构体和 `Update` 方法（参考 `api/orgs/update.go`）
 - [ ] 创建 `delete.go`，包含 `Delete` 方法（参考 `api/orgs/delete.go`）
-- [ ] 在 `api/api.go` 的 `Options` 中注册 `{module}.Provides`
-- [ ] 在 `api/api.go` 的 `Routes` 函数参数中添加 `*{module}.Controller`
-- [ ] 注册标准 CRUD 路由（GET: `/:id`, `/`；POST: `/create`, `/update`, `/delete`）
-- [ ] Controller 使用 `c.Error(err)` 处理错误，使用 `common.GetIAM(c)` 获取用户
-- [ ] 成功响应使用 `help.Ok()` 或直接返回数据
+
+### api.go 注册
+
+- [ ] 在 `import` 中添加模块导入：`"server/api/{module}"`
+- [ ] 在 `Options` 的 `fx.Options()` 中添加 `{module}.Provides`
+- [ ] 在 `Inject` 结构体中添加 `{Module} *{module}.Controller`
+- [ ] 如需在 Auth 等位置使用 Service，添加 `{Module}X *{module}.Service`
+- [ ] 在 `Initialize` 方法的认证路由组 `m` 中注册标准 CRUD 路由
+
+### 路由注册示例
+
+```go
+// {module} 模块 -> 标准 CRUD 路由
+m.GET("/{module}/:id", x.{Module}.FindById)
+m.GET("/{module}", x.{Module}.Find)
+m.POST("/{module}/create", x.{Module}.Create)
+m.POST("/{module}/update", x.{Module}.Update)
+m.POST("/{module}/delete", x.{Module}.Delete)
+```
+
+### 代码规范
+
+- [ ] Controller 使用 `c.Error(err)` 处理错误
+- [ ] Controller 使用 `common.GetIAM(c)` 获取当前用户
+- [ ] 成功响应无数据时使用 `c.JSON(200, help.Ok())`
+- [ ] 成功响应有数据时使用 `c.JSON(200, data)`
+- [ ] 列表响应通过 `c.Header("x-total", ...)` 设置总数
 
 ---
 
