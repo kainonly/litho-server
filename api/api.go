@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"server/api/index"
+	"server/api/menus"
 	"server/api/orgs"
 	"server/api/permissions"
+	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
 	"server/api/sessions"
@@ -18,8 +20,10 @@ var Options = fx.Options(
 	fx.Provide(func(i Inject) *API { return &API{Inject: &i} }),
 	index.Provides,
 	sessions.Provides,
+	menus.Provides,
 	orgs.Provides,
 	permissions.Provides,
+	resources.Provides,
 	roles.Provides,
 	routes.Provides,
 	users.Provides,
@@ -31,8 +35,10 @@ type Inject struct {
 	Hertz       *server.Hertz
 	Index       *index.Controller
 	IndexX      *index.Service
+	Menus       *menus.Controller
 	Orgs        *orgs.Controller
 	Permissions *permissions.Controller
+	Resources   *resources.Controller
 	Roles       *roles.Controller
 	Routes      *routes.Controller
 	Users       *users.Controller
@@ -49,6 +55,14 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
 	m := x.Hertz.Group(``, authx)
 	{
+		// menus 模块 -> 标准 CRUD 路由
+		m.GET("/menus/:id", x.Menus.FindById)
+		m.GET("/menus", x.Menus.Find)
+		m.GET("/menus/_search", x.Menus.Search)
+		m.POST("/menus/create", x.Menus.Create)
+		m.POST("/menus/update", x.Menus.Update)
+		m.POST("/menus/delete", x.Menus.Delete)
+
 		// orgs 模块 -> 标准 CRUD 路由
 		m.GET("/orgs/:id", x.Orgs.FindById)
 		m.GET("/orgs", x.Orgs.Find)
@@ -62,6 +76,14 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/permissions/create", x.Permissions.Create)
 		m.POST("/permissions/update", x.Permissions.Update)
 		m.POST("/permissions/delete", x.Permissions.Delete)
+
+		// resources 模块 -> 标准 CRUD 路由
+		m.GET("/resources/:id", x.Resources.FindById)
+		m.GET("/resources", x.Resources.Find)
+		m.GET("/resources/_search", x.Resources.Search)
+		m.POST("/resources/create", x.Resources.Create)
+		m.POST("/resources/update", x.Resources.Update)
+		m.POST("/resources/delete", x.Resources.Delete)
 
 		// roles 模块 -> 标准 CRUD 路由
 		m.GET("/roles/:id", x.Roles.FindById)
