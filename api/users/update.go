@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
+	"github.com/kainonly/go/passlib"
 )
 
 type UpdateDto struct {
@@ -48,12 +49,12 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 		`avatar`:     dto.Avatar,
 	}
 	if dto.Password != "" {
-		updates[`password`] = dto.Password
+		updates[`password`], _ = passlib.Hash(dto.Password)
 	}
 	if err = x.Db.Model(model.User{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(updates).Error; err != nil {
 		return
 	}
-	return
+	return x.RefreshCache(ctx)
 }

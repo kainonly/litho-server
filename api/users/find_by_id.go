@@ -28,7 +28,6 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID     string `json:"id"`
-	Active bool   `json:"active"`
 	Email  string `json:"email"`
 	Phone  string `json:"phone"`
 	Name   string `json:"name"`
@@ -37,7 +36,8 @@ type FindByIdResult struct {
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
 	do := x.Db.Model(model.User{}).WithContext(ctx)
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().SkipTs().
+		Omit(`active`, `created_at`, `updated_at`, `password`))
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return
 	}

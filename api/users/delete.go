@@ -27,5 +27,9 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.WithContext(ctx).Delete(model.User{}, dto.IDs).Error
+	if err = x.Db.WithContext(ctx).
+		Delete(model.User{}, dto.IDs).Error; err != nil {
+		return
+	}
+	return x.RefreshCache(ctx)
 }

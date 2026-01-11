@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 
 	"server/common"
@@ -42,19 +43,37 @@ type FindResult struct {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	do := x.Db.Model(&model.User{}).WithContext(ctx)
+
+	do := x.Db.Model(model.User{}).WithContext(ctx)
+
 	if dto.Q != "" {
-		do = do.Where(`name like ? OR email like ? OR phone like ?`, dto.GetKeyword(), dto.GetKeyword(), dto.GetKeyword())
+		keyword := dto.GetKeyword()
+		do = do.Where(
+			do.Where(`email like ?`, keyword).
+				Or(`name like ?`, keyword),
+		)
 	}
 
 	if err = do.Count(&total).Error; err != nil {
 		return
 	}
 
-	results = make([]*FindResult, 0)
-	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	if err = dto.Find(ctx, do, &results); err != nil {
+	var rows *sql.Rows
+	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs().
+		Omit(`created_at`, `updated_at`, `password`))
+	if rows, err = dto.Factory(ctx, do).Rows(); err != nil {
 		return
 	}
+	defer rows.Close()
+
+	results = make([]*FindResult, 0)
+	for rows.Next() {
+		var data *FindResult
+		if err = x.Db.ScanRows(rows, &data); err != nil {
+			return
+		}
+		results = append(results, data)
+	}
+
 	return
 }
