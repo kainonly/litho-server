@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"server/api/index"
+	"server/api/orgs"
 	"server/api/roles"
 	"server/api/users"
 
@@ -12,13 +13,21 @@ import (
 
 var Options = fx.Options(
 	index.Provides,
+	orgs.Provides,
 	roles.Provides,
 	users.Provides,
 	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, roles *roles.Controller, users *users.Controller) {
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, roles *roles.Controller, users *users.Controller) {
 	h.GET("", index.Ping)
+
+	// orgs 模块 -> 标准 CRUD 路由
+	h.GET("/orgs/:id", orgs.FindById)
+	h.GET("/orgs", orgs.Find)
+	h.POST("/orgs/create", orgs.Create)
+	h.POST("/orgs/update", orgs.Update)
+	h.POST("/orgs/delete", orgs.Delete)
 
 	// roles 模块 -> 标准 CRUD 路由
 	h.GET("/roles/:id", roles.FindById)
