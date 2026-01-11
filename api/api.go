@@ -80,9 +80,13 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		// users 模块 -> 标准 CRUD 路由
 		m.GET("/users/:id", x.Users.FindById)
 		m.GET("/users", x.Users.Find)
+		m.GET("/users/_exists", x.Users.Exists)
+		m.GET("/users/_search", x.Users.Search)
 		m.POST("/users/create", x.Users.Create)
 		m.POST("/users/update", x.Users.Update)
 		m.POST("/users/delete", x.Users.Delete)
+		m.POST("/users/set_roles", x.Users.SetRoles)
+		m.POST("/users/set_actives", x.Users.SetActives)
 	}
 
 	return x.Hertz, nil
