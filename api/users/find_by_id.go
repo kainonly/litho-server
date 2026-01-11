@@ -7,24 +7,39 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	var dto common.FindByIdDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
+
+	user := common.GetIAM(c)
 	data, err := x.UsersX.FindById(ctx, user, dto)
 	if err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
+
 	c.JSON(200, data)
 }
 
-func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.User, err error) {
+type FindByIdResult struct {
+	ID     string `json:"id"`
+	Active bool   `json:"active"`
+	Email  string `json:"email"`
+	Phone  string `json:"phone"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+}
+
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
+	do := x.Db.Model(model.User{}).WithContext(ctx)
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	if err = dto.Take(ctx, do, &result); err != nil {
+		return
+	}
 	return
 }

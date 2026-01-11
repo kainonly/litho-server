@@ -2,36 +2,59 @@ package users
 
 import (
 	"context"
+	"strconv"
 
 	"server/common"
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 type FindDto struct {
 	common.FindDto
-	Active *bool  `query:"active,omitempty"`
-	Email  string `query:"email,omitempty"`
-	Phone  string `query:"phone,omitempty"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	var dto FindDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
-	data, err := x.UsersX.Find(ctx, user, dto)
+
+	user := common.GetIAM(c)
+	total, data, err := x.UsersX.Find(ctx, user, dto)
 	if err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
+
+	c.Header("x-total", strconv.Itoa(int(total)))
 	c.JSON(200, data)
 }
 
-func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (data []model.User, err error) {
+type FindResult struct {
+	ID     string `json:"id"`
+	Active bool   `json:"active"`
+	Email  string `json:"email"`
+	Phone  string `json:"phone"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+}
+
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
+	do := x.Db.Model(&model.User{}).WithContext(ctx)
+	if dto.Q != "" {
+		do = do.Where(`name like ? OR email like ? OR phone like ?`, dto.GetKeyword(), dto.GetKeyword(), dto.GetKeyword())
+	}
+
+	if err = do.Count(&total).Error; err != nil {
+		return
+	}
+
+	results = make([]*FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	if err = dto.Find(ctx, do, &results); err != nil {
+		return
+	}
 	return
 }

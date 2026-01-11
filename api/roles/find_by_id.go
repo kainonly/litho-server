@@ -7,24 +7,39 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	var dto common.FindByIdDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
+
+	user := common.GetIAM(c)
 	data, err := x.RolesX.FindById(ctx, user, dto)
 	if err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
+
 	c.JSON(200, data)
 }
 
-func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.Role, err error) {
+type FindByIdResult struct {
+	ID          string `json:"id"`
+	OrgID       string `json:"org_id"`
+	Sort        int16  `json:"sort"`
+	Active      bool   `json:"active"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
+	do := x.Db.Model(model.Role{}).WithContext(ctx)
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	if err = dto.Take(ctx, do, &result); err != nil {
+		return
+	}
 	return
 }

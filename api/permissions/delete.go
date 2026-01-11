@@ -4,25 +4,28 @@ import (
 	"context"
 
 	"server/common"
+	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/kainonly/go/help"
 )
 
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	var dto common.DeleteDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
+
+	user := common.GetIAM(c)
 	if err := x.PermissionsX.Delete(ctx, user, dto); err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	c.JSON(200, utils.H{"ok": true})
+
+	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return
+	return x.Db.WithContext(ctx).Delete(model.Permission{}, dto.IDs).Error
 }

@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"server/common"
+	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/kainonly/go/help"
 )
 
 type CreateDto struct {
@@ -19,17 +20,30 @@ type CreateDto struct {
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
+
+	user := common.GetIAM(c)
+	dto.ID = help.SID()
 	if err := x.PermissionsX.Create(ctx, user, dto); err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	c.JSON(201, utils.H{"ok": true})
+
+	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
+	data := model.Permission{
+		ID:          dto.ID,
+		Active:      *dto.Active,
+		Code:        dto.Code,
+		Description: dto.Description,
+	}
+	if err = x.Db.WithContext(ctx).
+		Create(&data).Error; err != nil {
+		return
+	}
 	return
 }

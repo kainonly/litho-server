@@ -2,34 +2,49 @@ package permissions
 
 import (
 	"context"
+	"time"
 
 	"server/common"
+	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/kainonly/go/help"
 )
 
 type UpdateDto struct {
-	ID          string  `json:"id" vd:"required"`
-	Code        *string `json:"code,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Active      *bool   `json:"active,omitempty"`
+	ID          string `json:"id" vd:"required"`
+	Code        string `json:"code" vd:"required"`
+	Description string `json:"description" vd:"required"`
+	Active      *bool  `json:"active" vd:"required"`
 }
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto UpdateDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
+
+	user := common.GetIAM(c)
 	if err := x.PermissionsX.Update(ctx, user, dto); err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	c.JSON(200, utils.H{"ok": true})
+
+	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
+	if err = x.Db.Model(model.Permission{}).WithContext(ctx).
+		Where(`id = ?`, dto.ID).
+		Updates(utils.H{
+			`updated_at`:  time.Now(),
+			`active`:      *dto.Active,
+			`code`:        dto.Code,
+			`description`: dto.Description,
+		}).Error; err != nil {
+		return
+	}
 	return
 }
