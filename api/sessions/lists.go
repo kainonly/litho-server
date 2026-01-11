@@ -37,7 +37,7 @@ func (x *Service) Lists(ctx context.Context, user *common.IAMUser) (result []Lis
 	})
 	result = make([]ListResult, len(ids))
 	if err = x.Db.Model(model.User{}).WithContext(ctx).
-		Select([]string{"id", "email", "phone", "name", "avatar"}).
+		Select([]string{`id`, `email`, `phone`, `name`, `avatar`}).
 		Where(`id in ?`, ids).
 		Find(&result).Error; err != nil {
 		return
