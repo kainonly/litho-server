@@ -17,7 +17,6 @@ type UpdateDto struct {
 	OrgID       string `json:"org_id" vd:"required"`
 	Name        string `json:"name" vd:"required"`
 	Description string `json:"description" vd:"required"`
-	Sort        int16  `json:"sort"`
 	Active      *bool  `json:"active" vd:"required"`
 }
 
@@ -43,7 +42,6 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 		Updates(utils.H{
 			`updated_at`:  time.Now(),
 			`org_id`:      dto.OrgID,
-			`sort`:        dto.Sort,
 			`active`:      *dto.Active,
 			`name`:        dto.Name,
 			`description`: dto.Description,
