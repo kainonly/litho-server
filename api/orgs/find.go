@@ -2,29 +2,56 @@ package orgs
 
 import (
 	"context"
+	"server/model"
+	"strconv"
 
 	"server/common"
-	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
+type FindDto struct {
+	common.FindDto
+}
+
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
-	var dto common.FindDto
+	var dto FindDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
-	data, err := x.OrgsX.Find(ctx, user, dto)
+
+	user := common.GetIAM(c)
+	total, data, err := x.OrgsX.Find(ctx, user, dto)
 	if err != nil {
-		c.JSON(500, utils.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
+
+	c.Header("x-total", strconv.Itoa(int(total)))
 	c.JSON(200, data)
 }
 
-func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto common.FindDto) (data []model.Org, err error) {
+type FindResult struct {
+	ID     string `json:"id"`
+	Active bool   `json:"active"`
+	Name   string `json:"name"`
+}
+
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
+	do := x.Db.Model(&model.Org{}).WithContext(ctx)
+	if dto.Q != "" {
+		do = do.Where(`name like ?`, dto.GetKeyword())
+	}
+
+	if err = do.Count(&total).Error; err != nil {
+		return
+	}
+
+	results = make([]*FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	if err = dto.Find(ctx, do, &results); err != nil {
+		return
+	}
 	return
 }
