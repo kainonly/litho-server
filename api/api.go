@@ -4,6 +4,7 @@ import (
 	"context"
 	"server/api/index"
 	"server/api/orgs"
+	"server/api/permissions"
 	"server/api/roles"
 	"server/api/routes"
 	"server/api/users"
@@ -15,13 +16,14 @@ import (
 var Options = fx.Options(
 	index.Provides,
 	orgs.Provides,
+	permissions.Provides,
 	roles.Provides,
 	routes.Provides,
 	users.Provides,
 	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, roles *roles.Controller, routes *routes.Controller, users *users.Controller) {
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, permissions *permissions.Controller, roles *roles.Controller, routes *routes.Controller, users *users.Controller) {
 	h.GET("", index.Ping)
 
 	// orgs 模块 -> 标准 CRUD 路由
@@ -30,6 +32,13 @@ func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *org
 	h.POST("/orgs/create", orgs.Create)
 	h.POST("/orgs/update", orgs.Update)
 	h.POST("/orgs/delete", orgs.Delete)
+
+	// permissions 模块 -> 标准 CRUD 路由
+	h.GET("/permissions/:id", permissions.FindById)
+	h.GET("/permissions", permissions.Find)
+	h.POST("/permissions/create", permissions.Create)
+	h.POST("/permissions/update", permissions.Update)
+	h.POST("/permissions/delete", permissions.Delete)
 
 	// roles 模块 -> 标准 CRUD 路由
 	h.GET("/roles/:id", roles.FindById)
