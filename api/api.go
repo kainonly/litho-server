@@ -7,6 +7,7 @@ import (
 	"server/api/permissions"
 	"server/api/roles"
 	"server/api/routes"
+	"server/api/sessions"
 	"server/api/users"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -14,63 +15,75 @@ import (
 )
 
 var Options = fx.Options(
+	fx.Provide(func(i Inject) *API { return &API{Inject: &i} }),
 	index.Provides,
+	sessions.Provides,
 	orgs.Provides,
 	permissions.Provides,
 	roles.Provides,
 	routes.Provides,
 	users.Provides,
-	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, permissions *permissions.Controller, roles *roles.Controller, routes *routes.Controller, users *users.Controller) {
-	h.GET("", index.Ping)
+type Inject struct {
+	fx.In
 
-	// orgs 模块 -> 标准 CRUD 路由
-	h.GET("/orgs/:id", orgs.FindById)
-	h.GET("/orgs", orgs.Find)
-	h.POST("/orgs/create", orgs.Create)
-	h.POST("/orgs/update", orgs.Update)
-	h.POST("/orgs/delete", orgs.Delete)
+	Hertz       *server.Hertz
+	Index       *index.Controller
+	IndexX      *index.Service
+	Orgs        *orgs.Controller
+	Permissions *permissions.Controller
+	Roles       *roles.Controller
+	Routes      *routes.Controller
+	Users       *users.Controller
+	UsersX      *users.Service
+}
 
-	// permissions 模块 -> 标准 CRUD 路由
-	h.GET("/permissions/:id", permissions.FindById)
-	h.GET("/permissions", permissions.Find)
-	h.POST("/permissions/create", permissions.Create)
-	h.POST("/permissions/update", permissions.Update)
-	h.POST("/permissions/delete", permissions.Delete)
+type API struct{ *Inject }
 
-	// roles 模块 -> 标准 CRUD 路由
-	h.GET("/roles/:id", roles.FindById)
-	h.GET("/roles", roles.Find)
-	h.POST("/roles/create", roles.Create)
-	h.POST("/roles/update", roles.Update)
-	h.POST("/roles/delete", roles.Delete)
+func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
-	// routes 模块 -> 标准 CRUD 路由
-	h.GET("/routes/:id", routes.FindById)
-	h.GET("/routes", routes.Find)
-	h.POST("/routes/create", routes.Create)
-	h.POST("/routes/update", routes.Update)
-	h.POST("/routes/delete", routes.Delete)
+	authx := x.Auth()
 
-	// users 模块 -> 标准 CRUD 路由
-	h.GET("/users/:id", users.FindById)
-	h.GET("/users", users.Find)
-	h.POST("/users/create", users.Create)
-	h.POST("/users/update", users.Update)
-	h.POST("/users/delete", users.Delete)
+	x.Hertz.GET("", x.Index.Ping)
 
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go h.Spin()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			if h != nil {
-				return h.Shutdown(ctx)
-			}
-			return nil
-		},
-	})
+	m := x.Hertz.Group(``, authx)
+	{
+		// orgs 模块 -> 标准 CRUD 路由
+		m.GET("/orgs/:id", x.Orgs.FindById)
+		m.GET("/orgs", x.Orgs.Find)
+		m.POST("/orgs/create", x.Orgs.Create)
+		m.POST("/orgs/update", x.Orgs.Update)
+		m.POST("/orgs/delete", x.Orgs.Delete)
+
+		// permissions 模块 -> 标准 CRUD 路由
+		m.GET("/permissions/:id", x.Permissions.FindById)
+		m.GET("/permissions", x.Permissions.Find)
+		m.POST("/permissions/create", x.Permissions.Create)
+		m.POST("/permissions/update", x.Permissions.Update)
+		m.POST("/permissions/delete", x.Permissions.Delete)
+
+		// roles 模块 -> 标准 CRUD 路由
+		m.GET("/roles/:id", x.Roles.FindById)
+		m.GET("/roles", x.Roles.Find)
+		m.POST("/roles/create", x.Roles.Create)
+		m.POST("/roles/update", x.Roles.Update)
+		m.POST("/roles/delete", x.Roles.Delete)
+
+		// routes 模块 -> 标准 CRUD 路由
+		m.GET("/routes/:id", x.Routes.FindById)
+		m.GET("/routes", x.Routes.Find)
+		m.POST("/routes/create", x.Routes.Create)
+		m.POST("/routes/update", x.Routes.Update)
+		m.POST("/routes/delete", x.Routes.Delete)
+
+		// users 模块 -> 标准 CRUD 路由
+		m.GET("/users/:id", x.Users.FindById)
+		m.GET("/users", x.Users.Find)
+		m.POST("/users/create", x.Users.Create)
+		m.POST("/users/update", x.Users.Update)
+		m.POST("/users/delete", x.Users.Delete)
+	}
+
+	return x.Hertz, nil
 }
