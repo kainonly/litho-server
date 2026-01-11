@@ -567,6 +567,35 @@ type Service struct {
 
 ### 示例
 
+#### orgs 模块（对应 `/orgs` 路由）- 模板基础
+
+```go
+package orgs
+
+import (
+	"server/common"
+
+	"go.uber.org/fx"
+)
+
+var Provides = fx.Provide(
+	func(i *Service) *Controller {
+		return &Controller{OrgsX: i}
+	},
+	func(i common.Inject) *Service {
+		return &Service{Inject: &i}
+	},
+)
+
+type Controller struct {
+	OrgsX *Service
+}
+
+type Service struct {
+	*common.Inject
+}
+```
+
 #### users 模块（对应 `/users` 路由）
 
 ```go
@@ -589,35 +618,6 @@ var Provides = fx.Provide(
 
 type Controller struct {
 	UsersX *Service
-}
-
-type Service struct {
-	*common.Inject
-}
-```
-
-#### projects 模块（对应 `/projects` 路由）
-
-```go
-package projects
-
-import (
-	"server/common"
-
-	"go.uber.org/fx"
-)
-
-var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{ProjectsX: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
-)
-
-type Controller struct {
-	ProjectsX *Service
 }
 
 type Service struct {
@@ -719,19 +719,18 @@ type Service struct {
 | `/{module}/monthly_stats/_sum` | GET | `MonthlyStatsSum` | 月度统计合计 |
 | `/{module}/sales_stats/_sum` | GET | `SalesStatsSum` | 销售统计合计 |
 
-### 示例：users 模块路由
+### 示例：orgs 模块路由（模板基础）
 
 | 路由 | Method | 方法 |
 |------|--------|------|
-| `/users/:id` | GET | `users.FindById` |
-| `/users` | GET | `users.Find` |
-| `/users/create` | POST | `users.Create` |
-| `/users/update` | POST | `users.Update` |
-| `/users/delete` | POST | `users.Delete` |
-| `/users/_search` | GET | `users.Search`（可选） |
-| `/users/_exists` | GET | `users.Exists`（可选） |
-| `/users/set_active` | POST | `users.SetActive`（可选） |
-| `/users/set_role` | POST | `users.SetRole`（可选） |
+| `/orgs/:id` | GET | `orgs.FindById` |
+| `/orgs` | GET | `orgs.Find` |
+| `/orgs/create` | POST | `orgs.Create` |
+| `/orgs/update` | POST | `orgs.Update` |
+| `/orgs/delete` | POST | `orgs.Delete` |
+| `/orgs/_search` | GET | `orgs.Search`（可选） |
+| `/orgs/_exists` | GET | `orgs.Exists`（可选） |
+| `/orgs/set_active` | POST | `orgs.SetActive`（可选） |
 
 ---
 
@@ -745,7 +744,7 @@ package api
 import (
 	"context"
 	"server/api/index"
-	"server/api/users"     // 新增模块导入
+	"server/api/orgs"      // 新增模块导入
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"go.uber.org/fx"
@@ -753,20 +752,20 @@ import (
 
 var Options = fx.Options(
 	index.Provides,
-	users.Provides,  // 新增模块注册
+	orgs.Provides,  // 新增模块注册
 	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, users *users.Controller) {
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller) {
 	// index 模块 -> 根路由
 	h.GET("", index.Ping)
 
-	// users 模块 -> 标准 CRUD 路由
-	h.GET("/users/:id", users.FindById)
-	h.GET("/users", users.Find)
-	h.POST("/users/create", users.Create)
-	h.POST("/users/update", users.Update)
-	h.POST("/users/delete", users.Delete)
+	// orgs 模块 -> 标准 CRUD 路由
+	h.GET("/orgs/:id", orgs.FindById)
+	h.GET("/orgs", orgs.Find)
+	h.POST("/orgs/create", orgs.Create)
+	h.POST("/orgs/update", orgs.Update)
+	h.POST("/orgs/delete", orgs.Delete)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -792,7 +791,7 @@ func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, users *us
 ### 文件结构
 
 ```
-api/users/
+api/orgs/
 ├── common.go       # Provides、Controller、Service 定义
 ├── find.go         # Find 方法
 ├── find_by_id.go   # FindById 方法
@@ -807,21 +806,15 @@ api/users/
 - `Controller` 方法：处理 HTTP 请求，参数绑定，调用 Service
 - `Service` 方法：业务逻辑实现，数据库操作，**必须包含 `user *common.IAMUser` 参数**
 
-**重要：Service 方法初始化为空实现**
+### 错误处理与响应规范
 
-生成 API 模块时，Service 方法必须保持空实现，仅包含方法签名和返回语句。业务逻辑由开发者后续手动填充，LLM 不得自作主张添加任何实现代码。
-
-```go
-// 正确：空实现
-func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return
-}
-
-// 错误：不要添加任何业务逻辑
-func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.Where(`id in (?)`, dto.IDs).Delete(&model.User{}).Error  // ❌ 禁止
-}
-```
+- 错误处理：使用 `c.Error(err)` 统一处理错误，不使用 `c.JSON(400/500, ...)`
+- 成功响应：
+  - 无数据返回：使用 `c.JSON(200, help.Ok())`
+  - 有数据返回：使用 `c.JSON(200, data)`
+  - 列表返回：通过 `c.Header("x-total", ...)` 设置总数
+- 获取用户：使用 `common.GetIAM(c)` 而不是 `c.MustGet("user")`
+- ID 生成：使用 `help.SID()` 生成雪花 ID
 
 ### common.IAMUser 结构
 
@@ -835,36 +828,93 @@ type IAMUser struct {
 }
 ```
 
-### 示例：delete.go
+### 示例：common.go
 
 ```go
-package users
+package orgs
+
+import (
+	"server/common"
+
+	"go.uber.org/fx"
+)
+
+var Provides = fx.Provide(
+	func(i *Service) *Controller {
+		return &Controller{OrgsX: i}
+	},
+	func(i common.Inject) *Service {
+		return &Service{Inject: &i}
+	},
+)
+
+type Controller struct {
+	OrgsX *Service
+}
+
+type Service struct {
+	*common.Inject
+}
+```
+
+### 示例：find.go
+
+```go
+package orgs
 
 import (
 	"context"
+	"server/model"
+	"strconv"
 
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
-// Controller 方法：处理 HTTP 请求
-func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
-	var dto common.DeleteDto
-	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, map[string]any{"error": err.Error()})
-		return
-	}
-	user := c.MustGet("user").(*common.IAMUser)
-	if err := x.UsersX.Delete(ctx, user, dto); err != nil {
-		c.JSON(500, map[string]any{"error": err.Error()})
-		return
-	}
-	c.JSON(200, map[string]any{"ok": true})
+type FindDto struct {
+	common.FindDto
 }
 
-// Service 方法：空实现（业务逻辑由开发者后续填充）
-func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
+func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
+	var dto FindDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	user := common.GetIAM(c)
+	total, data, err := x.OrgsX.Find(ctx, user, dto)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Header("x-total", strconv.Itoa(int(total)))
+	c.JSON(200, data)
+}
+
+type FindResult struct {
+	ID     string `json:"id"`
+	Active bool   `json:"active"`
+	Name   string `json:"name"`
+}
+
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
+	do := x.Db.Model(&model.Org{}).WithContext(ctx)
+	if dto.Q != "" {
+		do = do.Where(`name like ?`, dto.GetKeyword())
+	}
+
+	if err = do.Count(&total).Error; err != nil {
+		return
+	}
+
+	results = make([]*FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	if err = dto.Find(ctx, do, &results); err != nil {
+		return
+	}
 	return
 }
 ```
@@ -872,7 +922,7 @@ func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.D
 ### 示例：find_by_id.go
 
 ```go
-package users
+package orgs
 
 import (
 	"context"
@@ -886,20 +936,32 @@ import (
 func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	var dto common.FindByIdDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, map[string]any{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
-	data, err := x.UsersX.FindById(ctx, user, dto)
+
+	user := common.GetIAM(c)
+	data, err := x.OrgsX.FindById(ctx, user, dto)
 	if err != nil {
-		c.JSON(500, map[string]any{"error": err.Error()})
+		c.Error(err)
 		return
 	}
+
 	c.JSON(200, data)
 }
 
-// Service 方法：空实现（业务逻辑由开发者后续填充）
-func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data model.User, err error) {
+type FindByIdResult struct {
+	ID     string `json:"id"`
+	Active bool   `json:"active"`
+	Name   string `json:"name"`
+}
+
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
+	do := x.Db.Model(model.Org{}).WithContext(ctx)
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	if err = dto.Take(ctx, do, &result); err != nil {
+		return
+	}
 	return
 }
 ```
@@ -907,39 +969,140 @@ func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common
 ### 示例：create.go
 
 ```go
-package users
+package orgs
 
 import (
 	"context"
-
 	"server/common"
+	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/kainonly/go/help"
 )
 
 type CreateDto struct {
-	Email    string `json:"email" vd:"required,email"`
-	Name     string `json:"name" vd:"required"`
-	Password string `json:"password" vd:"required,min=6"`
+	ID     string `json:"-"`
+	Name   string `json:"name" vd:"required"`
+	Active *bool  `json:"active" vd:"required"`
 }
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
 	if err := c.BindAndValidate(&dto); err != nil {
-		c.JSON(400, map[string]any{"error": err.Error()})
+		c.Error(err)
 		return
 	}
-	user := c.MustGet("user").(*common.IAMUser)
-	if err := x.UsersX.Create(ctx, user, dto); err != nil {
-		c.JSON(500, map[string]any{"error": err.Error()})
+
+	user := common.GetIAM(c)
+	dto.ID = help.SID()
+	if err := x.OrgsX.Create(ctx, user, dto); err != nil {
+		c.Error(err)
 		return
 	}
-	c.JSON(201, map[string]any{"ok": true})
+
+	c.JSON(200, help.Ok())
 }
 
-// Service 方法：空实现（业务逻辑由开发者后续填充）
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
+	data := model.Org{
+		ID:     dto.ID,
+		Active: *dto.Active,
+		Name:   dto.Name,
+	}
+	if err = x.Db.WithContext(ctx).
+		Create(&data).Error; err != nil {
+		return
+	}
 	return
+}
+```
+
+### 示例：update.go
+
+```go
+package orgs
+
+import (
+	"context"
+	"time"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/kainonly/go/help"
+)
+
+type UpdateDto struct {
+	ID     string `json:"id" vd:"required"`
+	Name   string `json:"name" vd:"required"`
+	Active *bool  `json:"active" vd:"required"`
+}
+
+func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
+	var dto UpdateDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	user := common.GetIAM(c)
+	if err := x.OrgsX.Update(ctx, user, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, help.Ok())
+}
+
+func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
+	if err = x.Db.Model(model.Org{}).WithContext(ctx).
+		Where(`id = ?`, dto.ID).
+		Updates(utils.H{
+			`updated_at`: time.Now(),
+			`active`:     *dto.Active,
+			`name`:       dto.Name,
+		}).Error; err != nil {
+		return
+	}
+	return
+}
+```
+
+### 示例：delete.go
+
+```go
+package orgs
+
+import (
+	"context"
+	"server/model"
+
+	"server/common"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/kainonly/go/help"
+)
+
+func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
+	var dto common.DeleteDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	user := common.GetIAM(c)
+	if err := x.OrgsX.Delete(ctx, user, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, help.Ok())
+}
+
+func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
+	return x.Db.WithContext(ctx).Delete(model.Org{}, dto.IDs).Error
 }
 ```
 
@@ -949,11 +1112,32 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 
 | DTO | 说明 |
 |-----|------|
-| `common.FindDto` | 列表查询（分页、排序、关键词） |
-| `common.FindByIdDto` | 根据 ID 查询单条记录 |
+| `common.FindDto` | 列表查询（分页、排序、关键词），提供 `Q` 字段和 `GetKeyword()` 方法 |
+| `common.FindByIdDto` | 根据 ID 查询单条记录，提供 `Take(ctx, do, &result)` 方法 |
 | `common.SearchDto` | 异步搜索（下拉框、自动补全） |
 | `common.ExistsDto` | 异步验证（检查字段值是否存在） |
 | `common.DeleteDto` | 批量删除（`IDs []string`） |
+
+### 查询 Pipe 机制
+
+使用 `common.SetPipe` 和 `common.NewXxxPipe` 设置查询管道：
+
+```go
+// Find 列表查询
+ctx = common.SetPipe(ctx, common.NewFindPipe())
+err = dto.Find(ctx, do, &results)
+
+// FindById 单条查询
+ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+err = dto.Take(ctx, do, &result)
+```
+
+### 外部依赖包
+
+| 包 | 导入路径 | 说明 |
+|----|----------|------|
+| `help` | `github.com/kainonly/go/help` | 工具函数（`SID()`, `Ok()` 等） |
+| `utils` | `github.com/cloudwego/hertz/pkg/common/utils` | Hertz 工具（`utils.H` 用于 map） |
 
 ### Service 可用依赖
 
@@ -967,22 +1151,29 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 
 在 Controller 方法中通过 `x.{Module}X` 访问 Service：
 
-- `x.UsersX.Delete(ctx, dto)`
-- `x.UsersX.FindById(ctx, dto)`
+- `x.OrgsX.Delete(ctx, user, dto)`
+- `x.OrgsX.FindById(ctx, user, dto)`
 
 ---
 
 ## 新增模块检查清单
 
-新增 API 模块时，确认：
+新增 API 模块时，以 `api/orgs/` 为模板基础，确认：
 
-- [ ] 在 `api/` 下创建模块目录（目录名即路由前缀，如 `api/users/` 对应 `/users`）
-- [ ] 创建 `common.go`，包含 `Provides`、`Controller`、`Service`
-- [ ] Controller 服务字段命名为 `{Module}X`（首字母大写，如 `UsersX`）
+- [ ] 在 `api/` 下创建模块目录（目录名即路由前缀，如 `api/orgs/` 对应 `/orgs`）
+- [ ] 创建 `common.go`，包含 `Provides`、`Controller`、`Service`（参考 `api/orgs/common.go`）
+- [ ] Controller 服务字段命名为 `{Module}X`（首字母大写，如 `OrgsX`）
 - [ ] Service 嵌入 `*common.Inject`
+- [ ] 创建 `find.go`，包含 `FindDto`、`FindResult` 结构体和 `Find` 方法（参考 `api/orgs/find.go`）
+- [ ] 创建 `find_by_id.go`，包含 `FindByIdResult` 结构体和 `FindById` 方法（参考 `api/orgs/find_by_id.go`）
+- [ ] 创建 `create.go`，包含 `CreateDto` 结构体和 `Create` 方法（参考 `api/orgs/create.go`）
+- [ ] 创建 `update.go`，包含 `UpdateDto` 结构体和 `Update` 方法（参考 `api/orgs/update.go`）
+- [ ] 创建 `delete.go`，包含 `Delete` 方法（参考 `api/orgs/delete.go`）
 - [ ] 在 `api/api.go` 的 `Options` 中注册 `{module}.Provides`
 - [ ] 在 `api/api.go` 的 `Routes` 函数参数中添加 `*{module}.Controller`
 - [ ] 注册标准 CRUD 路由（GET: `/:id`, `/`；POST: `/create`, `/update`, `/delete`）
+- [ ] Controller 使用 `c.Error(err)` 处理错误，使用 `common.GetIAM(c)` 获取用户
+- [ ] 成功响应使用 `help.Ok()` 或直接返回数据
 
 ---
 
