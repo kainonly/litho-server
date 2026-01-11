@@ -11,8 +11,10 @@ import (
 	"server/api/routes"
 	"server/api/sessions"
 	"server/api/users"
+	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/kainonly/go/csrf"
 	"go.uber.org/fx"
 )
 
@@ -32,7 +34,9 @@ var Options = fx.Options(
 type Inject struct {
 	fx.In
 
+	V           *common.Values
 	Hertz       *server.Hertz
+	Csrf        *csrf.Csrf
 	Index       *index.Controller
 	IndexX      *index.Service
 	Menus       *menus.Controller
@@ -48,12 +52,15 @@ type Inject struct {
 type API struct{ *Inject }
 
 func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
-
-	authx := x.Auth()
+	_csrf := x.Csrf.VerifyToken(!x.V.IsRelease())
+	_auth := x.Auth()
 
 	x.Hertz.GET("", x.Index.Ping)
+	x.Hertz.POST("login", _csrf, x.Index.Login)
+	x.Hertz.GET("verify", _csrf, x.Index.Verify)
+	x.Hertz.POST("logout", _csrf, _auth, x.Index.Logout)
 
-	m := x.Hertz.Group(``, authx)
+	m := x.Hertz.Group(``, _csrf, _auth)
 	{
 		// menus 模块 -> 标准 CRUD 路由
 		m.GET("/menus/:id", x.Menus.FindById)

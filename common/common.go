@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/kainonly/go/captcha"
+	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
@@ -22,6 +23,18 @@ type Inject struct {
 	Captcha *captcha.Captcha
 	Locker  *locker.Locker
 }
+
+// Common error definitions
+
+var ErrAuthenticationExpired = help.E(4003, "Authentication expired, please login again")
+var ErrLoginNotExists = help.E(4001, "Account does not exist or is disabled")
+var ErrLoginMaxFailures = help.E(4002, "Login attempts exceeded maximum limit")
+var ErrLoginInvalid = help.E(4001, "Account does not exist or password is incorrect")
+var ErrSession = help.E(4005, "Failed to establish session")
+var ErrTotpInvalid = help.E(4001, "Invalid TOTP verification code")
+var ErrSmsInvalid = help.E(4001, "Invalid SMS verification code")
+var ErrSmsNotExists = help.E(4001, "Account does not exist or is disabled")
+var ErrCodeFrequently = help.E(4004, "Verification code requested too frequently, please try again later")
 
 type HandleFunc func(do *gorm.DB) *gorm.DB
 

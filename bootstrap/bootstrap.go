@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/go-playground/validator/v10"
 	"github.com/hertz-contrib/binding/go_playground"
 	"github.com/hertz-contrib/cors"
@@ -122,24 +123,30 @@ func NewHertz(v *common.Values) (h *server.Hertz, err error) {
 	vd := go_playground.NewValidator()
 	vd.SetValidateTag("vd")
 	vdx := vd.Engine().(*validator.Validate)
-	vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
-		matched, errX := regexp.MatchString("^[a-z_]+$", fl.Field().Interface().(string))
-		if errX != nil {
+	if err = vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
+		str, ok := fl.Field().Interface().(string)
+		if !ok {
 			return false
 		}
-		return matched
-	})
-	vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
-		matched, errX := regexp.MatchString("^[a-z_.]+:(-1|1)$", fl.Field().Interface().(string))
-		if errX != nil {
+		return regexp.MustCompile("^[a-z_]+$").MatchString(str)
+	}); err != nil {
+		return
+	}
+	if err = vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
+		str, ok := fl.Field().Interface().(string)
+		if !ok {
 			return false
 		}
-		return matched
-	})
+		return regexp.MustCompile("^[a-z_.]+:(-1|1)$").MatchString(str)
+	}); err != nil {
+		return
+	}
 
 	opts := []config.Option{
 		server.WithHostPorts(v.Address),
-		server.WithCustomValidator(vd),
+		server.WithCustomValidatorFunc(func(_ *protocol.Request, req any) error {
+			return vdx.Struct(req)
+		}),
 	}
 
 	opts = append(opts)

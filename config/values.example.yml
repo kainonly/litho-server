@@ -1,5 +1,6 @@
 address: :3000
 key:
+namespace: litho
 domain: localhost:3000
 database:
   url: host= user=postgres password= dbname=litho port=5432 TimeZone=Asia/Shanghai
