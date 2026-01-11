@@ -5,6 +5,7 @@ import (
 	"server/api/index"
 	"server/api/orgs"
 	"server/api/roles"
+	"server/api/routes"
 	"server/api/users"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -15,11 +16,12 @@ var Options = fx.Options(
 	index.Provides,
 	orgs.Provides,
 	roles.Provides,
+	routes.Provides,
 	users.Provides,
 	fx.Invoke(Routes),
 )
 
-func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, roles *roles.Controller, users *users.Controller) {
+func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *orgs.Controller, roles *roles.Controller, routes *routes.Controller, users *users.Controller) {
 	h.GET("", index.Ping)
 
 	// orgs 模块 -> 标准 CRUD 路由
@@ -35,6 +37,13 @@ func Routes(lc fx.Lifecycle, h *server.Hertz, index *index.Controller, orgs *org
 	h.POST("/roles/create", roles.Create)
 	h.POST("/roles/update", roles.Update)
 	h.POST("/roles/delete", roles.Delete)
+
+	// routes 模块 -> 标准 CRUD 路由
+	h.GET("/routes/:id", routes.FindById)
+	h.GET("/routes", routes.Find)
+	h.POST("/routes/create", routes.Create)
+	h.POST("/routes/update", routes.Update)
+	h.POST("/routes/delete", routes.Delete)
 
 	// users 模块 -> 标准 CRUD 路由
 	h.GET("/users/:id", users.FindById)
