@@ -13,7 +13,6 @@ import (
 type CreateDto struct {
 	ID     string `json:"-"`
 	MenuID string `json:"menu_id" vd:"required"`
-	Sort   int16  `json:"sort"`
 	Active *bool  `json:"active" vd:"required"`
 	PID    string `json:"pid"`
 	Name   string `json:"name" vd:"required"`
@@ -43,13 +42,18 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 	data := model.Route{
 		ID:     dto.ID,
 		MenuID: dto.MenuID,
-		Sort:   dto.Sort,
 		Active: *dto.Active,
-		PID:    dto.PID,
 		Name:   dto.Name,
 		Type:   dto.Type,
-		Icon:   dto.Icon,
-		Link:   dto.Link,
+	}
+	if dto.PID != "" {
+		data.PID = dto.PID
+	}
+	if dto.Icon != "" {
+		data.Icon = dto.Icon
+	}
+	if dto.Link != "" {
+		data.Link = dto.Link
 	}
 	if err = x.Db.WithContext(ctx).
 		Create(&data).Error; err != nil {

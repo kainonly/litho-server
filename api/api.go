@@ -73,6 +73,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		// routes 模块 -> 标准 CRUD 路由
 		m.GET("/routes/:id", x.Routes.FindById)
 		m.GET("/routes", x.Routes.Find)
+		m.GET("/routes/_search", x.Routes.Search)
 		m.POST("/routes/create", x.Routes.Create)
 		m.POST("/routes/update", x.Routes.Update)
 		m.POST("/routes/delete", x.Routes.Delete)
