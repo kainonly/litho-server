@@ -61,7 +61,11 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 	var rows *sql.Rows
 	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs().
 		Omit(`created_at`, `updated_at`, `password`))
-	if rows, err = dto.Factory(ctx, do).Rows(); err != nil {
+	db, err := dto.Factory(ctx, do)
+	if err != nil {
+		return
+	}
+	if rows, err = db.Rows(); err != nil {
 		return
 	}
 	defer rows.Close()
