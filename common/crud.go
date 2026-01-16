@@ -1,6 +1,6 @@
 // Package common provides generic CRUD operations and utilities for building REST APIs.
 //
-// This package offers a set of reusable DTOs (Data Transfer Objects) and pipe configurations
+// This package offers reusable DTOs (Data Transfer Objects) and pipe configurations
 // for common database operations like Find, FindById, Search, Exists, and Delete.
 //
 // # Architecture
@@ -13,39 +13,21 @@
 //   - FindByIdDto + FindByIdPipe: Single record retrieval by ID
 //   - SearchDto + SearchPipe: Lightweight search/autocomplete queries
 //
-// # Usage Example
+// # Basic Usage Pattern
 //
-//	// In your controller
-//	func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
-//	    var dto FindDto
-//	    if err := c.BindAndValidate(&dto); err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//
-//	    // Configure the pipe
-//	    ctx = common.SetPipe(ctx, common.NewFindPipe().
-//	        SkipTs().
-//	        Omit("password", "secret"))
-//
-//	    // Execute query
-//	    var results []User
-//	    if err := dto.Find(ctx, db.Model(&User{}), &results); err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//	    c.JSON(200, results)
-//	}
-//
-// # Sorting
-//
-// Sort parameters use the format "column:direction" where direction is "1" for ASC or "-1" for DESC.
-// Example: ?sort=name:1&sort=created_at:-1
+// All operations follow the same pattern:
+//  1. Bind request parameters to a DTO
+//  2. Create and configure a Pipe with desired options
+//  3. Store the Pipe in context using SetPipe()
+//  4. Call the DTO's query method
 //
 // # Security
 //
-// Column names in sort and exists operations are validated against SQL injection using regex.
-// Only alphanumeric characters and underscores are allowed in column names.
+// This package implements multiple layers of security:
+//   - Sort column names are validated using whitelist (Sortable method)
+//   - Exists column names are validated using whitelist (NewExistsPipe)
+//   - ID formats are validated (UUID by default, customizable)
+//   - All user inputs use parameterized queries to prevent SQL injection
 package common
 
 import (
@@ -66,6 +48,17 @@ type pipeKey struct{}
 // validColumnName validates column names to prevent SQL injection.
 // Only allows letters, numbers, and underscores, starting with a letter or underscore.
 var validColumnName = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+// validUUID validates UUID format (with or without hyphens).
+var validUUID = regexp.MustCompile(`^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$`)
+
+// IDValidator is a function type for custom ID validation.
+type IDValidator func(id string) bool
+
+// DefaultIDValidator validates that ID is a valid UUID.
+var DefaultIDValidator IDValidator = func(id string) bool {
+	return validUUID.MatchString(id)
+}
 
 // Controller defines the standard CRUD interface for API controllers.
 type Controller interface {
@@ -114,10 +107,15 @@ type ExistsPipe struct {
 }
 
 // NewExistsPipe creates a new ExistsPipe with the specified allowed field names.
+// Only fields in the whitelist can be used for existence checks.
 //
 // Example:
 //
-//	pipe := NewExistsPipe("email", "username", "phone")
+//	// Allow checking email, username, and phone fields
+//	ctx = common.SetPipe(ctx, common.NewExistsPipe("email", "username", "phone"))
+//
+//	// Client request: GET /users/exists?key=email&q=test@example.com
+//	// Returns: {"exists": true} if email exists
 func NewExistsPipe(keys ...string) *ExistsPipe {
 	fields := make(map[string]bool)
 	for _, key := range keys {
@@ -146,20 +144,31 @@ type ExistsResult struct {
 // Exists checks if a record with the specified value exists in the given column.
 // Returns ExistsResult with Exists=true if a matching record is found.
 //
-// Security: The column name is validated against the pipe's whitelist and
-// checked for SQL injection patterns.
+// Security: The column name is validated against the pipe's whitelist.
+// Only columns explicitly allowed via NewExistsPipe can be queried.
+//
+// Example:
+//
+//	func (x *Controller) Exists(ctx context.Context, c *app.RequestContext) {
+//	    var dto ExistsDto
+//	    c.BindAndValidate(&dto)
+//
+//	    ctx = common.SetPipe(ctx, common.NewExistsPipe("email", "phone"))
+//	    result, err := dto.Exists(ctx, db.Model(&User{}))
+//	    if err != nil {
+//	        c.Error(err)
+//	        return
+//	    }
+//	    c.JSON(200, result)  // {"exists": true/false}
+//	}
 func (x *ExistsDto) Exists(ctx context.Context, do *gorm.DB) (result ExistsResult, err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
 		return
 	}
+	// Whitelist validation - only allowed columns can be queried
 	if !p.fields[x.Key] {
-		err = help.E(0, fmt.Sprintf(`[%s] duplicate values are not allowed for this field`, x.Key))
-		return
-	}
-	// Validate column name to prevent SQL injection
-	if !validColumnName.MatchString(x.Key) {
-		err = help.E(0, fmt.Sprintf(`[%s] invalid column name`, x.Key))
+		err = help.E(0, fmt.Sprintf(`field [%s] is not allowed for existence check`, x.Key))
 		return
 	}
 	var count int64
@@ -211,11 +220,12 @@ func (x *FindDto) GetKeyword() string {
 
 // FindPipe configures the behavior of Find queries.
 type FindPipe struct {
-	ts   bool     // Whether to handle timestamp fields (created_at, updated_at)
-	sort bool     // Whether to apply sorting
-	page bool     // Whether to apply pagination
-	keys []string // Specific columns to select
-	omit []string // Columns to exclude from results
+	ts       bool            // Whether to handle timestamp fields (created_at, updated_at)
+	sort     bool            // Whether to apply sorting
+	page     bool            // Whether to apply pagination
+	keys     []string        // Specific columns to select
+	omit     []string        // Columns to exclude from results
+	sortable map[string]bool // Whitelist of sortable column names
 }
 
 // Get retrieves the FindPipe from context.
@@ -230,6 +240,23 @@ func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 
 // NewFindPipe creates a new FindPipe with default settings.
 // By default, timestamp handling, sorting, and pagination are all enabled.
+//
+// Default behavior:
+//   - Omits created_at and updated_at columns
+//   - Orders by created_at desc if no sort specified
+//   - Applies pagination (default 1000 per page)
+//
+// Example:
+//
+//	// Basic usage with defaults
+//	ctx = common.SetPipe(ctx, common.NewFindPipe())
+//
+//	// Custom configuration
+//	ctx = common.SetPipe(ctx, common.NewFindPipe().
+//	    SkipTs().                                    // Don't auto-omit timestamps
+//	    Sortable("name", "email", "created_at").     // Whitelist sortable columns
+//	    Omit("password", "secret").                  // Exclude sensitive fields
+//	    SkipPage())                                  // Disable pagination
 func NewFindPipe() *FindPipe {
 	return &FindPipe{
 		ts:   true,
@@ -271,10 +298,26 @@ func (x *FindPipe) Omit(keys ...string) *FindPipe {
 	return x
 }
 
+// Sortable sets the whitelist of columns that can be used for sorting.
+// If not set, any valid column name format will be accepted (less secure).
+// For better security, always specify the allowed sortable columns.
+//
+// Example:
+//
+//	pipe := NewFindPipe().Sortable("name", "created_at", "email")
+func (x *FindPipe) Sortable(keys ...string) *FindPipe {
+	x.sortable = make(map[string]bool)
+	for _, key := range keys {
+		x.sortable[key] = true
+	}
+	return x
+}
+
 // Factory builds a GORM query with the configured options from FindPipe.
 // Applies column selection/omission, sorting, and pagination.
 //
-// Security: Sort column names are validated to prevent SQL injection.
+// Security: Sort column names are validated against whitelist (if configured)
+// or basic format validation to prevent SQL injection.
 func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 	p, err := x.Get(ctx)
 	if err != nil {
@@ -300,15 +343,23 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 			if len(rule) != 2 {
 				return nil, help.E(0, fmt.Sprintf(`invalid sort format: %s`, v))
 			}
-			// Validate column name to prevent SQL injection
-			if !validColumnName.MatchString(rule[0]) {
-				return nil, help.E(0, fmt.Sprintf(`invalid column name in sort: %s`, rule[0]))
+			columnName := rule[0]
+			// Validate column name using whitelist if configured, otherwise use regex
+			if len(p.sortable) > 0 {
+				if !p.sortable[columnName] {
+					return nil, help.E(0, fmt.Sprintf(`column [%s] is not sortable`, columnName))
+				}
+			} else {
+				// Fallback to basic format validation
+				if !validColumnName.MatchString(columnName) {
+					return nil, help.E(0, fmt.Sprintf(`invalid column name in sort: %s`, columnName))
+				}
 			}
 			order, ok := ToOrderBy[rule[1]]
 			if !ok {
 				return nil, help.E(0, fmt.Sprintf(`invalid sort direction: %s`, rule[1]))
 			}
-			do = do.Order(fmt.Sprintf(`%s %s`, rule[0], order))
+			do = do.Order(fmt.Sprintf(`%s %s`, columnName, order))
 		}
 	}
 
@@ -319,6 +370,37 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 }
 
 // Find executes a paginated query and scans results into the provided slice.
+//
+// Example:
+//
+//	func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
+//	    var dto FindDto
+//	    c.BindAndValidate(&dto)
+//
+//	    ctx = common.SetPipe(ctx, common.NewFindPipe().
+//	        Sortable("name", "created_at").
+//	        Omit("password"))
+//
+//	    do := db.Model(&User{})
+//	    if dto.Q != "" {
+//	        do = do.Where("name LIKE ?", dto.GetKeyword())
+//	    }
+//
+//	    var results []User
+//	    if err := dto.Find(ctx, do, &results); err != nil {
+//	        c.Error(err)
+//	        return
+//	    }
+//	    c.JSON(200, results)
+//	}
+//
+// Client request examples:
+//
+//	GET /users                           // Default pagination and sorting
+//	GET /users?sort=name:1               // Sort by name ASC
+//	GET /users?sort=created_at:-1        // Sort by created_at DESC
+//	GET /users?q=john                    // Search with keyword
+//	Headers: X-Page: 0, X-PageSize: 20   // Pagination control
 func (x *FindDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	db, err := x.Factory(ctx, do)
 	if err != nil {
@@ -347,11 +429,12 @@ func (x *FindByIdDto) IsFull() bool {
 // FindByIdPipe configures the behavior of FindById queries.
 // Supports different column configurations for normal and full modes.
 type FindByIdPipe struct {
-	ts    bool     // Whether to handle timestamp fields
-	keys  []string // Columns to select in normal mode
-	omit  []string // Columns to omit in normal mode
-	fKeys []string // Columns to select in full mode
-	fOmit []string // Columns to omit in full mode
+	ts          bool        // Whether to handle timestamp fields
+	keys        []string    // Columns to select in normal mode
+	omit        []string    // Columns to omit in normal mode
+	fKeys       []string    // Columns to select in full mode
+	fOmit       []string    // Columns to omit in full mode
+	idValidator IDValidator // Custom ID validator function
 }
 
 // Get retrieves the FindByIdPipe from context.
@@ -365,10 +448,33 @@ func (x *FindByIdDto) Get(ctx context.Context) (*FindByIdPipe, error) {
 }
 
 // NewFindByIdPipe creates a new FindByIdPipe with default settings.
-// By default, timestamp handling is enabled.
+// By default, timestamp handling is enabled and UUID validation is used.
+//
+// Supports two modes:
+//   - Normal mode: Returns limited fields (default)
+//   - Full mode (?full=1): Returns all fields for editing
+//
+// Example:
+//
+//	// Basic usage
+//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+//
+//	// Custom configuration with different fields for normal/full modes
+//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
+//	    Omit("password", "secret").         // Normal mode: hide sensitive fields
+//	    FullOmit("password").               // Full mode: only hide password
+//	    SkipIDValidation())                 // For non-UUID IDs
+//
+//	// Numeric ID validation
+//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
+//	    SetIDValidator(func(id string) bool {
+//	        _, err := strconv.Atoi(id)
+//	        return err == nil
+//	    }))
 func NewFindByIdPipe() *FindByIdPipe {
 	return &FindByIdPipe{
-		ts: true,
+		ts:          true,
+		idValidator: DefaultIDValidator,
 	}
 }
 
@@ -402,12 +508,62 @@ func (x *FindByIdPipe) FullOmit(keys ...string) *FindByIdPipe {
 	return x
 }
 
+// SetIDValidator sets a custom ID validator function.
+// Use this to customize ID format validation (e.g., for non-UUID IDs).
+//
+// Example:
+//
+//	pipe := NewFindByIdPipe().SetIDValidator(func(id string) bool {
+//	    _, err := strconv.Atoi(id)
+//	    return err == nil
+//	})
+func (x *FindByIdPipe) SetIDValidator(v IDValidator) *FindByIdPipe {
+	x.idValidator = v
+	return x
+}
+
+// SkipIDValidation disables ID format validation.
+// Use with caution - only when you trust the input source.
+func (x *FindByIdPipe) SkipIDValidation() *FindByIdPipe {
+	x.idValidator = nil
+	return x
+}
+
 // Take retrieves a single record by ID with the configured column selection.
 // Uses normal or full mode configuration based on the Full query parameter.
+//
+// Security: ID format is validated before query execution.
+//
+// Example:
+//
+//	func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
+//	    var dto FindByIdDto
+//	    c.BindAndValidate(&dto)
+//
+//	    ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
+//	        Omit("password").
+//	        FullOmit("password"))
+//
+//	    var result User
+//	    if err := dto.Take(ctx, db.Model(&User{}), &result); err != nil {
+//	        c.Error(err)
+//	        return
+//	    }
+//	    c.JSON(200, result)
+//	}
+//
+// Client request examples:
+//
+//	GET /users/:id           // Normal mode, limited fields
+//	GET /users/:id?full=1    // Full mode, all fields (for editing)
 func (x *FindByIdDto) Take(ctx context.Context, do *gorm.DB, i any) (err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
 		return
+	}
+	// Validate ID format if validator is configured
+	if p.idValidator != nil && !p.idValidator(x.ID) {
+		return help.E(0, fmt.Sprintf(`invalid ID format: %s`, x.ID))
 	}
 	if !x.IsFull() {
 		if len(p.keys) != 0 {
@@ -453,8 +609,9 @@ func (x *SearchDto) GetKeyword() string {
 
 // SearchPipe configures the behavior of Search queries.
 type SearchPipe struct {
-	keys  []string // Columns to return (default: id, name)
-	async bool     // Whether to limit results for async/autocomplete use
+	keys        []string    // Columns to return (default: id, name)
+	async       bool        // Whether to limit results for async/autocomplete use
+	idValidator IDValidator // Custom ID validator function for IDs parameter
 }
 
 // SkipAsync disables the result limit. By default, search returns max 50 results.
@@ -466,9 +623,24 @@ func (x *SearchPipe) SkipAsync() *SearchPipe {
 // NewSearchPipe creates a new SearchPipe with the specified columns to return.
 // Defaults to ["id", "name"] if no columns are specified.
 // Async mode (50 result limit) is enabled by default.
+// UUID validation for IDs is enabled by default.
+//
+// Designed for autocomplete/dropdown data sources with minimal payload.
+//
+// Example:
+//
+//	// Basic usage - returns id and name, max 50 results
+//	ctx = common.SetPipe(ctx, common.NewSearchPipe())
+//
+//	// Custom columns
+//	ctx = common.SetPipe(ctx, common.NewSearchPipe("id", "name", "avatar"))
+//
+//	// Disable result limit for full search
+//	ctx = common.SetPipe(ctx, common.NewSearchPipe().SkipAsync())
 func NewSearchPipe(keys ...string) *SearchPipe {
 	search := &SearchPipe{
-		async: true,
+		async:       true,
+		idValidator: DefaultIDValidator,
 	}
 	if len(keys) == 0 {
 		search.keys = []string{"id", "name"}
@@ -476,6 +648,18 @@ func NewSearchPipe(keys ...string) *SearchPipe {
 		search.keys = keys
 	}
 	return search
+}
+
+// SetIDValidator sets a custom ID validator function for the IDs parameter.
+func (x *SearchPipe) SetIDValidator(v IDValidator) *SearchPipe {
+	x.idValidator = v
+	return x
+}
+
+// SkipIDValidation disables ID format validation for the IDs parameter.
+func (x *SearchPipe) SkipIDValidation() *SearchPipe {
+	x.idValidator = nil
+	return x
 }
 
 // Get retrieves the SearchPipe from context.
@@ -503,6 +687,35 @@ func (x *SearchDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) 
 
 // Find executes a search query with optional ID prioritization.
 // If IDs are provided, those records appear first in results (using UNION ALL).
+//
+// Security: IDs are validated before query execution if validator is configured.
+//
+// Example:
+//
+//	func (x *Controller) Search(ctx context.Context, c *app.RequestContext) {
+//	    var dto SearchDto
+//	    c.BindAndValidate(&dto)
+//
+//	    ctx = common.SetPipe(ctx, common.NewSearchPipe("id", "name"))
+//
+//	    do := db.Model(&User{})
+//	    if dto.Q != "" {
+//	        do = do.Where("name LIKE ?", dto.GetKeyword())
+//	    }
+//
+//	    var results []SearchResult
+//	    if err := dto.Find(ctx, do, &results); err != nil {
+//	        c.Error(err)
+//	        return
+//	    }
+//	    c.JSON(200, results)
+//	}
+//
+// Client request examples:
+//
+//	GET /users/search?q=john                    // Search by keyword
+//	GET /users/search?ids=uuid1,uuid2           // Get specific IDs first
+//	GET /users/search?ids=uuid1,uuid2&q=john    // Prioritize IDs, then search
 func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
@@ -510,6 +723,15 @@ func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	}
 	if x.IDs != "" {
 		ids := strings.Split(x.IDs, ",")
+		// Validate each ID if validator is configured
+		if p.idValidator != nil {
+			for _, id := range ids {
+				id = strings.TrimSpace(id)
+				if id != "" && !p.idValidator(id) {
+					return help.E(0, fmt.Sprintf(`invalid ID format in IDs: %s`, id))
+				}
+			}
+		}
 		factory, err := x.Factory(ctx, do.WithContext(ctx))
 		if err != nil {
 			return err
