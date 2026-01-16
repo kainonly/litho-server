@@ -72,9 +72,9 @@ func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFu
 		return
 	}
 
-	if err = x.Locker.Verify(ctx, result.Phone, 5); err != nil {
+	if err = x.Locker.Check(ctx, result.Phone, 5); err != nil {
 		switch {
-		case errors.Is(err, locker.ErrLockerNotExists):
+		case errors.Is(err, locker.ErrNotExists):
 			return
 		case errors.Is(err, locker.ErrLocked):
 			err = common.ErrLoginMaxFailures
@@ -87,10 +87,8 @@ func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFu
 }
 
 func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
-	jti := help.Uuid()
-	claims := passport.NewClaims(userId, time.Hour*24*7).
-		SetIssuer(x.V.App.Namespace).
-		SetJTI(jti)
+	jti := help.Uuid7()
+	claims := passport.NewClaims(userId, time.Hour*24*7).SetJTI(jti)
 	if ts, err = x.Passport.Create(claims); err != nil {
 		return
 	}

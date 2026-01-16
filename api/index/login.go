@@ -45,7 +45,9 @@ func (x *Service) Login(ctx context.Context, dto LoginDto) (result *LoginResult,
 
 	if err = passlib.Verify(dto.Password, result.Password); err != nil {
 		if errors.Is(err, passlib.ErrNotMatch) {
-			x.Locker.Update(ctx, result.ID, time.Minute*15)
+			if _, err = x.Locker.Increment(ctx, result.ID, time.Minute*15); err != nil {
+				return
+			}
 			err = common.ErrLoginInvalid
 			return
 		}

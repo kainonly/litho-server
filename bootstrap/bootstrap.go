@@ -4,14 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"os"
-	"regexp"
 	"server/common"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/go-playground/validator/v10"
-	"github.com/hertz-contrib/binding/go_playground"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
@@ -21,6 +19,7 @@ import (
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
 	"github.com/kainonly/go/passport"
+	"github.com/kainonly/go/vd"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/redis/go-redis/v9"
@@ -113,10 +112,6 @@ func UseCsrf(v *common.Values) *csrf.Csrf {
 	)
 }
 
-func NewLocker(client *redis.Client) *locker.Locker {
-	return locker.New(client)
-}
-
 func UseCipher(v *common.Values) (*cipher.Cipher, error) {
 	return cipher.New(v.App.Key)
 }
@@ -145,27 +140,13 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	if v.App.Address == "" {
 		return
 	}
-	vd := go_playground.NewValidator()
-	vd.SetValidateTag("vd")
-	vdx := vd.Engine().(*validator.Validate)
-	vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
-		matched, errX := regexp.MatchString("^[a-z_]+$", fl.Field().Interface().(string))
-		if errX != nil {
-			return false
-		}
-		return matched
-	})
-	vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
-		matched, errX := regexp.MatchString("^[a-z_.]+:(-1|1)$", fl.Field().Interface().(string))
-		if errX != nil {
-			return false
-		}
-		return matched
-	})
 
+	vdx := vd.New()
 	opts := []config.Option{
 		server.WithHostPorts(v.App.Address),
-		server.WithCustomValidator(vd),
+		server.WithCustomValidatorFunc(func(request *protocol.Request, i interface{}) error {
+			return vdx.Validate(request)
+		}),
 	}
 
 	var tracer config.Option

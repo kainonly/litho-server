@@ -48,15 +48,14 @@ type API struct {
 }
 
 func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
-	_csrf := x.Csrf.VerifyToken(!x.V.IsRelease())
 	_auth := x.Auth()
 
 	x.Hertz.GET("", x.Index.Ping)
-	x.Hertz.POST("login", _csrf, x.Index.Login)
-	x.Hertz.GET("verify", _csrf, x.Index.Verify)
-	x.Hertz.POST("logout", _csrf, _auth, x.Index.Logout)
+	x.Hertz.POST("login", x.Index.Login)
+	x.Hertz.GET("verify", x.Index.Verify)
+	x.Hertz.POST("logout", _auth, x.Index.Logout)
 
-	m := x.Hertz.Group(``, _csrf, _auth)
+	m := x.Hertz.Group(``, _auth)
 	{
 		// menus 模块 -> 标准 CRUD 路由
 		m.GET("/menus/:id", x.Menus.FindById)
