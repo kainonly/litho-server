@@ -178,9 +178,9 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	h.Use(
 		help.ErrorHandler(),
 		cors.New(cors.Config{
-			AllowOrigins:     v.Cors.AllowOrigins,
-			AllowMethods:     v.Cors.AllowMethods,
-			AllowHeaders:     v.Cors.AllowHeaders,
+			AllowOrigins:     v.Cors.Origins,
+			AllowMethods:     v.Cors.Methods,
+			AllowHeaders:     v.Cors.Headers,
 			ExposeHeaders:    v.Cors.ExposeHeaders,
 			AllowCredentials: v.Cors.AllowCredentials,
 			MaxAge:           v.Cors.MaxAge,

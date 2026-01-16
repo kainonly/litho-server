@@ -1,7 +1,52 @@
-address: :3000
-key:
-namespace: litho
-domain: localhost:3000
+app:
+  mode: development
+  namespace: litho
+  address: :3000
+  key: your-secret-key-here
+network:
+  ip: ""
+  domain: localhost:3000
+cors:
+  enabled: true
+  origins:
+    - http://localhost:3000
+  methods:
+    - GET
+    - POST
+  headers:
+    - Origin
+    - Content-Length
+    - Content-Type
+    - X-Page
+    - X-Pagesize
+    - X-Route
+    - X-Requested-With
+  expose_headers:
+    - X-Total
+  allow_credentials: true
+  max_age: 12h
 database:
-  url: host= user=postgres password= dbname=litho port=5432 TimeZone=Asia/Shanghai
-  redis: redis://:6379
+  debug: false
+  dsn: host=localhost user=postgres password=your-password dbname=litho port=5432 TimeZone=Asia/Shanghai sslmode=disable
+  name: litho
+  gorm:
+    log_level: silent
+    prepare_stmt: true
+    skip_default_transaction: true
+  pool:
+    max_idle_conns: 10
+    max_open_conns: 100
+    conn_max_life: 1h
+  redis: redis://:your-redis-password@localhost:6379
+nats:
+  hosts:
+    - nats://localhost:4222
+  token: ""
+otlp:
+  enabled: false
+  service_name: litho
+  environment: development
+  endpoint: ""
+  protocol: grpc
+  insecure: true
+  headers: {}

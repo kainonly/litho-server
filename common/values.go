@@ -29,9 +29,9 @@ type NetworkValue struct {
 
 type CorsValue struct {
 	Enabled          bool          `yaml:"enabled"`
-	AllowOrigins     []string      `yaml:"allow_origins"`
-	AllowMethods     []string      `yaml:"allow_methods"`
-	AllowHeaders     []string      `yaml:"allow_headers"`
+	Origins          []string      `yaml:"origins"`
+	Methods          []string      `yaml:"methods"`
+	Headers          []string      `yaml:"headers"`
 	ExposeHeaders    []string      `yaml:"expose_headers"`
 	AllowCredentials bool          `yaml:"allow_credentials"`
 	MaxAge           time.Duration `yaml:"max_age"`

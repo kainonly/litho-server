@@ -2,44 +2,39 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
-	"os/signal"
+	"server/api"
 	"server/bootstrap"
-	"syscall"
+	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 func main() {
+	if err := listen("./config/values.yml"); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func listen(path string) (err error) {
 	ctx := context.Background()
-
-	// 加载配置
-	values, err := bootstrap.LoadStaticValues("config/values.yml")
-	if err != nil {
-		panic(err)
+	var v *common.Values
+	if v, err = bootstrap.LoadStaticValues(path); err != nil {
+		return
+	}
+	var x *api.API
+	if x, err = bootstrap.NewAPI(v); err != nil {
+		return
 	}
 
-	// 使用 wire 生成 API
-	api, err := bootstrap.NewAPI(values)
-	if err != nil {
-		panic(err)
-	}
-
-	// 初始化服务器
 	var h *server.Hertz
-	if h, err = api.Initialize(ctx); err != nil {
-		panic(err)
+	if h, err = x.Initialize(ctx); err != nil {
+		return
 	}
+	defer bootstrap.ProviderOpenTelemetry(v).Shutdown(ctx)
 
-	// 启动服务器
-	go h.Spin()
-
-	// 处理优雅关闭
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
-
-	if err = h.Shutdown(ctx); err != nil {
-		panic(err)
-	}
+	h.Spin()
+	return
 }
