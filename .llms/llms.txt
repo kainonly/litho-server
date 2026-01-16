@@ -536,12 +536,12 @@ package {module}
 import (
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{{Module}X: i} },
-	func(i common.Inject) *Service { return &Service{Inject: &i} },
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {
@@ -555,9 +555,10 @@ type Service struct {
 
 ### Provides 规范
 
-- 匿名注入函数应尽可能简洁，**每个占一行**
-- 优先使用 `common.Inject` 作为 Service 的依赖注入
-- 如需额外依赖，直接在参数中添加
+- 使用 `wire.NewSet` 定义依赖集合
+- 使用 `wire.Struct(new(Type), "*")` 自动注入所有导出字段
+- 优先使用 `*common.Inject` 嵌入作为 Service 的基础依赖
+- 如需额外依赖，直接在 Service 结构体中添加字段，Wire 会自动注入
 
 ### 命名规则
 
@@ -565,7 +566,7 @@ type Service struct {
 |------|----------|------|
 | 包名 | 小写模块名 | `users`、`projects`、`index` |
 | Controller 服务字段 | `{Module}X`（首字母大写） | `UsersX`、`ProjectsX`、`IndexX` |
-| Service 注入字段 | `Inject` | 固定使用 `*common.Inject` |
+| Service 嵌入字段 | `*common.Inject` | 固定嵌入 |
 
 ### 示例
 
@@ -577,12 +578,12 @@ package orgs
 import (
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{OrgsX: i} },
-	func(i common.Inject) *Service { return &Service{Inject: &i} },
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {
@@ -603,12 +604,12 @@ import (
 	"server/api/sessions"
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{UsersX: i} },
-	func(i common.Inject, s *sessions.Service) *Service { return &Service{Inject: &i, SessionsX: s} },
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {
@@ -748,41 +749,44 @@ import (
 	"server/api/orgs"
 	"server/api/sessions"
 	"server/api/users"
+	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
+	"github.com/kainonly/go/csrf"
 )
 
-var Options = fx.Options(
-	fx.Provide(func(i Inject) *API { return &API{Inject: &i} }),
+var Provides = wire.NewSet(
 	index.Provides,
 	sessions.Provides,
 	orgs.Provides,
 	users.Provides,
 )
 
-type Inject struct {
-	fx.In
+type API struct {
+	*common.Inject
 
-	Hertz    *server.Hertz
-	Index    *index.Controller
-	IndexX   *index.Service      // 需要在 Auth 中使用的 Service
-	Orgs     *orgs.Controller
-	Sessions *sessions.Controller
-	Users    *users.Controller
-	UsersX   *users.Service      // 需要在 Auth 中使用的 Service
+	Hertz  *server.Hertz
+	Csrf   *csrf.Csrf
+	Index  *index.Controller
+	IndexX *index.Service      // 需要在 Auth 中使用的 Service
+	Orgs   *orgs.Controller
+	Users  *users.Controller
+	UsersX *users.Service      // 需要在 Auth 中使用的 Service
 }
 
-type API struct{ *Inject }
-
 func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
-	authx := x.Auth()
+	_csrf := x.Csrf.VerifyToken(!x.V.IsRelease())
+	_auth := x.Auth()
 
 	// index 模块 -> 根路由（无需认证）
 	x.Hertz.GET("", x.Index.Ping)
+	x.Hertz.POST("login", _csrf, x.Index.Login)
+	x.Hertz.GET("verify", _csrf, x.Index.Verify)
+	x.Hertz.POST("logout", _csrf, _auth, x.Index.Logout)
 
 	// 需要认证的路由组
-	m := x.Hertz.Group(``, authx)
+	m := x.Hertz.Group(``, _csrf, _auth)
 	{
 		// orgs 模块 -> 标准 CRUD 路由
 		m.GET("/orgs/:id", x.Orgs.FindById)
@@ -806,12 +810,12 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 ### 注册新模块步骤
 
 1. **导入模块包**：在 `import` 中添加新模块路径
-2. **注册 Provides**：在 `Options` 的 `fx.Options()` 中添加 `{module}.Provides`
-3. **注入 Controller**：在 `Inject` 结构体中添加 `{Module} *{module}.Controller`
+2. **注册 Provides**：在 `Provides` 的 `wire.NewSet()` 中添加 `{module}.Provides`
+3. **注入 Controller**：在 `API` 结构体中添加 `{Module} *{module}.Controller`
 4. **注入 Service（可选）**：如果需要在 `Auth` 或其他地方使用 Service，添加 `{Module}X *{module}.Service`
 5. **注册路由**：在 `Initialize` 方法的路由组中添加路由
 
-### Inject 命名规则
+### API 结构体字段命名规则
 
 | 元素 | 命名格式 | 示例 |
 |------|----------|------|
@@ -881,16 +885,12 @@ package orgs
 import (
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller {
-		return &Controller{OrgsX: i}
-	},
-	func(i common.Inject) *Service {
-		return &Service{Inject: &i}
-	},
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {
@@ -1312,8 +1312,8 @@ user := common.GetIAM(c)
 ### api.go 注册
 
 - [ ] 在 `import` 中添加模块导入：`"server/api/{module}"`
-- [ ] 在 `Options` 的 `fx.Options()` 中添加 `{module}.Provides`
-- [ ] 在 `Inject` 结构体中添加 `{Module} *{module}.Controller`
+- [ ] 在 `Provides` 的 `wire.NewSet()` 中添加 `{module}.Provides`
+- [ ] 在 `API` 结构体中添加 `{Module} *{module}.Controller`
 - [ ] 如需在 Auth 等位置使用 Service，添加 `{Module}X *{module}.Service`
 - [ ] 在 `Initialize` 方法的认证路由组 `m` 中注册标准 CRUD 路由
 
