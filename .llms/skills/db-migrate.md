@@ -14,36 +14,54 @@
 
 - **Go 1.24+**
 - **Atlas CLI**：`curl -sSf https://atlasgo.sh | sh`
-- **Python 3.10+**
 - **Docker**
 
 ### 配置文件
 
-1. 复制 `.env.example` 为 `.env`
-2. 填入数据库连接信息
-3. `.env` 不提交到版本控制
+迁移工具从 `config/values.yml` 读取数据库配置：
+
+```yaml
+database:
+  dsn: host=localhost user=postgres password=your-password dbname=litho port=5432 TimeZone=Asia/Shanghai sslmode=disable
+```
 
 ## 核心命令
 
-所有命令通过 `scripts/migrate.py` 执行：
+迁移工具位于 `cmd/migrate/main.go`，需要先编译：
+
+```bash
+# 编译迁移工具
+go build -o migrate ./cmd/migrate
+
+# 或直接运行
+go run ./cmd/migrate <command>
+```
 
 | 命令 | 用途 | 示例 |
 |------|------|------|
-| `diff` | 对比模型变更，生成迁移文件 | `scripts/migrate.py diff` |
-| `apply` | 应用迁移到数据库 | `scripts/migrate.py apply` |
-| `status` | 查看迁移状态 | `scripts/migrate.py status` |
-| `inspect` | 查看数据库当前 schema | `scripts/migrate.py inspect` |
-| `push` | 直接推送 schema（仅开发环境） | `scripts/migrate.py push` |
-| `hash` | 重新生成迁移文件哈希 | `scripts/migrate.py hash` |
+| `diff` | 对比模型变更，生成迁移文件 | `./migrate diff` |
+| `apply` | 应用迁移到数据库 | `./migrate apply` |
+| `status` | 查看迁移状态 | `./migrate status` |
+| `inspect` | 查看数据库当前 schema | `./migrate inspect` |
+| `push` | 直接推送 schema（仅开发环境） | `./migrate push` |
+| `hash` | 重新生成迁移文件哈希 | `./migrate hash` |
 
-### 环境切换
+### 使用不同配置文件
 
 ```bash
-# 本地环境（默认）
-scripts/migrate.py diff
+# 默认使用 config/values.yml
+./migrate diff
 
-# 生产环境
-scripts/migrate.py --env prod apply
+# 使用指定配置文件
+./migrate -config config/prod.yml apply
+```
+
+### 快捷方式（使用 go run）
+
+```bash
+go run ./cmd/migrate diff
+go run ./cmd/migrate apply
+go run ./cmd/migrate -config config/prod.yml apply
 ```
 
 ## 标准工作流
@@ -55,29 +73,29 @@ scripts/migrate.py --env prod apply
 # models 切片和 tableComments 映射
 
 # 2. 生成迁移文件
-scripts/migrate.py diff
+go run ./cmd/migrate diff
 
 # 3. 检查生成的 SQL（人工审核）
 cat migrations/*.sql | tail -50
 
 # 4. 应用迁移
-scripts/migrate.py apply
+go run ./cmd/migrate apply
 
 # 5. 验证状态
-scripts/migrate.py status
+go run ./cmd/migrate status
 ```
 
 ### 修改模型字段后
 
 ```bash
 # 1. 生成迁移
-scripts/migrate.py diff
+go run ./cmd/migrate diff
 
 # 2. 审核 SQL（特别关注破坏性变更）
 cat migrations/*.sql | tail -50
 
 # 3. 应用迁移
-scripts/migrate.py apply
+go run ./cmd/migrate apply
 ```
 
 ## Atlas Loader 注册
@@ -108,7 +126,7 @@ var tableComments = map[string]string{
 
 | 操作 | 风险 |
 |------|------|
-| `--env prod` | 生产环境操作 |
+| 使用生产配置 | 生产环境操作 |
 | 删除列或表 | 数据丢失 |
 | 修改列类型 | 数据转换失败 |
 | 删除索引 | 查询性能下降 |
@@ -123,7 +141,7 @@ var tableComments = map[string]string{
 ### 迁移文件哈希不匹配
 
 ```bash
-scripts/migrate.py hash
+go run ./cmd/migrate hash
 ```
 
 ### Atlas 命令未找到
@@ -136,10 +154,10 @@ curl -sSf https://atlasgo.sh | sh
 
 ```bash
 # 查看当前状态
-scripts/migrate.py status
+go run ./cmd/migrate status
 
 # 查看数据库实际 schema
-scripts/migrate.py inspect
+go run ./cmd/migrate inspect
 ```
 
 ## Go 项目常用命令
@@ -172,15 +190,15 @@ go test -cover ./...  # 带覆盖率测试
 
 - [ ] 在 `models` 切片中注册模型
 - [ ] 在 `tableComments` 中添加表注释
-- [ ] 执行 `scripts/migrate.py diff`
+- [ ] 执行 `go run ./cmd/migrate diff`
 - [ ] 人工审核 SQL 文件
-- [ ] 执行 `scripts/migrate.py apply`
+- [ ] 执行 `go run ./cmd/migrate apply`
 
 ### 修改模型后
 
-- [ ] 执行 `scripts/migrate.py diff`
+- [ ] 执行 `go run ./cmd/migrate diff`
 - [ ] 审核 SQL（关注破坏性变更）
-- [ ] 执行 `scripts/migrate.py apply`
+- [ ] 执行 `go run ./cmd/migrate apply`
 
 ### 添加新依赖后
 

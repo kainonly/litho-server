@@ -37,24 +37,22 @@ server/
 │   └── atlas-loader/    # Atlas 迁移加载器
 ├── common/              # 公共组件
 ├── model/               # GORM 模型
-├── migrations/          # 迁移文件
-└── scripts/
-    └── migrate.py       # 迁移脚本
+└── migrations/          # 迁移文件
 ```
 
 ### 常用命令
 
 ```bash
 # 迁移
-scripts/migrate.py diff     # 生成迁移
-scripts/migrate.py apply    # 应用迁移
-scripts/migrate.py status   # 查看状态
+go run ./cmd/migrate diff     # 生成迁移
+go run ./cmd/migrate apply    # 应用迁移
+go run ./cmd/migrate status   # 查看状态
 
 # Go
-go mod tidy                 # 整理依赖
-go generate ./...           # Wire 生成
-go run .                    # 运行
-go test ./...               # 测试
+go mod tidy                   # 整理依赖
+go generate ./...             # Wire 生成
+go run .                      # 运行
+go test ./...                 # 测试
 ```
 
 ### 核心约定
