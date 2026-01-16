@@ -3,12 +3,12 @@ package roles
 import (
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{RolesX: i} },
-	func(i common.Inject) *Service { return &Service{Inject: &i} },
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {

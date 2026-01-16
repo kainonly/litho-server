@@ -5,12 +5,12 @@ import (
 	"server/api/sessions"
 	"server/common"
 
-	"go.uber.org/fx"
+	"github.com/goforj/wire"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{UsersX: i} },
-	func(i common.Inject, s *sessions.Service) *Service { return &Service{Inject: &i, SessionsX: s} },
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {

@@ -2,38 +2,44 @@ package main
 
 import (
 	"context"
-	"server/api"
+	"os"
+	"os/signal"
 	"server/bootstrap"
+	"syscall"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"go.uber.org/fx"
 )
 
 func main() {
-	fx.New(
-		bootstrap.Provides,
-		api.Options,
-		fx.Invoke(NewServer),
-	).Run()
-}
+	ctx := context.Background()
 
-func NewServer(lc fx.Lifecycle, api *api.API) (err error) {
-	ctx := context.TODO()
+	// 加载配置
+	values, err := bootstrap.LoadStaticValues("config/values.yml")
+	if err != nil {
+		panic(err)
+	}
+
+	// 使用 wire 生成 API
+	api, err := bootstrap.NewAPI(values)
+	if err != nil {
+		panic(err)
+	}
+
+	// 初始化服务器
 	var h *server.Hertz
 	if h, err = api.Initialize(ctx); err != nil {
-		return
+		panic(err)
 	}
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			go h.Spin()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			if h != nil {
-				return h.Shutdown(ctx)
-			}
-			return nil
-		},
-	})
-	return
+
+	// 启动服务器
+	go h.Spin()
+
+	// 处理优雅关闭
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	if err = h.Shutdown(ctx); err != nil {
+		panic(err)
+	}
 }

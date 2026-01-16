@@ -6,41 +6,34 @@ import (
 	"os"
 	"regexp"
 	"server/common"
-	"time"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
-	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/go-playground/validator/v10"
 	"github.com/hertz-contrib/binding/go_playground"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/obs-opentelemetry/provider"
+	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/kainonly/go/captcha"
+	"github.com/kainonly/go/cipher"
 	"github.com/kainonly/go/csrf"
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
 	"github.com/kainonly/go/passport"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/redis/go-redis/v9"
-	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var Provides = fx.Provide(
-	NewStaticValues,
-	NewGorm,
-	NewRedis,
-	NewPassport,
-	NewCsrf,
-	NewLocker,
-	NewCaptcha,
-	NewHertz,
-)
-
-func NewStaticValues() (v *common.Values, err error) {
+func LoadStaticValues(path string) (v *common.Values, err error) {
 	v = new(common.Values)
 	var b []byte
-	if b, err = os.ReadFile(`./config/values.yml`); err != nil {
+	if b, err = os.ReadFile(path); err != nil {
 		return
 	}
 	if err = yaml.Unmarshal(b, &v); err != nil {
@@ -49,15 +42,20 @@ func NewStaticValues() (v *common.Values, err error) {
 	return
 }
 
-func NewGorm(lc fx.Lifecycle, v *common.Values) (orm *gorm.DB, err error) {
+func UseGorm(v *common.Values) (orm *gorm.DB, err error) {
+	var log logger.Interface
+	if v.IsSqlDebug() {
+		log = logger.Default.LogMode(logger.Info)
+	}
 	if orm, err = gorm.Open(
 		postgres.New(postgres.Config{
-			DSN:                  v.Database.Url,
+			DSN:                  v.Database.DSN,
 			PreferSimpleProtocol: true,
 		}),
 		&gorm.Config{
-			SkipDefaultTransaction: true,
-			PrepareStmt:            true,
+			Logger:                 log,
+			SkipDefaultTransaction: v.Database.Gorm.SkipDefaultTransaction,
+			PrepareStmt:            v.Database.Gorm.PrepareStmt,
 		},
 	); err != nil {
 		return
@@ -66,45 +64,52 @@ func NewGorm(lc fx.Lifecycle, v *common.Values) (orm *gorm.DB, err error) {
 	if db, err = orm.DB(); err != nil {
 		return
 	}
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(time.Hour)
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return db.Close()
-		},
-	})
+	db.SetMaxIdleConns(v.Database.Pool.MaxIdleConns)
+	db.SetMaxOpenConns(v.Database.Pool.MaxOpenConns)
+	db.SetConnMaxLifetime(v.Database.Pool.ConnMaxLife)
 	return
 }
 
-func NewRedis(lc fx.Lifecycle, v *common.Values) (client *redis.Client, err error) {
+func UseRedis(v *common.Values) (client *redis.Client, err error) {
 	opts, err := redis.ParseURL(v.Database.Redis)
 	if err != nil {
 		return
 	}
+	opts.Protocol = 2
 	client = redis.NewClient(opts)
 	if err = client.Ping(context.TODO()).Err(); err != nil {
 		return
 	}
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return client.Close()
-		},
-	})
 	return
 }
 
-func NewPassport(v *common.Values) *passport.Passport {
+func UseNats(v *common.Values) (nc *nats.Conn, err error) {
+	if nc, err = nats.Connect(
+		strings.Join(v.Nats.Hosts, ","),
+		nats.Token(v.Nats.Token),
+		nats.RetryOnFailedConnect(true),
+		nats.MaxReconnects(-1),
+	); err != nil {
+		return
+	}
+	return
+}
+
+func UseJetStream(nc *nats.Conn) (jetstream.JetStream, error) {
+	return jetstream.New(nc)
+}
+
+func UsePassport(v *common.Values) *passport.Passport {
 	return passport.New(
-		passport.SetKey(v.Key),
-		passport.SetIssuer(v.Domain),
+		passport.SetKey(v.App.Key),
+		passport.SetIssuer(v.App.Namespace),
 	)
 }
 
-func NewCsrf(v *common.Values) *csrf.Csrf {
+func UseCsrf(v *common.Values) *csrf.Csrf {
 	return csrf.New(
-		csrf.SetKey(v.Key),
-		csrf.SetDomain(v.Domain),
+		csrf.SetKey(v.App.Key),
+		csrf.SetDomain(v.Network.Domain),
 	)
 }
 
@@ -112,57 +117,78 @@ func NewLocker(client *redis.Client) *locker.Locker {
 	return locker.New(client)
 }
 
-func NewCaptcha(client *redis.Client) *captcha.Captcha {
+func UseCipher(v *common.Values) (*cipher.Cipher, error) {
+	return cipher.New(v.App.Key)
+}
+
+func UseLocker(client *redis.Client) *locker.Locker {
+	return locker.New(client)
+}
+
+func UseCaptcha(client *redis.Client) *captcha.Captcha {
 	return captcha.New(client)
 }
 
-func NewHertz(v *common.Values) (h *server.Hertz, err error) {
-	if v.Address == "" {
+func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
+	return provider.NewOpenTelemetryProvider(
+		provider.WithServiceName(v.Otlp.ServiceName),
+		provider.WithExportEndpoint(v.Otlp.Endpoint),
+		provider.WithDeploymentEnvironment(v.Otlp.Environment),
+		provider.WithHeaders(v.Otlp.Headers),
+		provider.WithEnableTracing(true),
+		provider.WithEnableMetrics(true),
+		provider.WithEnableCompression(),
+	)
+}
+
+func UseHertz(v *common.Values) (h *server.Hertz, err error) {
+	if v.App.Address == "" {
 		return
 	}
 	vd := go_playground.NewValidator()
 	vd.SetValidateTag("vd")
 	vdx := vd.Engine().(*validator.Validate)
-	if err = vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
-		str, ok := fl.Field().Interface().(string)
-		if !ok {
+	vdx.RegisterValidation("snake", func(fl validator.FieldLevel) bool {
+		matched, errX := regexp.MatchString("^[a-z_]+$", fl.Field().Interface().(string))
+		if errX != nil {
 			return false
 		}
-		return regexp.MustCompile("^[a-z_]+$").MatchString(str)
-	}); err != nil {
-		return
-	}
-	if err = vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
-		str, ok := fl.Field().Interface().(string)
-		if !ok {
+		return matched
+	})
+	vdx.RegisterValidation("sort", func(fl validator.FieldLevel) bool {
+		matched, errX := regexp.MatchString("^[a-z_.]+:(-1|1)$", fl.Field().Interface().(string))
+		if errX != nil {
 			return false
 		}
-		return regexp.MustCompile("^[a-z_.]+:(-1|1)$").MatchString(str)
-	}); err != nil {
-		return
-	}
+		return matched
+	})
 
 	opts := []config.Option{
-		server.WithHostPorts(v.Address),
-		server.WithCustomValidatorFunc(func(_ *protocol.Request, req any) error {
-			return vdx.Struct(req)
-		}),
+		server.WithHostPorts(v.App.Address),
+		server.WithCustomValidator(vd),
 	}
+
+	var tracer config.Option
+	var tracerCfg *tracing.Config
+	tracer, tracerCfg = tracing.NewServerTracer()
+	opts = append(opts, tracer)
 
 	opts = append(opts)
 	h = server.Default(opts...)
 	h.Use(
 		help.ErrorHandler(),
 		cors.New(cors.Config{
-			AllowOrigins: v.Cors.Origins,
-			AllowMethods: []string{"GET", "POST"},
-			AllowHeaders: []string{"Origin", "Content-Length", "Content-Type",
-				"X-Page", "X-Pagesize", "X-Requested-With",
-			},
-			ExposeHeaders:    []string{"X-Total"},
-			AllowCredentials: true,
-			MaxAge:           12 * time.Hour,
+			AllowOrigins:     v.Cors.AllowOrigins,
+			AllowMethods:     v.Cors.AllowMethods,
+			AllowHeaders:     v.Cors.AllowHeaders,
+			ExposeHeaders:    v.Cors.ExposeHeaders,
+			AllowCredentials: v.Cors.AllowCredentials,
+			MaxAge:           v.Cors.MaxAge,
 		}),
 	)
+	if tracerCfg != nil {
+		h.Use(tracing.ServerMiddleware(tracerCfg))
+	}
+
 	return
 }

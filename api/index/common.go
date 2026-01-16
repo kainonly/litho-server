@@ -10,20 +10,20 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/goforj/wire"
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
 	"github.com/kainonly/go/passport"
-	"go.uber.org/fx"
 )
 
-var Provides = fx.Provide(
-	func(i *Service) *Controller { return &Controller{IndexX: i} },
-	func(i common.Inject, p *passport.Passport, s *sessions.Service) *Service {
-		return &Service{Inject: &i, Passport: p, SessionsX: s}
-	},
+var Provides = wire.NewSet(
+	wire.Struct(new(Controller), "*"),
+	wire.Struct(new(Service), "*"),
 )
 
 type Controller struct {
+	V *common.Values
+
 	IndexX *Service
 }
 
@@ -89,7 +89,7 @@ func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFu
 func (x *Service) CreateAccessToken(ctx context.Context, userId string) (ts string, err error) {
 	jti := help.Uuid()
 	claims := passport.NewClaims(userId, time.Hour*24*7).
-		SetIssuer(x.V.Namespace).
+		SetIssuer(x.V.App.Namespace).
 		SetJTI(jti)
 	if ts, err = x.Passport.Create(claims); err != nil {
 		return

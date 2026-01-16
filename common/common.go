@@ -7,19 +7,22 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/kainonly/go/captcha"
+	"github.com/kainonly/go/cipher"
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/redis/go-redis/v9"
-	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
 type Inject struct {
-	fx.In
-
 	V       *Values
 	Db      *gorm.DB
 	RDb     *redis.Client
+	Nc      *nats.Conn
+	Js      jetstream.JetStream
+	Cipher  *cipher.Cipher
 	Captcha *captcha.Captcha
 	Locker  *locker.Locker
 }
