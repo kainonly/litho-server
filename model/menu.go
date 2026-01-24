@@ -10,6 +10,7 @@ type Menu struct {
 	Sort      int16     `gorm:"column:sort;type:smallint;not null;default:0;comment:排序"` // 排序
 	Active    bool      `gorm:"column:active;not null;default:true;comment:状态"`          // 状态
 	Name      string    `gorm:"column:name;type:text;not null;comment:导航名称"`             // 导航名称
+	Icon      string    `gorm:"column:icon;type:text;not null;default:'';comment:图标"`    // 图标
 }
 
 func (Menu) TableName() string {
