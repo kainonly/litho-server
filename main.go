@@ -33,8 +33,6 @@ func listen(path string) (err error) {
 	if h, err = x.Initialize(ctx); err != nil {
 		return
 	}
-	defer bootstrap.ProviderOpenTelemetry(v).Shutdown(ctx)
-
 	h.Spin()
 	return
 }

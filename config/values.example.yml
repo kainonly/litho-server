@@ -42,11 +42,3 @@ nats:
   hosts:
     - nats://localhost:4222
   token: ""
-otlp:
-  enabled: false
-  service_name: litho
-  environment: development
-  endpoint: ""
-  protocol: grpc
-  insecure: true
-  headers: {}

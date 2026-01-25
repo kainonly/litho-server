@@ -11,7 +11,6 @@ type Values struct {
 	Cors     CorsValue     `yaml:"cors"`
 	Database DatabaseValue `yaml:"database"`
 	Nats     NatsValue     `yaml:"nats"`
-	Otlp     OtlpValue     `yaml:"otlp"`
 	Dynamic  DynamicValues `yaml:"-"`
 }
 

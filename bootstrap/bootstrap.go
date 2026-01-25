@@ -11,8 +11,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/hertz-contrib/cors"
-	"github.com/hertz-contrib/obs-opentelemetry/provider"
-	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/kainonly/go/captcha"
 	"github.com/kainonly/go/cipher"
 	"github.com/kainonly/go/csrf"
@@ -124,18 +122,6 @@ func UseCaptcha(client *redis.Client) *captcha.Captcha {
 	return captcha.New(client)
 }
 
-func ProviderOpenTelemetry(v *common.Values) provider.OtelProvider {
-	return provider.NewOpenTelemetryProvider(
-		provider.WithServiceName(v.Otlp.ServiceName),
-		provider.WithExportEndpoint(v.Otlp.Endpoint),
-		provider.WithDeploymentEnvironment(v.Otlp.Environment),
-		provider.WithHeaders(v.Otlp.Headers),
-		provider.WithEnableTracing(true),
-		provider.WithEnableMetrics(true),
-		provider.WithEnableCompression(),
-	)
-}
-
 func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 	if v.App.Address == "" {
 		return
@@ -148,11 +134,6 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 			return vdx.Validate(request)
 		}),
 	}
-
-	var tracer config.Option
-	var tracerCfg *tracing.Config
-	tracer, tracerCfg = tracing.NewServerTracer()
-	opts = append(opts, tracer)
 
 	opts = append(opts)
 	h = server.Default(opts...)
@@ -167,9 +148,5 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 			MaxAge:           v.Cors.MaxAge,
 		}),
 	)
-	if tracerCfg != nil {
-		h.Use(tracing.ServerMiddleware(tracerCfg))
-	}
-
 	return
 }
