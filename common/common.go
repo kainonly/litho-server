@@ -29,15 +29,15 @@ type Inject struct {
 
 // Common error definitions
 
-var ErrAuthenticationExpired = help.E(4003, "Authentication expired, please login again")
-var ErrLoginNotExists = help.E(4001, "Account does not exist or is disabled")
-var ErrLoginMaxFailures = help.E(4002, "Login attempts exceeded maximum limit")
-var ErrLoginInvalid = help.E(4001, "Account does not exist or password is incorrect")
-var ErrSession = help.E(4005, "Failed to establish session")
-var ErrTotpInvalid = help.E(4001, "Invalid TOTP verification code")
-var ErrSmsInvalid = help.E(4001, "Invalid SMS verification code")
-var ErrSmsNotExists = help.E(4001, "Account does not exist or is disabled")
-var ErrCodeFrequently = help.E(4004, "Verification code requested too frequently, please try again later")
+var ErrAuthenticationExpired = help.E(4003, "身份验证已过期，请重新登录")
+var ErrLoginNotExists = help.E(4001, "账号不存在或已被禁用")
+var ErrLoginMaxFailures = help.E(4002, "登录尝试次数超过最大限制")
+var ErrLoginInvalid = help.E(4001, "账号不存在或密码错误")
+var ErrSession = help.E(4005, "会话建立失败")
+var ErrTotpInvalid = help.E(4001, "TOTP 验证码无效")
+var ErrSmsInvalid = help.E(4001, "短信验证码无效")
+var ErrSmsNotExists = help.E(4001, "账号不存在或已被禁用")
+var ErrCodeFrequently = help.E(4004, "验证码请求过于频繁，请稍后再试")
 
 type HandleFunc func(do *gorm.DB) *gorm.DB
 

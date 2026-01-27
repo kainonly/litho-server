@@ -37,7 +37,7 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 	}
 	result := x.SessionsX.Verify(ctx, claims.ActiveId, claims.ID)
 	if !result {
-		err = help.E(0, `The authentication token is inconsistent.`)
+		err = help.E(0, `身份验证令牌不一致`)
 		return
 	}
 

@@ -10,11 +10,11 @@ import (
 
 func (x *API) Auth() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		ts := c.Cookie("TOKEN")
+		ts := c.Cookie("ACCESS_TOKEN")
 		if ts == nil {
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": `Authentication expired, please login again`,
+				"message": `身份验证已过期，请重新登录`,
 			})
 			return
 		}
@@ -24,7 +24,7 @@ func (x *API) Auth() app.HandlerFunc {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": `Authentication expired, please login again`,
+				"message": `身份验证已过期，请重新登录`,
 			})
 			return
 		}
@@ -35,7 +35,7 @@ func (x *API) Auth() app.HandlerFunc {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": `Authentication expired, please login again`,
+				"message": `身份验证已过期，请重新登录`,
 			})
 			return
 		}
@@ -45,7 +45,7 @@ func (x *API) Auth() app.HandlerFunc {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, utils.H{
 				"code":    0,
-				"message": `Authentication expired, your account has been disabled by administrator`,
+				"message": `身份验证已过期，您的账号已被管理员禁用`,
 			})
 			return
 		}
@@ -55,7 +55,7 @@ func (x *API) Auth() app.HandlerFunc {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(403, utils.H{
 				"code":    0,
-				"message": `Login disabled, your account has no role assigned`,
+				"message": `禁止登录，您的账号未分配角色`,
 			})
 			return
 		}

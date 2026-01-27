@@ -131,7 +131,7 @@ func NewExistsPipe(keys ...string) *ExistsPipe {
 func (x *ExistsDto) Get(ctx context.Context) (*ExistsPipe, error) {
 	p, ok := getPipe[*ExistsPipe](ctx)
 	if !ok {
-		return nil, help.E(0, "ExistsPipe not found in context")
+		return nil, help.E(0, "上下文中未找到 ExistsPipe")
 	}
 	return p, nil
 }
@@ -168,7 +168,7 @@ func (x *ExistsDto) Exists(ctx context.Context, do *gorm.DB) (result ExistsResul
 	}
 	// Whitelist validation - only allowed columns can be queried
 	if !p.fields[x.Key] {
-		err = help.E(0, fmt.Sprintf(`field [%s] is not allowed for existence check`, x.Key))
+		err = help.E(0, fmt.Sprintf(`字段 [%s] 不允许进行存在性检查`, x.Key))
 		return
 	}
 	var count int64
@@ -233,7 +233,7 @@ type FindPipe struct {
 func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 	p, ok := getPipe[*FindPipe](ctx)
 	if !ok {
-		return nil, help.E(0, "FindPipe not found in context")
+		return nil, help.E(0, "上下文中未找到 FindPipe")
 	}
 	return p, nil
 }
@@ -341,23 +341,23 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 		for _, v := range x.Sort {
 			rule := strings.Split(v, ":")
 			if len(rule) != 2 {
-				return nil, help.E(0, fmt.Sprintf(`invalid sort format: %s`, v))
+				return nil, help.E(0, fmt.Sprintf(`排序格式无效: %s`, v))
 			}
 			columnName := rule[0]
 			// Validate column name using whitelist if configured, otherwise use regex
 			if len(p.sortable) > 0 {
 				if !p.sortable[columnName] {
-					return nil, help.E(0, fmt.Sprintf(`column [%s] is not sortable`, columnName))
+					return nil, help.E(0, fmt.Sprintf(`列 [%s] 不可排序`, columnName))
 				}
 			} else {
 				// Fallback to basic format validation
 				if !validColumnName.MatchString(columnName) {
-					return nil, help.E(0, fmt.Sprintf(`invalid column name in sort: %s`, columnName))
+					return nil, help.E(0, fmt.Sprintf(`排序中的列名无效: %s`, columnName))
 				}
 			}
 			order, ok := ToOrderBy[rule[1]]
 			if !ok {
-				return nil, help.E(0, fmt.Sprintf(`invalid sort direction: %s`, rule[1]))
+				return nil, help.E(0, fmt.Sprintf(`排序方向无效: %s`, rule[1]))
 			}
 			do = do.Order(fmt.Sprintf(`%s %s`, columnName, order))
 		}
@@ -442,7 +442,7 @@ type FindByIdPipe struct {
 func (x *FindByIdDto) Get(ctx context.Context) (*FindByIdPipe, error) {
 	p, ok := getPipe[*FindByIdPipe](ctx)
 	if !ok {
-		return nil, help.E(0, "FindByIdPipe not found in context")
+		return nil, help.E(0, "上下文中未找到 FindByIdPipe")
 	}
 	return p, nil
 }
@@ -563,7 +563,7 @@ func (x *FindByIdDto) Take(ctx context.Context, do *gorm.DB, i any) (err error) 
 	}
 	// Validate ID format if validator is configured
 	if p.idValidator != nil && !p.idValidator(x.ID) {
-		return help.E(0, fmt.Sprintf(`invalid ID format: %s`, x.ID))
+		return help.E(0, fmt.Sprintf(`ID 格式无效: %s`, x.ID))
 	}
 	if !x.IsFull() {
 		if len(p.keys) != 0 {
@@ -667,7 +667,7 @@ func (x *SearchPipe) SkipIDValidation() *SearchPipe {
 func (x *SearchDto) Get(ctx context.Context) (*SearchPipe, error) {
 	p, ok := getPipe[*SearchPipe](ctx)
 	if !ok {
-		return nil, help.E(0, "SearchPipe not found in context")
+		return nil, help.E(0, "上下文中未找到 SearchPipe")
 	}
 	return p, nil
 }
@@ -728,7 +728,7 @@ func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 			for _, id := range ids {
 				id = strings.TrimSpace(id)
 				if id != "" && !p.idValidator(id) {
-					return help.E(0, fmt.Sprintf(`invalid ID format in IDs: %s`, id))
+					return help.E(0, fmt.Sprintf(`IDs 中的 ID 格式无效: %s`, id))
 				}
 			}
 		}
