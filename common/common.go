@@ -89,26 +89,28 @@ func GetTracking(c *app.RequestContext) *Tracking {
 	return v.(*Tracking)
 }
 
-type M map[string]any
+type M = map[string]any
 
-func (x *M) Scan(value interface{}) error {
+type Object map[string]any
+
+func (x *Object) Scan(value interface{}) error {
 	return sonic.Unmarshal(value.([]byte), &x)
 }
 
-func (x M) Value() (driver.Value, error) {
+func (x Object) Value() (driver.Value, error) {
 	if len(x) == 0 {
 		return []byte(`{}`), nil
 	}
 	return sonic.Marshal(x)
 }
 
-type A []any
+type Array []any
 
-func (x *A) Scan(value interface{}) error {
+func (x *Array) Scan(value interface{}) error {
 	return sonic.Unmarshal(value.([]byte), &x)
 }
 
-func (x A) Value() (driver.Value, error) {
+func (x Array) Value() (driver.Value, error) {
 	if len(x) == 0 {
 		return []byte(`[]`), nil
 	}

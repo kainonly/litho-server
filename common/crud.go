@@ -26,7 +26,7 @@
 // This package implements multiple layers of security:
 //   - Sort column names are validated using whitelist (Sortable method)
 //   - Exists column names are validated using whitelist (NewExistsPipe)
-//   - ID formats are validated (UUID by default, customizable)
+//   - ID formats are validated (Snowflake ID by default, customizable)
 //   - All user inputs use parameterized queries to prevent SQL injection
 package common
 
@@ -49,15 +49,15 @@ type pipeKey struct{}
 // Only allows letters, numbers, and underscores, starting with a letter or underscore.
 var validColumnName = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 
-// validUUID validates UUID format (with or without hyphens).
-var validUUID = regexp.MustCompile(`^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$`)
+// validSnowflakeID validates Snowflake ID format (numeric string, typically 18-19 digits).
+var validSnowflakeID = regexp.MustCompile(`^[0-9]+$`)
 
 // IDValidator is a function type for custom ID validation.
 type IDValidator func(id string) bool
 
-// DefaultIDValidator validates that ID is a valid UUID.
+// DefaultIDValidator validates that ID is a valid Snowflake ID (numeric).
 var DefaultIDValidator IDValidator = func(id string) bool {
-	return validUUID.MatchString(id)
+	return validSnowflakeID.MatchString(id)
 }
 
 // Controller defines the standard CRUD interface for API controllers.
@@ -448,7 +448,7 @@ func (x *FindByIdDto) Get(ctx context.Context) (*FindByIdPipe, error) {
 }
 
 // NewFindByIdPipe creates a new FindByIdPipe with default settings.
-// By default, timestamp handling is enabled and UUID validation is used.
+// By default, timestamp handling is enabled and Snowflake ID validation is used.
 //
 // Supports two modes:
 //   - Normal mode: Returns limited fields (default)
@@ -623,7 +623,7 @@ func (x *SearchPipe) SkipAsync() *SearchPipe {
 // NewSearchPipe creates a new SearchPipe with the specified columns to return.
 // Defaults to ["id", "name"] if no columns are specified.
 // Async mode (50 result limit) is enabled by default.
-// UUID validation for IDs is enabled by default.
+// Snowflake ID validation for IDs is enabled by default.
 //
 // Designed for autocomplete/dropdown data sources with minimal payload.
 //
