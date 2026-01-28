@@ -6,6 +6,7 @@ import (
 	"server/api/menus"
 	"server/api/orgs"
 	"server/api/permissions"
+	"server/api/resource_actions"
 	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
@@ -23,6 +24,7 @@ var Provides = wire.NewSet(
 	menus.Provides,
 	orgs.Provides,
 	permissions.Provides,
+	resource_actions.Provides,
 	resources.Provides,
 	roles.Provides,
 	routes.Provides,
@@ -37,11 +39,12 @@ type API struct {
 	Csrf        *csrf.Csrf
 	Index       *index.Controller
 	IndexX      *index.Service
-	Menus       *menus.Controller
-	Orgs        *orgs.Controller
-	Permissions *permissions.Controller
-	Resources   *resources.Controller
-	Roles       *roles.Controller
+	Menus           *menus.Controller
+	Orgs            *orgs.Controller
+	Permissions     *permissions.Controller
+	ResourceActions *resource_actions.Controller
+	Resources       *resources.Controller
+	Roles           *roles.Controller
 	Routes      *routes.Controller
 	Users       *users.Controller
 	UsersX      *users.Service
@@ -78,6 +81,14 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/permissions/create", x.Permissions.Create)
 		m.POST("/permissions/update", x.Permissions.Update)
 		m.POST("/permissions/delete", x.Permissions.Delete)
+
+		// resource_actions 模块 -> 标准 CRUD 路由
+		m.GET("/resource_actions/:id", x.ResourceActions.FindById)
+		m.GET("/resource_actions", x.ResourceActions.Find)
+		m.GET("/resource_actions/_search", x.ResourceActions.Search)
+		m.POST("/resource_actions/create", x.ResourceActions.Create)
+		m.POST("/resource_actions/update", x.ResourceActions.Update)
+		m.POST("/resource_actions/delete", x.ResourceActions.Delete)
 
 		// resources 模块 -> 标准 CRUD 路由
 		m.GET("/resources/:id", x.Resources.FindById)
