@@ -1,20 +1,20 @@
 package index
 
 import (
-    "context"
-    "os"
-    "time"
+	"context"
+	"os"
+	"server/common"
+	"time"
 
-    "github.com/cloudwego/hertz/pkg/app"
-    "github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/app"
 )
 
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
-    data := utils.H{
-        "hostname": os.Getenv("HOSTNAME"),
-        "endpoint": "litho-server",
-        "now":      time.Now(),
-    }
+	data := common.M{
+		"hostname": os.Getenv("HOSTNAME"),
+		"endpoint": "litho-server",
+		"now":      time.Now(),
+	}
 
-    c.JSON(200, data)
+	c.JSON(200, data)
 }

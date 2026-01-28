@@ -2,9 +2,9 @@ package index
 
 import (
 	"context"
+	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/passport"
 )
@@ -12,7 +12,7 @@ import (
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("TOKEN")
 	if ts == nil {
-		c.JSON(401, utils.H{
+		c.JSON(401, common.M{
 			"code":    0,
 			"message": ``,
 		})
@@ -21,7 +21,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 
 	if _, err := x.IndexX.Verify(ctx, string(ts)); err != nil {
 		x.IndexX.ClearAccessToken(c)
-		c.JSON(401, utils.H{
+		c.JSON(401, common.M{
 			"code":    0,
 			"message": ``,
 		})

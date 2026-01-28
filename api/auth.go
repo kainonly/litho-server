@@ -5,14 +5,13 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 func (x *API) Auth() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
 		ts := c.Cookie("ACCESS_TOKEN")
 		if ts == nil {
-			c.AbortWithStatusJSON(401, utils.H{
+			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,
 				"message": `身份验证已过期，请重新登录`,
 			})
@@ -22,7 +21,7 @@ func (x *API) Auth() app.HandlerFunc {
 		claims, err := x.IndexX.Verify(ctx, string(ts))
 		if err != nil {
 			x.IndexX.ClearAccessToken(c)
-			c.AbortWithStatusJSON(401, utils.H{
+			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,
 				"message": `身份验证已过期，请重新登录`,
 			})
@@ -33,7 +32,7 @@ func (x *API) Auth() app.HandlerFunc {
 		var user *common.IAMUser
 		if user, err = x.UsersX.GetIAMUser(ctx, claims.ActiveId); err != nil {
 			x.IndexX.ClearAccessToken(c)
-			c.AbortWithStatusJSON(401, utils.H{
+			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,
 				"message": `身份验证已过期，请重新登录`,
 			})
@@ -43,7 +42,7 @@ func (x *API) Auth() app.HandlerFunc {
 		// 检测企业成员状态
 		if !user.Active {
 			x.IndexX.ClearAccessToken(c)
-			c.AbortWithStatusJSON(401, utils.H{
+			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,
 				"message": `身份验证已过期，您的账号已被管理员禁用`,
 			})
@@ -53,7 +52,7 @@ func (x *API) Auth() app.HandlerFunc {
 		// 未设置权限组
 		if user.RoleID == "0" {
 			x.IndexX.ClearAccessToken(c)
-			c.AbortWithStatusJSON(403, utils.H{
+			c.AbortWithStatusJSON(403, common.M{
 				"code":    0,
 				"message": `禁止登录，您的账号未分配角色`,
 			})

@@ -8,7 +8,6 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
 )
 
@@ -34,7 +33,7 @@ func (x *Controller) SetActives(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) SetActives(ctx context.Context, user *common.IAMUser, dto SetActivesDto) (err error) {
-	updates := utils.H{
+	updates := common.M{
 		`update_time`: time.Now(),
 		`active`:      *dto.Active,
 	}

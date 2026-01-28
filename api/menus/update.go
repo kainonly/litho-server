@@ -8,7 +8,6 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
 )
 
@@ -37,7 +36,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
 	if err = x.Db.Model(model.Menu{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
-		Updates(utils.H{
+		Updates(common.M{
 			`updated_at`: time.Now(),
 			`active`:     *dto.Active,
 			`name`:       dto.Name,

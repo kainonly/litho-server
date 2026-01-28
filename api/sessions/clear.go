@@ -5,7 +5,6 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 func (x *Controller) Clear(ctx context.Context, c *app.RequestContext) {
@@ -16,7 +15,7 @@ func (x *Controller) Clear(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(200, utils.H{
+	c.JSON(200, common.M{
 		"count": n,
 	})
 }

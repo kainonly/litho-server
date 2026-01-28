@@ -5,7 +5,6 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 type KickDto struct {
@@ -24,7 +23,7 @@ func (x *Controller) Kick(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	c.JSON(200, utils.H{
+	c.JSON(200, common.M{
 		"count": n,
 	})
 }

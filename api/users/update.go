@@ -8,7 +8,6 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/passlib"
 )
@@ -40,7 +39,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	updates := utils.H{
+	updates := common.M{
 		`updated_at`: time.Now(),
 		`active`:     *dto.Active,
 		`email`:      dto.Email,

@@ -6,7 +6,6 @@ import (
 	"server/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/kainonly/go/help"
 )
 
@@ -34,7 +33,7 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) SetUser(ctx context.Context, user *common.IAMUser, dto SetUserDto) (err error) {
-	data := utils.H{}
+	data := common.M{}
 	switch dto.Key {
 	case "phone":
 		data["phone"] = dto.Email
