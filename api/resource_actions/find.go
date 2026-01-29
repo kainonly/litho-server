@@ -57,7 +57,7 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 
 	results = make([]*FindResult, 0)
 	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	if err = dto.Find(ctx, do.Order(`sort`), &results); err != nil {
+	if err = dto.Find(ctx, do.Order(`code`), &results); err != nil {
 		return
 	}
 	return
