@@ -1,5 +1,4 @@
 package resource_actions
-package resource_actions
 
 import (
 	"context"

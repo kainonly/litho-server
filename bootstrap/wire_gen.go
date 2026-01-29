@@ -12,6 +12,7 @@ import (
 	"server/api/menus"
 	"server/api/orgs"
 	"server/api/permissions"
+	"server/api/resource_actions"
 	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
@@ -91,6 +92,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	permissionsController := &permissions.Controller{
 		PermissionsX: permissionsService,
 	}
+	resource_actionsService := &resource_actions.Service{
+		Inject: inject,
+	}
+	resource_actionsController := &resource_actions.Controller{
+		ResourceActionsX: resource_actionsService,
+	}
 	resourcesService := &resources.Service{
 		Inject: inject,
 	}
@@ -117,19 +124,20 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UsersX: usersService,
 	}
 	apiAPI := &api.API{
-		Inject:      inject,
-		Hertz:       hertz,
-		Csrf:        csrf,
-		Index:       controller,
-		IndexX:      indexService,
-		Menus:       menusController,
-		Orgs:        orgsController,
-		Permissions: permissionsController,
-		Resources:   resourcesController,
-		Roles:       rolesController,
-		Routes:      routesController,
-		Users:       usersController,
-		UsersX:      usersService,
+		Inject:          inject,
+		Hertz:           hertz,
+		Csrf:            csrf,
+		Index:           controller,
+		IndexX:          indexService,
+		Menus:           menusController,
+		Orgs:            orgsController,
+		Permissions:     permissionsController,
+		ResourceActions: resource_actionsController,
+		Resources:       resourcesController,
+		Roles:           rolesController,
+		Routes:          routesController,
+		Users:           usersController,
+		UsersX:          usersService,
 	}
 	return apiAPI, nil
 }

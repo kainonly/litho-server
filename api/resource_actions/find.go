@@ -1,5 +1,4 @@
 package resource_actions
-package resource_actions
 
 import (
 	"context"
@@ -44,7 +43,7 @@ type FindResult struct {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	do := x.Db.Model(&model.ResourceAction{}).WithContext(ctx)
+	do := x.Db.Model(model.ResourceAction{}).WithContext(ctx)
 	if dto.ResourceID != "" {
 		do = do.Where(`resource_id = ?`, dto.ResourceID)
 	}
