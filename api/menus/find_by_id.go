@@ -28,9 +28,9 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID     string `json:"id"`
-	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
 	Name   string `json:"name"`
+	Icon   string `json:"icon"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {

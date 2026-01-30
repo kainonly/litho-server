@@ -12,6 +12,7 @@ import (
 
 type FindDto struct {
 	common.FindDto
+	MenuID string `query:"menu_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -35,7 +36,6 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 type FindResult struct {
 	ID     string `json:"id"`
 	MenuID string `json:"menu_id"`
-	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
 	PID    string `json:"pid"`
 	Name   string `json:"name"`
@@ -46,6 +46,9 @@ type FindResult struct {
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(&model.Route{}).WithContext(ctx)
+	if dto.MenuID != "" {
+		do = do.Where(`menu_id = ?`, dto.MenuID)
+	}
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, dto.GetKeyword())
 	}

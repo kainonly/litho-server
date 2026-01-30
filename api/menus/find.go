@@ -34,9 +34,9 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
 	ID     string `json:"id"`
-	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
 	Name   string `json:"name"`
+	Icon   string `json:"icon"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {

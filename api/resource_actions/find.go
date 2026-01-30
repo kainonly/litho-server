@@ -12,7 +12,7 @@ import (
 
 type FindDto struct {
 	common.FindDto
-	ResourceID string `json:"resource_id" query:"resource_id"`
+	ResourceID string `query:"resource_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
