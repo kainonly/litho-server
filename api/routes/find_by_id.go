@@ -31,7 +31,7 @@ type FindByIdResult struct {
 	MenuID string `json:"menu_id"`
 	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
-	PID    string `json:"pid"`
+	Pid    string `json:"pid"`
 	Name   string `json:"name"`
 	Type   int16  `json:"type"`
 	Icon   string `json:"icon"`
