@@ -46,15 +46,18 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 		Name:   dto.Name,
 		Type:   dto.Type,
 	}
-	if dto.PID != "" {
-		data.PID = dto.PID
+	if dto.Type != 1 {
+		if dto.PID != "" {
+			data.PID = dto.PID
+		}
+		if dto.Icon != "" {
+			data.Icon = dto.Icon
+		}
+		if dto.Link != "" {
+			data.Link = dto.Link
+		}
 	}
-	if dto.Icon != "" {
-		data.Icon = dto.Icon
-	}
-	if dto.Link != "" {
-		data.Link = dto.Link
-	}
+
 	if err = x.Db.WithContext(ctx).
 		Create(&data).Error; err != nil {
 		return

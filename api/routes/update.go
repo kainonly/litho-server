@@ -13,11 +13,10 @@ import (
 
 type UpdateDto struct {
 	ID     string `json:"id" vd:"required"`
-	MenuID string `json:"menu_id" vd:"required"`
 	Active *bool  `json:"active" vd:"required"`
 	PID    string `json:"pid"`
 	Name   string `json:"name" vd:"required"`
-	Type   int16  `json:"type" vd:"required"`
+	Type   *int16 `json:"type"`
 	Icon   string `json:"icon"`
 	Link   string `json:"link"`
 }
@@ -39,18 +38,27 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
+	updates := common.M{
+		`updated_at`: time.Now(),
+		`active`:     *dto.Active,
+		`name`:       dto.Name,
+	}
+	if dto.PID != "" {
+		updates[`pid`] = dto.PID
+	}
+	if dto.Type != nil {
+		updates[`type`] = *dto.Type
+	}
+	if dto.Icon != "" {
+		updates[`icon`] = dto.Icon
+	}
+	if dto.Link != "" {
+		updates[`link`] = dto.Link
+	}
+
 	if err = x.Db.Model(model.Route{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
-		Updates(common.M{
-			`updated_at`: time.Now(),
-			`menu_id`:    dto.MenuID,
-			`active`:     *dto.Active,
-			`pid`:        dto.PID,
-			`name`:       dto.Name,
-			`type`:       dto.Type,
-			`icon`:       dto.Icon,
-			`link`:       dto.Link,
-		}).Error; err != nil {
+		Updates(updates).Error; err != nil {
 		return
 	}
 	return

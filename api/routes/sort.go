@@ -1,4 +1,4 @@
-package menus
+package routes
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func (x *Controller) Sort(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.MenusX.Sort(ctx, user, dto); err != nil {
+	if err := x.RoutesX.Sort(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -39,7 +39,7 @@ func (x *Service) Sort(ctx context.Context, user *common.IAMUser, dto SortDto) (
 				"sort":       i,
 			}
 
-			if errX = tx.Model(model.Menu{}).WithContext(ctx).
+			if errX = tx.Model(model.Route{}).WithContext(ctx).
 				Where(`id = ?`, id).
 				Updates(updates).Error; errX != nil {
 				return
