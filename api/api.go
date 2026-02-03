@@ -114,6 +114,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/routes/update", x.Routes.Update)
 		m.POST("/routes/delete", x.Routes.Delete)
 		m.POST("/routes/sort", x.Routes.Sort)
+		m.POST("/routes/regroup", x.Routes.Regroup)
 
 		// users 模块 -> 标准 CRUD 路由
 		m.GET("/users/:id", x.Users.FindById)
