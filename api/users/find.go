@@ -13,6 +13,8 @@ import (
 
 type FindDto struct {
 	common.FindDto
+
+	RoleID string `json:"role_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -45,6 +47,8 @@ type FindResult struct {
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 
 	do := x.Db.Model(model.User{}).WithContext(ctx)
+	if dto.RoleID != "" {
+	}
 
 	if dto.Q != "" {
 		keyword := dto.GetKeyword()

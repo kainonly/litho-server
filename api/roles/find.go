@@ -12,6 +12,8 @@ import (
 
 type FindDto struct {
 	common.FindDto
+
+	OrgID string `query:"org_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -43,8 +45,11 @@ type FindResult struct {
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(&model.Role{}).WithContext(ctx)
+	if dto.OrgID != "" {
+		do = do.Where("org_id = ?", dto.OrgID)
+	}
 	if dto.Q != "" {
-		do = do.Where(`name like ? OR description like ?`, dto.GetKeyword(), dto.GetKeyword())
+		do = do.Where(`name like ?`, dto.GetKeyword())
 	}
 
 	if err = do.Count(&total).Error; err != nil {
@@ -53,7 +58,7 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 
 	results = make([]*FindResult, 0)
 	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	if err = dto.Find(ctx, do, &results); err != nil {
+	if err = dto.Find(ctx, do.Order(`sort`), &results); err != nil {
 		return
 	}
 	return

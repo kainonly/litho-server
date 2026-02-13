@@ -105,6 +105,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/roles/create", x.Roles.Create)
 		m.POST("/roles/update", x.Roles.Update)
 		m.POST("/roles/delete", x.Roles.Delete)
+		m.POST("/roles/sort", x.Roles.Sort)
 
 		// routes 模块 -> 标准 CRUD 路由
 		m.GET("/routes/:id", x.Routes.FindById)

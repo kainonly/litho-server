@@ -13,7 +13,7 @@ import (
 type FindDto struct {
 	common.FindDto
 	MenuID string `query:"menu_id"`
-	PID    string `query:"pid"`
+	Pid    string `query:"pid"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -50,8 +50,8 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 	if dto.MenuID != "" {
 		do = do.Where(`menu_id = ?`, dto.MenuID)
 	}
-	if dto.PID != "" {
-		do = do.Where(`pid = ?`, dto.PID)
+	if dto.Pid != "" {
+		do = do.Where(`pid = ?`, dto.Pid)
 	}
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, dto.GetKeyword())
