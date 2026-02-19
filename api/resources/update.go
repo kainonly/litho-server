@@ -15,7 +15,7 @@ type UpdateDto struct {
 	ID     string `json:"id" vd:"required"`
 	Active *bool  `json:"active" vd:"required"`
 	Name   string `json:"name" vd:"required"`
-	Code   string `json:"code" vd:"required"`
+	Path   string `json:"path" vd:"required"`
 }
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
@@ -41,7 +41,7 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 			`updated_at`: time.Now(),
 			`active`:     *dto.Active,
 			`name`:       dto.Name,
-			`code`:       dto.Code,
+			`path`:       dto.Path,
 		}).Error; err != nil {
 		return
 	}

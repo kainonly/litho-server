@@ -38,7 +38,7 @@ func (x *Service) GetIAMUser(ctx context.Context, id string) (result *common.IAM
 	}
 	result = &common.IAMUser{
 		ID:     data.ID,
-		Active: data.Active,
+		Active: *data.Active,
 	}
 	return
 }

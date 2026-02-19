@@ -12,11 +12,11 @@ import (
 
 type CreateDto struct {
 	ID     string `json:"-"`
-	MenuID string `json:"menu_id" vd:"required"`
+	Nav    string `json:"nav" vd:"required"`
 	Active *bool  `json:"active" vd:"required"`
-	PID    string `json:"pid"`
+	Pid    string `json:"pid"`
 	Name   string `json:"name" vd:"required"`
-	Type   int16  `json:"type" vd:"required"`
+	Type   *int16 `json:"type" vd:"required"`
 	Icon   string `json:"icon"`
 	Link   string `json:"link"`
 }
@@ -41,14 +41,14 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Route{
 		ID:     dto.ID,
-		MenuID: dto.MenuID,
-		Active: *dto.Active,
+		Nav:    dto.Nav,
+		Active: dto.Active,
 		Name:   dto.Name,
 		Type:   dto.Type,
 	}
-	if dto.Type != 1 {
-		if dto.PID != "" {
-			data.PID = dto.PID
+	if *dto.Type != 1 {
+		if dto.Pid != "" {
+			data.Pid = dto.Pid
 		}
 		if dto.Icon != "" {
 			data.Icon = dto.Icon

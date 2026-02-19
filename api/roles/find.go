@@ -12,8 +12,6 @@ import (
 
 type FindDto struct {
 	common.FindDto
-
-	OrgID string `query:"org_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -36,7 +34,6 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
 	ID          string `json:"id"`
-	OrgID       string `json:"org_id"`
 	Sort        int16  `json:"sort"`
 	Active      bool   `json:"active"`
 	Name        string `json:"name"`
@@ -45,9 +42,6 @@ type FindResult struct {
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(&model.Role{}).WithContext(ctx)
-	if dto.OrgID != "" {
-		do = do.Where("org_id = ?", dto.OrgID)
-	}
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, dto.GetKeyword())
 	}

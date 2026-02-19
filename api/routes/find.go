@@ -12,8 +12,8 @@ import (
 
 type FindDto struct {
 	common.FindDto
-	MenuID string `query:"menu_id"`
-	Pid    string `query:"pid"`
+	Nav string `query:"nav"`
+	Pid string `query:"pid"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -47,8 +47,8 @@ type FindResult struct {
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(&model.Route{}).WithContext(ctx)
-	if dto.MenuID != "" {
-		do = do.Where(`menu_id = ?`, dto.MenuID)
+	if dto.Nav != "" {
+		do = do.Where(`nav = ?`, dto.Nav)
 	}
 	if dto.Pid != "" {
 		do = do.Where(`pid = ?`, dto.Pid)

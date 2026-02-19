@@ -28,6 +28,8 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID     string `json:"id"`
+	OrgID  string `json:"org_id"`
+	RoleID string `json:"role_id"`
 	Email  string `json:"email"`
 	Phone  string `json:"phone"`
 	Name   string `json:"name"`

@@ -12,6 +12,7 @@ import (
 
 type UpdateDto struct {
 	ID     string `json:"id" vd:"required"`
+	Type   *int16 `json:"type" vd:"required"`
 	Name   string `json:"name" vd:"required"`
 	Active *bool  `json:"active" vd:"required"`
 }

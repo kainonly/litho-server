@@ -13,7 +13,6 @@ import (
 
 type UpdateDto struct {
 	ID          string `json:"id" vd:"required"`
-	OrgID       string `json:"org_id" vd:"required"`
 	Name        string `json:"name" vd:"required"`
 	Description string `json:"description" vd:"required"`
 	Active      *bool  `json:"active" vd:"required"`
@@ -40,7 +39,6 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 		Where(`id = ?`, dto.ID).
 		Updates(common.M{
 			`updated_at`:  time.Now(),
-			`org_id`:      dto.OrgID,
 			`active`:      *dto.Active,
 			`name`:        dto.Name,
 			`description`: dto.Description,

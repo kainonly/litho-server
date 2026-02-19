@@ -12,7 +12,6 @@ import (
 
 type CreateDto struct {
 	ID          string `json:"-"`
-	OrgID       string `json:"org_id" vd:"required"`
 	Name        string `json:"name" vd:"required"`
 	Description string `json:"description" vd:"required"`
 	Sort        int16  `json:"sort"`
@@ -39,9 +38,8 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Role{
 		ID:          dto.ID,
-		OrgID:       dto.OrgID,
 		Sort:        dto.Sort,
-		Active:      *dto.Active,
+		Active:      dto.Active,
 		Name:        dto.Name,
 		Description: dto.Description,
 	}

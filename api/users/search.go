@@ -30,10 +30,11 @@ func (x *Controller) Search(ctx context.Context, c *app.RequestContext) {
 }
 
 type SearchResult struct {
-	ID    string `json:"id"`
-	OrgID string `json:"org_id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID     string `json:"id"`
+	OrgID  string `query:"org_id"`
+	RoleID string `query:"role_id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
 }
 
 func (x *Service) Search(ctx context.Context, user *common.IAMUser, dto SearchDto) (results []*SearchResult, err error) {

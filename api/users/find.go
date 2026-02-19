@@ -14,7 +14,8 @@ import (
 type FindDto struct {
 	common.FindDto
 
-	RoleID string `json:"role_id"`
+	OrgID  string `query:"org_id"`
+	RoleID string `query:"role_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -37,6 +38,8 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
 	ID     string `json:"id"`
+	OrgID  string `json:"org_id"`
+	RoleID string `json:"role_id"`
 	Active bool   `json:"active"`
 	Email  string `json:"email"`
 	Phone  string `json:"phone"`
@@ -45,7 +48,6 @@ type FindResult struct {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-
 	do := x.Db.Model(model.User{}).WithContext(ctx)
 	if dto.RoleID != "" {
 	}

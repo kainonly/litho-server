@@ -41,7 +41,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.User{
 		ID:     dto.ID,
-		Active: *dto.Active,
+		Active: dto.Active,
 		Email:  dto.Email,
 	}
 	if dto.Phone != "" {

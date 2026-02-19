@@ -37,7 +37,7 @@ type FindResult struct {
 	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
 	Name   string `json:"name"`
-	Code   string `json:"code"`
+	Path   string `json:"path"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
@@ -52,7 +52,7 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 
 	results = make([]*FindResult, 0)
 	ctx = common.SetPipe(ctx, common.NewFindPipe())
-	if err = dto.Find(ctx, do.Order(`code`), &results); err != nil {
+	if err = dto.Find(ctx, do.Order(`path`), &results); err != nil {
 		return
 	}
 	return

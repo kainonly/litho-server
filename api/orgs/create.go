@@ -11,6 +11,7 @@ import (
 
 type CreateDto struct {
 	ID     string `json:"-"`
+	Type   *int16 `json:"type" vd:"required"`
 	Name   string `json:"name" vd:"required"`
 	Active *bool  `json:"active" vd:"required"`
 }
@@ -35,7 +36,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Org{
 		ID:     dto.ID,
-		Active: *dto.Active,
+		Active: dto.Active,
 		Name:   dto.Name,
 	}
 	if err = x.Db.WithContext(ctx).

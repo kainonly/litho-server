@@ -31,7 +31,7 @@ type FindByIdResult struct {
 	Sort   int16  `json:"sort"`
 	Active bool   `json:"active"`
 	Name   string `json:"name"`
-	Code   string `json:"code"`
+	Path   string `json:"path"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
