@@ -57,12 +57,22 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 | `/{module}/update` | POST | 更新 |
 | `/{module}/delete` | POST | 删除 |
 
+## 模型生成
+
+模型由 builder 从数据库反向生成（GORM Gen），禁止手动修改 `./model` 目录下的生成文件。
+
+```bash
+go run ./cmd/builder            # 从数据库生成 model
+```
+
+新增表需在 `cmd/builder/main.go` 的 `g.ApplyBasic()` 中注册表映射。
+
 ## 命令
 
 ```bash
-go run ./cmd/migrate diff   # 生成迁移
-go run ./cmd/migrate apply  # 应用迁移
+go run ./cmd/builder            # 从数据库生成 model
 go generate ./...           # Wire 生成
+go mod tidy                 # 整理依赖
 ```
 
 详细规范参见 `.llms/` 目录。

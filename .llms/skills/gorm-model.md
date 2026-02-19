@@ -5,7 +5,7 @@
 ## 触发条件
 
 - 用户提到"创建模型"、"新建表"、"添加实体"
-- 用户提供思维导图或表结构定义
+- 用户提供表结构定义
 - 用户要求修改现有模型字段
 
 ## 命名规范
@@ -25,12 +25,12 @@ package model
 
 import "time"
 
-// EntityName 实体注释（来自思维导图）
+// EntityName 实体注释
 type EntityName struct {
 	ID        string    `gorm:"primaryKey;column:id;type:bigint"`
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz;not null;index"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamptz;not null"`
-	// 业务字段按思维导图中的顺序排列...
+	// 业务字段...
 	FieldName string `gorm:"column:field_name;type:text;not null;comment:字段注释"` // 字段注释
 }
 
@@ -105,7 +105,7 @@ Code  string `gorm:"column:code;type:text;not null;uniqueIndex:idx_resource_org_
 
 1. `ID`
 2. `CreatedAt`、`UpdatedAt`
-3. 业务字段（按思维导图顺序）
+3. 业务字段
 
 ## 禁止事项
 
@@ -157,7 +157,6 @@ func (RolePermission) TableName() string {
 - [ ] 主键和关联字段使用 `string` + `type:bigint`
 - [ ] 包含 `CreatedAt` 和 `UpdatedAt`（`type:timestamptz`）
 - [ ] `CreatedAt` 包含 `index` 索引
-- [ ] 业务字段按思维导图顺序排列
 - [ ] 业务字段包含 `comment:xxx` 标签
 - [ ] 文本字段使用 `type:text`
 - [ ] 所有字段显式指定 `column`
@@ -167,8 +166,8 @@ func (RolePermission) TableName() string {
 
 ## 后续步骤
 
-模型创建完成后，需要：
+模型由 builder 从数据库反向生成，流程为：
 
-1. 在 `cmd/atlas-loader/main.go` 的 `models` 切片中注册模型
-2. 在 `tableComments` 中添加表注释
-3. 执行数据库迁移（参见 `db-migrate` skill）
+1. 在数据库中创建或修改表结构
+2. 在 `cmd/builder/main.go` 中注册表名映射
+3. 运行 `go run ./cmd/builder` 重新生成 model（参见 `builder` skill）
