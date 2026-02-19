@@ -1,4 +1,4 @@
-package permissions
+package caps
 
 import (
 	"server/common"
@@ -12,7 +12,7 @@ var Provides = wire.NewSet(
 )
 
 type Controller struct {
-	PermissionsX *Service
+	CapsX *Service
 }
 
 type Service struct {

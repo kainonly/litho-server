@@ -8,11 +8,9 @@ package bootstrap
 
 import (
 	"server/api"
+	"server/api/caps"
 	"server/api/index"
-	"server/api/menus"
 	"server/api/orgs"
-	"server/api/permissions"
-	"server/api/resource_actions"
 	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
@@ -61,42 +59,30 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		return nil, err
 	}
 	csrf := UseCsrf(values)
+	service := &caps.Service{
+		Inject: inject,
+	}
+	controller := &caps.Controller{
+		CapsX: service,
+	}
 	passport := UsePassport(values)
-	service := &sessions.Service{
+	sessionsService := &sessions.Service{
 		Inject: inject,
 	}
 	indexService := &index.Service{
 		Inject:    inject,
 		Passport:  passport,
-		SessionsX: service,
+		SessionsX: sessionsService,
 	}
-	controller := &index.Controller{
+	indexController := &index.Controller{
 		V:      values,
 		IndexX: indexService,
-	}
-	menusService := &menus.Service{
-		Inject: inject,
-	}
-	menusController := &menus.Controller{
-		MenusX: menusService,
 	}
 	orgsService := &orgs.Service{
 		Inject: inject,
 	}
 	orgsController := &orgs.Controller{
 		OrgsX: orgsService,
-	}
-	permissionsService := &permissions.Service{
-		Inject: inject,
-	}
-	permissionsController := &permissions.Controller{
-		PermissionsX: permissionsService,
-	}
-	resource_actionsService := &resource_actions.Service{
-		Inject: inject,
-	}
-	resource_actionsController := &resource_actions.Controller{
-		ResourceActionsX: resource_actionsService,
 	}
 	resourcesService := &resources.Service{
 		Inject: inject,
@@ -116,28 +102,30 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	routesController := &routes.Controller{
 		RoutesX: routesService,
 	}
+	sessionsController := &sessions.Controller{
+		SessionsX: sessionsService,
+	}
 	usersService := &users.Service{
 		Inject:    inject,
-		SessionsX: service,
+		SessionsX: sessionsService,
 	}
 	usersController := &users.Controller{
 		UsersX: usersService,
 	}
 	apiAPI := &api.API{
-		Inject:          inject,
-		Hertz:           hertz,
-		Csrf:            csrf,
-		Index:           controller,
-		IndexX:          indexService,
-		Menus:           menusController,
-		Orgs:            orgsController,
-		Permissions:     permissionsController,
-		ResourceActions: resource_actionsController,
-		Resources:       resourcesController,
-		Roles:           rolesController,
-		Routes:          routesController,
-		Users:           usersController,
-		UsersX:          usersService,
+		Inject:    inject,
+		Hertz:     hertz,
+		Csrf:      csrf,
+		Caps:      controller,
+		Index:     indexController,
+		IndexX:    indexService,
+		Orgs:      orgsController,
+		Resources: resourcesController,
+		Roles:     rolesController,
+		Routes:    routesController,
+		Sessions:  sessionsController,
+		Users:     usersController,
+		UsersX:    usersService,
 	}
 	return apiAPI, nil
 }

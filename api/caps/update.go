@@ -1,4 +1,4 @@
-package menus
+package caps
 
 import (
 	"context"
@@ -12,9 +12,10 @@ import (
 )
 
 type UpdateDto struct {
-	ID     string `json:"id" vd:"required"`
-	Active *bool  `json:"active" vd:"required"`
-	Name   string `json:"name" vd:"required"`
+	ID          string `json:"id" vd:"required"`
+	Code        string `json:"code" vd:"required"`
+	Description string `json:"description" vd:"required"`
+	Active      *bool  `json:"active" vd:"required"`
 }
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
@@ -25,7 +26,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.MenusX.Update(ctx, user, dto); err != nil {
+	if err := x.CapsX.Update(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -34,12 +35,13 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	if err = x.Db.Model(model.Menu{}).WithContext(ctx).
+	if err = x.Db.Model(model.Cap{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(common.M{
-			`updated_at`: time.Now(),
-			`active`:     *dto.Active,
-			`name`:       dto.Name,
+			`updated_at`:  time.Now(),
+			`active`:      *dto.Active,
+			`code`:        dto.Code,
+			`description`: dto.Description,
 		}).Error; err != nil {
 		return
 	}

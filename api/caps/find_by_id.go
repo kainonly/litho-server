@@ -1,4 +1,4 @@
-package permissions
+package caps
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	data, err := x.PermissionsX.FindById(ctx, user, dto)
+	data, err := x.CapsX.FindById(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -28,16 +28,19 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID          string `json:"id"`
-	Active      bool   `json:"active"`
 	Code        string `json:"code"`
 	Description string `json:"description"`
+	Active      bool   `json:"active"`
 }
 
-func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
-	do := x.Db.Model(model.Permission{}).WithContext(ctx)
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
-	if err = dto.Take(ctx, do, &result); err != nil {
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data *FindByIdResult, err error) {
+	var result = new(FindByIdResult)
+	if err = x.Db.WithContext(ctx).
+		Model(model.Cap{}).
+		Where(`id = ?`, dto.ID).
+		Scan(result).Error; err != nil {
 		return
 	}
+	data = result
 	return
 }

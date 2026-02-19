@@ -1,8 +1,7 @@
-package permissions
+package caps
 
 import (
 	"context"
-
 	"server/common"
 	"server/model"
 
@@ -26,7 +25,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 
 	user := common.GetIAM(c)
 	dto.ID = help.SID()
-	if err := x.PermissionsX.Create(ctx, user, dto); err != nil {
+	if err := x.CapsX.Create(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -35,9 +34,9 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Permission{
+	data := model.Cap{
 		ID:          dto.ID,
-		Active:      *dto.Active,
+		Active:      dto.Active,
 		Code:        dto.Code,
 		Description: dto.Description,
 	}

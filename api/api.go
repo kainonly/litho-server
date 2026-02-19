@@ -2,11 +2,9 @@ package api
 
 import (
 	"context"
+	"server/api/caps"
 	"server/api/index"
-	"server/api/menus"
 	"server/api/orgs"
-	"server/api/permissions"
-	"server/api/resource_actions"
 	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
@@ -20,11 +18,9 @@ import (
 )
 
 var Provides = wire.NewSet(
+	caps.Provides,
 	index.Provides,
-	menus.Provides,
 	orgs.Provides,
-	permissions.Provides,
-	resource_actions.Provides,
 	resources.Provides,
 	roles.Provides,
 	routes.Provides,
@@ -35,19 +31,18 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz           *server.Hertz
-	Csrf            *csrf.Csrf
-	Index           *index.Controller
-	IndexX          *index.Service
-	Menus           *menus.Controller
-	Orgs            *orgs.Controller
-	Permissions     *permissions.Controller
-	ResourceActions *resource_actions.Controller
-	Resources       *resources.Controller
-	Roles           *roles.Controller
-	Routes          *routes.Controller
-	Users           *users.Controller
-	UsersX          *users.Service
+	Hertz     *server.Hertz
+	Csrf      *csrf.Csrf
+	Caps      *caps.Controller
+	Index     *index.Controller
+	IndexX    *index.Service
+	Orgs      *orgs.Controller
+	Resources *resources.Controller
+	Roles     *roles.Controller
+	Routes    *routes.Controller
+	Sessions  *sessions.Controller
+	Users     *users.Controller
+	UsersX    *users.Service
 }
 
 func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
@@ -60,14 +55,12 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
 	m := x.Hertz.Group(``, _auth)
 	{
-		// menus 模块 -> 标准 CRUD 路由
-		m.GET("/menus/:id", x.Menus.FindById)
-		m.GET("/menus", x.Menus.Find)
-		m.GET("/menus/_search", x.Menus.Search)
-		m.POST("/menus/create", x.Menus.Create)
-		m.POST("/menus/update", x.Menus.Update)
-		m.POST("/menus/delete", x.Menus.Delete)
-		m.POST("/menus/sort", x.Menus.Sort)
+		// caps 模块 -> 标准 CRUD 路由
+		m.GET("/caps/:id", x.Caps.FindById)
+		m.GET("/caps", x.Caps.Find)
+		m.POST("/caps/create", x.Caps.Create)
+		m.POST("/caps/update", x.Caps.Update)
+		m.POST("/caps/delete", x.Caps.Delete)
 
 		// orgs 模块 -> 标准 CRUD 路由
 		m.GET("/orgs/:id", x.Orgs.FindById)
@@ -75,21 +68,6 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/orgs/create", x.Orgs.Create)
 		m.POST("/orgs/update", x.Orgs.Update)
 		m.POST("/orgs/delete", x.Orgs.Delete)
-
-		// permissions 模块 -> 标准 CRUD 路由
-		m.GET("/permissions/:id", x.Permissions.FindById)
-		m.GET("/permissions", x.Permissions.Find)
-		m.POST("/permissions/create", x.Permissions.Create)
-		m.POST("/permissions/update", x.Permissions.Update)
-		m.POST("/permissions/delete", x.Permissions.Delete)
-
-		// resource_actions 模块 -> 标准 CRUD 路由
-		m.GET("/resource_actions/:id", x.ResourceActions.FindById)
-		m.GET("/resource_actions", x.ResourceActions.Find)
-		m.GET("/resource_actions/_search", x.ResourceActions.Search)
-		m.POST("/resource_actions/create", x.ResourceActions.Create)
-		m.POST("/resource_actions/update", x.ResourceActions.Update)
-		m.POST("/resource_actions/delete", x.ResourceActions.Delete)
 
 		// resources 模块 -> 标准 CRUD 路由
 		m.GET("/resources/:id", x.Resources.FindById)

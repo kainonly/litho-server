@@ -1,4 +1,4 @@
-package menus
+package caps
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.MenusX.Delete(ctx, user, dto); err != nil {
+	if err := x.CapsX.Delete(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -27,5 +27,5 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.WithContext(ctx).Delete(model.Menu{}, dto.IDs).Error
+	return x.Db.WithContext(ctx).Delete(model.Cap{}, dto.IDs).Error
 }

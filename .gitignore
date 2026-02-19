@@ -23,6 +23,7 @@
 
 /vendor
 /config/values.yml
+/model
 
 # 环境变量（敏感配置）
 .env
