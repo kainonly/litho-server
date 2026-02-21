@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	Resource = "/routes"
+	Key = "routes"
 	Label    = "路由"
 )
 

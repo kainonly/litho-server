@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Resource = "/roles"
+	Key = "roles"
 	Label    = "权限组"
 )
 

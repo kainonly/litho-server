@@ -13,7 +13,7 @@ import (
 )
 
 const (
-    Resource = "/users"
+    Key = "users"
     Label    = "团队成员"
 )
 

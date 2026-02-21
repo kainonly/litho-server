@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	Resource = "/resources"
+	Key = "resources"
 	Label    = "资源"
 )
 

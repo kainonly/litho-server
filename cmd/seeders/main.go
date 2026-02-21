@@ -34,7 +34,6 @@ type routeSeed struct {
 }
 
 var seedModels = map[string]modelFactory{
-	"cap":   func() any { return model.Cap{} },
 	"org":   func() any { return model.Org{} },
 	"role":  func() any { return model.Role{} },
 	"route": func() any { return model.Route{} },
@@ -42,7 +41,6 @@ var seedModels = map[string]modelFactory{
 }
 
 var modelAliases = map[string]string{
-	"caps":   "cap",
 	"orgs":   "org",
 	"roles":  "role",
 	"routes": "route",
@@ -84,7 +82,7 @@ func main() {
 	}
 
 	// 按依赖顺序排列：routes 须先于 roles（roles 动态注入 route ID）
-	seedOrder := []string{"caps", "orgs", "routes", "roles", "users"}
+	seedOrder := []string{"orgs", "routes", "roles", "users"}
 	orderIndex := func(name string) int {
 		base := strings.TrimSuffix(name, filepath.Ext(name))
 		for i, s := range seedOrder {
@@ -129,7 +127,6 @@ func main() {
 
 func truncateSeedTables(db *gorm.DB) error {
 	tables := []string{
-		"cap",
 		"org",
 		"role",
 		"route",
@@ -302,10 +299,7 @@ func seedRolesWithRoutes(db *gorm.DB, filePath, label string) error {
 			if seeds[i].ID == "" {
 				seeds[i].ID = help.SID()
 			}
-			if seeds[i].Strategy == nil {
-				seeds[i].Strategy = &common.Object{}
-			}
-			(*seeds[i].Strategy)["routes"] = routeIDs
+				seeds[i].Strategy.Routes = routeIDs
 			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i]).Error; err != nil {
 				return err
 			}

@@ -57,12 +57,9 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
     m := x.Hertz.Group(``, _auth)
     {
-        // caps 模块 -> 标准 CRUD 路由
+        // caps 模块 -> 只读，由 sync-meta 维护
         m.GET("/caps/:id", x.Caps.FindById)
         m.GET("/caps", x.Caps.Find)
-        m.POST("/caps/create", x.Caps.Create)
-        m.POST("/caps/update", x.Caps.Update)
-        m.POST("/caps/delete", x.Caps.Delete)
 
         // orgs 模块 -> 标准 CRUD 路由
         m.GET("/orgs/:id", x.Orgs.FindById)
@@ -71,13 +68,10 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
         m.POST("/orgs/update", x.Orgs.Update)
         m.POST("/orgs/delete", x.Orgs.Delete)
 
-        // resources 模块 -> 标准 CRUD 路由
+        // resources 模块 -> 只读，由 sync-meta 维护
         m.GET("/resources/:id", x.Resources.FindById)
         m.GET("/resources", x.Resources.Find)
         m.GET("/resources/_search", x.Resources.Search)
-        m.POST("/resources/create", x.Resources.Create)
-        m.POST("/resources/update", x.Resources.Update)
-        m.POST("/resources/delete", x.Resources.Delete)
 
         // roles 模块 -> 标准 CRUD 路由
         m.GET("/roles/:id", x.Roles.FindById)

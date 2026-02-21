@@ -33,19 +33,19 @@
     "link": "/system/access",
     "children": [
       {
-        "name": "资源控制",
-        "type": 2,
-        "icon": "api",
-        "link": "/system/access/resources"
-      },
-      {
-        "name": "视图控制",
+        "name": "视图资源",
         "type": 2,
         "icon": "layout",
         "link": "/system/access/views"
       },
       {
-        "name": "能力组",
+        "name": "接口资源",
+        "type": 2,
+        "icon": "api",
+        "link": "/system/access/resources"
+      },
+      {
+        "name": "能力标识",
         "type": 2,
         "icon": "code",
         "link": "/system/access/caps"

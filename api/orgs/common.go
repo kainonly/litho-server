@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Resource = "/orgs"
+	Key = "orgs"
 	Label    = "组织"
 )
 

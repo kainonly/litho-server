@@ -26,15 +26,22 @@ type Inject struct {
 	Locker  *locker.Locker
 }
 
-var ErrAuthenticationExpired = help.E(0, "身份验证已过期，请重新登录")
-var ErrLoginMaxFailures = help.E(0, "登录尝试次数超过最大限制")
-var ErrLoginNotExists = help.E(0, "账号不存在或已被禁用")
-var ErrLoginInvalid = help.E(0, "账号不存在或密码错误")
-var ErrSession = help.E(0, "会话建立失败")
-var ErrSmsInvalid = help.E(0, "短信验证码无效")
-var ErrWMAccess = help.E(0, `您不具备权限，请联系超级管理员进行管理`)
+var (
+	ErrAuthenticationExpired = help.E(0, "身份验证已过期，请重新登录")
+	ErrLoginMaxFailures      = help.E(0, "登录尝试次数超过最大限制")
+	ErrLoginNotExists        = help.E(0, "账号不存在或已被禁用")
+	ErrLoginInvalid          = help.E(0, "账号不存在或密码错误")
+	ErrSession               = help.E(0, "会话建立失败")
+	ErrSmsInvalid            = help.E(0, "短信验证码无效")
+	ErrWMAccess              = help.E(0, `您不具备权限，请联系超级管理员进行管理`)
+)
 
 type HandleFunc func(do *gorm.DB) *gorm.DB
+
+type Action struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
 
 type IAMUser struct {
 	ID       string        `json:"id"`
@@ -66,6 +73,12 @@ func (x *RoleStrategy) Value() (driver.Value, error) {
 	}
 	return sonic.Marshal(*x)
 }
+
+// 能力标识常量，由 sync-meta 同步到数据库，常量名即数据库中的 key
+
+const (
+	WM = "最高权限，拥有系统所有权限"
+)
 
 // Can 验证用户是否具备定义能力
 func (x *IAMUser) Can(caps ...string) error {
