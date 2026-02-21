@@ -37,7 +37,7 @@ type capDef struct {
 func main() {
 	configPath := flag.String("config", "config/values.yml", "配置文件路径")
 	apiDir := flag.String("api-dir", "api", "API 模块目录")
-	commonFile := flag.String("common", "common/caps.go", "能力标识定义文件路径")
+	commonFile := flag.String("common", "common/common.go", "能力标识定义文件路径")
 	flag.Parse()
 
 	values, err := loadValues(*configPath)
@@ -273,12 +273,12 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 			}
 
 			var count int64
-			if err := tx.Raw(`SELECT COUNT(*) FROM "resource" WHERE key = ?`, def.Key).Scan(&count).Error; err != nil {
+			if err := tx.Raw(`SELECT COUNT(*) FROM "resource" WHERE id = ?`, def.Key).Scan(&count).Error; err != nil {
 				return err
 			}
 			if count > 0 {
 				if err := tx.Exec(
-					`UPDATE "resource" SET label = ?, actions = ?::jsonb WHERE key = ?`,
+					`UPDATE "resource" SET label = ?, actions = ?::jsonb WHERE id = ?`,
 					def.Label, string(actionsJSON), def.Key,
 				).Error; err != nil {
 					return err
@@ -286,7 +286,7 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 				fmt.Printf("更新资源 %s (%s)\n", def.Key, def.Label)
 			} else {
 				if err := tx.Exec(
-					`INSERT INTO "resource" (key, label, actions) VALUES (?, ?, ?::jsonb)`,
+					`INSERT INTO "resource" (id, label, actions) VALUES (?, ?, ?::jsonb)`,
 					def.Key, def.Label, string(actionsJSON),
 				).Error; err != nil {
 					return err
@@ -302,12 +302,12 @@ func syncCaps(db *gorm.DB, defs []capDef) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		for _, def := range defs {
 			var count int64
-			if err := tx.Raw(`SELECT COUNT(*) FROM "cap" WHERE key = ?`, def.Key).Scan(&count).Error; err != nil {
+			if err := tx.Raw(`SELECT COUNT(*) FROM "cap" WHERE id = ?`, def.Key).Scan(&count).Error; err != nil {
 				return err
 			}
 			if count > 0 {
 				if err := tx.Exec(
-					`UPDATE "cap" SET description = ? WHERE key = ?`,
+					`UPDATE "cap" SET description = ? WHERE id = ?`,
 					def.Description, def.Key,
 				).Error; err != nil {
 					return err
@@ -315,7 +315,7 @@ func syncCaps(db *gorm.DB, defs []capDef) error {
 				fmt.Printf("更新能力标识 %s\n", def.Key)
 			} else {
 				if err := tx.Exec(
-					`INSERT INTO "cap" (key, description) VALUES (?, ?)`,
+					`INSERT INTO "cap" (id, description) VALUES (?, ?)`,
 					def.Key, def.Description,
 				).Error; err != nil {
 					return err

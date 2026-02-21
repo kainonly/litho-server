@@ -20,7 +20,7 @@ func main() {
 				g.GenerateModelAs("cap", "Cap"),
 				g.GenerateModelAs("org", "Org"),
 				g.GenerateModelAs("resource", "Resource",
-					gen.FieldType("strategy", "common.Array"),
+					gen.FieldType("strategy", "common.Actions"),
 				),
 				g.GenerateModelAs("role", "Role",
 					gen.FieldType("strategy", "common.RoleStrategy"),

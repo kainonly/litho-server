@@ -34,15 +34,13 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
     ID          string `json:"id"`
-    Code        string `json:"code"`
     Description string `json:"description"`
-    Active      bool   `json:"active"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
     do := x.Db.Model(&model.Cap{}).WithContext(ctx)
     if dto.Q != "" {
-        do = do.Where(`code like ?`, dto.GetKeyword())
+        do = do.Where(`id like ?`, dto.GetKeyword())
     }
 
     if err = do.Count(&total).Error; err != nil {
@@ -50,8 +48,8 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
     }
 
     results = make([]*FindResult, 0)
-    ctx = common.SetPipe(ctx, common.NewFindPipe())
-    if err = dto.Find(ctx, do, &results); err != nil {
+    ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs())
+    if err = dto.Find(ctx, do.Order(`id`), &results); err != nil {
         return
     }
     return
