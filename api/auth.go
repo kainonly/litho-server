@@ -5,6 +5,7 @@ import (
 	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 func (x *API) Auth() app.HandlerFunc {
@@ -55,6 +56,16 @@ func (x *API) Auth() app.HandlerFunc {
 			c.AbortWithStatusJSON(403, common.M{
 				"code":    0,
 				"message": `禁止登录，您的账号未分配角色`,
+			})
+			return
+		}
+
+		// 获取用户对应权限缓存策略
+		if user.Strategy, err = x.RolesX.GetIAMRole(ctx, user.RoleID); err != nil {
+			x.IndexX.ClearAccessToken(c)
+			c.AbortWithStatusJSON(403, utils.H{
+				"code":    0,
+				"message": `登录禁用，您的账户尚未设置权限组`,
 			})
 			return
 		}

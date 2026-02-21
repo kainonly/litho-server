@@ -1,7 +1,10 @@
 package orgs
 
 import (
+	"context"
+	"database/sql"
 	"server/common"
+	"server/model"
 
 	"github.com/goforj/wire"
 )
@@ -17,4 +20,25 @@ type Controller struct {
 
 type Service struct {
 	*common.Inject
+}
+
+func (x *Service) GetOrgM(ctx context.Context, ids []string) (result map[string]*model.Org, err error) {
+	result = make(map[string]*model.Org)
+	var rows *sql.Rows
+	if rows, err = x.Db.Model(model.Org{}).WithContext(ctx).
+		Select([]string{"id", "type", "name"}).
+		Where(`id in (?)`, ids).
+		Rows(); err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var data *model.Org
+		if err = x.Db.ScanRows(rows, &data); err != nil {
+			return
+		}
+		result[data.ID] = data
+	}
+	return
 }

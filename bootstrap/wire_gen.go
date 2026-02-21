@@ -108,6 +108,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	usersService := &users.Service{
 		Inject:    inject,
 		SessionsX: sessionsService,
+		OrgsX:     orgsService,
 	}
 	usersController := &users.Controller{
 		UsersX: usersService,
@@ -122,6 +123,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Orgs:      orgsController,
 		Resources: resourcesController,
 		Roles:     rolesController,
+		RolesX:    rolesService,
 		Routes:    routesController,
 		Sessions:  sessionsController,
 		Users:     usersController,

@@ -19,9 +19,15 @@ func main() {
 			g.ApplyBasic(
 				g.GenerateModelAs("cap", "Cap"),
 				g.GenerateModelAs("org", "Org"),
-				g.GenerateModelAs("resource", "Resource"),
-				g.GenerateModelAs("role", "Role"),
-				g.GenerateModelAs("route", "Route"),
+				g.GenerateModelAs("resource", "Resource",
+					gen.FieldType("strategy", "common.Array"),
+				),
+				g.GenerateModelAs("role", "Role",
+					gen.FieldType("strategy", "common.RoleStrategy"),
+				),
+				g.GenerateModelAs("route", "Route",
+					gen.FieldType("strategy", "common.Object"),
+				),
 				g.GenerateModelAs("user", "User"),
 			)
 		},
