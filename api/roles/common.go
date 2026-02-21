@@ -10,6 +10,11 @@ import (
 	"github.com/goforj/wire"
 )
 
+const (
+	Resource = "/roles"
+	Label    = "角色"
+)
+
 var Provides = wire.NewSet(
 	wire.Struct(new(Controller), "*"),
 	wire.Struct(new(Service), "*"),

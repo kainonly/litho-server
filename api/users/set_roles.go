@@ -14,6 +14,8 @@ type SetRolesDto struct {
 	RoleID string   `json:"role_id" vd:"required"`
 }
 
+const ISetRoles = "设置角色"
+
 func (x *Controller) SetRoles(ctx context.Context, c *app.RequestContext) {
 	var dto SetRolesDto
 	if err := c.BindAndValidate(&dto); err != nil {

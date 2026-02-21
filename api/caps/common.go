@@ -6,6 +6,11 @@ import (
 	"github.com/goforj/wire"
 )
 
+const (
+	Resource = "/caps"
+	Label    = "能力"
+)
+
 var Provides = wire.NewSet(
 	wire.Struct(new(Controller), "*"),
 	wire.Struct(new(Service), "*"),

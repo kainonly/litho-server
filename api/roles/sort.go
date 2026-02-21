@@ -15,6 +15,8 @@ type SortDto struct {
 	IDs []string `json:"ids"`
 }
 
+const ISort = "排序"
+
 func (x *Controller) Sort(ctx context.Context, c *app.RequestContext) {
 	var dto SortDto
 	if err := c.BindAndValidate(&dto); err != nil {

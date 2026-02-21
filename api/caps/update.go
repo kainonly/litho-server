@@ -18,6 +18,8 @@ type UpdateDto struct {
 	Active      *bool  `json:"active" vd:"required"`
 }
 
+const IUpdate = "更新"
+
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto UpdateDto
 	if err := c.BindAndValidate(&dto); err != nil {

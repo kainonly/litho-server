@@ -15,6 +15,8 @@ type SetUserPhoneDto struct {
 	Code  string `json:"code" vd:"required"`
 }
 
+const ISetUserPhone = "绑定手机"
+
 func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserPhoneDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -31,7 +33,7 @@ func (x *Controller) SetUserPhone(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, help.Ok())
 }
 
-func (x *Service) SetUserPhone(ctx context.Context, user *common.IAMUser, dto SetUserPhoneDto) (r interface{}, err error) {
+func (x *Service) SetUserPhone(ctx context.Context, user *common.IAMUser, dto SetUserPhoneDto) (r any, err error) {
 	key := fmt.Sprintf(`sms-bind:%s`, dto.Phone)
 	if err = x.Captcha.Verify(ctx, key, dto.Code); err != nil {
 		err = common.ErrSmsInvalid

@@ -10,6 +10,8 @@ import (
 	"github.com/kainonly/go/help"
 )
 
+const IDelete = "删除"
+
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	var dto common.DeleteDto
 	if err := c.BindAndValidate(&dto); err != nil {

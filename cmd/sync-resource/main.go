@@ -14,7 +14,6 @@ import (
 
 	"server/bootstrap"
 	"server/common"
-	"server/model"
 
 	"github.com/kainonly/go/help"
 	"gorm.io/gorm"
@@ -22,12 +21,14 @@ import (
 
 type resourceDef struct {
 	Path    string
-	Actions []string
+	Label   string
+	Actions []common.ActionDef
 }
 
 func main() {
 	configPath := flag.String("config", "config/values.yml", "配置文件路径")
 	apiFile := flag.String("api", "api/api.go", "API 路由文件路径")
+	apiDir := flag.String("api-dir", "api", "API 模块目录")
 	flag.Parse()
 
 	values, err := loadValues(*configPath)
@@ -48,7 +49,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	defs, err := parseRoutes(apiPath)
+	apiDirPath, err := resolvePath(*apiDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "API 目录路径错误: %v\n", err)
+		os.Exit(1)
+	}
+
+	// 解析各模块 common.go 获取 Resource -> Label 映射
+	labelMap, err := parseModuleLabels(apiDirPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "解析模块标签失败: %v\n", err)
+		os.Exit(1)
+	}
+
+	defs, err := parseRoutes(apiPath, labelMap)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "解析路由失败: %v\n", err)
 		os.Exit(1)
@@ -60,16 +74,79 @@ func main() {
 	}
 }
 
+// parseModuleLabels 扫描 apiDir 下各子目录的 common.go，
+// 提取 Resource 和 Label 常量，返回 resource path -> label 映射。
+func parseModuleLabels(apiDir string) (map[string]string, error) {
+	result := make(map[string]string)
+
+	entries, err := os.ReadDir(apiDir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		commonFile := filepath.Join(apiDir, entry.Name(), "common.go")
+		if _, err := os.Stat(commonFile); err != nil {
+			continue
+		}
+
+		resource, label, err := parseCommonConstants(commonFile)
+		if err != nil || resource == "" || label == "" {
+			continue
+		}
+		result[resource] = label
+	}
+
+	return result, nil
+}
+
+// parseCommonConstants 从 common.go 中提取 Resource 和 Label 常量值。
+func parseCommonConstants(filePath string) (resource, label string, err error) {
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, filePath, nil, 0)
+	if err != nil {
+		return
+	}
+
+	ast.Inspect(f, func(n ast.Node) bool {
+		spec, ok := n.(*ast.ValueSpec)
+		if !ok {
+			return true
+		}
+		for i, name := range spec.Names {
+			if i >= len(spec.Values) {
+				continue
+			}
+			lit, ok := spec.Values[i].(*ast.BasicLit)
+			if !ok || lit.Kind != token.STRING {
+				continue
+			}
+			val := strings.Trim(lit.Value, `"`)
+			switch name.Name {
+			case "Resource":
+				resource = val
+			case "Label":
+				label = val
+			}
+		}
+		return true
+	})
+	return
+}
+
 // parseRoutes 解析 api.go 中所有 POST m.POST("/:resource/:action", ...) 调用，
-// 按 path（/:resource）分组收集 actions。
-func parseRoutes(apiFilePath string) ([]resourceDef, error) {
+// 按 path（/:resource）分组收集 actions，并附加模块 label。
+func parseRoutes(apiFilePath string, labelMap map[string]string) ([]resourceDef, error) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, apiFilePath, nil, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	// path -> []action
+	// path -> []action value
 	index := make(map[string][]string)
 	order := []string{}
 
@@ -93,7 +170,6 @@ func parseRoutes(apiFilePath string) ([]resourceDef, error) {
 			return true
 		}
 		route := strings.Trim(lit.Value, `"`)
-		// 匹配 /:resource/:action 模式（两段，以 / 开头，第二段不以 _ 开头且不含 :）
 		parts := strings.Split(strings.TrimPrefix(route, "/"), "/")
 		if len(parts) != 2 {
 			return true
@@ -113,7 +189,20 @@ func parseRoutes(apiFilePath string) ([]resourceDef, error) {
 
 	defs := make([]resourceDef, 0, len(order))
 	for _, path := range order {
-		defs = append(defs, resourceDef{Path: path, Actions: index[path]})
+		actions := make([]common.ActionDef, 0, len(index[path]))
+		for _, v := range index[path] {
+			if def, ok := common.ActionLabels[v]; ok {
+				actions = append(actions, def)
+			} else {
+				// 未在 ActionLabels 注册的 action，使用 value 作为 label
+				actions = append(actions, common.ActionDef{Label: v, Value: v})
+			}
+		}
+		defs = append(defs, resourceDef{
+			Path:    path,
+			Label:   labelMap[path],
+			Actions: actions,
+		})
 	}
 	return defs, nil
 }
@@ -128,26 +217,34 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 				return err
 			}
 
-			var existing model.Resource
-			err = tx.Where("path = ?", def.Path).Take(&existing).Error
+			label := def.Label
+			if label == "" {
+				label = strings.TrimPrefix(def.Path, "/")
+			}
+
+			var existing struct{ ID string }
+			err = tx.Raw(`SELECT id FROM "resource" WHERE path = ? LIMIT 1`, def.Path).Scan(&existing).Error
+			if err == nil && existing.ID == "" {
+				err = gorm.ErrRecordNotFound
+			}
 			if err == nil {
 				if err := tx.Exec(
-					`UPDATE "resource" SET updated_at = ?, actions = ?::jsonb WHERE id = ?`,
-					now, string(actionsJSON), existing.ID,
+					`UPDATE "resource" SET updated_at = ?, label = ?, actions = ?::jsonb WHERE id = ?`,
+					now, label, string(actionsJSON), existing.ID,
 				).Error; err != nil {
 					return err
 				}
-				fmt.Printf("更新资源 %s: %v\n", def.Path, def.Actions)
+				fmt.Printf("更新资源 %s (%s): %v\n", def.Path, label, def.Actions)
 			} else if err == gorm.ErrRecordNotFound {
 				active := true
 				id := help.SID()
 				if err := tx.Exec(
-					`INSERT INTO "resource" (id, created_at, updated_at, active, name, path, actions) VALUES (?, ?, ?, ?, ?, ?, ?::jsonb)`,
-					id, now, now, active, strings.TrimPrefix(def.Path, "/"), def.Path, string(actionsJSON),
+					`INSERT INTO "resource" (id, created_at, updated_at, active, name, label, path, actions) VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb)`,
+					id, now, now, active, strings.TrimPrefix(def.Path, "/"), label, def.Path, string(actionsJSON),
 				).Error; err != nil {
 					return err
 				}
-				fmt.Printf("新增资源 %s: %v\n", def.Path, def.Actions)
+				fmt.Printf("新增资源 %s (%s): %v\n", def.Path, label, def.Actions)
 			} else {
 				return err
 			}

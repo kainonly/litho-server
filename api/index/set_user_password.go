@@ -16,6 +16,8 @@ type SetUserPasswordDto struct {
 	Password string `json:"password" vd:"min=8"`
 }
 
+const ISetUserPassword = "修改密码"
+
 func (x *Controller) SetUserPassword(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserPasswordDto
 	if err := c.BindAndValidate(&dto); err != nil {

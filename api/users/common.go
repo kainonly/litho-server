@@ -12,6 +12,11 @@ import (
     "github.com/goforj/wire"
 )
 
+const (
+    Resource = "/users"
+    Label    = "用户"
+)
+
 var Provides = wire.NewSet(
     wire.Struct(new(Controller), "*"),
     wire.Struct(new(Service), "*"),

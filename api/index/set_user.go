@@ -16,6 +16,8 @@ type SetUserDto struct {
 	Avatar string `json:"avatar" vd:"required_if=Key 'Avatar'"`
 }
 
+const ISetUser = "修改资料"
+
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserDto
 	if err := c.BindAndValidate(&dto); err != nil {

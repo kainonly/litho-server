@@ -8,6 +8,8 @@ import (
 	"github.com/kainonly/go/help"
 )
 
+const ILogout = "退出登录"
+
 func (x *Controller) Logout(ctx context.Context, c *app.RequestContext) {
 	user := common.GetIAM(c)
 	x.IndexX.Logout(ctx, user)

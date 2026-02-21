@@ -16,6 +16,8 @@ type SetActivesDto struct {
 	Active *bool    `json:"active" vd:"required"`
 }
 
+const ISetActives = "批量启用/禁用"
+
 func (x *Controller) SetActives(ctx context.Context, c *app.RequestContext) {
 	var dto SetActivesDto
 	if err := c.BindAndValidate(&dto); err != nil {

@@ -16,6 +16,8 @@ type CreateDto struct {
 	Active *bool  `json:"active" vd:"required"`
 }
 
+const ICreate = "新增"
+
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
 	if err := c.BindAndValidate(&dto); err != nil {
