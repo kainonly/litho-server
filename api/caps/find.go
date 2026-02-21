@@ -42,7 +42,7 @@ type FindResult struct {
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
     do := x.Db.Model(&model.Cap{}).WithContext(ctx)
     if dto.Q != "" {
-        do = do.Where(`name like ?`, dto.GetKeyword())
+        do = do.Where(`code like ?`, dto.GetKeyword())
     }
 
     if err = do.Count(&total).Error; err != nil {

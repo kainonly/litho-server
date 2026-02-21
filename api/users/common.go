@@ -14,7 +14,7 @@ import (
 
 const (
     Resource = "/users"
-    Label    = "用户"
+    Label    = "团队成员"
 )
 
 var Provides = wire.NewSet(

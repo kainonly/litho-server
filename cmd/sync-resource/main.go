@@ -217,9 +217,9 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 				return err
 			}
 
-			label := def.Label
-			if label == "" {
-				label = strings.TrimPrefix(def.Path, "/")
+			name := def.Label
+			if name == "" {
+				name = strings.TrimPrefix(def.Path, "/")
 			}
 
 			var existing struct{ ID string }
@@ -229,22 +229,22 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 			}
 			if err == nil {
 				if err := tx.Exec(
-					`UPDATE "resource" SET updated_at = ?, label = ?, actions = ?::jsonb WHERE id = ?`,
-					now, label, string(actionsJSON), existing.ID,
+					`UPDATE "resource" SET updated_at = ?, name = ?, actions = ?::jsonb WHERE id = ?`,
+					now, name, string(actionsJSON), existing.ID,
 				).Error; err != nil {
 					return err
 				}
-				fmt.Printf("更新资源 %s (%s): %v\n", def.Path, label, def.Actions)
+				fmt.Printf("更新资源 %s (%s): %v\n", def.Path, name, def.Actions)
 			} else if err == gorm.ErrRecordNotFound {
 				active := true
 				id := help.SID()
 				if err := tx.Exec(
-					`INSERT INTO "resource" (id, created_at, updated_at, active, name, label, path, actions) VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb)`,
-					id, now, now, active, strings.TrimPrefix(def.Path, "/"), label, def.Path, string(actionsJSON),
+					`INSERT INTO "resource" (id, created_at, updated_at, active, name, path, actions) VALUES (?, ?, ?, ?, ?, ?, ?::jsonb)`,
+					id, now, now, active, name, def.Path, string(actionsJSON),
 				).Error; err != nil {
 					return err
 				}
-				fmt.Printf("新增资源 %s (%s): %v\n", def.Path, label, def.Actions)
+				fmt.Printf("新增资源 %s (%s): %v\n", def.Path, name, def.Actions)
 			} else {
 				return err
 			}

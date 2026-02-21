@@ -8,7 +8,7 @@ import (
 
 const (
 	Resource = "/caps"
-	Label    = "能力"
+	Label    = "能力标识"
 )
 
 var Provides = wire.NewSet(

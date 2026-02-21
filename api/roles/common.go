@@ -12,7 +12,7 @@ import (
 
 const (
 	Resource = "/roles"
-	Label    = "角色"
+	Label    = "权限组"
 )
 
 var Provides = wire.NewSet(
