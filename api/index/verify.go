@@ -10,11 +10,11 @@ import (
 )
 
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
-	ts := c.Cookie("TOKEN")
+	ts := c.Cookie("ACCESS_TOKEN")
 	if ts == nil {
 		c.JSON(401, common.M{
 			"code":    0,
-			"message": ``,
+			"message": common.ErrAuthenticationExpired.Error(),
 		})
 		return
 	}
@@ -23,7 +23,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 		x.IndexX.ClearAccessToken(c)
 		c.JSON(401, common.M{
 			"code":    0,
-			"message": ``,
+			"message": common.ErrAuthenticationExpired.Error(),
 		})
 		return
 	}

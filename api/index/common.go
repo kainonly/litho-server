@@ -35,23 +35,13 @@ type Service struct {
 }
 
 func (x *Service) SetAccessToken(c *app.RequestContext, ts string) {
-	if x.V.Cors.SameSite == "none" {
-		c.SetCookie("ACCESS_TOKEN", ts, 0, "/", "",
-			protocol.CookieSameSiteNoneMode, false, false)
-		return
-	}
 	c.SetCookie("ACCESS_TOKEN", ts, 0, "/", "",
-		protocol.CookieSameSiteStrictMode, true, true)
+		protocol.CookieSameSiteLaxMode, true, true)
 }
 
 func (x *Service) ClearAccessToken(c *app.RequestContext) {
-	if x.V.Cors.SameSite == "none" {
-		c.SetCookie("ACCESS_TOKEN", "", 0, "/", "",
-			protocol.CookieSameSiteNoneMode, false, false)
-		return
-	}
 	c.SetCookie("ACCESS_TOKEN", "", 0, "/", "",
-		protocol.CookieSameSiteStrictMode, true, true)
+		protocol.CookieSameSiteLaxMode, true, true)
 }
 
 type LoginResult struct {

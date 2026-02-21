@@ -5,7 +5,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/kainonly/go/captcha"
 	"github.com/kainonly/go/cipher"
 	"github.com/kainonly/go/help"
@@ -27,30 +26,15 @@ type Inject struct {
 	Locker  *locker.Locker
 }
 
-// Common error definitions
-
-var ErrAuthenticationExpired = help.E(4003, "身份验证已过期，请重新登录")
-var ErrLoginNotExists = help.E(4001, "账号不存在或已被禁用")
-var ErrLoginMaxFailures = help.E(4002, "登录尝试次数超过最大限制")
-var ErrLoginInvalid = help.E(4001, "账号不存在或密码错误")
-var ErrSession = help.E(4005, "会话建立失败")
-var ErrTotpInvalid = help.E(4001, "TOTP 验证码无效")
-var ErrSmsInvalid = help.E(4001, "短信验证码无效")
-var ErrSmsNotExists = help.E(4001, "账号不存在或已被禁用")
-var ErrCodeFrequently = help.E(4004, "验证码请求过于频繁，请稍后再试")
+var ErrAuthenticationExpired = help.E(0, "身份验证已过期，请重新登录")
+var ErrLoginMaxFailures = help.E(0, "登录尝试次数超过最大限制")
+var ErrLoginNotExists = help.E(0, "账号不存在或已被禁用")
+var ErrLoginInvalid = help.E(0, "账号不存在或密码错误")
+var ErrSession = help.E(0, "会话建立失败")
+var ErrSmsInvalid = help.E(0, "短信验证码无效")
 var ErrWMAccess = help.E(0, `您不具备权限，请联系超级管理员进行管理`)
 
 type HandleFunc func(do *gorm.DB) *gorm.DB
-
-func SetAccessToken(c *app.RequestContext, ts string) {
-	c.SetCookie("TOKEN", ts, -1,
-		"/", "", protocol.CookieSameSiteStrictMode, true, true)
-}
-
-func ClearAccessToken(c *app.RequestContext) {
-	c.SetCookie("TOKEN", "", -1,
-		"/", "", protocol.CookieSameSiteStrictMode, true, true)
-}
 
 type IAMUser struct {
 	ID       string        `json:"id"`

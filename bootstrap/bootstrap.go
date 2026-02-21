@@ -135,7 +135,6 @@ func UseHertz(v *common.Values) (h *server.Hertz, err error) {
 		}),
 	}
 
-	opts = append(opts)
 	h = server.Default(opts...)
 	h.Use(
 		help.ErrorHandler(),
