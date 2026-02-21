@@ -22,61 +22,31 @@ import (
 
 type modelFactory func() any
 
-type orgSeed struct {
-	model.Org
-	Users []model.User `json:"users"`
-}
-
-type menuSeed struct {
-	model.Menu
-	Children []routeSeed `json:"children"`
+type userSeed struct {
+	model.User
+	Org  string `json:"org"`
+	Role string `json:"role"`
 }
 
 type routeSeed struct {
 	model.Route
-}
-
-type resourceSeed struct {
-	model.Resource
-	Actions []resourceActionSeed `json:"actions"`
-}
-
-type resourceActionSeed struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-	Sort int16  `json:"sort,omitempty"`
+	Children []routeSeed `json:"children"`
 }
 
 var seedModels = map[string]modelFactory{
-	"menu":                  func() any { return model.Menu{} },
-	"org":                   func() any { return model.Org{} },
-	"permission":            func() any { return model.Permission{} },
-	"resource_action":       func() any { return model.ResourceAction{} },
-	"resource":              func() any { return model.Resource{} },
-	"role":                  func() any { return model.Role{} },
-	"role_menu":             func() any { return model.RoleMenu{} },
-	"role_permission":       func() any { return model.RolePermission{} },
-	"role_route":            func() any { return model.RoleRoute{} },
-	"route":                 func() any { return model.Route{} },
-	"route_resource_action": func() any { return model.RouteResourceAction{} },
-	"user":                  func() any { return model.User{} },
-	"user_org_role":         func() any { return model.UserOrgRole{} },
+	"cap":   func() any { return model.Cap{} },
+	"org":   func() any { return model.Org{} },
+	"role":  func() any { return model.Role{} },
+	"route": func() any { return model.Route{} },
+	"user":  func() any { return model.User{} },
 }
 
 var modelAliases = map[string]string{
-	"menus":                  "menu",
-	"orgs":                   "org",
-	"permissions":            "permission",
-	"resources":              "resource",
-	"roles":                  "role",
-	"routes":                 "route",
-	"users":                  "user",
-	"resource_actions":       "resource_action",
-	"role_menus":             "role_menu",
-	"role_permissions":       "role_permission",
-	"role_routes":            "role_route",
-	"route_resource_actions": "route_resource_action",
-	"user_org_roles":         "user_org_role",
+	"caps":   "cap",
+	"orgs":   "org",
+	"roles":  "role",
+	"routes": "route",
+	"users":  "user",
 }
 
 func main() {
@@ -113,6 +83,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 按依赖顺序排列：routes 须先于 roles（roles 动态注入 route ID）
+	seedOrder := []string{"caps", "orgs", "routes", "roles", "users"}
+	orderIndex := func(name string) int {
+		base := strings.TrimSuffix(name, filepath.Ext(name))
+		for i, s := range seedOrder {
+			if strings.EqualFold(base, s) {
+				return i
+			}
+		}
+		return len(seedOrder)
+	}
+
 	var jsonFiles []string
 	for _, entry := range files {
 		if entry.IsDir() {
@@ -122,23 +104,22 @@ func main() {
 			jsonFiles = append(jsonFiles, filepath.Join(dir, entry.Name()))
 		}
 	}
-	sort.Strings(jsonFiles)
+	sort.Slice(jsonFiles, func(i, j int) bool {
+		bi := filepath.Base(jsonFiles[i])
+		bj := filepath.Base(jsonFiles[j])
+		oi, oj := orderIndex(bi), orderIndex(bj)
+		if oi != oj {
+			return oi < oj
+		}
+		return jsonFiles[i] < jsonFiles[j]
+	})
 
 	if len(jsonFiles) == 0 {
 		fmt.Fprintln(os.Stdout, "未找到任何 .json 文件")
 		return
 	}
 
-	skipFiles, err := computeSkipFiles(dir)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "检测跳过文件失败: %v\n", err)
-		os.Exit(1)
-	}
-
 	for _, filePath := range jsonFiles {
-		if skipFiles[filePath] {
-			continue
-		}
 		if err := seedFile(db, filePath); err != nil {
 			fmt.Fprintf(os.Stderr, "导入失败 %s: %v\n", filePath, err)
 			os.Exit(1)
@@ -148,19 +129,11 @@ func main() {
 
 func truncateSeedTables(db *gorm.DB) error {
 	tables := []string{
-		"menu",
+		"cap",
 		"org",
-		"permission",
-		"resource",
-		"resource_action",
 		"role",
 		"route",
 		"user",
-		"user_org_role",
-		"role_menu",
-		"role_permission",
-		"role_route",
-		"route_resource_action",
 	}
 
 	quoted := make([]string, 0, len(tables))
@@ -169,58 +142,6 @@ func truncateSeedTables(db *gorm.DB) error {
 	}
 
 	return db.Exec(fmt.Sprintf(`TRUNCATE TABLE %s`, strings.Join(quoted, ", "))).Error
-}
-
-func computeSkipFiles(dataDir string) (map[string]bool, error) {
-	skip := make(map[string]bool)
-
-	orgsPath := filepath.Join(dataDir, "orgs.json")
-	if hasEmbeddedUsers(orgsPath) {
-		usersPath := filepath.Join(dataDir, "users.json")
-		skip[usersPath] = true
-	}
-
-	menusPath := filepath.Join(dataDir, "menus.json")
-	if hasEmbeddedRoutes(menusPath) {
-		routesPath := filepath.Join(dataDir, "routes.json")
-		skip[routesPath] = true
-	}
-
-	return skip, nil
-}
-
-func hasEmbeddedUsers(filePath string) bool {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return false
-	}
-	seeds, err := decodeOrgSeeds(data)
-	if err != nil {
-		return false
-	}
-	for _, seed := range seeds {
-		if len(seed.Users) > 0 {
-			return true
-		}
-	}
-	return false
-}
-
-func hasEmbeddedRoutes(filePath string) bool {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return false
-	}
-	seeds, err := decodeMenuSeeds(data)
-	if err != nil {
-		return false
-	}
-	for _, seed := range seeds {
-		if len(seed.Children) > 0 {
-			return true
-		}
-	}
-	return false
 }
 
 func loadValues(path string) (*common.Values, error) {
@@ -261,16 +182,16 @@ func seedFile(db *gorm.DB, filePath string) error {
 		return seedCompositeFile(db, filePath)
 	}
 
-	if modelKey == "org" {
-		return seedOrgsWithUsers(db, filePath, base)
+	if modelKey == "user" {
+		return seedUsersWithLookup(db, filePath, base)
 	}
 
-	if modelKey == "menu" {
-		return seedMenusWithRoutes(db, filePath, base)
+	if modelKey == "route" {
+		return seedRoutesWithTree(db, filePath, base)
 	}
 
-	if modelKey == "resource" {
-		return seedResourcesWithActions(db, filePath, base)
+	if modelKey == "role" {
+		return seedRolesWithRoutes(db, filePath, base)
 	}
 
 	return seedWithFactory(db, filePath, base, modelKey, factory)
@@ -355,20 +276,14 @@ func normalizeModelKey(key string) string {
 	return key
 }
 
-func seedMenusWithRoutes(db *gorm.DB, filePath, label string, raw ...json.RawMessage) error {
-	var data []byte
-	var err error
-	if len(raw) > 0 {
-		data = raw[0]
-	} else {
-		data, err = os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
+func seedRolesWithRoutes(db *gorm.DB, filePath, label string) error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
 	}
 
-	seeds, err := decodeMenuSeeds(data)
-	if err != nil {
+	var seeds []model.Role
+	if err := json.Unmarshal(data, &seeds); err != nil {
 		return err
 	}
 
@@ -377,74 +292,37 @@ func seedMenusWithRoutes(db *gorm.DB, filePath, label string, raw ...json.RawMes
 		return nil
 	}
 
+	var routeIDs []string
+	if err := db.Model(&model.Route{}).Pluck("id", &routeIDs).Error; err != nil {
+		return fmt.Errorf("查询 route ID 失败: %w", err)
+	}
+
 	return db.Transaction(func(tx *gorm.DB) error {
-		for _, seed := range seeds {
-			if seed.ID == "" {
-				seed.ID = help.SID()
+		for i := range seeds {
+			if seeds[i].ID == "" {
+				seeds[i].ID = help.SID()
 			}
-
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seed.Menu).Error; err != nil {
-				return err
+			if seeds[i].Strategy == nil {
+				seeds[i].Strategy = &common.Object{}
 			}
-
-			if len(seed.Children) == 0 {
-				continue
-			}
-
-			for i := range seed.Children {
-				if seed.Children[i].ID == "" {
-					seed.Children[i].ID = help.SID()
-				}
-				if seed.Children[i].MenuID == "" {
-					seed.Children[i].MenuID = seed.ID
-				}
-				if seed.Children[i].PID == "" {
-					seed.Children[i].PID = "0"
-				}
-				if seed.Children[i].CreatedAt.IsZero() {
-					seed.Children[i].CreatedAt = seed.CreatedAt
-				}
-				if seed.Children[i].UpdatedAt.IsZero() {
-					seed.Children[i].UpdatedAt = seed.UpdatedAt
-				}
-			}
-
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seed.Children).Error; err != nil {
+			(*seeds[i].Strategy)["routes"] = routeIDs
+			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i]).Error; err != nil {
 				return err
 			}
 		}
-
+		fmt.Fprintf(os.Stdout, "导入成功 %s (%s): %d\n", filePath, label, len(seeds))
 		return nil
 	})
 }
 
-func decodeMenuSeeds(data []byte) ([]menuSeed, error) {
-	var seeds []menuSeed
-	if err := json.Unmarshal(data, &seeds); err == nil {
-		return seeds, nil
-	}
-
-	var single menuSeed
-	if err := json.Unmarshal(data, &single); err != nil {
-		return nil, err
-	}
-	return []menuSeed{single}, nil
-}
-
-func seedResourcesWithActions(db *gorm.DB, filePath, label string, raw ...json.RawMessage) error {
-	var data []byte
-	var err error
-	if len(raw) > 0 {
-		data = raw[0]
-	} else {
-		data, err = os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
-	}
-
-	seeds, err := decodeResourceSeeds(data)
+func seedRoutesWithTree(db *gorm.DB, filePath, label string) error {
+	data, err := os.ReadFile(filePath)
 	if err != nil {
+		return err
+	}
+
+	var seeds []routeSeed
+	if err := json.Unmarshal(data, &seeds); err != nil {
 		return err
 	}
 
@@ -454,93 +332,55 @@ func seedResourcesWithActions(db *gorm.DB, filePath, label string, raw ...json.R
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		for _, seed := range seeds {
-			resourceID, err := upsertResource(tx, &seed.Resource)
+		count, err := insertRoutes(tx, seeds, "0", "")
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stdout, "导入成功 %s (%s): %d\n", filePath, label, count)
+		return nil
+	})
+}
+
+func insertRoutes(tx *gorm.DB, seeds []routeSeed, pid string, nav string) (int, error) {
+	count := 0
+	for i := range seeds {
+		if seeds[i].ID == "" {
+			seeds[i].ID = help.SID()
+		}
+		if seeds[i].Pid == "" {
+			seeds[i].Pid = pid
+		}
+		if seeds[i].Nav == "" {
+			seeds[i].Nav = nav
+		}
+		if seeds[i].Sort == 0 {
+			seeds[i].Sort = int16(i + 1)
+		}
+
+		if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i].Route).Error; err != nil {
+			return count, err
+		}
+		count++
+
+		if len(seeds[i].Children) > 0 {
+			n, err := insertRoutes(tx, seeds[i].Children, seeds[i].ID, seeds[i].Nav)
 			if err != nil {
-				return err
+				return count, err
 			}
-
-			if len(seed.Actions) == 0 {
-				continue
-			}
-
-			actions := make([]model.ResourceAction, 0, len(seed.Actions))
-			for i, action := range seed.Actions {
-				sortValue := action.Sort
-				if sortValue == 0 {
-					sortValue = int16(i + 1)
-				}
-				actions = append(actions, model.ResourceAction{
-					ID:         help.SID(),
-					ResourceID: resourceID,
-					CreatedAt:  seed.CreatedAt,
-					UpdatedAt:  seed.UpdatedAt,
-					Sort:       sortValue,
-					Active:     true,
-					Name:       action.Name,
-					Code:       action.Code,
-				})
-			}
-
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&actions).Error; err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-}
-
-func decodeResourceSeeds(data []byte) ([]resourceSeed, error) {
-	var seeds []resourceSeed
-	if err := json.Unmarshal(data, &seeds); err == nil {
-		return seeds, nil
-	}
-
-	var single resourceSeed
-	if err := json.Unmarshal(data, &single); err != nil {
-		return nil, err
-	}
-	return []resourceSeed{single}, nil
-}
-
-func upsertResource(tx *gorm.DB, resource *model.Resource) (string, error) {
-	if resource.Code == "" {
-		return "", fmt.Errorf("resource code 不能为空")
-	}
-
-	var existing model.Resource
-	if err := tx.Where("code = ?", resource.Code).Take(&existing).Error; err == nil {
-		return existing.ID, nil
-	} else if err != nil && err != gorm.ErrRecordNotFound {
-		return "", err
-	}
-
-	if resource.ID == "" {
-		resource.ID = help.SID()
-	}
-
-	if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(resource).Error; err != nil {
-		return "", err
-	}
-
-	return resource.ID, nil
-}
-
-func seedOrgsWithUsers(db *gorm.DB, filePath, label string, raw ...json.RawMessage) error {
-	var data []byte
-	var err error
-	if len(raw) > 0 {
-		data = raw[0]
-	} else {
-		data, err = os.ReadFile(filePath)
-		if err != nil {
-			return err
+			count += n
 		}
 	}
+	return count, nil
+}
 
-	seeds, err := decodeOrgSeeds(data)
+func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
+	data, err := os.ReadFile(filePath)
 	if err != nil {
+		return err
+	}
+
+	var seeds []userSeed
+	if err := json.Unmarshal(data, &seeds); err != nil {
 		return err
 	}
 
@@ -550,94 +390,47 @@ func seedOrgsWithUsers(db *gorm.DB, filePath, label string, raw ...json.RawMessa
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		for _, seed := range seeds {
-			if seed.ID == "" {
-				seed.ID = help.SID()
+		for i := range seeds {
+			if seeds[i].ID == "" {
+				seeds[i].ID = help.SID()
 			}
 
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seed.Org).Error; err != nil {
-				return err
+			if seeds[i].Org != "" && seeds[i].OrgID == "" {
+				var org model.Org
+				if err := tx.Where("name = ?", seeds[i].Org).Take(&org).Error; err != nil {
+					return fmt.Errorf("找不到组织 %q: %w", seeds[i].Org, err)
+				}
+				seeds[i].OrgID = org.ID
 			}
 
-			role := model.Role{
-				ID:          help.SID(),
-				OrgID:       seed.ID,
-				Sort:        1,
-				Active:      true,
-				Name:        "超级管理",
-				Description: "系统超级管理员",
-			}
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&role).Error; err != nil {
-				return err
+			if seeds[i].Role != "" && seeds[i].RoleID == "" {
+				var role model.Role
+				if err := tx.Where("name = ?", seeds[i].Role).Take(&role).Error; err != nil {
+					return fmt.Errorf("找不到角色 %q: %w", seeds[i].Role, err)
+				}
+				seeds[i].RoleID = role.ID
 			}
 
-			if len(seed.Users) == 0 {
-				continue
+			if seeds[i].Password != "" {
+				hash, err := passlib.Hash(seeds[i].Password)
+				if err != nil {
+					return err
+				}
+				seeds[i].Password = hash
 			}
 
-			if err := applySeedTransforms("user", &seed.Users); err != nil {
-				return err
-			}
-
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seed.Users).Error; err != nil {
-				return err
-			}
-
-			uors := make([]model.UserOrgRole, 0, len(seed.Users))
-			for _, user := range seed.Users {
-				uors = append(uors, model.UserOrgRole{
-					ID:     help.SID(),
-					UserID: user.ID,
-					OrgID:  seed.ID,
-					RoleID: role.ID,
-				})
-			}
-
-			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&uors).Error; err != nil {
+			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i].User).Error; err != nil {
 				return err
 			}
 		}
 
+		fmt.Fprintf(os.Stdout, "导入成功 %s (%s): %d\n", filePath, label, len(seeds))
 		return nil
 	})
-}
-
-func decodeOrgSeeds(data []byte) ([]orgSeed, error) {
-	var seeds []orgSeed
-	if err := json.Unmarshal(data, &seeds); err == nil {
-		return seeds, nil
-	}
-
-	var single orgSeed
-	if err := json.Unmarshal(data, &single); err != nil {
-		return nil, err
-	}
-	return []orgSeed{single}, nil
 }
 
 func applySeedTransforms(modelKey string, records any) error {
-	if err := fillMissingIDs(records); err != nil {
-		return err
-	}
-
-	switch modelKey {
-	case "user":
-		users, ok := records.(*[]model.User)
-		if !ok {
-			return fmt.Errorf("用户数据类型不匹配")
-		}
-		for i := range *users {
-			if (*users)[i].Password == "" {
-				continue
-			}
-			hash, err := passlib.Hash((*users)[i].Password)
-			if err != nil {
-				return err
-			}
-			(*users)[i].Password = hash
-		}
-	}
-	return nil
+	return fillMissingIDs(records)
 }
 
 func fillMissingIDs(records any) error {

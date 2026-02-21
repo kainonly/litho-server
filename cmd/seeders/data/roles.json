@@ -1,0 +1,12 @@
+[
+  {
+    "active": true,
+    "name": "超级管理员",
+    "description": "拥有系统所有权限",
+    "strategy": {
+      "navs": ["dashboard", "ops", "business", "analysis", "system"],
+      "routes": [],
+      "caps": ["WM"]
+    }
+  }
+]

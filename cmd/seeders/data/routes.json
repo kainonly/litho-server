@@ -1,0 +1,81 @@
+[
+  {
+    "nav": "system",
+    "name": "通用",
+    "type": 1,
+    "link": "/system/general",
+    "children": [
+      {
+        "name": "组织",
+        "type": 2,
+        "icon": "apartment",
+        "link": "/system/general/orgs"
+      },
+      {
+        "name": "权限组",
+        "type": 2,
+        "icon": "partition",
+        "link": "/system/general/roles"
+      },
+      {
+        "sort": 3,
+        "name": "团队成员",
+        "type": 2,
+        "icon": "user",
+        "link": "/system/general/users"
+      }
+    ]
+  },
+  {
+    "nav": "system",
+    "name": "访问控制",
+    "type": 1,
+    "link": "/system/access",
+    "children": [
+      {
+        "name": "资源控制",
+        "type": 2,
+        "icon": "api",
+        "link": "/system/access/resources"
+      },
+      {
+        "name": "视图控制",
+        "type": 2,
+        "icon": "layout",
+        "link": "/system/access/views"
+      },
+      {
+        "name": "能力组",
+        "type": 2,
+        "icon": "switcher",
+        "link": "/system/access/caps"
+      }
+    ]
+  },
+  {
+    "nav": "system",
+    "name": "审计日志",
+    "type": 1,
+    "link": "/system/audit",
+    "children": [
+      {
+        "name": "在线会话",
+        "type": 2,
+        "icon": "rocket",
+        "link": "/system/audit/sessions"
+      },
+      {
+        "name": "登录状态",
+        "type": 2,
+        "icon": "audit",
+        "link": "/system/audit/logins"
+      },
+      {
+        "name": "操作行为",
+        "type": 2,
+        "icon": "file-search",
+        "link": "/system/audit/behaviors"
+      }
+    ]
+  }
+]
