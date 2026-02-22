@@ -31,6 +31,29 @@ func (Entity) TableName() string {
 - 成功响应：无数据用 `help.Ok()`，有数据直接返回
 - 列表接口：`c.Header("x-total", strconv.Itoa(int(total)))`
 
+### 模块常量（common.go）
+
+每个模块在 `common.go` 中声明两个常量：
+
+```go
+const (
+    Key   = "roles"  // 模块标识，用于缓存 key 等
+    Label = "权限组" // 模块中文名，用于日志、审计
+)
+```
+
+### 操作常量
+
+每个操作文件声明对应的操作常量（紧跟 Dto 类型之后）：
+
+```go
+const ICreate = "新增"   // create.go
+const IUpdate = "更新"   // update.go
+const IDelete = "删除"   // delete.go
+const ISort   = "排序"   // sort.go
+// 其他操作类文件同理，如 IRegroup = "重新分组"
+```
+
 ```go
 // Controller 方法
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
@@ -53,9 +76,14 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 |------|--------|------|
 | `/{module}/:id` | GET | 根据 ID 获取 |
 | `/{module}` | GET | 获取列表 |
+| `/{module}/_search` | GET | 异步搜索 |
+| `/{module}/_exists` | GET | 异步验证 |
 | `/{module}/create` | POST | 创建 |
 | `/{module}/update` | POST | 更新 |
 | `/{module}/delete` | POST | 删除 |
+| `/{module}/get_{noun}` | GET | 读取单个字段（如 `get_strategy`） |
+| `/{module}/set_{noun}` | POST | 更新单个字段（如 `set_strategy`） |
+| `/{module}/{verb}` | POST | 其他操作（如 `sort`、`regroup`） |
 
 ## 模型生成
 

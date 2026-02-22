@@ -40,6 +40,11 @@ import (
 	"github.com/goforj/wire"
 )
 
+const (
+	Key   = "{module}"   // 模块标识，用于缓存 key 等
+	Label = "{模块名称}" // 模块中文名，用于日志、审计
+)
+
 var Provides = wire.NewSet(
 	wire.Struct(new(Controller), "*"),
 	wire.Struct(new(Service), "*"),
@@ -112,10 +117,14 @@ type Service struct {
 
 | 路由格式 | Method | 方法格式 |
 |----------|--------|----------|
+| `/{module}/get_{noun}` | GET | `Get{Noun}` |
 | `/{module}/set_{noun}` | POST | `Set{Noun}` |
 | `/{module}/{verb}` | POST | `{Verb}` |
 
-示例：`/users/set_active` → `SetActive`，`/users/sort` → `Sort`
+示例：
+- `/roles/get_strategy` → `GetStrategy`（GET，读取单个字段，以 `common.FindByIdDto` 为入参）
+- `/roles/set_strategy` → `SetStrategy`（POST，更新单个字段，需调用 `RefreshCache`）
+- `/users/set_active` → `SetActive`，`/users/sort` → `Sort`
 
 ### 数据获取路由
 
@@ -320,6 +329,8 @@ type CreateDto struct {
 	Active *bool  `json:"active" vd:"required"`
 }
 
+const ICreate = "新增"
+
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -372,6 +383,8 @@ type UpdateDto struct {
 	Active *bool  `json:"active" vd:"required"`
 }
 
+const IUpdate = "更新"
+
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto UpdateDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -416,6 +429,8 @@ import (
 	"github.com/kainonly/go/help"
 )
 
+const IDelete = "删除"
+
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	var dto common.DeleteDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -434,6 +449,107 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
 	return x.Db.WithContext(ctx).Delete(model.Org{}, dto.IDs).Error
+}
+```
+
+### get_{noun}.go
+
+用于读取单条记录的某个字段，使用 GET 方法，以 `common.FindByIdDto` 为入参：
+
+```go
+package roles
+
+import (
+	"context"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+)
+
+func (x *Controller) GetStrategy(ctx context.Context, c *app.RequestContext) {
+	var dto common.FindByIdDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	user := common.GetIAM(c)
+	data, err := x.RolesX.GetStrategy(ctx, user, dto)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, data)
+}
+
+func (x *Service) GetStrategy(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result *common.RoleStrategy, err error) {
+	var data model.Role
+	if err = x.Db.Model(model.Role{}).WithContext(ctx).
+		Select(`strategy`).
+		Where(`id = ?`, dto.ID).
+		Take(&data).Error; err != nil {
+		return
+	}
+	result = &data.Strategy
+	return
+}
+```
+
+### set_{noun}.go
+
+用于更新单条记录的某个字段，使用 POST 方法，更新后若有缓存需调用 `RefreshCache`：
+
+```go
+package roles
+
+import (
+	"context"
+	"time"
+
+	"server/common"
+	"server/model"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/kainonly/go/help"
+)
+
+type SetStrategyDto struct {
+	ID       string              `json:"id" vd:"required"`
+	Strategy common.RoleStrategy `json:"strategy" vd:"required"`
+}
+
+func (x *Controller) SetStrategy(ctx context.Context, c *app.RequestContext) {
+	var dto SetStrategyDto
+	if err := c.BindAndValidate(&dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	user := common.GetIAM(c)
+	if err := x.RolesX.SetStrategy(ctx, user, dto); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, help.Ok())
+}
+
+func (x *Service) SetStrategy(ctx context.Context, user *common.IAMUser, dto SetStrategyDto) (err error) {
+	if err = x.Db.Model(model.Role{}).WithContext(ctx).
+		Where(`id = ?`, dto.ID).
+		Updates(common.M{
+			`updated_at`: time.Now(),
+			`strategy`:   dto.Strategy,
+		}).Error; err != nil {
+		return
+	}
+	if err = x.RefreshCache(ctx); err != nil {
+		return
+	}
+	return
 }
 ```
 
