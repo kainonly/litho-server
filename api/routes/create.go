@@ -43,8 +43,9 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Route{
 		ID:     dto.ID,
-		Nav:    dto.Nav,
 		Active: dto.Active,
+		Nav:    dto.Nav,
+		Pid:    "0",
 		Name:   dto.Name,
 		Type:   dto.Type,
 	}

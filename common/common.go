@@ -87,6 +87,19 @@ func (x *RoleStrategy) Value() (driver.Value, error) {
     return sonic.Marshal(*x)
 }
 
+type RouteStrategy map[string][]string
+
+func (x *RouteStrategy) Scan(value interface{}) error {
+    return sonic.Unmarshal(value.([]byte), &x)
+}
+
+func (x RouteStrategy) Value() (driver.Value, error) {
+    if x != nil {
+        return []byte(`{}`), nil
+    }
+    return sonic.Marshal(x)
+}
+
 // 能力标识常量，由 sync-meta 同步到数据库，常量名即数据库中的 key
 
 const (
