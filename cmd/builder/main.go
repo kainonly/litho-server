@@ -28,7 +28,9 @@ func main() {
 				g.GenerateModelAs("route", "Route",
 					gen.FieldType("strategy", "common.RouteStrategy"),
 				),
-				g.GenerateModelAs("user", "User"),
+				g.GenerateModelAs("user", "User",
+					gen.FieldType("history", "common.History"),
+				),
 			)
 		},
 		gen.FieldType("id", "string"),

@@ -54,6 +54,9 @@ func (x *Service) Login(ctx context.Context, dto LoginDto) (result *LoginResult,
 		return
 	}
 
+	if err = x.UpdateLoginUser(ctx, result.ID); err != nil {
+		return
+	}
 	if result.AccessToken, err = x.CreateAccessToken(ctx, result.ID); err != nil {
 		return
 	}

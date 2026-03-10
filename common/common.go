@@ -2,6 +2,7 @@ package common
 
 import (
 	"database/sql/driver"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -96,6 +97,21 @@ func (x *RouteStrategy) Scan(value interface{}) error {
 func (x RouteStrategy) Value() (driver.Value, error) {
 	if x != nil {
 		return []byte(`{}`), nil
+	}
+	return sonic.Marshal(x)
+}
+
+type History struct {
+	LastTime time.Time `json:"last_time"`
+}
+
+func (x *History) Scan(value interface{}) error {
+	return sonic.Unmarshal(value.([]byte), &x)
+}
+
+func (x *History) Value() (driver.Value, error) {
+	if x == nil {
+		return sonic.Marshal(History{})
 	}
 	return sonic.Marshal(x)
 }

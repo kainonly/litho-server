@@ -14,6 +14,7 @@ import (
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/locker"
 	"github.com/kainonly/go/passport"
+	"gorm.io/gorm"
 )
 
 var Provides = wire.NewSet(
@@ -72,6 +73,22 @@ func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFu
 		default:
 			return
 		}
+	}
+	return
+}
+
+func (x *Service) UpdateLoginUser(ctx context.Context, userId string) (err error) {
+	history := common.M{
+		"last_time": time.Now(),
+	}
+	data := common.M{
+		"sessions": gorm.Expr("sessions + ?", 1),
+		"history":  history,
+	}
+	if err = x.Db.Model(model.User{}).WithContext(ctx).
+		Where(`id = ?`, userId).
+		Updates(data).Error; err != nil {
+		return
 	}
 	return
 }
