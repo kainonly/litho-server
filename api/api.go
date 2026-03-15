@@ -85,7 +85,6 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/roles/update", x.Roles.Update)
 		m.POST("/roles/delete", x.Roles.Delete)
 		m.POST("/roles/sort", x.Roles.Sort)
-		m.GET("/roles/get_strategy", x.Roles.GetStrategy)
 		m.POST("/roles/set_strategy", x.Roles.SetStrategy)
 
 		// routes 模块 -> 标准 CRUD 路由
