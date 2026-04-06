@@ -17,6 +17,7 @@ type UpdateDto struct {
 	Price       float64 `json:"price" vd:"required,gt=0"`
 	Stock       int32   `json:"stock" vd:"required,gte=0"`
 	Active      *bool   `json:"active" vd:"required"`
+	Thumbnail   string  `json:"thumbnail"`
 }
 
 const IUpdate = "更新"
@@ -47,5 +48,6 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 			`price`:       dto.Price,
 			`stock`:       dto.Stock,
 			`active`:      *dto.Active,
+			`thumbnail`:   dto.Thumbnail,
 		}).Error
 }

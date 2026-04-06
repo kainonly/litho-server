@@ -40,6 +40,7 @@ type FindResult struct {
 	Price       float64 `json:"price"`
 	Stock       int32   `json:"stock"`
 	Active      bool    `json:"active"`
+	Thumbnail   string  `json:"thumbnail"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {

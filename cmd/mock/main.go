@@ -41,10 +41,14 @@ var eventMids = []string{
 	"街舞大赛", "竞技赛", "电竞赛", "马拉松", "嘉年华巡游", "烟火晚会",
 }
 
-var eventSuffixes = []string{
-	"第%d届", "Vol.%d", "%d周年纪念场", "限定场", "特别场",
-	"首演场", "收官场", "夏季场", "冬季场", "跨年场",
-	"城市限定", "户外版", "线上直播场", "%d城联动", "回归场",
+// eventSuffixes 分为两类：带数字占位符的和纯文字的
+var eventSuffixesWithNum = []string{
+	"第%d届", "Vol.%d", "%d周年纪念场", "%d城联动",
+}
+
+var eventSuffixesPlain = []string{
+	"限定场", "特别场", "首演场", "收官场", "夏季场", "冬季场",
+	"跨年场", "城市限定", "户外版", "线上直播场", "回归场",
 }
 
 var ticketTypes = []struct {
@@ -143,8 +147,19 @@ func main() {
 func randomEventName(rng *rand.Rand) string {
 	prefix := eventPrefixes[rng.Intn(len(eventPrefixes))]
 	mid := eventMids[rng.Intn(len(eventMids))]
-	suffix := fmt.Sprintf(eventSuffixes[rng.Intn(len(eventSuffixes))], rng.Intn(10)+1)
+	var suffix string
+	if rng.Intn(2) == 0 {
+		suffix = fmt.Sprintf(eventSuffixesWithNum[rng.Intn(len(eventSuffixesWithNum))], rng.Intn(10)+1)
+	} else {
+		suffix = eventSuffixesPlain[rng.Intn(len(eventSuffixesPlain))]
+	}
 	return prefix + mid + "·" + suffix
+}
+
+// randomThumbnail 使用 picsum.photos 生成确定性缩略图 URL
+// 用 seed 保证同一产品 URL 固定，避免每次重新生成变化
+func randomThumbnail(seed int) string {
+	return fmt.Sprintf("https://picsum.photos/seed/%d/400/300", seed)
 }
 
 func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Product, error) {
@@ -184,6 +199,7 @@ func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Produc
 			Price:       price,
 			Stock:       int32(stock),
 			Active:      isActive,
+			Thumbnail:   randomThumbnail(len(products) + 1),
 		})
 	}
 
