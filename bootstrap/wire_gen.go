@@ -11,6 +11,7 @@ import (
 	"server/api/caps"
 	"server/api/index"
 	"server/api/orgs"
+	"server/api/products"
 	"server/api/resources"
 	"server/api/roles"
 	"server/api/routes"
@@ -84,6 +85,12 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	orgsController := &orgs.Controller{
 		OrgsX: orgsService,
 	}
+	productsService := &products.Service{
+		Inject: inject,
+	}
+	productsController := &products.Controller{
+		ProductsX: productsService,
+	}
 	resourcesService := &resources.Service{
 		Inject: inject,
 	}
@@ -121,6 +128,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Index:     indexController,
 		IndexX:    indexService,
 		Orgs:      orgsController,
+		Products:  productsController,
 		Resources: resourcesController,
 		Roles:     rolesController,
 		RolesX:    rolesService,
