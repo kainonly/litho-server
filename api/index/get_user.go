@@ -24,7 +24,7 @@ type UserResult struct {
 	ID             string     `json:"id"`
 	CreateTime     time.Time  `json:"create_time"`
 	UpdateTime     time.Time  `json:"update_time"`
-	LoginAt        *time.Time `json:"login_at"`
+	LoginTime      *time.Time `json:"login_time"`
 	DepartmentID   string     `json:"-"`
 	Department     string     `json:"department"`
 	DepartmentType *int16     `json:"department_type"`
@@ -50,7 +50,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (result *UserResul
 		ID:           data.ID,
 		CreateTime:   data.CreateTime,
 		UpdateTime:   data.UpdateTime,
-		LoginAt:      data.LoginAt,
+		LoginTime:    data.LoginTime,
 		DepartmentID: data.DepartmentID,
 		RoleID:       data.RoleID,
 		Email:        data.Email,

@@ -22,13 +22,13 @@ func (x *Controller) Lists(ctx context.Context, c *app.RequestContext) {
 }
 
 type ListResult struct {
-	ID       string     `json:"id"`
-	Name     string     `json:"name"`
-	Phone    string     `json:"phone"`
-	Email    string     `json:"email"`
-	Avatar   string     `json:"avatar"`
-	Sessions int32      `json:"sessions"`
-	LoginAt  *time.Time `json:"login_at"`
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Phone     string     `json:"phone"`
+	Email     string     `json:"email"`
+	Avatar    string     `json:"avatar"`
+	Sessions  int32      `json:"sessions"`
+	LoginTime *time.Time `json:"login_time"`
 }
 
 func (x *Service) Lists(ctx context.Context, user *common.IAMUser) (result []ListResult, err error) {
@@ -39,7 +39,7 @@ func (x *Service) Lists(ctx context.Context, user *common.IAMUser) (result []Lis
 	})
 	result = make([]ListResult, len(ids))
 	if err = x.Db.Model(model.User{}).WithContext(ctx).
-		Select([]string{`id`, `email`, `phone`, `name`, `avatar`, `sessions`, `login_at`}).
+		Select([]string{`id`, `email`, `phone`, `name`, `avatar`, `sessions`, `login_time`}).
 		Where(`id in (?)`, ids).
 		Find(&result).Error; err != nil {
 		return

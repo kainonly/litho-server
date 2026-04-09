@@ -79,8 +79,8 @@ func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFu
 
 func (x *Service) UpdateLoginUser(ctx context.Context, userId string) (err error) {
 	data := common.M{
-		"login_at": time.Now(),
-		"sessions": gorm.Expr("sessions + ?", 1),
+		"login_time": time.Now(),
+		"sessions":   gorm.Expr("sessions + ?", 1),
 	}
 	if err = x.Db.Model(model.User{}).WithContext(ctx).
 		Where(`id = ?`, userId).
