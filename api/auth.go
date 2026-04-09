@@ -10,7 +10,7 @@ import (
 
 func (x *API) Auth() app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
-		ts := c.Cookie("ACCESS_TOKEN")
+		ts := c.Cookie("TOKEN")
 		if ts == nil {
 			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,

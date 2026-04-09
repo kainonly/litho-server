@@ -10,7 +10,7 @@ import (
 )
 
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
-	ts := c.Cookie("ACCESS_TOKEN")
+	ts := c.Cookie("TOKEN")
 	if ts == nil {
 		c.JSON(401, common.M{
 			"code":    0,

@@ -36,12 +36,12 @@ type Service struct {
 }
 
 func (x *Service) SetAccessToken(c *app.RequestContext, ts string) {
-	c.SetCookie("ACCESS_TOKEN", ts, 0, "/", "",
+	c.SetCookie("TOKEN", ts, 0, "/", "",
 		protocol.CookieSameSiteLaxMode, true, true)
 }
 
 func (x *Service) ClearAccessToken(c *app.RequestContext) {
-	c.SetCookie("ACCESS_TOKEN", "", 0, "/", "",
+	c.SetCookie("TOKEN", "", 0, "/", "",
 		protocol.CookieSameSiteLaxMode, true, true)
 }
 
@@ -54,7 +54,7 @@ type LoginResult struct {
 func (x *Service) QueryLoginUser(ctx context.Context, handleFunc common.HandleFunc) (result *LoginResult, err error) {
 	result = new(LoginResult)
 	do := x.Db.Model(model.User{}).WithContext(ctx).
-		Where(`active = ?`, true)
+		Where(`status = ?`, true)
 	if handleFunc != nil {
 		do = handleFunc(do)
 	}

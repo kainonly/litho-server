@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	"server/bootstrap"
 	"server/common"
@@ -295,11 +296,14 @@ func seedRolesWithRoutes(db *gorm.DB, filePath, label string) error {
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
 		for i := range seeds {
 			if seeds[i].ID == "" {
 				seeds[i].ID = help.SID()
 			}
 			seeds[i].Strategy.Routes = routeIDs
+			setTimeIfZero(reflect.ValueOf(&seeds[i]).Elem(), "CreateTime", now)
+			setTimeIfZero(reflect.ValueOf(&seeds[i]).Elem(), "UpdateTime", now)
 			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i]).Error; err != nil {
 				return err
 			}
@@ -326,7 +330,7 @@ func seedRoutesWithTree(db *gorm.DB, filePath, label string) error {
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		count, err := insertRoutes(tx, seeds, "0", "")
+		count, err := insertRoutes(tx, seeds, "0", "", time.Now())
 		if err != nil {
 			return err
 		}
@@ -335,7 +339,7 @@ func seedRoutesWithTree(db *gorm.DB, filePath, label string) error {
 	})
 }
 
-func insertRoutes(tx *gorm.DB, seeds []routeSeed, pid string, nav string) (int, error) {
+func insertRoutes(tx *gorm.DB, seeds []routeSeed, pid string, nav string, now time.Time) (int, error) {
 	count := 0
 	for i := range seeds {
 		if seeds[i].ID == "" {
@@ -350,6 +354,8 @@ func insertRoutes(tx *gorm.DB, seeds []routeSeed, pid string, nav string) (int, 
 		if seeds[i].Sort == 0 {
 			seeds[i].Sort = int16(i + 1)
 		}
+		setTimeIfZero(reflect.ValueOf(&seeds[i].Route).Elem(), "CreateTime", now)
+		setTimeIfZero(reflect.ValueOf(&seeds[i].Route).Elem(), "UpdateTime", now)
 
 		if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i].Route).Error; err != nil {
 			return count, err
@@ -357,7 +363,7 @@ func insertRoutes(tx *gorm.DB, seeds []routeSeed, pid string, nav string) (int, 
 		count++
 
 		if len(seeds[i].Children) > 0 {
-			n, err := insertRoutes(tx, seeds[i].Children, seeds[i].ID, seeds[i].Nav)
+			n, err := insertRoutes(tx, seeds[i].Children, seeds[i].ID, seeds[i].Nav, now)
 			if err != nil {
 				return count, err
 			}
@@ -384,6 +390,7 @@ func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
 		for i := range seeds {
 			if seeds[i].ID == "" {
 				seeds[i].ID = help.SID()
@@ -413,6 +420,9 @@ func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
 				seeds[i].Password = hash
 			}
 
+			setTimeIfZero(reflect.ValueOf(&seeds[i].User).Elem(), "CreateTime", now)
+			setTimeIfZero(reflect.ValueOf(&seeds[i].User).Elem(), "UpdateTime", now)
+
 			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i].User).Error; err != nil {
 				return err
 			}
@@ -424,7 +434,45 @@ func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
 }
 
 func applySeedTransforms(modelKey string, records any) error {
-	return fillMissingIDs(records)
+	if err := fillMissingIDs(records); err != nil {
+		return err
+	}
+	return fillMissingTimes(records)
+}
+
+func fillMissingTimes(records any) error {
+	now := time.Now()
+	value := reflect.ValueOf(records)
+	if value.Kind() != reflect.Ptr {
+		return fmt.Errorf("记录类型不合法")
+	}
+	value = value.Elem()
+	if value.Kind() != reflect.Slice {
+		return fmt.Errorf("记录类型不合法")
+	}
+
+	for i := 0; i < value.Len(); i++ {
+		item := value.Index(i)
+		if item.Kind() == reflect.Ptr {
+			item = item.Elem()
+		}
+		if item.Kind() != reflect.Struct {
+			continue
+		}
+		setTimeIfZero(item, "CreateTime", now)
+		setTimeIfZero(item, "UpdateTime", now)
+	}
+	return nil
+}
+
+func setTimeIfZero(item reflect.Value, field string, now time.Time) {
+	f := item.FieldByName(field)
+	if !f.IsValid() || !f.CanSet() {
+		return
+	}
+	if t, ok := f.Interface().(time.Time); ok && t.IsZero() {
+		f.Set(reflect.ValueOf(now))
+	}
 }
 
 func fillMissingIDs(records any) error {
