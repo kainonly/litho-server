@@ -34,17 +34,17 @@ type routeSeed struct {
 }
 
 var seedModels = map[string]modelFactory{
-	"org":   func() any { return model.Org{} },
-	"role":  func() any { return model.Role{} },
-	"route": func() any { return model.Route{} },
-	"user":  func() any { return model.User{} },
+	"department": func() any { return model.Department{} },
+	"role":       func() any { return model.Role{} },
+	"route":      func() any { return model.Route{} },
+	"user":       func() any { return model.User{} },
 }
 
 var modelAliases = map[string]string{
-	"orgs":   "org",
-	"roles":  "role",
-	"routes": "route",
-	"users":  "user",
+	"departments": "department",
+	"roles":       "role",
+	"routes":      "route",
+	"users":       "user",
 }
 
 func main() {
@@ -82,7 +82,7 @@ func main() {
 	}
 
 	// 按依赖顺序排列：routes 须先于 roles（roles 动态注入 route ID）
-	seedOrder := []string{"orgs", "routes", "roles", "users"}
+	seedOrder := []string{"departments", "routes", "roles", "users"}
 	orderIndex := func(name string) int {
 		base := strings.TrimSuffix(name, filepath.Ext(name))
 		for i, s := range seedOrder {
@@ -127,7 +127,7 @@ func main() {
 
 func truncateSeedTables(db *gorm.DB) error {
 	tables := []string{
-		"org",
+		"department",
 		"role",
 		"route",
 		"user",
@@ -299,7 +299,7 @@ func seedRolesWithRoutes(db *gorm.DB, filePath, label string) error {
 			if seeds[i].ID == "" {
 				seeds[i].ID = help.SID()
 			}
-				seeds[i].Strategy.Routes = routeIDs
+			seeds[i].Strategy.Routes = routeIDs
 			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&seeds[i]).Error; err != nil {
 				return err
 			}
@@ -389,12 +389,12 @@ func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
 				seeds[i].ID = help.SID()
 			}
 
-			if seeds[i].Org != "" && seeds[i].OrgID == "" {
-				var org model.Org
-				if err := tx.Where("name = ?", seeds[i].Org).Take(&org).Error; err != nil {
-					return fmt.Errorf("找不到组织 %q: %w", seeds[i].Org, err)
+			if seeds[i].Org != "" && seeds[i].DepartmentID == "" {
+				var dept model.Department
+				if err := tx.Where("name = ?", seeds[i].Org).Take(&dept).Error; err != nil {
+					return fmt.Errorf("找不到部门 %q: %w", seeds[i].Org, err)
 				}
-				seeds[i].OrgID = org.ID
+				seeds[i].DepartmentID = dept.ID
 			}
 
 			if seeds[i].Role != "" && seeds[i].RoleID == "" {

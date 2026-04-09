@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"server/api/caps"
+	"server/api/departments"
 	"server/api/index"
-	"server/api/orgs"
+	"server/api/permissions"
 	"server/api/products"
 	"server/api/resources"
 	"server/api/roles"
@@ -19,9 +19,9 @@ import (
 )
 
 var Provides = wire.NewSet(
-	caps.Provides,
+	permissions.Provides,
 	index.Provides,
-	orgs.Provides,
+	departments.Provides,
 	products.Provides,
 	resources.Provides,
 	roles.Provides,
@@ -33,20 +33,20 @@ var Provides = wire.NewSet(
 type API struct {
 	*common.Inject
 
-	Hertz     *server.Hertz
-	Csrf      *csrf.Csrf
-	Caps      *caps.Controller
-	Index     *index.Controller
-	IndexX    *index.Service
-	Orgs      *orgs.Controller
-	Products  *products.Controller
-	Resources *resources.Controller
-	Roles     *roles.Controller
-	RolesX    *roles.Service
-	Routes    *routes.Controller
-	Sessions  *sessions.Controller
-	Users     *users.Controller
-	UsersX    *users.Service
+	Hertz       *server.Hertz
+	Csrf        *csrf.Csrf
+	Permissions *permissions.Controller
+	Index       *index.Controller
+	IndexX      *index.Service
+	Departments *departments.Controller
+	Products    *products.Controller
+	Resources   *resources.Controller
+	Roles       *roles.Controller
+	RolesX      *roles.Service
+	Routes      *routes.Controller
+	Sessions    *sessions.Controller
+	Users       *users.Controller
+	UsersX      *users.Service
 }
 
 func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
@@ -65,16 +65,16 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
 	m := x.Hertz.Group(``, _auth)
 	{
-		// caps 模块 -> 只读，由 sync-meta 维护
-		m.GET("/caps/:id", x.Caps.FindById)
-		m.GET("/caps", x.Caps.Find)
+		// permissions 模块 -> 只读，由 sync-meta 维护
+		m.GET("/permissions/:id", x.Permissions.FindById)
+		m.GET("/permissions", x.Permissions.Find)
 
-		// orgs 模块 -> 标准 CRUD 路由
-		m.GET("/orgs/:id", x.Orgs.FindById)
-		m.GET("/orgs", x.Orgs.Find)
-		m.POST("/orgs/create", x.Orgs.Create)
-		m.POST("/orgs/update", x.Orgs.Update)
-		m.POST("/orgs/delete", x.Orgs.Delete)
+		// departments 模块 -> 标准 CRUD 路由
+		m.GET("/departments/:id", x.Departments.FindById)
+		m.GET("/departments", x.Departments.Find)
+		m.POST("/departments/create", x.Departments.Create)
+		m.POST("/departments/update", x.Departments.Update)
+		m.POST("/departments/delete", x.Departments.Delete)
 
 		// resources 模块 -> 只读，由 sync-meta 维护
 		m.GET("/resources/:id", x.Resources.FindById)

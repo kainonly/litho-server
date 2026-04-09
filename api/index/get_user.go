@@ -21,21 +21,21 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 }
 
 type UserResult struct {
-	ID        string     `json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	LoginAt   *time.Time `json:"login_at"`
-	OrgID     string     `json:"-"`
-	Org       string     `json:"org"`
-	OrgType   *int16     `json:"org_type"`
-	RoleID    string     `json:"-"`
-	Role      string     `json:"role"`
-	Cabs      []string   `json:"cabs"`
-	Email     string     `json:"email"`
-	Phone     string     `json:"phone"`
-	Name      string     `json:"name"`
-	Avatar    string     `json:"avatar"`
-	Sessions  int32      `json:"sessions"`
+	ID             string     `json:"id"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	LoginAt        *time.Time `json:"login_at"`
+	DepartmentID   string     `json:"-"`
+	Department     string     `json:"department"`
+	DepartmentType *int16     `json:"department_type"`
+	RoleID         string     `json:"-"`
+	Role           string     `json:"role"`
+	Cabs           []string   `json:"cabs"`
+	Email          string     `json:"email"`
+	Phone          string     `json:"phone"`
+	Name           string     `json:"name"`
+	Avatar         string     `json:"avatar"`
+	Sessions       int32      `json:"sessions"`
 }
 
 func (x *Service) GetUser(ctx context.Context, userId string) (result *UserResult, err error) {
@@ -47,30 +47,30 @@ func (x *Service) GetUser(ctx context.Context, userId string) (result *UserResul
 	}
 
 	result = &UserResult{
-		ID:        data.ID,
-		CreatedAt: data.CreatedAt,
-		UpdatedAt: data.UpdatedAt,
-		LoginAt:   data.LoginAt,
-		OrgID:     data.OrgID,
-		RoleID:    data.RoleID,
-		Email:     data.Email,
-		Phone:     data.Phone,
-		Name:      data.Name,
-		Avatar:    data.Avatar,
-		Sessions:  data.Sessions,
+		ID:           data.ID,
+		CreatedAt:    data.CreatedAt,
+		UpdatedAt:    data.UpdatedAt,
+		LoginAt:      data.LoginAt,
+		DepartmentID: data.DepartmentID,
+		RoleID:       data.RoleID,
+		Email:        data.Email,
+		Phone:        data.Phone,
+		Name:         data.Name,
+		Avatar:       data.Avatar,
+		Sessions:     data.Sessions,
 	}
 
-	result.Org = "SYS"
-	if result.OrgID != "0" {
-		var org *model.Org
-		if err = x.Db.Model(model.Org{}).WithContext(ctx).
+	result.Department = "SYS"
+	if result.DepartmentID != "0" {
+		var dept *model.Department
+		if err = x.Db.Model(model.Department{}).WithContext(ctx).
 			Select([]string{`id`, `name`, `type`}).
-			Where(`id = ?`, result.OrgID).
-			Take(&org).Error; err != nil {
+			Where(`id = ?`, result.DepartmentID).
+			Take(&dept).Error; err != nil {
 			return
 		}
-		result.Org = org.Name
-		result.OrgType = org.Type
+		result.Department = dept.Name
+		result.DepartmentType = dept.Type
 	}
 	result.Role = "无"
 	if result.RoleID != "0" {
@@ -82,7 +82,7 @@ func (x *Service) GetUser(ctx context.Context, userId string) (result *UserResul
 			return
 		}
 		result.Role = role.Name
-		result.Cabs = role.Strategy.Caps
+		result.Cabs = role.Strategy.Permissions
 	}
 	return
 }

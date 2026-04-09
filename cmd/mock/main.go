@@ -108,9 +108,9 @@ func main() {
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	var org model.Org
-	if err := db.First(&org).Error; err != nil {
-		fmt.Fprintf(os.Stderr, "获取组织失败: %v\n", err)
+	var dept model.Department
+	if err := db.First(&dept).Error; err != nil {
+		fmt.Fprintf(os.Stderr, "获取部门失败: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -124,11 +124,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("使用组织: %s (%s)\n", org.Name, org.ID)
+	fmt.Printf("使用部门: %s (%s)\n", dept.Name, dept.ID)
 	fmt.Printf("可用用户: %d 个\n", len(userIDs))
 
 	fmt.Println("生成票券产品...")
-	products, err := generateProducts(db, org.ID, rng)
+	products, err := generateProducts(db, dept.ID, rng)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "生成票券产品失败: %v\n", err)
 		os.Exit(1)
@@ -136,7 +136,7 @@ func main() {
 	fmt.Printf("生成票券产品: %d 个\n", len(products))
 
 	fmt.Printf("生成订单数据（共 %d 条）...\n", orderCount)
-	if err := generateOrders(db, org.ID, userIDs, products, rng); err != nil {
+	if err := generateOrders(db, dept.ID, userIDs, products, rng); err != nil {
 		fmt.Fprintf(os.Stderr, "生成订单失败: %v\n", err)
 		os.Exit(1)
 	}
@@ -163,7 +163,7 @@ func randomThumbnail(seed int) string {
 }
 
 func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Product, error) {
-	if err := db.Where("org_id = ?", orgID).Delete(&model.Product{}).Error; err != nil {
+	if err := db.Where("department_id = ?", orgID).Delete(&model.Product{}).Error; err != nil {
 		return nil, err
 	}
 
@@ -192,14 +192,14 @@ func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Produc
 		}
 
 		products = append(products, model.Product{
-			ID:          help.SID(),
-			OrgID:       orgID,
-			Name:        fullName,
-			Description: baseDescriptions[rng.Intn(len(baseDescriptions))],
-			Price:       price,
-			Stock:       int32(stock),
-			Active:      isActive,
-			Thumbnail:   randomThumbnail(len(products) + 1),
+			ID:           help.SID(),
+			DepartmentID: orgID,
+			Name:         fullName,
+			Description:  baseDescriptions[rng.Intn(len(baseDescriptions))],
+			Price:        price,
+			Stock:        int32(stock),
+			Active:       isActive,
+			Thumbnail:    randomThumbnail(len(products) + 1),
 		})
 	}
 
@@ -243,7 +243,7 @@ func generateOrders(db *gorm.DB, orgID string, userIDs []string, products []mode
 		// 活动场次：下单后 1~90 天，固定在 14/19/20/21 点整
 		scheduledAt := createdAt.AddDate(0, 0, rng.Intn(90)+1)
 		hour := []int{14, 19, 20, 21}[rng.Intn(4)]
-		scheduledAt = scheduledAt.Truncate(24*time.Hour).Add(time.Duration(hour) * time.Hour)
+		scheduledAt = scheduledAt.Truncate(24 * time.Hour).Add(time.Duration(hour) * time.Hour)
 
 		status := weightedRandom(rng, statuses, statusWeights)
 
@@ -281,18 +281,18 @@ func generateOrders(db *gorm.DB, orgID string, userIDs []string, products []mode
 		no := fmt.Sprintf("TK%s%08d", createdAt.Format("20060102"), i%100000000)
 
 		order := model.Order{
-			ID:          orderID,
-			CreatedAt:   &createdAt,
-			UpdatedAt:   &createdAt,
-			OrgID:       orgID,
-			UserID:      userID,
-			No:          no,
-			Amount:      amount,
-			Status:      status,
-			ScheduledAt: scheduledAt,
-			Remark:      remarks[rng.Intn(len(remarks))],
-			PaidAt:      paidAt,
-			ClosedAt:    closedAt,
+			ID:           orderID,
+			CreatedAt:    &createdAt,
+			UpdatedAt:    &createdAt,
+			DepartmentID: orgID,
+			UserID:       userID,
+			No:           no,
+			Amount:       amount,
+			Status:       status,
+			ScheduledAt:  scheduledAt,
+			Remark:       remarks[rng.Intn(len(remarks))],
+			PaidAt:       paidAt,
+			ClosedAt:     closedAt,
 		}
 		orders = append(orders, order)
 		items = append(items, orderItems...)

@@ -17,10 +17,10 @@ func main() {
 				},
 			})
 			g.ApplyBasic(
-				g.GenerateModelAs("cap", "Cap"),
+				g.GenerateModelAs("permission", "Permission"),
 				g.GenerateModelAs("order", "Order"),
 				g.GenerateModelAs("order_item", "OrderItem"),
-				g.GenerateModelAs("org", "Org"),
+				g.GenerateModelAs("department", "Department"),
 				g.GenerateModelAs("product", "Product"),
 				g.GenerateModelAs("resource", "Resource",
 					gen.FieldType("strategy", "common.Actions"),
@@ -36,7 +36,7 @@ func main() {
 		},
 		gen.FieldType("id", "string"),
 		gen.FieldType("pid", "string"),
-		gen.FieldType("org_id", "string"),
+		gen.FieldType("department_id", "string"),
 		gen.FieldType("role_id", "string"),
 		gen.FieldType("user_id", "string"),
 	); err != nil {

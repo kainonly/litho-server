@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	Key = "roles"
-	Label    = "权限组"
+	Key   = "roles"
+	Label = "权限组"
 )
 
 var Provides = wire.NewSet(
@@ -68,9 +68,9 @@ func (x *Service) GetIAMRole(ctx context.Context, id string) (result *common.Rol
 			}
 			if data.ID == id {
 				result = &common.RoleStrategy{
-					Navs:   data.Strategy.Navs,
-					Routes: data.Strategy.Routes,
-					Caps:   data.Strategy.Caps,
+					Navs:        data.Strategy.Navs,
+					Routes:      data.Strategy.Routes,
+					Permissions: data.Strategy.Permissions,
 				}
 			}
 			if contents[data.ID], err = sonic.MarshalString(data.Strategy); err != nil {

@@ -8,9 +8,9 @@ package bootstrap
 
 import (
 	"server/api"
-	"server/api/caps"
+	"server/api/departments"
 	"server/api/index"
-	"server/api/orgs"
+	"server/api/permissions"
 	"server/api/products"
 	"server/api/resources"
 	"server/api/roles"
@@ -60,11 +60,11 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		return nil, err
 	}
 	csrf := UseCsrf(values)
-	service := &caps.Service{
+	service := &permissions.Service{
 		Inject: inject,
 	}
-	controller := &caps.Controller{
-		CapsX: service,
+	controller := &permissions.Controller{
+		PermissionsX: service,
 	}
 	passport := UsePassport(values)
 	sessionsService := &sessions.Service{
@@ -79,11 +79,11 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		V:      values,
 		IndexX: indexService,
 	}
-	orgsService := &orgs.Service{
+	departmentsService := &departments.Service{
 		Inject: inject,
 	}
-	orgsController := &orgs.Controller{
-		OrgsX: orgsService,
+	departmentsController := &departments.Controller{
+		DepartmentsX: departmentsService,
 	}
 	productsService := &products.Service{
 		Inject: inject,
@@ -113,29 +113,29 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		SessionsX: sessionsService,
 	}
 	usersService := &users.Service{
-		Inject:    inject,
-		SessionsX: sessionsService,
-		OrgsX:     orgsService,
+		Inject:       inject,
+		SessionsX:    sessionsService,
+		DepartmentsX: departmentsService,
 	}
 	usersController := &users.Controller{
 		UsersX: usersService,
 	}
 	apiAPI := &api.API{
-		Inject:    inject,
-		Hertz:     hertz,
-		Csrf:      csrf,
-		Caps:      controller,
-		Index:     indexController,
-		IndexX:    indexService,
-		Orgs:      orgsController,
-		Products:  productsController,
-		Resources: resourcesController,
-		Roles:     rolesController,
-		RolesX:    rolesService,
-		Routes:    routesController,
-		Sessions:  sessionsController,
-		Users:     usersController,
-		UsersX:    usersService,
+		Inject:      inject,
+		Hertz:       hertz,
+		Csrf:        csrf,
+		Permissions: controller,
+		Index:       indexController,
+		IndexX:      indexService,
+		Departments: departmentsController,
+		Products:    productsController,
+		Resources:   resourcesController,
+		Roles:       rolesController,
+		RolesX:      rolesService,
+		Routes:      routesController,
+		Sessions:    sessionsController,
+		Users:       usersController,
+		UsersX:      usersService,
 	}
 	return apiAPI, nil
 }

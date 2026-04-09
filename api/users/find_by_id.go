@@ -27,13 +27,13 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindByIdResult struct {
-	ID     string `json:"id"`
-	OrgID  string `json:"org_id"`
-	RoleID string `json:"role_id"`
-	Email  string `json:"email"`
-	Phone  string `json:"phone"`
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
+	ID           string `json:"id"`
+	DepartmentID string `json:"department_id"`
+	RoleID       string `json:"role_id"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	Name         string `json:"name"`
+	Avatar       string `json:"avatar"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {

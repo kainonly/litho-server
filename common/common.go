@@ -57,19 +57,19 @@ func (x Actions) Value() (driver.Value, error) {
 }
 
 type IAMUser struct {
-	ID       string        `json:"id"`
-	RoleID   string        `json:"role_id"`
-	OrgID    string        `json:"org_id"`
-	OrgType  int16         `json:"org_type"`
-	Active   bool          `json:"active"`
-	Strategy *RoleStrategy `json:"strategy"`
-	Ip       string        `json:"-"`
+	ID             string        `json:"id"`
+	RoleID         string        `json:"role_id"`
+	DepartmentID   string        `json:"department_id"`
+	DepartmentType int16         `json:"department_type"`
+	Active         bool          `json:"active"`
+	Strategy       *RoleStrategy `json:"strategy"`
+	Ip             string        `json:"-"`
 }
 
 type RoleStrategy struct {
-	Navs   []string `json:"navs" vd:"required"`
-	Routes []string `json:"routes" vd:"required"`
-	Caps   []string `json:"caps" vd:"required"`
+	Navs        []string `json:"navs" vd:"required"`
+	Routes      []string `json:"routes" vd:"required"`
+	Permissions []string `json:"permissions" vd:"required"`
 }
 
 func (x *RoleStrategy) Scan(value interface{}) error {
@@ -79,9 +79,9 @@ func (x *RoleStrategy) Scan(value interface{}) error {
 func (x *RoleStrategy) Value() (driver.Value, error) {
 	if x == nil {
 		return sonic.Marshal(RoleStrategy{
-			Navs:   make([]string, 0),
-			Routes: make([]string, 0),
-			Caps:   make([]string, 0),
+			Navs:        make([]string, 0),
+			Routes:      make([]string, 0),
+			Permissions: make([]string, 0),
 		})
 	}
 	return sonic.Marshal(*x)
@@ -112,7 +112,7 @@ func (x *IAMUser) Can(caps ...string) error {
 	for _, v := range caps {
 		exists[v] = true
 	}
-	for _, v := range x.Strategy.Caps {
+	for _, v := range x.Strategy.Permissions {
 		if exists[v] {
 			return nil
 		}

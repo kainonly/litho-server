@@ -45,9 +45,9 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 		Name:        dto.Name,
 		Description: dto.Description,
 		Strategy: common.RoleStrategy{
-			Navs:   make([]string, 0),
-			Routes: make([]string, 0),
-			Caps:   make([]string, 0),
+			Navs:        make([]string, 0),
+			Routes:      make([]string, 0),
+			Permissions: make([]string, 0),
 		},
 	}
 	if err = x.Db.WithContext(ctx).

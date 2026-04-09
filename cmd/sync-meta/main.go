@@ -83,7 +83,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := syncCaps(db, caps); err != nil {
+	if err := syncPermissions(db, caps); err != nil {
 		fmt.Fprintf(os.Stderr, "同步能力标识失败: %v\n", err)
 		os.Exit(1)
 	}
@@ -298,16 +298,16 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 	})
 }
 
-func syncCaps(db *gorm.DB, defs []capDef) error {
+func syncPermissions(db *gorm.DB, defs []capDef) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		for _, def := range defs {
 			var count int64
-			if err := tx.Raw(`SELECT COUNT(*) FROM "cap" WHERE id = ?`, def.Key).Scan(&count).Error; err != nil {
+			if err := tx.Raw(`SELECT COUNT(*) FROM "permission" WHERE id = ?`, def.Key).Scan(&count).Error; err != nil {
 				return err
 			}
 			if count > 0 {
 				if err := tx.Exec(
-					`UPDATE "cap" SET description = ? WHERE id = ?`,
+					`UPDATE "permission" SET description = ? WHERE id = ?`,
 					def.Description, def.Key,
 				).Error; err != nil {
 					return err
@@ -315,7 +315,7 @@ func syncCaps(db *gorm.DB, defs []capDef) error {
 				fmt.Printf("更新能力标识 %s\n", def.Key)
 			} else {
 				if err := tx.Exec(
-					`INSERT INTO "cap" (id, description) VALUES (?, ?)`,
+					`INSERT INTO "permission" (id, description) VALUES (?, ?)`,
 					def.Key, def.Description,
 				).Error; err != nil {
 					return err
