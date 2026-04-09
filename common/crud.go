@@ -191,7 +191,7 @@ func (x *ExistsDto) Exists(ctx context.Context, do *gorm.DB) (result ExistsResul
 //
 // Query parameters:
 //   - q: Search keyword for filtering
-//   - sort: Sort rules in format "column:direction" (e.g., "name:1", "created_at:-1")
+//   - sort: Sort rules in format "column:direction" (e.g., "name:1", "create_time:-1")
 type FindDto struct {
 	PageSize int64    `header:"x-pagesize" vd:"omitempty,min=0,max=1000"`
 	Page     int64    `header:"x-page" vd:"omitempty,min=0"`
@@ -220,7 +220,7 @@ func (x *FindDto) GetKeyword() string {
 
 // FindPipe configures the behavior of Find queries.
 type FindPipe struct {
-	ts       bool            // Whether to handle timestamp fields (created_at, updated_at)
+	ts       bool            // Whether to handle timestamp fields (create_time, update_time)
 	sort     bool            // Whether to apply sorting
 	page     bool            // Whether to apply pagination
 	keys     []string        // Specific columns to select
@@ -242,8 +242,8 @@ func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 // By default, timestamp handling, sorting, and pagination are all enabled.
 //
 // Default behavior:
-//   - Omits created_at and updated_at columns
-//   - Orders by created_at desc if no sort specified
+//   - Omits create_time and update_time columns
+//   - Orders by create_time desc if no sort specified
 //   - Applies pagination (default 1000 per page)
 //
 // Example:
@@ -254,7 +254,7 @@ func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 //	// Custom configuration
 //	ctx = common.SetPipe(ctx, common.NewFindPipe().
 //	    SkipTs().                                    // Don't auto-omit timestamps
-//	    Sortable("name", "email", "created_at").     // Whitelist sortable columns
+//	    Sortable("name", "email", "create_time").     // Whitelist sortable columns
 //	    Omit("password", "secret").                  // Exclude sensitive fields
 //	    SkipPage())                                  // Disable pagination
 func NewFindPipe() *FindPipe {
@@ -266,7 +266,7 @@ func NewFindPipe() *FindPipe {
 }
 
 // SkipTs disables automatic timestamp field handling.
-// When disabled, created_at and updated_at won't be automatically omitted.
+// When disabled, create_time and update_time won't be automatically omitted.
 func (x *FindPipe) SkipTs() *FindPipe {
 	x.ts = false
 	return x
@@ -304,7 +304,7 @@ func (x *FindPipe) Omit(keys ...string) *FindPipe {
 //
 // Example:
 //
-//	pipe := NewFindPipe().Sortable("name", "created_at", "email")
+//	pipe := NewFindPipe().Sortable("name", "create_time", "email")
 func (x *FindPipe) Sortable(keys ...string) *FindPipe {
 	x.sortable = make(map[string]bool)
 	for _, key := range keys {
@@ -327,7 +327,7 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 		do = do.Select(p.keys)
 	} else {
 		if len(p.omit) == 0 && p.ts {
-			do = do.Omit(`created_at`, `updated_at`)
+			do = do.Omit(`create_time`, `update_time`)
 		}
 		if len(p.omit) != 0 {
 			do = do.Omit(p.omit...)
@@ -336,7 +336,7 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 
 	if p.sort {
 		if len(x.Sort) == 0 && p.ts {
-			do = do.Order("created_at desc")
+			do = do.Order("create_time desc")
 		}
 		for _, v := range x.Sort {
 			rule := strings.Split(v, ":")
@@ -378,7 +378,7 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 //	    c.BindAndValidate(&dto)
 //
 //	    ctx = common.SetPipe(ctx, common.NewFindPipe().
-//	        Sortable("name", "created_at").
+//	        Sortable("name", "create_time").
 //	        Omit("password"))
 //
 //	    do := db.Model(&User{})
@@ -398,7 +398,7 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 //
 //	GET /users                           // Default pagination and sorting
 //	GET /users?sort=name:1               // Sort by name ASC
-//	GET /users?sort=created_at:-1        // Sort by created_at DESC
+//	GET /users?sort=create_time:-1        // Sort by create_time DESC
 //	GET /users?q=john                    // Search with keyword
 //	Headers: X-Page: 0, X-PageSize: 20   // Pagination control
 func (x *FindDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
@@ -570,7 +570,7 @@ func (x *FindByIdDto) Take(ctx context.Context, do *gorm.DB, i any) (err error) 
 			do = do.Select(p.keys)
 		} else {
 			if len(p.omit) == 0 && p.ts {
-				do = do.Omit(`created_at`, `updated_at`)
+				do = do.Omit(`create_time`, `update_time`)
 			}
 			if len(p.omit) != 0 {
 				do = do.Omit(p.omit...)
