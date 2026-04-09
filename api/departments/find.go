@@ -34,7 +34,7 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
 	ID     string `json:"id"`
-	Active bool   `json:"active"`
+	Status bool   `json:"status"`
 	Type   int16  `json:"type"`
 	Name   string `json:"name"`
 }

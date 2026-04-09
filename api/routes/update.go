@@ -13,7 +13,7 @@ import (
 
 type UpdateDto struct {
 	ID     string `json:"id" vd:"required"`
-	Active *bool  `json:"active" vd:"required"`
+	Status *bool  `json:"status" vd:"required"`
 	Pid    string `json:"pid"`
 	Name   string `json:"name" vd:"required"`
 	Type   *int16 `json:"type"`
@@ -41,9 +41,9 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
 	updates := common.M{
-		`updated_at`: time.Now(),
-		`active`:     *dto.Active,
-		`name`:       dto.Name,
+		`update_time`: time.Now(),
+		`status`:      *dto.Status,
+		`name`:        dto.Name,
 	}
 	if dto.Pid != "" {
 		updates[`pid`] = dto.Pid

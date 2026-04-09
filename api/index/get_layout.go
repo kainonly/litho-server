@@ -59,7 +59,7 @@ func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.RoleSt
 	navMenus = make(map[string][]*Menu)
 	var rows *sql.Rows
 	if rows, err = x.Db.Model(model.Route{}).WithContext(ctx).
-		Select(`id`, `active`, `nav`, `pid`, `name`, `icon`, `link`).
+		Select(`id`, `status`, `nav`, `pid`, `name`, `icon`, `link`).
 		Where(`id in (?)`, strategy.Routes).
 		Order(`type`).
 		Order(`sort`).
@@ -83,7 +83,7 @@ func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.RoleSt
 				ID:       data.ID,
 				Pid:      data.Pid,
 				Name:     data.Name,
-				Disabled: !*data.Active,
+				Disabled: !*data.Status,
 				Children: make([]*Menu, 0),
 			}
 			navDict[data.Nav] = append(navDict[data.Nav], nodeM[data.ID])
@@ -94,7 +94,7 @@ func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.RoleSt
 					ID:       data.ID,
 					Pid:      data.Pid,
 					Name:     data.Name,
-					Disabled: !*data.Active,
+					Disabled: !*data.Status,
 					Icon:     data.Icon,
 					Link:     data.Link,
 				})

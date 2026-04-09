@@ -1,28 +1,28 @@
 [
   {
     "nav": "system",
-    "name": "通用",
+    "name": "组织架构",
     "type": 1,
-    "link": "/system/general",
+    "link": "/system/org",
     "children": [
       {
-        "name": "组织",
+        "name": "部门",
         "type": 2,
         "icon": "apartment",
-        "link": "/system/general/orgs"
+        "link": "/system/org/departments"
       },
       {
         "name": "权限组",
         "type": 2,
         "icon": "partition",
-        "link": "/system/general/roles"
+        "link": "/system/org/roles"
       },
       {
         "sort": 3,
         "name": "团队成员",
         "type": 2,
         "icon": "team",
-        "link": "/system/general/users"
+        "link": "/system/org/users"
       }
     ]
   },
@@ -30,25 +30,25 @@
     "nav": "system",
     "name": "访问控制",
     "type": 1,
-    "link": "/system/access",
+    "link": "/system/poilcy",
     "children": [
       {
         "name": "视图资源",
         "type": 2,
         "icon": "layout",
-        "link": "/system/access/views"
+        "link": "/system/poilcy/views"
       },
       {
         "name": "接口资源",
         "type": 2,
         "icon": "api",
-        "link": "/system/access/resources"
+        "link": "/system/poilcy/resources"
       },
       {
-        "name": "能力标识",
+        "name": "授权标识",
         "type": 2,
         "icon": "code",
-        "link": "/system/access/caps"
+        "link": "/system/poilcy/permissions"
       }
     ]
   },

@@ -41,7 +41,7 @@ func (x *API) Auth() app.HandlerFunc {
 		}
 
 		// 检测企业成员状态
-		if !user.Active {
+		if !user.Status {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, common.M{
 				"code":    0,

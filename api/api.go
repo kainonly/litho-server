@@ -4,6 +4,7 @@ import (
 	"context"
 	"server/api/departments"
 	"server/api/index"
+	"server/api/orders"
 	"server/api/permissions"
 	"server/api/products"
 	"server/api/resources"
@@ -22,6 +23,7 @@ var Provides = wire.NewSet(
 	permissions.Provides,
 	index.Provides,
 	departments.Provides,
+	orders.Provides,
 	products.Provides,
 	resources.Provides,
 	roles.Provides,
@@ -39,6 +41,7 @@ type API struct {
 	Index       *index.Controller
 	IndexX      *index.Service
 	Departments *departments.Controller
+	Orders      *orders.Controller
 	Products    *products.Controller
 	Resources   *resources.Controller
 	Roles       *roles.Controller
@@ -123,6 +126,13 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/products/create", x.Products.Create)
 		m.POST("/products/update", x.Products.Update)
 		m.POST("/products/delete", x.Products.Delete)
+
+		// orders 模块 -> 标准 CRUD 路由
+		m.GET("/orders/:id", x.Orders.FindById)
+		m.GET("/orders", x.Orders.Find)
+		m.POST("/orders/create", x.Orders.Create)
+		m.POST("/orders/update", x.Orders.Update)
+		m.POST("/orders/delete", x.Orders.Delete)
 	}
 
 	return x.Hertz, nil

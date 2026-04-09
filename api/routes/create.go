@@ -13,7 +13,7 @@ import (
 type CreateDto struct {
 	ID     string `json:"-"`
 	Nav    string `json:"nav" vd:"required"`
-	Active *bool  `json:"active" vd:"required"`
+	Status *bool  `json:"status" vd:"required"`
 	Pid    string `json:"pid"`
 	Name   string `json:"name" vd:"required"`
 	Type   *int16 `json:"type" vd:"required"`
@@ -43,7 +43,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Route{
 		ID:     dto.ID,
-		Active: dto.Active,
+		Status: dto.Status,
 		Nav:    dto.Nav,
 		Pid:    "0",
 		Name:   dto.Name,

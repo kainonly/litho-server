@@ -15,7 +15,7 @@ type UpdateDto struct {
 	ID          string `json:"id" vd:"required"`
 	Name        string `json:"name" vd:"required"`
 	Description string `json:"description" vd:"required"`
-	Active      *bool  `json:"active" vd:"required"`
+	Status      *bool  `json:"status" vd:"required"`
 }
 
 const IUpdate = "更新"
@@ -40,8 +40,8 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 	if err = x.Db.Model(model.Role{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(common.M{
-			`updated_at`:  time.Now(),
-			`active`:      *dto.Active,
+			`update_time`: time.Now(),
+			`status`:      *dto.Status,
 			`name`:        dto.Name,
 			`description`: dto.Description,
 		}).Error; err != nil {

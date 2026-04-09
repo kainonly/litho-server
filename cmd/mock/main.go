@@ -198,7 +198,7 @@ func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Produc
 			Description:  baseDescriptions[rng.Intn(len(baseDescriptions))],
 			Price:        price,
 			Stock:        int32(stock),
-			Active:       isActive,
+			Status:       isActive,
 			Thumbnail:    randomThumbnail(len(products) + 1),
 		})
 	}
@@ -255,8 +255,8 @@ func generateOrders(db *gorm.DB, orgID string, userIDs []string, products []mode
 		orderItems := []model.OrderItem{
 			{
 				ID:          help.SID(),
-				OrderID:     parseID(orderID),
-				ProductID:   parseID(p.ID),
+				OrderID:     orderID,
+				ProductID:   p.ID,
 				ProductName: p.Name,
 				Price:       p.Price,
 				Quantity:    &qty,

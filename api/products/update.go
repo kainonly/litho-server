@@ -16,7 +16,7 @@ type UpdateDto struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price" vd:"required,gt=0"`
 	Stock       int32   `json:"stock" vd:"required,gte=0"`
-	Active      *bool   `json:"active" vd:"required"`
+	Status      *bool   `json:"status" vd:"required"`
 	Thumbnail   string  `json:"thumbnail"`
 }
 
@@ -42,12 +42,12 @@ func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDt
 	return x.Db.Model(model.Product{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(common.M{
-			`updated_at`:  time.Now(),
+			`update_time`: time.Now(),
 			`name`:        dto.Name,
 			`description`: dto.Description,
 			`price`:       dto.Price,
 			`stock`:       dto.Stock,
-			`active`:      *dto.Active,
+			`status`:      *dto.Status,
 			`thumbnail`:   dto.Thumbnail,
 		}).Error
 }

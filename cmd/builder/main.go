@@ -23,7 +23,7 @@ func main() {
 				g.GenerateModelAs("department", "Department"),
 				g.GenerateModelAs("product", "Product"),
 				g.GenerateModelAs("resource", "Resource",
-					gen.FieldType("strategy", "common.Actions"),
+					gen.FieldType("actions", "common.Actions"),
 				),
 				g.GenerateModelAs("role", "Role",
 					gen.FieldType("strategy", "common.RoleStrategy"),
@@ -37,6 +37,8 @@ func main() {
 		gen.FieldType("id", "string"),
 		gen.FieldType("pid", "string"),
 		gen.FieldType("department_id", "string"),
+		gen.FieldType("order_id", "string"),
+		gen.FieldType("product_id", "string"),
 		gen.FieldType("role_id", "string"),
 		gen.FieldType("user_id", "string"),
 	); err != nil {

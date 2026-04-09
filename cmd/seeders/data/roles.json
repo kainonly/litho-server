@@ -11,7 +11,7 @@
         "system"
       ],
       "routes": [],
-      "caps": [
+      "permissions": [
         "WM"
       ]
     }

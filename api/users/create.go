@@ -13,7 +13,7 @@ import (
 
 type CreateDto struct {
 	ID       string `json:"-"`
-	Active   *bool  `json:"active" vd:"required"`
+	Status   *bool  `json:"status" vd:"required"`
 	Email    string `json:"email" vd:"required,email"`
 	Password string `json:"password" vd:"required,min=8"`
 	Phone    string `json:"phone"`
@@ -43,7 +43,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.User{
 		ID:     dto.ID,
-		Active: dto.Active,
+		Status: dto.Status,
 		Email:  dto.Email,
 	}
 	if dto.Phone != "" {

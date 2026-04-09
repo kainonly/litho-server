@@ -22,8 +22,8 @@ func (x *Controller) GetUser(ctx context.Context, c *app.RequestContext) {
 
 type UserResult struct {
 	ID             string     `json:"id"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
+	CreateTime     time.Time  `json:"create_time"`
+	UpdateTime     time.Time  `json:"update_time"`
 	LoginAt        *time.Time `json:"login_at"`
 	DepartmentID   string     `json:"-"`
 	Department     string     `json:"department"`
@@ -48,8 +48,8 @@ func (x *Service) GetUser(ctx context.Context, userId string) (result *UserResul
 
 	result = &UserResult{
 		ID:           data.ID,
-		CreatedAt:    data.CreatedAt,
-		UpdatedAt:    data.UpdatedAt,
+		CreateTime:   data.CreateTime,
+		UpdateTime:   data.UpdateTime,
 		LoginAt:      data.LoginAt,
 		DepartmentID: data.DepartmentID,
 		RoleID:       data.RoleID,

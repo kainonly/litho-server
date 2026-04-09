@@ -39,7 +39,7 @@ type FindByIdResult struct {
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
 	do := x.Db.Model(model.User{}).WithContext(ctx)
 	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().SkipTs().
-		Omit(`active`, `created_at`, `updated_at`, `password`))
+		Omit(`status`, `create_time`, `update_time`, `password`))
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return
 	}

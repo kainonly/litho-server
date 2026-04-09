@@ -61,7 +61,7 @@ type IAMUser struct {
 	RoleID         string        `json:"role_id"`
 	DepartmentID   string        `json:"department_id"`
 	DepartmentType int16         `json:"department_type"`
-	Active         bool          `json:"active"`
+	Status         bool          `json:"status"`
 	Strategy       *RoleStrategy `json:"strategy"`
 	Ip             string        `json:"-"`
 }

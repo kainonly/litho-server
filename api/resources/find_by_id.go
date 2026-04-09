@@ -28,7 +28,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID      string         `json:"id"`
-	Label   string         `json:"label"`
+	Name    string         `json:"name"`
 	Actions common.Actions `json:"actions"`
 }
 

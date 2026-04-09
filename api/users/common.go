@@ -54,7 +54,7 @@ func (x *Service) GetIAMUser(ctx context.Context, id string) (result *common.IAM
 	} else {
 		var rows *sql.Rows
 		if rows, err = x.Db.Model(model.User{}).WithContext(ctx).
-			Select(`id`, `role_id`, `department_id`, `active`).
+			Select(`id`, `role_id`, `department_id`, `status`).
 			Rows(); err != nil {
 			return
 		}

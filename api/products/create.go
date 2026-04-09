@@ -16,7 +16,7 @@ type CreateDto struct {
 	Description  string  `json:"description"`
 	Price        float64 `json:"price" vd:"required,gt=0"`
 	Stock        int32   `json:"stock" vd:"required,gte=0"`
-	Active       *bool   `json:"active" vd:"required"`
+	Status       *bool   `json:"status" vd:"required"`
 	Thumbnail    string  `json:"thumbnail"`
 }
 
@@ -47,7 +47,7 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 		Description:  dto.Description,
 		Price:        dto.Price,
 		Stock:        dto.Stock,
-		Active:       dto.Active,
+		Status:       dto.Status,
 		Thumbnail:    dto.Thumbnail,
 	}
 	return x.Db.WithContext(ctx).Create(&data).Error

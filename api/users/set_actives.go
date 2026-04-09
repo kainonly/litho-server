@@ -13,7 +13,7 @@ import (
 
 type SetActivesDto struct {
 	IDs    []string `json:"ids" vd:"required,min=1"`
-	Active *bool    `json:"active" vd:"required"`
+	Status *bool    `json:"status" vd:"required"`
 }
 
 const ISetActives = "批量启用/禁用"
@@ -37,7 +37,7 @@ func (x *Controller) SetActives(ctx context.Context, c *app.RequestContext) {
 func (x *Service) SetActives(ctx context.Context, user *common.IAMUser, dto SetActivesDto) (err error) {
 	updates := common.M{
 		`update_time`: time.Now(),
-		`active`:      *dto.Active,
+		`status`:      *dto.Status,
 	}
 	return x.Db.Model(model.User{}).WithContext(ctx).
 		Where(`id in (?)`, dto.IDs).

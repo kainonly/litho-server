@@ -15,6 +15,7 @@ import (
 	"server/bootstrap"
 	"server/common"
 
+	"github.com/kainonly/go/help"
 	"gorm.io/gorm"
 )
 
@@ -278,7 +279,7 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 			}
 			if count > 0 {
 				if err := tx.Exec(
-					`UPDATE "resource" SET label = ?, actions = ?::jsonb WHERE id = ?`,
+					`UPDATE "resource" SET name = ?, actions = ?::jsonb WHERE id = ?`,
 					def.Label, string(actionsJSON), def.Key,
 				).Error; err != nil {
 					return err
@@ -286,7 +287,7 @@ func syncResources(db *gorm.DB, defs []resourceDef) error {
 				fmt.Printf("更新资源 %s (%s)\n", def.Key, def.Label)
 			} else {
 				if err := tx.Exec(
-					`INSERT INTO "resource" (id, label, actions) VALUES (?, ?, ?::jsonb)`,
+					`INSERT INTO "resource" (id, name, actions) VALUES (?, ?, ?::jsonb)`,
 					def.Key, def.Label, string(actionsJSON),
 				).Error; err != nil {
 					return err
@@ -302,12 +303,12 @@ func syncPermissions(db *gorm.DB, defs []capDef) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		for _, def := range defs {
 			var count int64
-			if err := tx.Raw(`SELECT COUNT(*) FROM "permission" WHERE id = ?`, def.Key).Scan(&count).Error; err != nil {
+			if err := tx.Raw(`SELECT COUNT(*) FROM "permission" WHERE key = ?`, def.Key).Scan(&count).Error; err != nil {
 				return err
 			}
 			if count > 0 {
 				if err := tx.Exec(
-					`UPDATE "permission" SET description = ? WHERE id = ?`,
+					`UPDATE "permission" SET description = ? WHERE key = ?`,
 					def.Description, def.Key,
 				).Error; err != nil {
 					return err
@@ -315,8 +316,8 @@ func syncPermissions(db *gorm.DB, defs []capDef) error {
 				fmt.Printf("更新能力标识 %s\n", def.Key)
 			} else {
 				if err := tx.Exec(
-					`INSERT INTO "permission" (id, description) VALUES (?, ?)`,
-					def.Key, def.Description,
+					`INSERT INTO "permission" (id, key, description) VALUES (?, ?, ?)`,
+					help.SID(), def.Key, def.Description,
 				).Error; err != nil {
 					return err
 				}

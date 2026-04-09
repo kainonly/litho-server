@@ -33,14 +33,14 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindResult struct {
-	ID    string `json:"id"`
-	Label string `json:"label"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(model.Resource{}).WithContext(ctx)
 	if dto.Q != "" {
-		do = do.Where(`id like ?`, dto.GetKeyword())
+		do = do.Where(`name like ?`, dto.GetKeyword())
 	}
 
 	if err = do.Count(&total).Error; err != nil {

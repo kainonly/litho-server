@@ -13,7 +13,7 @@ type CreateDto struct {
 	ID     string `json:"-"`
 	Type   *int16 `json:"type" vd:"required"`
 	Name   string `json:"name" vd:"required"`
-	Active *bool  `json:"active" vd:"required"`
+	Status *bool  `json:"status" vd:"required"`
 }
 
 const ICreate = "新增"
@@ -38,7 +38,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
 	data := model.Department{
 		ID:     dto.ID,
-		Active: dto.Active,
+		Status: dto.Status,
 		Type:   dto.Type,
 		Name:   dto.Name,
 	}

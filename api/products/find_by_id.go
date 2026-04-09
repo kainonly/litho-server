@@ -32,7 +32,7 @@ type FindByIdResult struct {
 	Description  string  `json:"description"`
 	Price        float64 `json:"price"`
 	Stock        int32   `json:"stock"`
-	Active       bool    `json:"active"`
+	Status       bool    `json:"status"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {

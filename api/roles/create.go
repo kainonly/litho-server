@@ -15,7 +15,7 @@ type CreateDto struct {
 	Name        string `json:"name" vd:"required"`
 	Description string `json:"description" vd:"required"`
 	Sort        int16  `json:"sort"`
-	Active      *bool  `json:"active" vd:"required"`
+	Status      *bool  `json:"status" vd:"required"`
 }
 
 const ICreate = "新增"
@@ -41,7 +41,7 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 	data := model.Role{
 		ID:          dto.ID,
 		Sort:        dto.Sort,
-		Active:      dto.Active,
+		Status:      dto.Status,
 		Name:        dto.Name,
 		Description: dto.Description,
 		Strategy: common.RoleStrategy{

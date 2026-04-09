@@ -28,7 +28,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 
 type FindByIdResult struct {
 	ID          string               `json:"id"`
-	Active      bool                 `json:"active"`
+	Status      bool                 `json:"status"`
 	Name        string               `json:"name"`
 	Description string               `json:"description"`
 	Strategy    *common.RoleStrategy `json:"strategy,omitempty"`
@@ -37,9 +37,9 @@ type FindByIdResult struct {
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
 	do := x.Db.Model(model.Role{}).WithContext(ctx)
 
-	keys := []string{`id`, `active`, `name`, `description`}
+	keys := []string{`id`, `status`, `name`, `description`}
 	if dto.IsFull() {
-		keys = []string{`id`, `active`, `name`, `description`, `strategy`}
+		keys = []string{`id`, `status`, `name`, `description`, `strategy`}
 	}
 
 	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().Select(keys...))

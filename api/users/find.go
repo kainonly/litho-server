@@ -40,7 +40,7 @@ type FindResult struct {
 	ID           string `json:"id"`
 	DepartmentID string `json:"department_id"`
 	RoleID       string `json:"role_id"`
-	Active       bool   `json:"active"`
+	Status       bool   `json:"status"`
 	Email        string `json:"email"`
 	Phone        string `json:"phone"`
 	Name         string `json:"name"`
@@ -66,7 +66,7 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 
 	var rows *sql.Rows
 	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs().
-		Omit(`created_at`, `updated_at`, `password`))
+		Omit(`create_time`, `update_time`, `password`))
 	db, err := dto.Factory(ctx, do)
 	if err != nil {
 		return
