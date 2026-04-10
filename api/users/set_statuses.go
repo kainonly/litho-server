@@ -11,22 +11,22 @@ import (
 	"github.com/kainonly/go/help"
 )
 
-type SetActivesDto struct {
+type SetStatusesDto struct {
 	IDs    []string `json:"ids" vd:"required,min=1"`
 	Status *bool    `json:"status" vd:"required"`
 }
 
-const ISetActives = "批量启用/禁用"
+const ISetStatuses = "批量启用/禁用"
 
-func (x *Controller) SetActives(ctx context.Context, c *app.RequestContext) {
-	var dto SetActivesDto
+func (x *Controller) SetStatuses(ctx context.Context, c *app.RequestContext) {
+	var dto SetStatusesDto
 	if err := c.BindAndValidate(&dto); err != nil {
 		c.Error(err)
 		return
 	}
 
 	user := common.GetIAM(c)
-	if err := x.UsersX.SetActives(ctx, user, dto); err != nil {
+	if err := x.UsersX.SetStatuses(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -34,7 +34,7 @@ func (x *Controller) SetActives(ctx context.Context, c *app.RequestContext) {
 	c.JSON(200, help.Ok())
 }
 
-func (x *Service) SetActives(ctx context.Context, user *common.IAMUser, dto SetActivesDto) (err error) {
+func (x *Service) SetStatuses(ctx context.Context, user *common.IAMUser, dto SetStatusesDto) (err error) {
 	updates := common.M{
 		`update_time`: time.Now(),
 		`status`:      *dto.Status,

@@ -1,9 +1,46 @@
 [
   {
+    "nav": "index",
+    "name": "仪表盘",
+    "type": 1,
+    "children": [
+      {
+        "name": "总览",
+        "type": 2,
+        "icon": "dashboard",
+        "link": "/index/dashboard/overview"
+      },
+      {
+        "name": "销售统计",
+        "type": 2,
+        "icon": "crown",
+        "link": "/index/dashboard/statistics"
+      }
+    ]
+  },
+  {
+    "nav": "index",
+    "name": "交易大厅",
+    "type": 1,
+    "children": [
+      {
+        "name": "商品调控",
+        "type": 2,
+        "icon": "shopping",
+        "link": "/index/market/products"
+      },
+      {
+        "name": "市场订单",
+        "type": 2,
+        "icon": "carry-out",
+        "link": "/index/market/orders"
+      }
+    ]
+  },
+  {
     "nav": "system",
     "name": "组织架构",
     "type": 1,
-    "link": "/system/org",
     "children": [
       {
         "name": "部门",
@@ -30,25 +67,24 @@
     "nav": "system",
     "name": "访问控制",
     "type": 1,
-    "link": "/system/poilcy",
     "children": [
       {
         "name": "视图资源",
         "type": 2,
         "icon": "layout",
-        "link": "/system/poilcy/views"
+        "link": "/system/policy/views"
       },
       {
         "name": "接口资源",
         "type": 2,
         "icon": "api",
-        "link": "/system/poilcy/resources"
+        "link": "/system/policy/resources"
       },
       {
         "name": "授权标识",
         "type": 2,
         "icon": "code",
-        "link": "/system/poilcy/permissions"
+        "link": "/system/policy/permissions"
       }
     ]
   },
@@ -56,7 +92,6 @@
     "nav": "system",
     "name": "审计日志",
     "type": 1,
-    "link": "/system/audit",
     "children": [
       {
         "name": "在线会话",

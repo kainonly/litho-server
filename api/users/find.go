@@ -49,15 +49,18 @@ type FindResult struct {
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(model.User{}).WithContext(ctx)
-	if dto.RoleID != "" {
-	}
-
 	if dto.Q != "" {
 		keyword := dto.GetKeyword()
 		do = do.Where(
 			do.Where(`email like ?`, keyword).
 				Or(`name like ?`, keyword),
 		)
+	}
+	if dto.DepartmentID != "" {
+		do = do.Where(`department_id = ?`, dto.DepartmentID)
+	}
+	if dto.RoleID != "" {
+		do = do.Where(`role_id = ?`, dto.RoleID)
 	}
 
 	if err = do.Count(&total).Error; err != nil {

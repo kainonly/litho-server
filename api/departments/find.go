@@ -12,6 +12,8 @@ import (
 
 type FindDto struct {
 	common.FindDto
+
+	Type int16 `query:"type"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -43,6 +45,9 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 	do := x.Db.Model(&model.Department{}).WithContext(ctx)
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, dto.GetKeyword())
+	}
+	if dto.Type != 0 {
+		do = do.Where(`type = ?`, dto.Type)
 	}
 
 	if err = do.Count(&total).Error; err != nil {

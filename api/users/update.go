@@ -14,7 +14,6 @@ import (
 
 type UpdateDto struct {
 	ID       string `json:"id" vd:"required"`
-	Status   *bool  `json:"status" vd:"required"`
 	Email    string `json:"email" vd:"required,email"`
 	Phone    string `json:"phone" vd:"required"`
 	Name     string `json:"name" vd:"required"`
@@ -43,7 +42,6 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
 	updates := common.M{
 		`update_time`: time.Now(),
-		`status`:      *dto.Status,
 		`email`:       dto.Email,
 		`phone`:       dto.Phone,
 		`name`:        dto.Name,

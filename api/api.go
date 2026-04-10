@@ -117,7 +117,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/users/update", x.Users.Update)
 		m.POST("/users/delete", x.Users.Delete)
 		m.POST("/users/set_roles", x.Users.SetRoles)
-		m.POST("/users/set_actives", x.Users.SetActives)
+		m.POST("/users/set_statuses", x.Users.SetStatuses)
 
 		// products 模块 -> 标准 CRUD 路由
 		m.GET("/products/:id", x.Products.FindById)

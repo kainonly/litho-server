@@ -14,7 +14,7 @@ type SetRolesDto struct {
 	RoleID string   `json:"role_id" vd:"required"`
 }
 
-const ISetRoles = "设置角色"
+const ISetRoles = "设置权限组"
 
 func (x *Controller) SetRoles(ctx context.Context, c *app.RequestContext) {
 	var dto SetRolesDto
