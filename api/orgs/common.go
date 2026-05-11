@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Key   = "departments"
+	Key   = "orgs"
 	Label = "部门"
 )
 
@@ -20,17 +20,17 @@ var Provides = wire.NewSet(
 )
 
 type Controller struct {
-	DepartmentsX *Service
+	OrgsX *Service
 }
 
 type Service struct {
 	*common.Inject
 }
 
-func (x *Service) GetDepartmentM(ctx context.Context, ids []string) (result map[string]*model.Department, err error) {
-	result = make(map[string]*model.Department)
+func (x *Service) GetOrgM(ctx context.Context, ids []string) (result map[string]*model.Org, err error) {
+	result = make(map[string]*model.Org)
 	var rows *sql.Rows
-	if rows, err = x.Db.Model(model.Department{}).WithContext(ctx).
+	if rows, err = x.Db.Model(model.Org{}).WithContext(ctx).
 		Select([]string{"id", "type", "name"}).
 		Where(`id in (?)`, ids).
 		Rows(); err != nil {
@@ -39,7 +39,7 @@ func (x *Service) GetDepartmentM(ctx context.Context, ids []string) (result map[
 	defer rows.Close()
 
 	for rows.Next() {
-		var data *model.Department
+		var data *model.Org
 		if err = x.Db.ScanRows(rows, &data); err != nil {
 			return
 		}

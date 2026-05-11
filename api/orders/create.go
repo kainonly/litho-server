@@ -21,12 +21,12 @@ type CreateItemDto struct {
 }
 
 type CreateDto struct {
-	ID           string          `json:"-"`
-	DepartmentID string          `json:"department_id" vd:"required"`
-	UserID       string          `json:"user_id" vd:"required"`
-	ScheduledAt  time.Time       `json:"scheduled_at" vd:"required"`
-	Remark       string          `json:"remark"`
-	Items        []CreateItemDto `json:"items" vd:"required,gt=0,dive"`
+	ID          string          `json:"-"`
+	OrgID       string          `json:"org_id" vd:"required"`
+	UserID      string          `json:"user_id" vd:"required"`
+	ScheduledAt time.Time       `json:"scheduled_at" vd:"required"`
+	Remark      string          `json:"remark"`
+	Items       []CreateItemDto `json:"items" vd:"required,gt=0,dive"`
 }
 
 const ICreate = "新增"
@@ -56,14 +56,14 @@ func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDt
 
 	return x.Db.Transaction(func(tx *gorm.DB) (errX error) {
 		order := model.Order{
-			ID:           dto.ID,
-			DepartmentID: dto.DepartmentID,
-			UserID:       dto.UserID,
-			No:           fmt.Sprintf("ORD%s", dto.ID),
-			Amount:       amount,
-			Status:       0,
-			ScheduledAt:  dto.ScheduledAt,
-			Remark:       dto.Remark,
+			ID:          dto.ID,
+			OrgID:       dto.OrgID,
+			UserID:      dto.UserID,
+			No:          fmt.Sprintf("ORD%s", dto.ID),
+			Amount:      amount,
+			Status:      0,
+			ScheduledAt: dto.ScheduledAt,
+			Remark:      dto.Remark,
 		}
 		if errX = tx.WithContext(ctx).Create(&order).Error; errX != nil {
 			return

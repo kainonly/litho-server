@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"server/api/departments"
 	"server/api/index"
 	"server/api/orders"
+	"server/api/orgs"
 	"server/api/permissions"
 	"server/api/products"
 	"server/api/resources"
@@ -22,7 +22,7 @@ import (
 var Provides = wire.NewSet(
 	permissions.Provides,
 	index.Provides,
-	departments.Provides,
+	orgs.Provides,
 	orders.Provides,
 	products.Provides,
 	resources.Provides,
@@ -40,7 +40,7 @@ type API struct {
 	Permissions *permissions.Controller
 	Index       *index.Controller
 	IndexX      *index.Service
-	Departments *departments.Controller
+	Orgs        *orgs.Controller
 	Orders      *orders.Controller
 	Products    *products.Controller
 	Resources   *resources.Controller
@@ -72,12 +72,12 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.GET("/permissions/:id", x.Permissions.FindById)
 		m.GET("/permissions", x.Permissions.Find)
 
-		// departments 模块 -> 标准 CRUD 路由
-		m.GET("/departments/:id", x.Departments.FindById)
-		m.GET("/departments", x.Departments.Find)
-		m.POST("/departments/create", x.Departments.Create)
-		m.POST("/departments/update", x.Departments.Update)
-		m.POST("/departments/delete", x.Departments.Delete)
+		// orgs 模块 -> 标准 CRUD 路由
+		m.GET("/orgs/:id", x.Orgs.FindById)
+		m.GET("/orgs", x.Orgs.Find)
+		m.POST("/orgs/create", x.Orgs.Create)
+		m.POST("/orgs/update", x.Orgs.Update)
+		m.POST("/orgs/delete", x.Orgs.Delete)
 
 		// resources 模块 -> 只读，由 sync-meta 维护
 		m.GET("/resources/:id", x.Resources.FindById)

@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.DepartmentsX.Update(ctx, user, dto); err != nil {
+	if err := x.OrgsX.Update(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -36,7 +36,7 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	if err = x.Db.Model(model.Department{}).WithContext(ctx).
+	if err = x.Db.Model(model.Org{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
 		Updates(common.M{
 			`update_time`: time.Now(),

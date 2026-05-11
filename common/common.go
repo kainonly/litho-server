@@ -57,13 +57,13 @@ func (x Actions) Value() (driver.Value, error) {
 }
 
 type IAMUser struct {
-	ID             string        `json:"id"`
-	RoleID         string        `json:"role_id"`
-	DepartmentID   string        `json:"department_id"`
-	DepartmentType int16         `json:"department_type"`
-	Status         bool          `json:"status"`
-	Strategy       *RoleStrategy `json:"strategy"`
-	Ip             string        `json:"-"`
+	ID       string        `json:"id"`
+	RoleID   string        `json:"role_id"`
+	OrgID    string        `json:"org_id"`
+	OrgType  int16         `json:"org_type"`
+	Status   bool          `json:"status"`
+	Strategy *RoleStrategy `json:"strategy"`
+	Ip       string        `json:"-"`
 }
 
 type RoleStrategy struct {

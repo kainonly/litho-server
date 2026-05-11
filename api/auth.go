@@ -34,7 +34,7 @@ func (x *API) Auth() app.HandlerFunc {
 		if user, err = x.UsersX.GetIAMUser(ctx, claims.ActiveId); err != nil {
 			x.IndexX.ClearAccessToken(c)
 			c.AbortWithStatusJSON(401, common.M{
-				"code":    0,
+				"code":    1,
 				"message": `身份验证已过期，请重新登录`,
 			})
 			return

@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	data, err := x.DepartmentsX.FindById(ctx, user, dto)
+	data, err := x.OrgsX.FindById(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -34,7 +34,7 @@ type FindByIdResult struct {
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
-	do := x.Db.Model(model.Department{}).WithContext(ctx)
+	do := x.Db.Model(model.Org{}).WithContext(ctx)
 	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return

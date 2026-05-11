@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	if err := x.DepartmentsX.Delete(ctx, user, dto); err != nil {
+	if err := x.OrgsX.Delete(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -29,5 +29,5 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.WithContext(ctx).Delete(model.Department{}, dto.IDs).Error
+	return x.Db.WithContext(ctx).Delete(model.Org{}, dto.IDs).Error
 }

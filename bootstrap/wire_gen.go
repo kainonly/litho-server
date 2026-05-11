@@ -8,9 +8,9 @@ package bootstrap
 
 import (
 	"server/api"
-	"server/api/departments"
 	"server/api/index"
 	"server/api/orders"
+	"server/api/orgs"
 	"server/api/permissions"
 	"server/api/products"
 	"server/api/resources"
@@ -80,11 +80,11 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		V:      values,
 		IndexX: indexService,
 	}
-	departmentsService := &departments.Service{
+	orgsService := &orgs.Service{
 		Inject: inject,
 	}
-	departmentsController := &departments.Controller{
-		DepartmentsX: departmentsService,
+	orgsController := &orgs.Controller{
+		OrgsX: orgsService,
 	}
 	ordersService := &orders.Service{
 		Inject: inject,
@@ -120,9 +120,9 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		SessionsX: sessionsService,
 	}
 	usersService := &users.Service{
-		Inject:       inject,
-		SessionsX:    sessionsService,
-		DepartmentsX: departmentsService,
+		Inject:    inject,
+		SessionsX: sessionsService,
+		OrgsX:     orgsService,
 	}
 	usersController := &users.Controller{
 		UsersX: usersService,
@@ -134,7 +134,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Permissions: controller,
 		Index:       indexController,
 		IndexX:      indexService,
-		Departments: departmentsController,
+		Orgs:        orgsController,
 		Orders:      ordersController,
 		Products:    productsController,
 		Resources:   resourcesController,

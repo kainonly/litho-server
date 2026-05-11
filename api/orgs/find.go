@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	total, data, err := x.DepartmentsX.Find(ctx, user, dto)
+	total, data, err := x.OrgsX.Find(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
@@ -42,7 +42,7 @@ type FindResult struct {
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	do := x.Db.Model(&model.Department{}).WithContext(ctx)
+	do := x.Db.Model(&model.Org{}).WithContext(ctx)
 	if dto.Q != "" {
 		do = do.Where(`name like ?`, dto.GetKeyword())
 	}

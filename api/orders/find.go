@@ -12,11 +12,11 @@ import (
 
 type FindDto struct {
 	common.FindDto
-	DepartmentID string     `query:"department_id,omitempty"`
-	UserID       string     `query:"user_id,omitempty"`
-	Status       *int16     `query:"status,omitempty"`
-	StartTime    *time.Time `query:"start_time,omitempty"`
-	EndTime      *time.Time `query:"end_time,omitempty"`
+	OrgID     string     `query:"org_id,omitempty"`
+	UserID    string     `query:"user_id,omitempty"`
+	Status    *int16     `query:"status,omitempty"`
+	StartTime *time.Time `query:"start_time,omitempty"`
+	EndTime   *time.Time `query:"end_time,omitempty"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -38,21 +38,21 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindResult struct {
-	ID           string     `json:"id"`
-	CreatedAt    *time.Time `json:"created_at"`
-	DepartmentID string     `json:"department_id"`
-	UserID       string     `json:"user_id"`
-	No           string     `json:"no"`
-	Amount       float64    `json:"amount"`
-	Status       int16      `json:"status"`
-	ScheduledAt  time.Time  `json:"scheduled_at"`
-	Remark       string     `json:"remark"`
+	ID          string     `json:"id"`
+	CreatedAt   *time.Time `json:"created_at"`
+	OrgID       string     `json:"org_id"`
+	UserID      string     `json:"user_id"`
+	No          string     `json:"no"`
+	Amount      float64    `json:"amount"`
+	Status      int16      `json:"status"`
+	ScheduledAt time.Time  `json:"scheduled_at"`
+	Remark      string     `json:"remark"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
 	do := x.Db.Model(&model.Order{}).WithContext(ctx)
-	if dto.DepartmentID != "" {
-		do = do.Where(`department_id = ?`, dto.DepartmentID)
+	if dto.OrgID != "" {
+		do = do.Where(`org_id = ?`, dto.OrgID)
 	}
 	if dto.UserID != "" {
 		do = do.Where(`user_id = ?`, dto.UserID)

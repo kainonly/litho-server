@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 	"database/sql"
-	"server/api/departments"
+	"server/api/orgs"
 	"server/api/sessions"
 	"server/common"
 	"server/model"
@@ -29,8 +29,8 @@ type Controller struct {
 type Service struct {
 	*common.Inject
 
-	SessionsX    *sessions.Service
-	DepartmentsX *departments.Service
+	SessionsX *sessions.Service
+	OrgsX     *orgs.Service
 }
 
 func (x *Service) RefreshCache(ctx context.Context) error {
@@ -54,31 +54,31 @@ func (x *Service) GetIAMUser(ctx context.Context, id string) (result *common.IAM
 	} else {
 		var rows *sql.Rows
 		if rows, err = x.Db.Model(model.User{}).WithContext(ctx).
-			Select(`id`, `role_id`, `department_id`, `status`).
+			Select(`id`, `role_id`, `org_id`, `status`).
 			Rows(); err != nil {
 			return
 		}
 		defer rows.Close()
 		users := make([]*common.IAMUser, 0)
-		departmentIDs := make([]string, 0)
+		orgIDs := make([]string, 0)
 		for rows.Next() {
 			var user *common.IAMUser
 			if err = x.Db.ScanRows(rows, &user); err != nil {
 				return
 			}
-			departmentIDs = append(departmentIDs, user.DepartmentID)
+			orgIDs = append(orgIDs, user.OrgID)
 			users = append(users, user)
 		}
 
-		var departmentM map[string]*model.Department
-		if departmentM, err = x.DepartmentsX.GetDepartmentM(ctx, departmentIDs); err != nil {
+		var orgM map[string]*model.Org
+		if orgM, err = x.OrgsX.GetOrgM(ctx, orgIDs); err != nil {
 			return
 		}
 
 		contents := make(map[string]string)
 		for _, user := range users {
-			if v, ok := departmentM[user.DepartmentID]; ok {
-				user.DepartmentType = *v.Type
+			if v, ok := orgM[user.OrgID]; ok {
+				user.OrgType = *v.Type
 			}
 			if user.ID == id {
 				result = user

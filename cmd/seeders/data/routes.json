@@ -39,27 +39,27 @@
   },
   {
     "nav": "system",
-    "name": "组织架构",
+    "name": "企业空间",
     "type": 1,
     "children": [
       {
-        "name": "部门",
+        "name": "组织",
         "type": 2,
         "icon": "apartment",
-        "link": "/system/org/departments"
+        "link": "/system/enterprise/orgs"
       },
       {
         "name": "权限组",
         "type": 2,
         "icon": "partition",
-        "link": "/system/org/roles"
+        "link": "/system/enterprise/roles"
       },
       {
         "sort": 3,
         "name": "团队成员",
         "type": 2,
         "icon": "team",
-        "link": "/system/org/users"
+        "link": "/system/enterprise/users"
       }
     ]
   },

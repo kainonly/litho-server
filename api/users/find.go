@@ -14,8 +14,8 @@ import (
 type FindDto struct {
 	common.FindDto
 
-	DepartmentID string `query:"department_id"`
-	RoleID       string `query:"role_id"`
+	OrgID  string `query:"org_id"`
+	RoleID string `query:"role_id"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -37,14 +37,14 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindResult struct {
-	ID           string `json:"id"`
-	DepartmentID string `json:"department_id"`
-	RoleID       string `json:"role_id"`
-	Status       bool   `json:"status"`
-	Email        string `json:"email"`
-	Phone        string `json:"phone"`
-	Name         string `json:"name"`
-	Avatar       string `json:"avatar"`
+	ID     string `json:"id"`
+	OrgID  string `json:"org_id"`
+	RoleID string `json:"role_id"`
+	Status bool   `json:"status"`
+	Email  string `json:"email"`
+	Phone  string `json:"phone"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
 }
 
 func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
@@ -56,8 +56,8 @@ func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (
 				Or(`name like ?`, keyword),
 		)
 	}
-	if dto.DepartmentID != "" {
-		do = do.Where(`department_id = ?`, dto.DepartmentID)
+	if dto.OrgID != "" {
+		do = do.Where(`org_id = ?`, dto.OrgID)
 	}
 	if dto.RoleID != "" {
 		do = do.Where(`role_id = ?`, dto.RoleID)

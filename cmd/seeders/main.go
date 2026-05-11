@@ -35,17 +35,17 @@ type routeSeed struct {
 }
 
 var seedModels = map[string]modelFactory{
-	"department": func() any { return model.Department{} },
-	"role":       func() any { return model.Role{} },
-	"route":      func() any { return model.Route{} },
-	"user":       func() any { return model.User{} },
+	"org":   func() any { return model.Org{} },
+	"role":  func() any { return model.Role{} },
+	"route": func() any { return model.Route{} },
+	"user":  func() any { return model.User{} },
 }
 
 var modelAliases = map[string]string{
-	"departments": "department",
-	"roles":       "role",
-	"routes":      "route",
-	"users":       "user",
+	"orgs":   "org",
+	"roles":  "role",
+	"routes": "route",
+	"users":  "user",
 }
 
 func main() {
@@ -83,7 +83,7 @@ func main() {
 	}
 
 	// 按依赖顺序排列：routes 须先于 roles（roles 动态注入 route ID）
-	seedOrder := []string{"departments", "routes", "roles", "users"}
+	seedOrder := []string{"orgs", "routes", "roles", "users"}
 	orderIndex := func(name string) int {
 		base := strings.TrimSuffix(name, filepath.Ext(name))
 		for i, s := range seedOrder {
@@ -128,7 +128,7 @@ func main() {
 
 func truncateSeedTables(db *gorm.DB) error {
 	tables := []string{
-		"department",
+		"org",
 		"role",
 		"route",
 		"user",
@@ -396,12 +396,12 @@ func seedUsersWithLookup(db *gorm.DB, filePath, label string) error {
 				seeds[i].ID = help.SID()
 			}
 
-			if seeds[i].Org != "" && seeds[i].DepartmentID == "" {
-				var dept model.Department
-				if err := tx.Where("name = ?", seeds[i].Org).Take(&dept).Error; err != nil {
+			if seeds[i].Org != "" && seeds[i].OrgID == "" {
+				var org model.Org
+				if err := tx.Where("name = ?", seeds[i].Org).Take(&org).Error; err != nil {
 					return fmt.Errorf("找不到部门 %q: %w", seeds[i].Org, err)
 				}
-				seeds[i].DepartmentID = dept.ID
+				seeds[i].OrgID = org.ID
 			}
 
 			if seeds[i].Role != "" && seeds[i].RoleID == "" {

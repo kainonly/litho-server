@@ -1,4 +1,4 @@
-package departments
+package orgs
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 
 	user := common.GetIAM(c)
 	dto.ID = help.SID()
-	if err := x.DepartmentsX.Create(ctx, user, dto); err != nil {
+	if err := x.OrgsX.Create(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
@@ -36,7 +36,7 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Department{
+	data := model.Org{
 		ID:     dto.ID,
 		Status: dto.Status,
 		Type:   dto.Type,

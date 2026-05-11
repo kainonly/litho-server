@@ -6,6 +6,846 @@
     "password": "pass@VAN1234",
     "avatar": "",
     "role": "超级管理员",
-    "org": "默认部门"
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "zhangwei@veloria.com",
+    "phone": "13800000001",
+    "name": "张伟",
+    "password": "Bv7mK2pX",
+    "role": "店长",
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "liuyang@veloria.com",
+    "phone": "13800000002",
+    "name": "刘洋",
+    "password": "Tz4nR8wQ",
+    "role": "前台主管",
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "chenxin@veloria.com",
+    "phone": "13800000003",
+    "name": "陈鑫",
+    "password": "Hd3sJ6vL",
+    "role": "运营专员",
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "wangfang@veloria.com",
+    "phone": "13800000004",
+    "name": "王芳",
+    "password": "Qx9cF5yN",
+    "role": "财务主管",
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "lihao@veloria.com",
+    "phone": "13800000005",
+    "name": "李昊",
+    "password": "Wm2kP7rA",
+    "role": "店长",
+    "org": "揽月阁·碧澜湾店"
+  },
+  {
+    "email": "zhaorui@veloria.com",
+    "phone": "13800000006",
+    "name": "赵睿",
+    "password": "Eg5tU3bZ",
+    "role": "前台主管",
+    "org": "揽月阁·碧澜湾店"
+  },
+  {
+    "email": "sunna@veloria.com",
+    "phone": "13800000007",
+    "name": "孙娜",
+    "password": "Ry8oI4jD",
+    "role": "运营专员",
+    "org": "揽月阁·碧澜湾店"
+  },
+  {
+    "email": "zhoujing@veloria.com",
+    "phone": "13800000008",
+    "name": "周静",
+    "password": "Cv1lM6nS",
+    "role": "财务主管",
+    "org": "揽月阁·碧澜湾店"
+  },
+  {
+    "email": "wukai@veloria.com",
+    "phone": "13800000009",
+    "name": "吴凯",
+    "password": "Fj9aO2xH",
+    "role": "店长",
+    "org": "揽月阁·澜珑城店"
+  },
+  {
+    "email": "zhengmin@veloria.com",
+    "phone": "13800000010",
+    "name": "郑敏",
+    "password": "Pk4dG7mT",
+    "role": "前台主管",
+    "org": "揽月阁·澜珑城店"
+  },
+  {
+    "email": "xielin@veloria.com",
+    "phone": "13800000011",
+    "name": "谢琳",
+    "password": "Nb6eQ1wC",
+    "role": "运营专员",
+    "org": "揽月阁·澜珑城店"
+  },
+  {
+    "email": "tangbo@veloria.com",
+    "phone": "13800000012",
+    "name": "唐博",
+    "password": "Ls3rV8kY",
+    "role": "财务主管",
+    "org": "揽月阁·澜珑城店"
+  },
+  {
+    "email": "hangyu@veloria.com",
+    "phone": "13800000013",
+    "name": "韩宇",
+    "password": "Xt7iB5pW",
+    "role": "店长",
+    "org": "揽月阁·晖霖广场店"
+  },
+  {
+    "email": "caijing@veloria.com",
+    "phone": "13800000014",
+    "name": "蔡晶",
+    "password": "Zq2fN9oA",
+    "role": "前台主管",
+    "org": "揽月阁·晖霖广场店"
+  },
+  {
+    "email": "pengyu@veloria.com",
+    "phone": "13800000015",
+    "name": "彭宇",
+    "password": "Uh5gK3jR",
+    "role": "运营专员",
+    "org": "揽月阁·晖霖广场店"
+  },
+  {
+    "email": "fangli@veloria.com",
+    "phone": "13800000016",
+    "name": "方黎",
+    "password": "Dm8cL6vE",
+    "role": "财务主管",
+    "org": "揽月阁·晖霖广场店"
+  },
+  {
+    "email": "songxue@veloria.com",
+    "phone": "13800000017",
+    "name": "宋雪",
+    "password": "Ak1nT4sI",
+    "role": "店长",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "jiangpeng@veloria.com",
+    "phone": "13800000018",
+    "name": "蒋鹏",
+    "password": "Yv6mQ2xO",
+    "role": "前台主管",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "linmei@veloria.com",
+    "phone": "13800000019",
+    "name": "林梅",
+    "password": "Rp3bW7kU",
+    "role": "运营专员",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "hequn@veloria.com",
+    "phone": "13800000020",
+    "name": "贺群",
+    "password": "Cf9zH1jG",
+    "role": "财务主管",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "maqiang@veloria.com",
+    "phone": "13800000021",
+    "name": "马强",
+    "password": "Wt4dP8nL",
+    "role": "店长",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "luyan@veloria.com",
+    "phone": "13800000022",
+    "name": "陆岩",
+    "password": "Bx7oR2eM",
+    "role": "前台主管",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "panling@veloria.com",
+    "phone": "13800000023",
+    "name": "潘玲",
+    "password": "Ej5sA9vC",
+    "role": "运营专员",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "gaofeng@veloria.com",
+    "phone": "13800000024",
+    "name": "高峰",
+    "password": "Gi2lF6tY",
+    "role": "财务主管",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "xudong@veloria.com",
+    "phone": "13800000025",
+    "name": "徐东",
+    "password": "Hm8kN3qD",
+    "role": "店长",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "nieyun@veloria.com",
+    "phone": "13800000026",
+    "name": "聂云",
+    "password": "Ou1cI7wZ",
+    "role": "前台主管",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "fubin@veloria.com",
+    "phone": "13800000027",
+    "name": "傅斌",
+    "password": "Sp4fT5bV",
+    "role": "运营专员",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "renxia@veloria.com",
+    "phone": "13800000028",
+    "name": "任霞",
+    "password": "Jq9mX2yK",
+    "role": "财务主管",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "shenlong@veloria.com",
+    "phone": "13800000029",
+    "name": "沈龙",
+    "password": "Nw6aE8rH",
+    "role": "店长",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "yanlei@veloria.com",
+    "phone": "13800000030",
+    "name": "严磊",
+    "password": "Tb3jL4oQ",
+    "role": "前台主管",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "qiuhua@veloria.com",
+    "phone": "13800000031",
+    "name": "邱华",
+    "password": "Vm7gU1pS",
+    "role": "运营专员",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "loujie@veloria.com",
+    "phone": "13800000032",
+    "name": "楼杰",
+    "password": "Zn2iB9cW",
+    "role": "财务主管",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "kongning@veloria.com",
+    "phone": "13800000033",
+    "name": "孔宁",
+    "password": "Ax5kO6dF",
+    "role": "店长",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "baiyu@veloria.com",
+    "phone": "13800000034",
+    "name": "白宇",
+    "password": "Ck8mR3eT",
+    "role": "前台主管",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "miaoran@veloria.com",
+    "phone": "13800000035",
+    "name": "苗然",
+    "password": "Dq1nV7sJ",
+    "role": "运营专员",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "shichen@veloria.com",
+    "phone": "13800000036",
+    "name": "石晨",
+    "password": "Fy4oA2wM",
+    "role": "财务主管",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "jingyuan@veloria.com",
+    "phone": "13800000037",
+    "name": "景源",
+    "password": "Hb9pG5xL",
+    "role": "店长",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "weixia@veloria.com",
+    "phone": "13800000038",
+    "name": "魏霞",
+    "password": "Ir6cK8yN",
+    "role": "前台主管",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "duanjun@veloria.com",
+    "phone": "13800000039",
+    "name": "段军",
+    "password": "Jt3fM1vQ",
+    "role": "运营专员",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "cuinan@veloria.com",
+    "phone": "13800000040",
+    "name": "崔楠",
+    "password": "Lu7gH4bE",
+    "role": "财务主管",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "houjie@veloria.com",
+    "phone": "13800000041",
+    "name": "侯杰",
+    "password": "Mv2iP9oZ",
+    "role": "店长",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "mengke@veloria.com",
+    "phone": "13800000042",
+    "name": "孟可",
+    "password": "Nx5jQ6tC",
+    "role": "前台主管",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "longxi@veloria.com",
+    "phone": "13800000043",
+    "name": "龙曦",
+    "password": "Oa8kR3sD",
+    "role": "运营专员",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "yuancong@veloria.com",
+    "phone": "13800000044",
+    "name": "袁聪",
+    "password": "Pb1lU7wF",
+    "role": "财务主管",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "shaoqing@veloria.com",
+    "phone": "13800000045",
+    "name": "邵青",
+    "password": "Qc4mW2xA",
+    "role": "店长",
+    "org": "揽月商务酒店·鸿泰产业园店"
+  },
+  {
+    "email": "gongwei@veloria.com",
+    "phone": "13800000046",
+    "name": "龚威",
+    "password": "Rd7nB5yI",
+    "role": "前台主管",
+    "org": "揽月商务酒店·鸿泰产业园店"
+  },
+  {
+    "email": "taoran@veloria.com",
+    "phone": "13800000047",
+    "name": "陶然",
+    "password": "Se2oC8zK",
+    "role": "运营专员",
+    "org": "揽月商务酒店·鸿泰产业园店"
+  },
+  {
+    "email": "chengyu@veloria.com",
+    "phone": "13800000048",
+    "name": "程宇",
+    "password": "Tf5pD1vL",
+    "role": "财务主管",
+    "org": "揽月商务酒店·鸿泰产业园店"
+  },
+  {
+    "email": "dinghui@veloria.com",
+    "phone": "13800000049",
+    "name": "丁惠",
+    "password": "Ug8qE4wM",
+    "role": "店长",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "yangjin@veloria.com",
+    "phone": "13800000050",
+    "name": "杨瑾",
+    "password": "Vh3rF7xN",
+    "role": "前台主管",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "huxuan@veloria.com",
+    "phone": "13800000051",
+    "name": "胡萱",
+    "password": "Wi6sG2yO",
+    "role": "运营专员",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "luochen@veloria.com",
+    "phone": "13800000052",
+    "name": "罗晨",
+    "password": "Xj1tH5zP",
+    "role": "财务主管",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "jiamin@veloria.com",
+    "phone": "13800000053",
+    "name": "贾敏",
+    "password": "Yk4uI8aQ",
+    "role": "店长",
+    "org": "揽月精品酒店·流萤巷店"
+  },
+  {
+    "email": "ouzheng@veloria.com",
+    "phone": "13800000054",
+    "name": "欧正",
+    "password": "Zl7vJ3bR",
+    "role": "前台主管",
+    "org": "揽月精品酒店·流萤巷店"
+  },
+  {
+    "email": "shaolan@veloria.com",
+    "phone": "13800000055",
+    "name": "邵岚",
+    "password": "Am2wK6cS",
+    "role": "运营专员",
+    "org": "揽月精品酒店·流萤巷店"
+  },
+  {
+    "email": "fuqian@veloria.com",
+    "phone": "13800000056",
+    "name": "付茜",
+    "password": "Bn5xL1dT",
+    "role": "财务主管",
+    "org": "揽月精品酒店·流萤巷店"
+  },
+  {
+    "email": "wanghao@veloria.com",
+    "phone": "13800000057",
+    "name": "汪浩",
+    "password": "Co8yM4eU",
+    "role": "店长",
+    "org": "揽月精品酒店·烟墨弄堂店"
+  },
+  {
+    "email": "guoyan@veloria.com",
+    "phone": "13800000058",
+    "name": "郭燕",
+    "password": "Dp3zN7fV",
+    "role": "前台主管",
+    "org": "揽月精品酒店·烟墨弄堂店"
+  },
+  {
+    "email": "tiaoran@veloria.com",
+    "phone": "13800000059",
+    "name": "刁然",
+    "password": "Eq6aO2gW",
+    "role": "运营专员",
+    "org": "揽月精品酒店·烟墨弄堂店"
+  },
+  {
+    "email": "meixue@veloria.com",
+    "phone": "13800000060",
+    "name": "梅雪",
+    "password": "Fr1bP5hX",
+    "role": "财务主管",
+    "org": "揽月精品酒店·烟墨弄堂店"
+  },
+  {
+    "email": "xiongtao@veloria.com",
+    "phone": "13800000061",
+    "name": "熊涛",
+    "password": "Gs4cQ8iY",
+    "role": "店长",
+    "org": "揽月精品酒店·霁色坊店"
+  },
+  {
+    "email": "ningjing@veloria.com",
+    "phone": "13800000062",
+    "name": "宁静",
+    "password": "Ht7dR3jZ",
+    "role": "前台主管",
+    "org": "揽月精品酒店·霁色坊店"
+  },
+  {
+    "email": "miaofeng@veloria.com",
+    "phone": "13800000063",
+    "name": "苗枫",
+    "password": "Iu2eS6kA",
+    "role": "运营专员",
+    "org": "揽月精品酒店·霁色坊店"
+  },
+  {
+    "email": "zengxin@veloria.com",
+    "phone": "13800000064",
+    "name": "曾鑫",
+    "password": "Jv5fT1lB",
+    "role": "财务主管",
+    "org": "揽月精品酒店·霁色坊店"
+  },
+  {
+    "email": "lanshu@veloria.com",
+    "phone": "13800000065",
+    "name": "蓝树",
+    "password": "Kw8gU4mC",
+    "role": "店长",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "bianyu@veloria.com",
+    "phone": "13800000066",
+    "name": "卞玉",
+    "password": "Lx3hV7nD",
+    "role": "前台主管",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "shutong@veloria.com",
+    "phone": "13800000067",
+    "name": "舒彤",
+    "password": "My6iW2oE",
+    "role": "运营专员",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "chaolong@veloria.com",
+    "phone": "13800000068",
+    "name": "晁龙",
+    "password": "Nz1jX5pF",
+    "role": "财务主管",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "fengze@veloria.com",
+    "phone": "13800000069",
+    "name": "冯泽",
+    "password": "Oa4kY8qG",
+    "role": "店长",
+    "org": "揽月温泉酒店·碧玉泉店"
+  },
+  {
+    "email": "jingran@veloria.com",
+    "phone": "13800000070",
+    "name": "荆然",
+    "password": "Pb7lZ3rH",
+    "role": "前台主管",
+    "org": "揽月温泉酒店·碧玉泉店"
+  },
+  {
+    "email": "yuanmei@veloria.com",
+    "phone": "13800000071",
+    "name": "苑梅",
+    "password": "Qc2mA6sI",
+    "role": "运营专员",
+    "org": "揽月温泉酒店·碧玉泉店"
+  },
+  {
+    "email": "chengkai@veloria.com",
+    "phone": "13800000072",
+    "name": "成凯",
+    "password": "Rd5nB1tJ",
+    "role": "财务主管",
+    "org": "揽月温泉酒店·碧玉泉店"
+  },
+  {
+    "email": "liangbo@veloria.com",
+    "phone": "13800000073",
+    "name": "梁博",
+    "password": "Se8oC4uK",
+    "role": "店长",
+    "org": "揽月温泉酒店·沁灵山庄店"
+  },
+  {
+    "email": "hanjuan@veloria.com",
+    "phone": "13800000074",
+    "name": "韩娟",
+    "password": "Tf3pD7vL",
+    "role": "前台主管",
+    "org": "揽月温泉酒店·沁灵山庄店"
+  },
+  {
+    "email": "shaowei@veloria.com",
+    "phone": "13800000075",
+    "name": "邵威",
+    "password": "Ug6qE2wM",
+    "role": "运营专员",
+    "org": "揽月温泉酒店·沁灵山庄店"
+  },
+  {
+    "email": "yumeng@veloria.com",
+    "phone": "13800000076",
+    "name": "于梦",
+    "password": "Vh1rF5xN",
+    "role": "财务主管",
+    "org": "揽月温泉酒店·沁灵山庄店"
+  },
+  {
+    "email": "qianlong@veloria.com",
+    "phone": "13800000077",
+    "name": "钱龙",
+    "password": "Wi4sG8yO",
+    "role": "人事专员",
+    "org": "揽月阁·璀都旗舰店"
+  },
+  {
+    "email": "jiangxue@veloria.com",
+    "phone": "13800000078",
+    "name": "姜雪",
+    "password": "Xj7tH3zP",
+    "role": "人事专员",
+    "org": "揽月阁·碧澜湾店"
+  },
+  {
+    "email": "wenlei@veloria.com",
+    "phone": "13800000079",
+    "name": "温磊",
+    "password": "Yk2uI6aQ",
+    "role": "人事专员",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "moqian@veloria.com",
+    "phone": "13800000080",
+    "name": "莫茜",
+    "password": "Zl5vJ1bR",
+    "role": "人事专员",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "zhuonan@veloria.com",
+    "phone": "13800000081",
+    "name": "卓楠",
+    "password": "Am8wK4cS",
+    "role": "人事专员",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "xuyue@veloria.com",
+    "phone": "13800000082",
+    "name": "徐悦",
+    "password": "Bn3xL7dT",
+    "role": "人事专员",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "liqin@veloria.com",
+    "phone": "13800000083",
+    "name": "李琴",
+    "password": "Co6yM2eU",
+    "role": "人事专员",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "zhaoze@veloria.com",
+    "phone": "13800000084",
+    "name": "赵泽",
+    "password": "Dp1zN5fV",
+    "role": "人事专员",
+    "org": "揽月精品酒店·流萤巷店"
+  },
+  {
+    "email": "heyue@veloria.com",
+    "phone": "13800000085",
+    "name": "贺月",
+    "password": "Eq4aO8gW",
+    "role": "人事专员",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "liufan@veloria.com",
+    "phone": "13800000086",
+    "name": "刘帆",
+    "password": "Fr7bP3hX",
+    "role": "实习员工",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "zhuangjing@veloria.com",
+    "phone": "13800000087",
+    "name": "庄静",
+    "password": "Gs2cQ6iY",
+    "role": "实习员工",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "ningbo@veloria.com",
+    "phone": "13800000088",
+    "name": "宁波",
+    "password": "Ht5dR1jZ",
+    "role": "实习员工",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "cuiyan@veloria.com",
+    "phone": "13800000089",
+    "name": "崔艳",
+    "password": "Iu8eS4kA",
+    "role": "实习员工",
+    "org": "揽月商务酒店·鸿泰产业园店"
+  },
+  {
+    "email": "fanji@veloria.com",
+    "phone": "13800000090",
+    "name": "范骥",
+    "password": "Jv3fT7lB",
+    "role": "实习员工",
+    "org": "揽月精品酒店·烟墨弄堂店"
+  },
+  {
+    "email": "xiaoqing@veloria.com",
+    "phone": "13800000091",
+    "name": "萧青",
+    "password": "Kw6gU2mC",
+    "role": "实习员工",
+    "org": "揽月精品酒店·霁色坊店"
+  },
+  {
+    "email": "tienan@veloria.com",
+    "phone": "13800000092",
+    "name": "铁楠",
+    "password": "Lx1hV5nD",
+    "role": "实习员工",
+    "org": "揽月温泉酒店·碧玉泉店"
+  },
+  {
+    "email": "ouyan@veloria.com",
+    "phone": "13800000093",
+    "name": "欧燕",
+    "password": "My4iW8oE",
+    "role": "实习员工",
+    "org": "揽月温泉酒店·沁灵山庄店"
+  },
+  {
+    "email": "leigang@veloria.com",
+    "phone": "13800000094",
+    "name": "雷刚",
+    "password": "Nz7jX3pF",
+    "role": "实习员工",
+    "org": "揽月阁·澜珑城店"
+  },
+  {
+    "email": "shangli@veloria.com",
+    "phone": "13800000095",
+    "name": "尚黎",
+    "password": "Oa2kY6qG",
+    "role": "实习员工",
+    "org": "揽月阁·晖霖广场店"
+  },
+  {
+    "email": "xinpeng@veloria.com",
+    "phone": "13800000096",
+    "name": "辛鹏",
+    "password": "Pb5lZ1rH",
+    "role": "实习员工",
+    "org": "揽月度假酒店·琼礁半岛店"
+  },
+  {
+    "email": "bianyue@veloria.com",
+    "phone": "13800000097",
+    "name": "边月",
+    "password": "Qc8mA4sI",
+    "role": "实习员工",
+    "org": "揽月度假酒店·栖霞古镇店"
+  },
+  {
+    "email": "muzhi@veloria.com",
+    "phone": "13800000098",
+    "name": "穆志",
+    "password": "Rd3nB7tJ",
+    "role": "实习员工",
+    "org": "揽月商务酒店·铭华科技园店"
+  },
+  {
+    "email": "jinfei@veloria.com",
+    "phone": "13800000099",
+    "name": "靳飞",
+    "password": "Se6oC2uK",
+    "role": "实习员工",
+    "org": "揽月商务酒店·融盛金融港店"
+  },
+  {
+    "email": "yongcheng@veloria.com",
+    "phone": "13800000100",
+    "name": "雍澄",
+    "password": "Tf1pD5vL",
+    "role": "实习员工",
+    "org": "揽月精品酒店·拾光里弄店"
+  },
+  {
+    "email": "sunyao@veloria.com",
+    "phone": "13800000101",
+    "name": "孙瑶",
+    "password": "Ug4qE8wM",
+    "role": "实习员工",
+    "org": "揽月温泉酒店·鸣幽谷店"
+  },
+  {
+    "email": "zhangyun@veloria.com",
+    "phone": "13800000102",
+    "name": "章云",
+    "password": "Vh7rF3xN",
+    "role": "实习员工",
+    "org": "揽月度假酒店·明珠岛店"
+  },
+  {
+    "email": "wuchen@veloria.com",
+    "phone": "13800000103",
+    "name": "伍晨",
+    "password": "Wi2sG6yO",
+    "role": "实习员工",
+    "org": "揽月度假酒店·浮云山庄店"
+  },
+  {
+    "email": "guolin@veloria.com",
+    "phone": "13800000104",
+    "name": "郭霖",
+    "password": "Xj5tH1zP",
+    "role": "实习员工",
+    "org": "揽月商务酒店·凌云会展中心店"
+  },
+  {
+    "email": "tianyu@veloria.com",
+    "phone": "13800000105",
+    "name": "田宇",
+    "password": "Yk8uI4aQ",
+    "role": "实习员工",
+    "org": "揽月商务酒店·鸿泰产业园店"
   }
 ]

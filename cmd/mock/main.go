@@ -108,7 +108,7 @@ func main() {
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	var dept model.Department
+	var dept model.Org
 	if err := db.First(&dept).Error; err != nil {
 		fmt.Fprintf(os.Stderr, "获取部门失败: %v\n", err)
 		os.Exit(1)
@@ -163,7 +163,7 @@ func randomThumbnail(seed int) string {
 }
 
 func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Product, error) {
-	if err := db.Where("department_id = ?", orgID).Delete(&model.Product{}).Error; err != nil {
+	if err := db.Where("org_id = ?", orgID).Delete(&model.Product{}).Error; err != nil {
 		return nil, err
 	}
 
@@ -192,14 +192,14 @@ func generateProducts(db *gorm.DB, orgID string, rng *rand.Rand) ([]model.Produc
 		}
 
 		products = append(products, model.Product{
-			ID:           help.SID(),
-			DepartmentID: orgID,
-			Name:         fullName,
-			Description:  baseDescriptions[rng.Intn(len(baseDescriptions))],
-			Price:        price,
-			Stock:        int32(stock),
-			Status:       isActive,
-			Thumbnail:    randomThumbnail(len(products) + 1),
+			ID:          help.SID(),
+			OrgID:       orgID,
+			Name:        fullName,
+			Description: baseDescriptions[rng.Intn(len(baseDescriptions))],
+			Price:       price,
+			Stock:       int32(stock),
+			Status:      isActive,
+			Thumbnail:   randomThumbnail(len(products) + 1),
 		})
 	}
 
@@ -281,18 +281,18 @@ func generateOrders(db *gorm.DB, orgID string, userIDs []string, products []mode
 		no := fmt.Sprintf("TK%s%08d", createdAt.Format("20060102"), i%100000000)
 
 		order := model.Order{
-			ID:           orderID,
-			CreatedAt:    &createdAt,
-			UpdatedAt:    &createdAt,
-			DepartmentID: orgID,
-			UserID:       userID,
-			No:           no,
-			Amount:       amount,
-			Status:       status,
-			ScheduledAt:  scheduledAt,
-			Remark:       remarks[rng.Intn(len(remarks))],
-			PaidAt:       paidAt,
-			ClosedAt:     closedAt,
+			ID:          orderID,
+			CreatedAt:   &createdAt,
+			UpdatedAt:   &createdAt,
+			OrgID:       orgID,
+			UserID:      userID,
+			No:          no,
+			Amount:      amount,
+			Status:      status,
+			ScheduledAt: scheduledAt,
+			Remark:      remarks[rng.Intn(len(remarks))],
+			PaidAt:      paidAt,
+			ClosedAt:    closedAt,
 		}
 		orders = append(orders, order)
 		items = append(items, orderItems...)

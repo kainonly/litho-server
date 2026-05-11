@@ -1,19 +1,72 @@
 [
   {
-    "active": true,
+    "status": true,
     "name": "超级管理员",
     "description": "拥有系统所有权限",
     "strategy": {
-      "navs": [
-        "index",
-        "business",
-        "analysis",
-        "system"
-      ],
+      "navs": ["index", "business", "analysis", "system"],
       "routes": [],
-      "permissions": [
-        "WM"
-      ]
+      "permissions": ["WM"]
+    }
+  },
+  {
+    "status": true,
+    "name": "店长",
+    "description": "负责单店日常运营管理，可查看本店数据及管理员工",
+    "strategy": {
+      "navs": ["index", "business"],
+      "routes": [],
+      "permissions": ["WM"]
+    }
+  },
+  {
+    "status": true,
+    "name": "前台主管",
+    "description": "负责前台接待管理，可处理订单及查看客户信息",
+    "strategy": {
+      "navs": ["index", "business"],
+      "routes": [],
+      "permissions": []
+    }
+  },
+  {
+    "status": true,
+    "name": "运营专员",
+    "description": "负责日常运营数据统计与分析",
+    "strategy": {
+      "navs": ["index", "analysis"],
+      "routes": [],
+      "permissions": []
+    }
+  },
+  {
+    "status": true,
+    "name": "财务主管",
+    "description": "负责财务数据审核，可查看全部交易记录",
+    "strategy": {
+      "navs": ["index", "business", "analysis"],
+      "routes": [],
+      "permissions": []
+    }
+  },
+  {
+    "status": true,
+    "name": "人事专员",
+    "description": "负责员工档案管理，可维护用户与组织数据",
+    "strategy": {
+      "navs": ["system"],
+      "routes": [],
+      "permissions": []
+    }
+  },
+  {
+    "status": false,
+    "name": "实习员工",
+    "description": "权限受限的临时账号，仅可查看基础数据",
+    "strategy": {
+      "navs": ["index"],
+      "routes": [],
+      "permissions": []
     }
   }
 ]
