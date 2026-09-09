@@ -1,0 +1,36 @@
+# 推送分支：同步代码到 GitHub 镜像仓库
+$:
+  push:
+    - imports: https://cnb.cool/kainonly/secrets/-/blob/main/github.yml
+      stages:
+        - name: 同步到 GitHub
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/kainonly/litho-api.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+            branch: ${CNB_BRANCH}
+
+  # 推送 Tag：同步 Tag 到 GitHub，并构建镜像推送制品库（发布）
+  tag_push:
+    - imports: https://cnb.cool/kainonly/secrets/-/blob/main/github.yml
+      services:
+        - docker
+      stages:
+        - name: 同步 Tag 到 GitHub
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/kainonly/litho-api.git
+            auth_type: https
+            username: ${GIT_USERNAME}
+            password: ${GIT_ACCESS_TOKEN}
+            push_tags: true
+        - name: 设置镜像标签
+          script: echo -n "${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH}"
+          exports:
+            info: IMAGE_TAG
+        - name: 构建镜像
+          script: docker build -t $IMAGE_TAG .
+        - name: 推送镜像
+          script: docker push $IMAGE_TAG

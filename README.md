@@ -1,10 +1,6 @@
 # Litho API
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kainonly/litho-api/release.yml?label=release&style=flat-square)](https://github.com/kainonly/litho-api/actions/workflows/release.yml)
-[![Release](https://img.shields.io/github/v/release/kainonly/litho-api.svg?style=flat-square&include_prereleases)](https://github.com/kainonly/litho-api/releases)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/kainonly/litho-api?style=flat-square)](https://github.com/kainonly/litho-api)
-[![Go Report Card](https://goreportcard.com/badge/github.com/kainonly/litho-api?style=flat-square)](https://goreportcard.com/report/github.com/kainonly/litho-api)
-[![GitHub license](https://img.shields.io/github/license/kainonly/litho-api?style=flat-square)](https://raw.githubusercontent.com/kainonly/litho-api/LICENSE)
+[![CI Status](https://cnb.cool/kainonly/litho-api/-/badge/git/latest/ci/status/push)](https://cnb.cool/kainonly/litho-api)
 
 这是一个从真实产品视角出发设计的开源后端骨架。
 
@@ -15,4 +11,4 @@
 
 ## 许可证
 
-[BSD-3-Clause License](https://github.com/kainonly/litho-api/blob/main/LICENSE)
+[BSD-3-Clause License](https://cnb.cool/kainonly/litho-api/-/blob/main/LICENSE)
