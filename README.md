@@ -2,12 +2,9 @@
 
 [![CI Status](https://cnb.cool/kainonly/litho-api/-/badge/git/latest/ci/status/push)](https://cnb.cool/kainonly/litho-api)
 
-这是一个从真实产品视角出发设计的开源后端骨架。
+一个后台管理 API 服务，包含用户、组织、角色、权限、路由等基础模块。
 
-它不从功能清单开始，而从产品实际的运作方式开始：
-用户、工作空间、权限、内容，以及可追溯性。
-
-基于 Go、Hertz、PostgreSQL 与 Redis 构建，力求成为严肃产品的实用地基，而不仅仅是演示。
+技术栈：Go、Hertz、PostgreSQL、Redis。
 
 ## 许可证
 
