@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"

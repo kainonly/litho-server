@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"server/bootstrap"
-	"server/common"
-	"server/model"
+	"litho-api/bootstrap"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/kainonly/go/help"
 	"github.com/kainonly/go/passlib"

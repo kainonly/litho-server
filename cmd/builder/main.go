@@ -18,10 +18,7 @@ func main() {
 			})
 			g.ApplyBasic(
 				g.GenerateModelAs("permission", "Permission"),
-				g.GenerateModelAs("order", "Order"),
-				g.GenerateModelAs("order_item", "OrderItem"),
 				g.GenerateModelAs("org", "Org"),
-				g.GenerateModelAs("product", "Product"),
 				g.GenerateModelAs("resource", "Resource",
 					gen.FieldType("actions", "common.Actions"),
 				),
@@ -37,7 +34,6 @@ func main() {
 		gen.FieldType("id", "string"),
 		gen.FieldType("pid", "string"),
 		gen.FieldType("org_id", "string"),
-		gen.FieldType("order_id", "string"),
 		gen.FieldType("product_id", "string"),
 		gen.FieldType("role_id", "string"),
 		gen.FieldType("user_id", "string"),

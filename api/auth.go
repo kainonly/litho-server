@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"server/common"
+	"litho-api/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"

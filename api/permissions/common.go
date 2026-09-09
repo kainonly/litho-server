@@ -1,7 +1,7 @@
 package permissions
 
 import (
-	"server/common"
+	"litho-api/common"
 
 	"github.com/goforj/wire"
 )

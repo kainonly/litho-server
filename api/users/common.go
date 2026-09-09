@@ -3,10 +3,10 @@ package users
 import (
 	"context"
 	"database/sql"
-	"server/api/orgs"
-	"server/api/sessions"
-	"server/common"
-	"server/model"
+	"litho-api/api/orgs"
+	"litho-api/api/sessions"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/bytedance/sonic"
 	"github.com/goforj/wire"

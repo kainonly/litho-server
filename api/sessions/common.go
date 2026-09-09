@@ -3,7 +3,7 @@ package sessions
 import (
 	"context"
 	"fmt"
-	"server/common"
+	"litho-api/common"
 	"time"
 
 	"github.com/goforj/wire"

@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"litho-api/api"
+	"litho-api/bootstrap"
+	"litho-api/common"
 	"os"
-	"server/api"
-	"server/bootstrap"
-	"server/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )

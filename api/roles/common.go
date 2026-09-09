@@ -3,8 +3,8 @@ package roles
 import (
 	"context"
 	"database/sql"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/bytedance/sonic"
 	"github.com/goforj/wire"

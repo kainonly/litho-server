@@ -7,18 +7,16 @@
 package bootstrap
 
 import (
-	"server/api"
-	"server/api/index"
-	"server/api/orders"
-	"server/api/orgs"
-	"server/api/permissions"
-	"server/api/products"
-	"server/api/resources"
-	"server/api/roles"
-	"server/api/routes"
-	"server/api/sessions"
-	"server/api/users"
-	"server/common"
+	"litho-api/api"
+	"litho-api/api/index"
+	"litho-api/api/orgs"
+	"litho-api/api/permissions"
+	"litho-api/api/resources"
+	"litho-api/api/roles"
+	"litho-api/api/routes"
+	"litho-api/api/sessions"
+	"litho-api/api/users"
+	"litho-api/common"
 )
 
 // Injectors from wire.go:
@@ -86,18 +84,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	orgsController := &orgs.Controller{
 		OrgsX: orgsService,
 	}
-	ordersService := &orders.Service{
-		Inject: inject,
-	}
-	ordersController := &orders.Controller{
-		OrdersX: ordersService,
-	}
-	productsService := &products.Service{
-		Inject: inject,
-	}
-	productsController := &products.Controller{
-		ProductsX: productsService,
-	}
 	resourcesService := &resources.Service{
 		Inject: inject,
 	}
@@ -135,8 +121,6 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		Index:       indexController,
 		IndexX:      indexService,
 		Orgs:        orgsController,
-		Orders:      ordersController,
-		Products:    productsController,
 		Resources:   resourcesController,
 		Roles:       rolesController,
 		RolesX:      rolesService,

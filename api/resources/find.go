@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )

@@ -2,10 +2,10 @@ package orgs
 
 import (
 	"context"
-	"server/model"
+	"litho-api/model"
 	"strconv"
 
-	"server/common"
+	"litho-api/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )

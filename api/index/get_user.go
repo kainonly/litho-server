@@ -2,8 +2,8 @@ package index
 
 import (
 	"context"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"

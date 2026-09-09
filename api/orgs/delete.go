@@ -2,9 +2,9 @@ package orgs
 
 import (
 	"context"
-	"server/model"
+	"litho-api/model"
 
-	"server/common"
+	"litho-api/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"

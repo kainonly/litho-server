@@ -2,17 +2,15 @@ package api
 
 import (
 	"context"
-	"server/api/index"
-	"server/api/orders"
-	"server/api/orgs"
-	"server/api/permissions"
-	"server/api/products"
-	"server/api/resources"
-	"server/api/roles"
-	"server/api/routes"
-	"server/api/sessions"
-	"server/api/users"
-	"server/common"
+	"litho-api/api/index"
+	"litho-api/api/orgs"
+	"litho-api/api/permissions"
+	"litho-api/api/resources"
+	"litho-api/api/roles"
+	"litho-api/api/routes"
+	"litho-api/api/sessions"
+	"litho-api/api/users"
+	"litho-api/common"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/goforj/wire"
@@ -23,8 +21,6 @@ var Provides = wire.NewSet(
 	permissions.Provides,
 	index.Provides,
 	orgs.Provides,
-	orders.Provides,
-	products.Provides,
 	resources.Provides,
 	roles.Provides,
 	routes.Provides,
@@ -41,8 +37,6 @@ type API struct {
 	Index       *index.Controller
 	IndexX      *index.Service
 	Orgs        *orgs.Controller
-	Orders      *orders.Controller
-	Products    *products.Controller
 	Resources   *resources.Controller
 	Roles       *roles.Controller
 	RolesX      *roles.Service
@@ -118,21 +112,6 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/users/delete", x.Users.Delete)
 		m.POST("/users/set_roles", x.Users.SetRoles)
 		m.POST("/users/set_statuses", x.Users.SetStatuses)
-
-		// products 模块 -> 标准 CRUD 路由
-		m.GET("/products/:id", x.Products.FindById)
-		m.GET("/products", x.Products.Find)
-		m.GET("/products/_search", x.Products.Search)
-		m.POST("/products/create", x.Products.Create)
-		m.POST("/products/update", x.Products.Update)
-		m.POST("/products/delete", x.Products.Delete)
-
-		// orders 模块 -> 标准 CRUD 路由
-		m.GET("/orders/:id", x.Orders.FindById)
-		m.GET("/orders", x.Orders.Find)
-		m.POST("/orders/create", x.Orders.Create)
-		m.POST("/orders/update", x.Orders.Update)
-		m.POST("/orders/delete", x.Orders.Delete)
 	}
 
 	return x.Hertz, nil

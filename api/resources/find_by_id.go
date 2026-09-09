@@ -3,8 +3,8 @@ package resources
 import (
 	"context"
 
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )

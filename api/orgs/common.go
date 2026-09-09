@@ -3,8 +3,8 @@ package orgs
 import (
 	"context"
 	"database/sql"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/goforj/wire"
 )

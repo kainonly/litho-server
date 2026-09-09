@@ -1,14 +1,14 @@
 package resources
 
 import (
-	"server/common"
+	"litho-api/common"
 
 	"github.com/goforj/wire"
 )
 
 const (
-	Key = "resources"
-	Label    = "资源"
+	Key   = "resources"
+	Label = "资源"
 )
 
 var Provides = wire.NewSet(

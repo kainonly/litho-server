@@ -3,8 +3,8 @@ package index
 import (
 	"context"
 	"fmt"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"

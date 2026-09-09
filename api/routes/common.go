@@ -1,14 +1,14 @@
 package routes
 
 import (
-	"server/common"
+	"litho-api/common"
 
 	"github.com/goforj/wire"
 )
 
 const (
-	Key = "routes"
-	Label    = "路由"
+	Key   = "routes"
+	Label = "路由"
 )
 
 var Provides = wire.NewSet(

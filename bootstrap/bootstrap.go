@@ -3,8 +3,8 @@ package bootstrap
 import (
 	"context"
 	"database/sql"
+	"litho-api/common"
 	"os"
-	"server/common"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app/server"

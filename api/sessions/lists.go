@@ -2,8 +2,8 @@ package sessions
 
 import (
 	"context"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
 	"strings"
 	"time"
 

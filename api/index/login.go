@@ -3,7 +3,7 @@ package index
 import (
 	"context"
 	"errors"
-	"server/common"
+	"litho-api/common"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"

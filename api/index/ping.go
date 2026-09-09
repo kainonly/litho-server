@@ -2,8 +2,8 @@ package index
 
 import (
 	"context"
+	"litho-api/common"
 	"os"
-	"server/common"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -12,7 +12,7 @@ import (
 func (x *Controller) Ping(_ context.Context, c *app.RequestContext) {
 	data := common.M{
 		"hostname": os.Getenv("HOSTNAME"),
-		"endpoint": "litho-server",
+		"endpoint": "litho-api",
 		"now":      time.Now(),
 	}
 

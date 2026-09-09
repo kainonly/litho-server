@@ -12,8 +12,8 @@ import (
 	"strings"
 	"unicode"
 
-	"server/bootstrap"
-	"server/common"
+	"litho-api/bootstrap"
+	"litho-api/common"
 
 	"github.com/kainonly/go/help"
 	"gorm.io/gorm"

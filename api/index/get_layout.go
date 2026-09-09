@@ -2,8 +2,9 @@ package index
 
 import (
 	"database/sql"
-	"server/common"
-	"server/model"
+	"litho-api/common"
+	"litho-api/model"
+	"maps"
 
 	"context"
 
@@ -101,8 +102,6 @@ func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.RoleSt
 			}
 		}
 	}
-	for nav, menus := range navDict {
-		navMenus[nav] = menus
-	}
+	maps.Copy(navMenus, navDict)
 	return
 }

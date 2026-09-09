@@ -4,8 +4,8 @@
 package bootstrap
 
 import (
-	"server/api"
-	"server/common"
+	"litho-api/api"
+	"litho-api/common"
 
 	"github.com/goforj/wire"
 )
