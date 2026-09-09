@@ -1,33 +1,13 @@
-// Package common provides generic CRUD operations and utilities for building REST APIs.
+// Package common 提供通用 CRUD 操作与 REST API 构建工具。
 //
-// This package offers reusable DTOs (Data Transfer Objects) and pipe configurations
-// for common database operations like Find, FindById, Search, Exists, and Delete.
+// 采用 "Pipe" 模式：配置对象经 SetPipe 存入 context，由 DTO 方法取出以定制查询行为。
 //
-// # Architecture
+//   - ExistsDto + ExistsPipe：按字段检查记录是否存在
+//   - FindDto + FindPipe：分页列表查询
+//   - FindByIdDto + FindByIdPipe：按 ID 获取单条记录
+//   - SearchDto + SearchPipe：轻量搜索/自动补全
 //
-// The package uses a "Pipe" pattern where configuration objects (pipes) are passed through
-// context to customize query behavior. Each DTO type has a corresponding Pipe type:
-//
-//   - ExistsDto + ExistsPipe: Check if a record exists by field value
-//   - FindDto + FindPipe: Paginated list queries with sorting
-//   - FindByIdDto + FindByIdPipe: Single record retrieval by ID
-//   - SearchDto + SearchPipe: Lightweight search/autocomplete queries
-//
-// # Basic Usage Pattern
-//
-// All operations follow the same pattern:
-//  1. Bind request parameters to a DTO
-//  2. Create and configure a Pipe with desired options
-//  3. Store the Pipe in context using SetPipe()
-//  4. Call the DTO's query method
-//
-// # Security
-//
-// This package implements multiple layers of security:
-//   - Sort column names are validated using whitelist (Sortable method)
-//   - Exists column names are validated using whitelist (NewExistsPipe)
-//   - ID formats are validated (Snowflake ID by default, customizable)
-//   - All user inputs use parameterized queries to prevent SQL injection
+// 安全性：列名经白名单或格式校验，ID 经格式校验，全部使用参数化查询防注入。
 package common
 
 import (
@@ -42,25 +22,24 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// pipeKey is a custom type used as context key to avoid key collisions.
+// pipeKey 用作 context 键的自定义类型，避免键冲突。
 type pipeKey struct{}
 
-// validColumnName validates column names to prevent SQL injection.
-// Only allows letters, numbers, and underscores, starting with a letter or underscore.
+// validColumnName 列名校验，防 SQL 注入。
 var validColumnName = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 
-// validSnowflakeID validates Snowflake ID format (numeric string, typically 18-19 digits).
+// validSnowflakeID 雪花 ID 校验（纯数字，通常 18-19 位）。
 var validSnowflakeID = regexp.MustCompile(`^[0-9]+$`)
 
-// IDValidator is a function type for custom ID validation.
+// IDValidator 自定义 ID 校验函数。
 type IDValidator func(id string) bool
 
-// DefaultIDValidator validates that ID is a valid Snowflake ID (numeric).
+// DefaultIDValidator 默认按雪花 ID（纯数字）校验。
 var DefaultIDValidator IDValidator = func(id string) bool {
 	return validSnowflakeID.MatchString(id)
 }
 
-// Controller defines the standard CRUD interface for API controllers.
+// Controller 标准 CRUD 接口。
 type Controller interface {
 	Create(ctx context.Context, c *app.RequestContext)
 	Find(ctx context.Context, c *app.RequestContext)
@@ -69,53 +48,36 @@ type Controller interface {
 	Delete(ctx context.Context, c *app.RequestContext)
 }
 
-// SetPipe stores a pipe configuration in the context.
-// The pipe will be retrieved later by DTO methods to customize query behavior.
+// SetPipe 将管道配置存入 context。
 func SetPipe(ctx context.Context, i any) context.Context {
 	return context.WithValue(ctx, pipeKey{}, i)
 }
 
-// getPipe retrieves a typed pipe configuration from context.
-// Returns the pipe and a boolean indicating whether the retrieval was successful.
+// getPipe 从 context 取出指定类型的管道。
 func getPipe[T any](ctx context.Context) (T, bool) {
 	v, ok := ctx.Value(pipeKey{}).(T)
 	return v, ok
 }
 
-// ToOrderBy maps sort direction indicators to SQL ORDER BY suffixes.
-// "1" maps to ascending (empty string), "-1" maps to "desc".
+// ToOrderBy 排序方向映射："1" 升序（空串），"-1" 降序。
 var ToOrderBy = map[string]string{
 	"1":  "",
 	"-1": "desc",
 }
 
-// ExistsDto is the data transfer object for checking record existence.
-// Used to verify if a value already exists in a specific column.
-//
-// Query parameters:
-//   - key: The column name to check
-//   - q: The value to search for
+// ExistsDto 存在性检查 DTO。
+// 查询参数：key 列名，q 值。
 type ExistsDto struct {
 	Key string `query:"key,omitempty"`
 	Q   string `query:"q,omitempty"`
 }
 
-// ExistsPipe configures which fields are allowed for existence checks.
-// This provides a whitelist of valid column names for security.
+// ExistsPipe 存在性检查的字段白名单。
 type ExistsPipe struct {
 	fields map[string]bool
 }
 
-// NewExistsPipe creates a new ExistsPipe with the specified allowed field names.
-// Only fields in the whitelist can be used for existence checks.
-//
-// Example:
-//
-//	// Allow checking email, username, and phone fields
-//	ctx = common.SetPipe(ctx, common.NewExistsPipe("email", "username", "phone"))
-//
-//	// Client request: GET /users/exists?key=email&q=test@example.com
-//	// Returns: {"exists": true} if email exists
+// NewExistsPipe 创建 ExistsPipe，仅允许检查指定的字段。
 func NewExistsPipe(keys ...string) *ExistsPipe {
 	fields := make(map[string]bool)
 	for _, key := range keys {
@@ -126,8 +88,7 @@ func NewExistsPipe(keys ...string) *ExistsPipe {
 	}
 }
 
-// Get retrieves the ExistsPipe from context.
-// Returns an error if the pipe is not found.
+// Get 从 context 取出 ExistsPipe。
 func (x *ExistsDto) Get(ctx context.Context) (*ExistsPipe, error) {
 	p, ok := getPipe[*ExistsPipe](ctx)
 	if !ok {
@@ -136,37 +97,18 @@ func (x *ExistsDto) Get(ctx context.Context) (*ExistsPipe, error) {
 	return p, nil
 }
 
-// ExistsResult represents the response for existence check queries.
+// ExistsResult 存在性检查响应。
 type ExistsResult struct {
 	Exists bool `json:"exists"`
 }
 
-// Exists checks if a record with the specified value exists in the given column.
-// Returns ExistsResult with Exists=true if a matching record is found.
-//
-// Security: The column name is validated against the pipe's whitelist.
-// Only columns explicitly allowed via NewExistsPipe can be queried.
-//
-// Example:
-//
-//	func (x *Controller) Exists(ctx context.Context, c *app.RequestContext) {
-//	    var dto ExistsDto
-//	    c.BindAndValidate(&dto)
-//
-//	    ctx = common.SetPipe(ctx, common.NewExistsPipe("email", "phone"))
-//	    result, err := dto.Exists(ctx, db.Model(&User{}))
-//	    if err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//	    c.JSON(200, result)  // {"exists": true/false}
-//	}
+// Exists 检查指定列是否存在匹配值的记录，列名须经白名单校验。
 func (x *ExistsDto) Exists(ctx context.Context, do *gorm.DB) (result ExistsResult, err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
 		return
 	}
-	// Whitelist validation - only allowed columns can be queried
+	// 白名单校验
 	if !p.fields[x.Key] {
 		err = help.E(0, fmt.Sprintf(`字段 [%s] 不允许进行存在性检查`, x.Key))
 		return
@@ -183,15 +125,10 @@ func (x *ExistsDto) Exists(ctx context.Context, do *gorm.DB) (result ExistsResul
 	return
 }
 
-// FindDto is the data transfer object for paginated list queries.
+// FindDto 分页列表查询 DTO。
 //
-// Headers:
-//   - x-pagesize: Number of records per page (default: 1000, max: 1000)
-//   - x-page: Page number (0-indexed)
-//
-// Query parameters:
-//   - q: Search keyword for filtering
-//   - sort: Sort rules in format "column:direction" (e.g., "name:1", "create_time:-1")
+// 请求头：x-pagesize 每页记录数（默认 1000，最大 1000），x-page 页码（从 0 起）。
+// 查询参数：q 搜索关键字，sort 排序规则 "column:direction"（如 "name:1"、"create_time:-1"）。
 type FindDto struct {
 	PageSize int64    `header:"x-pagesize" vd:"omitempty,min=0,max=1000"`
 	Page     int64    `header:"x-page" vd:"omitempty,min=0"`
@@ -199,7 +136,7 @@ type FindDto struct {
 	Sort     []string `query:"sort,omitempty" vd:"omitempty,dive,sort"`
 }
 
-// GetPageSize returns the page size, defaulting to 1000 if not specified.
+// GetPageSize 返回每页记录数，默认 1000。
 func (x *FindDto) GetPageSize() int {
 	if x.PageSize == 0 {
 		x.PageSize = 1000
@@ -207,29 +144,27 @@ func (x *FindDto) GetPageSize() int {
 	return int(x.PageSize)
 }
 
-// GetOffset calculates the offset for pagination based on page number and page size.
+// GetOffset 计算分页偏移量。
 func (x *FindDto) GetOffset() int {
 	return int(x.Page) * int(x.PageSize)
 }
 
-// GetKeyword returns the search keyword wrapped with SQL LIKE wildcards.
-// Example: "test" becomes "%test%"
+// GetKeyword 返回包裹 LIKE 通配符的关键字，如 "test" -> "%test%"。
 func (x *FindDto) GetKeyword() string {
 	return fmt.Sprintf(`%%%s%%`, x.Q)
 }
 
-// FindPipe configures the behavior of Find queries.
+// FindPipe Find 查询配置。
 type FindPipe struct {
-	ts       bool            // Whether to handle timestamp fields (create_time, update_time)
-	sort     bool            // Whether to apply sorting
-	page     bool            // Whether to apply pagination
-	keys     []string        // Specific columns to select
-	omit     []string        // Columns to exclude from results
-	sortable map[string]bool // Whitelist of sortable column names
+	ts       bool            // 自动省略时间戳列（create_time、update_time）
+	sort     bool            // 应用排序
+	page     bool            // 应用分页
+	keys     []string        // 指定返回的列
+	omit     []string        // 排除的列
+	sortable map[string]bool // 可排序列白名单
 }
 
-// Get retrieves the FindPipe from context.
-// Returns an error if the pipe is not found.
+// Get 从 context 取出 FindPipe。
 func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 	p, ok := getPipe[*FindPipe](ctx)
 	if !ok {
@@ -238,25 +173,8 @@ func (x *FindDto) Get(ctx context.Context) (*FindPipe, error) {
 	return p, nil
 }
 
-// NewFindPipe creates a new FindPipe with default settings.
-// By default, timestamp handling, sorting, and pagination are all enabled.
-//
-// Default behavior:
-//   - Omits create_time and update_time columns
-//   - Orders by create_time desc if no sort specified
-//   - Applies pagination (default 1000 per page)
-//
-// Example:
-//
-//	// Basic usage with defaults
-//	ctx = common.SetPipe(ctx, common.NewFindPipe())
-//
-//	// Custom configuration
-//	ctx = common.SetPipe(ctx, common.NewFindPipe().
-//	    SkipTs().                                    // Don't auto-omit timestamps
-//	    Sortable("name", "email", "create_time").     // Whitelist sortable columns
-//	    Omit("password", "secret").                  // Exclude sensitive fields
-//	    SkipPage())                                  // Disable pagination
+// NewFindPipe 创建默认配置的 FindPipe：省略时间戳列、
+// 未指定排序时按 create_time 倒序、启用分页。
 func NewFindPipe() *FindPipe {
 	return &FindPipe{
 		ts:   true,
@@ -265,46 +183,37 @@ func NewFindPipe() *FindPipe {
 	}
 }
 
-// SkipTs disables automatic timestamp field handling.
-// When disabled, create_time and update_time won't be automatically omitted.
+// SkipTs 禁用时间戳列自动省略。
 func (x *FindPipe) SkipTs() *FindPipe {
 	x.ts = false
 	return x
 }
 
-// SkipSort disables sorting. No ORDER BY clause will be applied.
+// SkipSort 禁用排序。
 func (x *FindPipe) SkipSort() *FindPipe {
 	x.sort = false
 	return x
 }
 
-// SkipPage disables pagination. All matching records will be returned.
+// SkipPage 禁用分页，返回全部记录。
 func (x *FindPipe) SkipPage() *FindPipe {
 	x.page = false
 	return x
 }
 
-// Select specifies which columns to include in the query results.
-// When set, only these columns will be returned.
+// Select 指定返回的列。
 func (x *FindPipe) Select(keys ...string) *FindPipe {
 	x.keys = keys
 	return x
 }
 
-// Omit specifies which columns to exclude from the query results.
-// This is ignored if Select is used.
+// Omit 指定排除的列，Select 优先。
 func (x *FindPipe) Omit(keys ...string) *FindPipe {
 	x.omit = keys
 	return x
 }
 
-// Sortable sets the whitelist of columns that can be used for sorting.
-// If not set, any valid column name format will be accepted (less secure).
-// For better security, always specify the allowed sortable columns.
-//
-// Example:
-//
-//	pipe := NewFindPipe().Sortable("name", "create_time", "email")
+// Sortable 设置可排序列白名单。未设置时仅做格式校验，建议显式指定。
 func (x *FindPipe) Sortable(keys ...string) *FindPipe {
 	x.sortable = make(map[string]bool)
 	for _, key := range keys {
@@ -313,11 +222,8 @@ func (x *FindPipe) Sortable(keys ...string) *FindPipe {
 	return x
 }
 
-// Factory builds a GORM query with the configured options from FindPipe.
-// Applies column selection/omission, sorting, and pagination.
-//
-// Security: Sort column names are validated against whitelist (if configured)
-// or basic format validation to prevent SQL injection.
+// Factory 根据管道配置应用列选择/排除、排序与分页。
+// 排序列名经白名单（若配置）或格式校验，防 SQL 注入。
 func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 	p, err := x.Get(ctx)
 	if err != nil {
@@ -344,13 +250,12 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 				return nil, help.E(0, fmt.Sprintf(`排序格式无效: %s`, v))
 			}
 			columnName := rule[0]
-			// Validate column name using whitelist if configured, otherwise use regex
+			// 白名单优先，否则格式校验
 			if len(p.sortable) > 0 {
 				if !p.sortable[columnName] {
 					return nil, help.E(0, fmt.Sprintf(`列 [%s] 不可排序`, columnName))
 				}
 			} else {
-				// Fallback to basic format validation
 				if !validColumnName.MatchString(columnName) {
 					return nil, help.E(0, fmt.Sprintf(`排序中的列名无效: %s`, columnName))
 				}
@@ -369,38 +274,7 @@ func (x *FindDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 	return do, nil
 }
 
-// Find executes a paginated query and scans results into the provided slice.
-//
-// Example:
-//
-//	func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
-//	    var dto FindDto
-//	    c.BindAndValidate(&dto)
-//
-//	    ctx = common.SetPipe(ctx, common.NewFindPipe().
-//	        Sortable("name", "create_time").
-//	        Omit("password"))
-//
-//	    do := db.Model(&User{})
-//	    if dto.Q != "" {
-//	        do = do.Where("name LIKE ?", dto.GetKeyword())
-//	    }
-//
-//	    var results []User
-//	    if err := dto.Find(ctx, do, &results); err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//	    c.JSON(200, results)
-//	}
-//
-// Client request examples:
-//
-//	GET /users                           // Default pagination and sorting
-//	GET /users?sort=name:1               // Sort by name ASC
-//	GET /users?sort=create_time:-1        // Sort by create_time DESC
-//	GET /users?q=john                    // Search with keyword
-//	Headers: X-Page: 0, X-PageSize: 20   // Pagination control
+// Find 执行分页查询并扫描到指定切片。
 func (x *FindDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	db, err := x.Factory(ctx, do)
 	if err != nil {
@@ -409,36 +283,29 @@ func (x *FindDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	return db.Find(i).Error
 }
 
-// FindByIdDto is the data transfer object for single record retrieval.
-//
-// Path parameters:
-//   - id: The record ID
-//
-// Query parameters:
-//   - full: Set to 1 to retrieve all fields (full mode)
+// FindByIdDto 按 ID 获取单条记录。
+// 路径参数 id；查询参数 full=1 时返回全部字段。
 type FindByIdDto struct {
 	ID   string `path:"id"`
 	Full int    `query:"full,omitempty"`
 }
 
-// IsFull returns true if full mode is requested (all fields should be returned).
+// IsFull 是否为完整模式。
 func (x *FindByIdDto) IsFull() bool {
 	return x.Full == 1
 }
 
-// FindByIdPipe configures the behavior of FindById queries.
-// Supports different column configurations for normal and full modes.
+// FindByIdPipe FindById 查询配置，普通/完整模式可分别设置列。
 type FindByIdPipe struct {
-	ts          bool        // Whether to handle timestamp fields
-	keys        []string    // Columns to select in normal mode
-	omit        []string    // Columns to omit in normal mode
-	fKeys       []string    // Columns to select in full mode
-	fOmit       []string    // Columns to omit in full mode
-	idValidator IDValidator // Custom ID validator function
+	ts          bool        // 自动省略时间戳列
+	keys        []string    // 普通模式返回的列
+	omit        []string    // 普通模式排除的列
+	fKeys       []string    // 完整模式返回的列
+	fOmit       []string    // 完整模式排除的列
+	idValidator IDValidator // ID 校验函数
 }
 
-// Get retrieves the FindByIdPipe from context.
-// Returns an error if the pipe is not found.
+// Get 从 context 取出 FindByIdPipe。
 func (x *FindByIdDto) Get(ctx context.Context) (*FindByIdPipe, error) {
 	p, ok := getPipe[*FindByIdPipe](ctx)
 	if !ok {
@@ -447,30 +314,7 @@ func (x *FindByIdDto) Get(ctx context.Context) (*FindByIdPipe, error) {
 	return p, nil
 }
 
-// NewFindByIdPipe creates a new FindByIdPipe with default settings.
-// By default, timestamp handling is enabled and Snowflake ID validation is used.
-//
-// Supports two modes:
-//   - Normal mode: Returns limited fields (default)
-//   - Full mode (?full=1): Returns all fields for editing
-//
-// Example:
-//
-//	// Basic usage
-//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
-//
-//	// Custom configuration with different fields for normal/full modes
-//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
-//	    Omit("password", "secret").         // Normal mode: hide sensitive fields
-//	    FullOmit("password").               // Full mode: only hide password
-//	    SkipIDValidation())                 // For non-UUID IDs
-//
-//	// Numeric ID validation
-//	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
-//	    SetIDValidator(func(id string) bool {
-//	        _, err := strconv.Atoi(id)
-//	        return err == nil
-//	    }))
+// NewFindByIdPipe 创建默认配置的 FindByIdPipe（雪花 ID 校验）。
 func NewFindByIdPipe() *FindByIdPipe {
 	return &FindByIdPipe{
 		ts:          true,
@@ -478,90 +322,55 @@ func NewFindByIdPipe() *FindByIdPipe {
 	}
 }
 
-// SkipTs disables automatic timestamp field handling.
+// SkipTs 禁用时间戳列自动省略。
 func (x *FindByIdPipe) SkipTs() *FindByIdPipe {
 	x.ts = false
 	return x
 }
 
-// Select specifies which columns to include in normal mode.
+// Select 指定普通模式返回的列。
 func (x *FindByIdPipe) Select(keys ...string) *FindByIdPipe {
 	x.keys = keys
 	return x
 }
 
-// Omit specifies which columns to exclude in normal mode.
+// Omit 指定普通模式排除的列。
 func (x *FindByIdPipe) Omit(keys ...string) *FindByIdPipe {
 	x.omit = keys
 	return x
 }
 
-// FullSelect specifies which columns to include in full mode.
+// FullSelect 指定完整模式返回的列。
 func (x *FindByIdPipe) FullSelect(keys ...string) *FindByIdPipe {
 	x.fKeys = keys
 	return x
 }
 
-// FullOmit specifies which columns to exclude in full mode.
+// FullOmit 指定完整模式排除的列。
 func (x *FindByIdPipe) FullOmit(keys ...string) *FindByIdPipe {
 	x.fOmit = keys
 	return x
 }
 
-// SetIDValidator sets a custom ID validator function.
-// Use this to customize ID format validation (e.g., for non-UUID IDs).
-//
-// Example:
-//
-//	pipe := NewFindByIdPipe().SetIDValidator(func(id string) bool {
-//	    _, err := strconv.Atoi(id)
-//	    return err == nil
-//	})
+// SetIDValidator 设置自定义 ID 校验函数。
 func (x *FindByIdPipe) SetIDValidator(v IDValidator) *FindByIdPipe {
 	x.idValidator = v
 	return x
 }
 
-// SkipIDValidation disables ID format validation.
-// Use with caution - only when you trust the input source.
+// SkipIDValidation 禁用 ID 校验，仅在信任输入来源时使用。
 func (x *FindByIdPipe) SkipIDValidation() *FindByIdPipe {
 	x.idValidator = nil
 	return x
 }
 
-// Take retrieves a single record by ID with the configured column selection.
-// Uses normal or full mode configuration based on the Full query parameter.
-//
-// Security: ID format is validated before query execution.
-//
-// Example:
-//
-//	func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
-//	    var dto FindByIdDto
-//	    c.BindAndValidate(&dto)
-//
-//	    ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
-//	        Omit("password").
-//	        FullOmit("password"))
-//
-//	    var result User
-//	    if err := dto.Take(ctx, db.Model(&User{}), &result); err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//	    c.JSON(200, result)
-//	}
-//
-// Client request examples:
-//
-//	GET /users/:id           // Normal mode, limited fields
-//	GET /users/:id?full=1    // Full mode, all fields (for editing)
+// Take 按 ID 获取记录，full 参数决定列配置，ID 先经格式校验。
 func (x *FindByIdDto) Take(ctx context.Context, do *gorm.DB, i any) (err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
 		return
 	}
-	// Validate ID format if validator is configured
+	// 校验 ID 格式
 	if p.idValidator != nil && !p.idValidator(x.ID) {
 		return help.E(0, fmt.Sprintf(`ID 格式无效: %s`, x.ID))
 	}
@@ -589,54 +398,33 @@ func (x *FindByIdDto) Take(ctx context.Context, do *gorm.DB, i any) (err error) 
 	return do.Where(`id = ?`, x.ID).Take(i).Error
 }
 
-// SearchDto is the data transfer object for lightweight search/autocomplete queries.
-// Designed for quick lookups with minimal data transfer.
-//
-// Query parameters:
-//   - m: Search mode (optional, for custom filtering)
-//   - q: Search keyword
-//   - ids: Comma-separated list of IDs to prioritize in results
+// SearchDto 轻量搜索 DTO，用于自动补全。
+// 查询参数：m 模式，q 关键字，ids 逗号分隔的优先 ID 列表。
 type SearchDto struct {
 	M   string `query:"m,omitempty"`
 	Q   string `query:"q,omitempty"`
 	IDs string `query:"ids,omitempty"`
 }
 
-// GetKeyword returns the search keyword wrapped with SQL LIKE wildcards.
+// GetKeyword 返回包裹 LIKE 通配符的关键字。
 func (x *SearchDto) GetKeyword() string {
 	return fmt.Sprintf(`%%%s%%`, x.Q)
 }
 
-// SearchPipe configures the behavior of Search queries.
+// SearchPipe Search 查询配置。
 type SearchPipe struct {
-	keys        []string    // Columns to return (default: id, name)
-	async       bool        // Whether to limit results for async/autocomplete use
-	idValidator IDValidator // Custom ID validator function for IDs parameter
+	keys        []string    // 返回的列（默认 id、name）
+	async       bool        // 限制结果数量（异步/自动补全场景）
+	idValidator IDValidator // IDs 参数校验函数
 }
 
-// SkipAsync disables the result limit. By default, search returns max 50 results.
+// SkipAsync 禁用结果数量限制（默认最多 50 条）。
 func (x *SearchPipe) SkipAsync() *SearchPipe {
 	x.async = false
 	return x
 }
 
-// NewSearchPipe creates a new SearchPipe with the specified columns to return.
-// Defaults to ["id", "name"] if no columns are specified.
-// Async mode (50 result limit) is enabled by default.
-// Snowflake ID validation for IDs is enabled by default.
-//
-// Designed for autocomplete/dropdown data sources with minimal payload.
-//
-// Example:
-//
-//	// Basic usage - returns id and name, max 50 results
-//	ctx = common.SetPipe(ctx, common.NewSearchPipe())
-//
-//	// Custom columns
-//	ctx = common.SetPipe(ctx, common.NewSearchPipe("id", "name", "avatar"))
-//
-//	// Disable result limit for full search
-//	ctx = common.SetPipe(ctx, common.NewSearchPipe().SkipAsync())
+// NewSearchPipe 创建 SearchPipe，默认返回 id/name 列、限 50 条、校验 IDs。
 func NewSearchPipe(keys ...string) *SearchPipe {
 	search := &SearchPipe{
 		async:       true,
@@ -650,20 +438,19 @@ func NewSearchPipe(keys ...string) *SearchPipe {
 	return search
 }
 
-// SetIDValidator sets a custom ID validator function for the IDs parameter.
+// SetIDValidator 为 IDs 参数设置自定义校验函数。
 func (x *SearchPipe) SetIDValidator(v IDValidator) *SearchPipe {
 	x.idValidator = v
 	return x
 }
 
-// SkipIDValidation disables ID format validation for the IDs parameter.
+// SkipIDValidation 禁用 IDs 参数校验。
 func (x *SearchPipe) SkipIDValidation() *SearchPipe {
 	x.idValidator = nil
 	return x
 }
 
-// Get retrieves the SearchPipe from context.
-// Returns an error if the pipe is not found.
+// Get 从 context 取出 SearchPipe。
 func (x *SearchDto) Get(ctx context.Context) (*SearchPipe, error) {
 	p, ok := getPipe[*SearchPipe](ctx)
 	if !ok {
@@ -672,8 +459,7 @@ func (x *SearchDto) Get(ctx context.Context) (*SearchPipe, error) {
 	return p, nil
 }
 
-// Factory builds a GORM query with the configured options from SearchPipe.
-// Applies column selection and optional result limiting.
+// Factory 根据管道配置应用列选择与结果数量限制。
 func (x *SearchDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) {
 	p, err := x.Get(ctx)
 	if err != nil {
@@ -685,37 +471,7 @@ func (x *SearchDto) Factory(ctx context.Context, do *gorm.DB) (*gorm.DB, error) 
 	return do.Select(p.keys), nil
 }
 
-// Find executes a search query with optional ID prioritization.
-// If IDs are provided, those records appear first in results (using UNION ALL).
-//
-// Security: IDs are validated before query execution if validator is configured.
-//
-// Example:
-//
-//	func (x *Controller) Search(ctx context.Context, c *app.RequestContext) {
-//	    var dto SearchDto
-//	    c.BindAndValidate(&dto)
-//
-//	    ctx = common.SetPipe(ctx, common.NewSearchPipe("id", "name"))
-//
-//	    do := db.Model(&User{})
-//	    if dto.Q != "" {
-//	        do = do.Where("name LIKE ?", dto.GetKeyword())
-//	    }
-//
-//	    var results []SearchResult
-//	    if err := dto.Find(ctx, do, &results); err != nil {
-//	        c.Error(err)
-//	        return
-//	    }
-//	    c.JSON(200, results)
-//	}
-//
-// Client request examples:
-//
-//	GET /users/search?q=john                    // Search by keyword
-//	GET /users/search?ids=uuid1,uuid2           // Get specific IDs first
-//	GET /users/search?ids=uuid1,uuid2&q=john    // Prioritize IDs, then search
+// Find 执行搜索，提供 ids 时优先返回（UNION ALL），IDs 先经校验。
 func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	p, err := x.Get(ctx)
 	if err != nil {
@@ -723,7 +479,7 @@ func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	}
 	if x.IDs != "" {
 		ids := strings.Split(x.IDs, ",")
-		// Validate each ID if validator is configured
+		// 校验每个 ID
 		if p.idValidator != nil {
 			for _, id := range ids {
 				id = strings.TrimSpace(id)
@@ -748,13 +504,13 @@ func (x *SearchDto) Find(ctx context.Context, do *gorm.DB, i any) (err error) {
 	return factory.Find(i).Error
 }
 
-// SearchResult is a standard response structure for search queries.
+// SearchResult 搜索响应结构。
 type SearchResult struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// DeleteDto is the data transfer object for batch delete operations.
+// DeleteDto 批量删除 DTO。
 type DeleteDto struct {
 	IDs []string `json:"ids"`
 }
