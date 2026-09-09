@@ -12,7 +12,12 @@ import (
 )
 
 func main() {
-	if err := listen("./config/values.yml"); err != nil {
+	path := os.Getenv("CONFIG_PATH")
+	if path == "" {
+		path = "./config/values.yml"
+	}
+
+	if err := listen(path); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
