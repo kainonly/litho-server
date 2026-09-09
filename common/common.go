@@ -100,7 +100,7 @@ func (x RouteStrategy) Value() (driver.Value, error) {
 	return sonic.Marshal(x)
 }
 
-// 能力标识常量，由 sync-meta 同步到数据库，常量名即数据库中的 key
+// 能力标识常量，由同步工具写入数据库，常量名即数据库中的 key
 
 const (
 	WM = "最高权限，拥有系统所有权限"

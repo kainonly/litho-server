@@ -62,7 +62,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 
 	m := x.Hertz.Group(``, _auth)
 	{
-		// permissions 模块 -> 只读，由 sync-meta 维护
+		// permissions 模块 -> 只读，数据由同步工具维护
 		m.GET("/permissions/:id", x.Permissions.FindById)
 		m.GET("/permissions", x.Permissions.Find)
 
@@ -73,7 +73,7 @@ func (x *API) Initialize(ctx context.Context) (_ *server.Hertz, err error) {
 		m.POST("/orgs/update", x.Orgs.Update)
 		m.POST("/orgs/delete", x.Orgs.Delete)
 
-		// resources 模块 -> 只读，由 sync-meta 维护
+		// resources 模块 -> 只读，数据由同步工具维护
 		m.GET("/resources/:id", x.Resources.FindById)
 		m.GET("/resources", x.Resources.Find)
 		m.GET("/resources/_search", x.Resources.Search)
