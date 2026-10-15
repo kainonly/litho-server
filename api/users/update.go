@@ -2,10 +2,9 @@ package users
 
 import (
 	"context"
-	"time"
-
 	"litho-api/common"
 	"litho-api/model"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"
@@ -13,15 +12,14 @@ import (
 )
 
 type UpdateDto struct {
-	ID       string `json:"id" vd:"required"`
-	Email    string `json:"email" vd:"required,email"`
-	Phone    string `json:"phone" vd:"required"`
-	Name     string `json:"name" vd:"required"`
-	Password string `json:"password" vd:"omitempty,min=6"`
-	Avatar   string `json:"avatar"`
+	ID       string  `json:"id" vd:"required"`
+	Phone    string  `json:"phone" vd:"required"`
+	Name     string  `json:"name" vd:"required"`
+	Password string  `json:"password"`
+	Email    string  `json:"email"`
+	Avatar   *string `json:"avatar"`
+	Status   *bool   `json:"status"`
 }
-
-const IUpdate = "更新"
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto UpdateDto
@@ -36,23 +34,35 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "update", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	updates := common.M{
-		`update_time`: time.Now(),
-		`email`:       dto.Email,
-		`phone`:       dto.Phone,
-		`name`:        dto.Name,
-		`avatar`:      dto.Avatar,
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
 	}
+
+	data := M{
+		"update_time": time.Now(),
+		"name":        dto.Name,
+		"phone":       dto.Phone,
+		"email":       dto.Email,
+	}
+
 	if dto.Password != "" {
-		updates[`password`], _ = passlib.Hash(dto.Password)
+		data["password"], _ = passlib.Hash(dto.Password)
 	}
+	if dto.Status != nil {
+		data["status"] = *dto.Status
+	}
+	if dto.Avatar != nil {
+		data["avatar"] = *dto.Avatar
+	}
+
 	if err = x.Db.Model(model.User{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
-		Updates(updates).Error; err != nil {
+		Updates(data).Error; err != nil {
 		return
 	}
 	return x.RefreshCache(ctx)

@@ -16,8 +16,6 @@ type SetUserDto struct {
 	Avatar string `json:"avatar" vd:"required_if=Key 'Avatar'"`
 }
 
-const ISetUser = "修改资料"
-
 func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 	var dto SetUserDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -31,14 +29,15 @@ func (x *Controller) SetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, "users", "set_user", user.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) SetUser(ctx context.Context, user *common.IAMUser, dto SetUserDto) (err error) {
-	data := common.M{}
+	data := M{}
 	switch dto.Key {
-	case "phone":
-		data["phone"] = dto.Email
+	case "email":
+		data["email"] = dto.Email
 		break
 	case "name":
 		data["name"] = dto.Name

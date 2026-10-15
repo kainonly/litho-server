@@ -2,16 +2,10 @@ package orgs
 
 import (
 	"context"
-	"database/sql"
 	"litho-api/common"
-	"litho-api/model"
 
 	"github.com/goforj/wire"
-)
-
-const (
-	Key   = "orgs"
-	Label = "部门"
+	"github.com/kainonly/go/help"
 )
 
 var Provides = wire.NewSet(
@@ -19,7 +13,11 @@ var Provides = wire.NewSet(
 	wire.Struct(new(Service), "*"),
 )
 
+const Key = "orgs"
+
 type Controller struct {
+	V *common.Values
+
 	OrgsX *Service
 }
 
@@ -27,23 +25,13 @@ type Service struct {
 	*common.Inject
 }
 
-func (x *Service) GetOrgM(ctx context.Context, ids []string) (result map[string]*model.Org, err error) {
-	result = make(map[string]*model.Org)
-	var rows *sql.Rows
-	if rows, err = x.Db.Model(model.Org{}).WithContext(ctx).
-		Select([]string{"id", "type", "name"}).
-		Where(`id in (?)`, ids).
-		Rows(); err != nil {
-		return
-	}
-	defer rows.Close()
+type M = map[string]any
 
-	for rows.Next() {
-		var data *model.Org
-		if err = x.Db.ScanRows(rows, &data); err != nil {
-			return
-		}
-		result[data.ID] = data
+var ErrAccess = help.E(0, `您不具备系统权限，请联系超级管理员进行管理`)
+
+func (x *Service) CheckAccess(ctx context.Context, user *common.IAMUser, ids ...string) (err error) {
+	if err = user.Can(`WM`); err != nil {
+		return ErrAccess
 	}
 	return
 }

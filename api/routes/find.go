@@ -2,8 +2,7 @@ package routes
 
 import (
 	"context"
-	"strconv"
-
+	"fmt"
 	"litho-api/common"
 	"litho-api/model"
 
@@ -12,8 +11,8 @@ import (
 
 type FindDto struct {
 	common.FindDto
+
 	Nav string `query:"nav"`
-	Pid string `query:"pid"`
 }
 
 func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
@@ -24,45 +23,36 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	total, data, err := x.RoutesX.Find(ctx, user, dto)
+	data, err := x.RoutesX.Find(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.Header("x-total", strconv.Itoa(int(total)))
 	c.JSON(200, data)
 }
 
 type FindResult struct {
 	ID     string `json:"id"`
 	Nav    string `json:"nav"`
-	Status bool   `json:"status"`
+	Type   int16  `json:"type"`
 	Pid    string `json:"pid"`
 	Name   string `json:"name"`
-	Type   int16  `json:"type"`
 	Icon   string `json:"icon"`
-	Link   string `json:"link"`
+	Status bool   `json:"status"`
 }
 
-func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (results []FindResult, err error) {
 	do := x.Db.Model(&model.Route{}).WithContext(ctx)
 	if dto.Nav != "" {
-		do = do.Where(`nav = ?`, dto.Nav)
-	}
-	if dto.Pid != "" {
-		do = do.Where(`pid = ?`, dto.Pid)
+		do = do.Where("nav = ?", dto.Nav)
 	}
 	if dto.Q != "" {
-		do = do.Where(`name like ?`, dto.GetKeyword())
+		do = do.Where("name like ?", fmt.Sprintf(`%%%s%%`, dto.Q))
 	}
 
-	if err = do.Count(&total).Error; err != nil {
-		return
-	}
-
-	results = make([]*FindResult, 0)
-	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	results = make([]FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipSort())
 	if err = dto.Find(ctx, do.Order(`type`).Order(`sort`), &results); err != nil {
 		return
 	}

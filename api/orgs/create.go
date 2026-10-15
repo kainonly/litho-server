@@ -10,13 +10,14 @@ import (
 )
 
 type CreateDto struct {
-	ID     string `json:"-"`
-	Type   *int16 `json:"type" vd:"required"`
-	Name   string `json:"name" vd:"required"`
-	Status *bool  `json:"status" vd:"required"`
+	ID      string `json:"-"`
+	PID     string `json:"pid" vd:"required"`
+	Code    string `json:"code"`
+	Name    string `json:"name" vd:"required"`
+	Type    *int16 `json:"type" vd:"required"`
+	Company *bool  `json:"company" vd:"required"`
+	Status  *bool  `json:"status" vd:"required"`
 }
-
-const ICreate = "新增"
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
@@ -32,19 +33,24 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "create", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Org{
-		ID:     dto.ID,
-		Status: dto.Status,
-		Type:   dto.Type,
-		Name:   dto.Name,
-	}
-	if err = x.Db.WithContext(ctx).
-		Create(&data).Error; err != nil {
+	if err = x.CheckAccess(ctx, user); err != nil {
 		return
 	}
-	return
+
+	data := &model.Org{
+		ID:        dto.ID,
+		Status:    dto.Status,
+		Pid:       dto.PID,
+		Code:      dto.Code,
+		Name:      dto.Name,
+		Type:      dto.Type,
+		Company:   *dto.Company,
+		ContactID: `0`,
+	}
+	return x.Db.WithContext(ctx).Create(data).Error
 }

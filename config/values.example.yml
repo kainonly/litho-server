@@ -1,44 +1,34 @@
-app:
-  mode: development
-  namespace: litho
-  address: :3000
-  key: your-secret-key-here
-network:
-  ip: ""
-  domain: localhost:3000
+mode: development
+address: :3000
+ip: X-Forwarded-For
+namespace: litho
+key: your-secret-key-here
+domain: localhost:3000
 cors:
-  enabled: true
   origins:
     - http://localhost:3000
-  methods:
-    - GET
-    - POST
-  headers:
-    - Origin
-    - Content-Length
-    - Content-Type
-    - X-Page
-    - X-Pagesize
-    - X-Route
-    - X-Requested-With
-  expose_headers:
-    - X-Total
-  allow_credentials: true
-  max_age: 12h
 database:
-  debug: false
-  dsn: host=localhost user=postgres password=your-password dbname=litho port=5432 TimeZone=Asia/Shanghai sslmode=disable
+  url: host=localhost user=postgres password=your-password dbname=litho port=5432 sslmode=disable TimeZone=Asia/Shanghai
   name: litho
-  gorm:
-    log_level: silent
-    prepare_stmt: true
-    skip_default_transaction: true
-  pool:
-    max_idle_conns: 10
-    max_open_conns: 100
-    conn_max_life: 1h
   redis: redis://:your-redis-password@localhost:6379
+  mongodb:
+    url: mongodb://localhost:27017
+    database: litho
 nats:
   hosts:
     - nats://localhost:4222
   token: ""
+sms:
+  secret_id: ""
+  secret_key: ""
+  sign: ""
+  app_id: ""
+  templates:
+    bind_verify: ""
+    login_verify: ""
+    reset_verify: ""
+otlp:
+  name: litho-api
+  endpoint: ""
+  token: ""
+  environment: 开发版

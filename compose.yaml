@@ -1,0 +1,11 @@
+services:
+  litho-api:
+    build:
+      context: .
+    image: litho-api:local
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./config:/app/config:ro

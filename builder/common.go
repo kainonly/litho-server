@@ -10,13 +10,11 @@ import (
 )
 
 type Values struct {
-	Database DatabaseValue `yaml:"database"`
+	Database `yaml:"database"`
 }
 
-type DatabaseValue struct {
-	Debug bool   `yaml:"debug"`
-	DSN   string `yaml:"dsn"`
-	Name  string `yaml:"name"`
+type Database struct {
+	Url string `yaml:"url"`
 }
 
 func generate(path string, fn func(g *gen.Generator), opts ...gen.ModelOpt) (err error) {
@@ -32,7 +30,7 @@ func generate(path string, fn func(g *gen.Generator), opts ...gen.ModelOpt) (err
 	}
 	var db *gorm.DB
 	if db, err = gorm.Open(postgres.New(postgres.Config{
-		DSN:                  v.Database.DSN,
+		DSN:                  v.Database.Url,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{}); err != nil {
 		return

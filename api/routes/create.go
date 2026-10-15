@@ -2,7 +2,6 @@ package routes
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -13,15 +12,13 @@ import (
 type CreateDto struct {
 	ID     string `json:"-"`
 	Nav    string `json:"nav" vd:"required"`
-	Status *bool  `json:"status" vd:"required"`
-	Pid    string `json:"pid"`
-	Name   string `json:"name" vd:"required"`
 	Type   *int16 `json:"type" vd:"required"`
+	Name   string `json:"name" vd:"required"`
+	Pid    string `json:"pid"`
 	Icon   string `json:"icon"`
 	Link   string `json:"link"`
+	Status *bool  `json:"status" vd:"required"`
 }
-
-const ICreate = "新增"
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
@@ -37,33 +34,36 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "create", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Route{
-		ID:     dto.ID,
-		Status: dto.Status,
-		Nav:    dto.Nav,
-		Pid:    "0",
-		Name:   dto.Name,
-		Type:   dto.Type,
-	}
-	if *dto.Type != 1 {
-		if dto.Pid != "" {
-			data.Pid = dto.Pid
-		}
-		if dto.Icon != "" {
-			data.Icon = dto.Icon
-		}
-		if dto.Link != "" {
-			data.Link = dto.Link
-		}
-	}
-
-	if err = x.Db.WithContext(ctx).
-		Create(&data).Error; err != nil {
+	if err = x.CheckAccess(ctx, user); err != nil {
 		return
 	}
-	return
+
+	data := &model.Route{
+		ID:     dto.ID,
+		Nav:    dto.Nav,
+		Type:   dto.Type,
+		Pid:    "0",
+		Name:   dto.Name,
+		Status: dto.Status,
+	}
+
+	if dto.Pid != "" {
+		data.Pid = dto.Pid
+	}
+	if dto.Icon != "" {
+		data.Icon = dto.Icon
+	}
+	if dto.Link != "" {
+		data.Link = dto.Link
+	}
+
+	if err = x.Db.WithContext(ctx).Create(data).Error; err != nil {
+		return
+	}
+	return x.RefreshCache(ctx)
 }

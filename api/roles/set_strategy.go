@@ -2,10 +2,9 @@ package roles
 
 import (
 	"context"
-	"time"
-
 	"litho-api/common"
 	"litho-api/model"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"
@@ -13,7 +12,7 @@ import (
 
 type SetStrategyDto struct {
 	ID       string              `json:"id" vd:"required"`
-	Strategy common.RoleStrategy `json:"strategy" vd:"required"`
+	Strategy *common.IAMStrategy `json:"strategy" vd:"required"`
 }
 
 func (x *Controller) SetStrategy(ctx context.Context, c *app.RequestContext) {
@@ -29,20 +28,23 @@ func (x *Controller) SetStrategy(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "set_strategy", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) SetStrategy(ctx context.Context, user *common.IAMUser, dto SetStrategyDto) (err error) {
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
+	updates := M{
+		`update_time`: time.Now(),
+		`strategy`:    dto.Strategy,
+	}
 	if err = x.Db.Model(model.Role{}).WithContext(ctx).
 		Where(`id = ?`, dto.ID).
-		Updates(common.M{
-			`updated_at`: time.Now(),
-			`strategy`:   dto.Strategy,
-		}).Error; err != nil {
+		Updates(updates).Error; err != nil {
 		return
 	}
-	if err = x.RefreshCache(ctx); err != nil {
-		return
-	}
-	return
+	return x.RefreshCache(ctx)
 }

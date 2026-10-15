@@ -13,8 +13,6 @@ type UnsetUserDto struct {
 	Key string `json:"key" vd:"oneof='phone'"`
 }
 
-const IUnsetUser = "解绑资料"
-
 func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 	var dto UnsetUserDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -28,6 +26,7 @@ func (x *Controller) UnsetUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, "users", "unset", user.ID)
 	c.JSON(200, help.Ok())
 }
 

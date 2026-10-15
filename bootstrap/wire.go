@@ -16,6 +16,8 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		wire.Struct(new(common.Inject), "*"),
 		UseGorm,
 		UseRedis,
+		UseMongo,
+		UseMongoDatabase,
 		UseNats,
 		UseJetStream,
 		UsePassport,
@@ -23,6 +25,7 @@ func NewAPI(values *common.Values) (*api.API, error) {
 		UseCipher,
 		UseLocker,
 		UseCaptcha,
+		UseTransfer,
 		UseHertz,
 		api.Provides,
 	)

@@ -13,30 +13,29 @@ func main() {
 		func(g *gen.Generator) {
 			g.WithDataTypeMap(map[string]func(gorm.ColumnType) (dataType string){
 				"jsonb": func(columnType gorm.ColumnType) (dataType string) {
-					return "common.Object"
+					return "common.M"
 				},
 			})
 			g.ApplyBasic(
-				g.GenerateModelAs("permission", "Permission"),
 				g.GenerateModelAs("org", "Org"),
-				g.GenerateModelAs("resource", "Resource",
-					gen.FieldType("actions", "common.Actions"),
-				),
+				g.GenerateModelAs("user_org", "UserOrg"),
+				g.GenerateModelAs("user_role", "UserRole"),
+				g.GenerateModelAs("permission", "Permission"),
 				g.GenerateModelAs("role", "Role",
-					gen.FieldType("strategy", "common.RoleStrategy"),
+					gen.FieldType("strategy", "common.M"),
 				),
 				g.GenerateModelAs("route", "Route",
-					gen.FieldType("strategy", "common.RouteStrategy"),
+					gen.FieldType("strategy", "common.M"),
 				),
 				g.GenerateModelAs("user", "User"),
 			)
 		},
 		gen.FieldType("id", "string"),
 		gen.FieldType("pid", "string"),
-		gen.FieldType("org_id", "string"),
-		gen.FieldType("product_id", "string"),
 		gen.FieldType("role_id", "string"),
 		gen.FieldType("user_id", "string"),
+		gen.FieldType("org_id", "string"),
+		gen.FieldType("contact_id", "string"),
 	); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

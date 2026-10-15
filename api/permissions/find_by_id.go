@@ -2,7 +2,6 @@ package permissions
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -32,14 +31,11 @@ type FindByIdResult struct {
 	Description string `json:"description"`
 }
 
-func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (data *FindByIdResult, err error) {
-	var result = new(FindByIdResult)
-	if err = x.Db.WithContext(ctx).
-		Model(model.Permission{}).
-		Where(`id = ?`, dto.ID).
-		Scan(result).Error; err != nil {
+func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
+	do := x.Db.Model(model.Permission{}).WithContext(ctx)
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	if err = dto.Take(ctx, do, &result); err != nil {
 		return
 	}
-	data = result
 	return
 }

@@ -8,11 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/goforj/wire"
-)
-
-const (
-	Key   = "roles"
-	Label = "权限组"
+	"github.com/kainonly/go/help"
 )
 
 var Provides = wire.NewSet(
@@ -20,7 +16,11 @@ var Provides = wire.NewSet(
 	wire.Struct(new(Service), "*"),
 )
 
+const Key = "roles"
+
 type Controller struct {
+	V *common.Values
+
 	RolesX *Service
 }
 
@@ -28,9 +28,13 @@ type Service struct {
 	*common.Inject
 }
 
+type M = map[string]any
+
+var ErrAccess = help.E(0, `您不具备系统权限，请联系超级管理员进行管理`)
+
 func (x *Service) CheckAccess(ctx context.Context, user *common.IAMUser, ids ...string) (err error) {
 	if err = user.Can(`WM`); err != nil {
-		return common.ErrWMAccess
+		return ErrAccess
 	}
 	return
 }
@@ -39,7 +43,7 @@ func (x *Service) RefreshCache(ctx context.Context) error {
 	return x.RDb.Del(ctx, "iam:roles").Err()
 }
 
-func (x *Service) GetIAMRole(ctx context.Context, id string) (result *common.RoleStrategy, err error) {
+func (x *Service) GetIAMRole(ctx context.Context, id string) (result *common.IAMStrategy, err error) {
 	var exists int64
 	if exists, err = x.RDb.Exists(ctx, "iam:roles").Result(); err != nil {
 		return
@@ -67,10 +71,10 @@ func (x *Service) GetIAMRole(ctx context.Context, id string) (result *common.Rol
 				return
 			}
 			if data.ID == id {
-				result = &common.RoleStrategy{
-					Navs:        data.Strategy.Navs,
-					Routes:      data.Strategy.Routes,
-					Permissions: data.Strategy.Permissions,
+				result = &common.IAMStrategy{
+					Navs:        data.Strategy["navs"].([]any),
+					Routes:      data.Strategy["routes"].([]any),
+					Permissions: data.Strategy["permissions"].([]any),
 				}
 			}
 			if contents[data.ID], err = sonic.MarshalString(data.Strategy); err != nil {

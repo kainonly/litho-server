@@ -2,15 +2,12 @@ package roles
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"
 )
-
-const IDelete = "删除"
 
 func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 	var dto common.DeleteDto
@@ -25,9 +22,18 @@ func (x *Controller) Delete(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "delete", dto.IDs...)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Delete(ctx context.Context, user *common.IAMUser, dto common.DeleteDto) (err error) {
-	return x.Db.WithContext(ctx).Delete(model.Role{}, dto.IDs).Error
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
+	if err = x.Db.WithContext(ctx).
+		Delete(&model.Role{}, dto.IDs).Error; err != nil {
+		return
+	}
+	return x.RefreshCache(ctx)
 }

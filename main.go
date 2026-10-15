@@ -38,6 +38,9 @@ func listen(path string) (err error) {
 	if h, err = x.Initialize(ctx); err != nil {
 		return
 	}
+	if v.Otlp.Endpoint != "" {
+		defer bootstrap.ProviderOpenTelemetry(v).Shutdown(ctx)
+	}
 	h.Spin()
 	return
 }

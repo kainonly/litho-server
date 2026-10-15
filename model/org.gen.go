@@ -18,6 +18,10 @@ type Org struct {
 	Status     *bool     `gorm:"column:status;type:boolean;not null;default:true;comment:状态" json:"status"`                 // 状态
 	Type       *int16    `gorm:"column:type;type:smallint;not null;default:1;comment:组织类型" json:"type"`                     // 组织类型
 	Name       string    `gorm:"column:name;type:text;not null;comment:组织名称" json:"name"`                                   // 组织名称
+	Pid        string    `gorm:"column:pid;type:bigint;not null" json:"pid"`
+	Code       string    `gorm:"column:code;type:text;not null" json:"code"`
+	Company    bool      `gorm:"column:company;type:boolean;not null" json:"company"`
+	ContactID  string    `gorm:"column:contact_id;type:bigint;not null" json:"contact_id"`
 }
 
 // TableName Org's table name

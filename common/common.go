@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/bytedance/sonic"
-	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/kainonly/collector/v3/transfer"
 	"github.com/kainonly/go/captcha"
 	"github.com/kainonly/go/cipher"
 	"github.com/kainonly/go/help"
@@ -12,168 +12,95 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"gorm.io/gorm"
+	"resty.dev/v3"
 )
 
 type Inject struct {
-	V       *Values
-	Db      *gorm.DB
-	RDb     *redis.Client
-	Nc      *nats.Conn
-	Js      jetstream.JetStream
-	Cipher  *cipher.Cipher
-	Captcha *captcha.Captcha
-	Locker  *locker.Locker
+	V        *Values
+	Db       *gorm.DB
+	RDb      *redis.Client
+	MGo      *mongo.Client
+	MDb      *mongo.Database
+	Nc       *nats.Conn
+	Js       jetstream.JetStream
+	Cipher   *cipher.Cipher
+	Captcha  *captcha.Captcha
+	Locker   *locker.Locker
+	Transfer *transfer.Transfer
 }
 
-var (
-	ErrAuthenticationExpired = help.E(0, "身份验证已过期，请重新登录")
-	ErrLoginMaxFailures      = help.E(0, "登录尝试次数超过最大限制")
-	ErrLoginNotExists        = help.E(0, "账号不存在或已被禁用")
-	ErrLoginInvalid          = help.E(0, "账号不存在或密码错误")
-	ErrSession               = help.E(0, "会话建立失败")
-	ErrSmsInvalid            = help.E(0, "短信验证码无效")
-	ErrWMAccess              = help.E(0, `您不具备权限，请联系超级管理员进行管理`)
-)
+// 通用错误定义
 
-type HandleFunc func(do *gorm.DB) *gorm.DB
+var ErrAuthenticationExpired = help.E(4003, "登录账号认证过期，请重新登录")
+var ErrLoginNotExists = help.E(4001, "登录账号不存在或被冻结")
+var ErrLoginMaxFailures = help.E(4002, "登录账户失败超出最大次数")
+var ErrLoginInvalid = help.E(4001, "登录账户不存在或密码不正确")
+var ErrSession = help.E(4005, "登录账户会话建立失败")
+var ErrTotpInvalid = help.E(4001, "登录口令验证码无效")
+var ErrSmsInvalid = help.E(4001, "登录账户短信验证码无效")
+var ErrSmsNotExists = help.E(4001, "登录账号不存在或被冻结")
+var ErrCodeFrequently = help.E(4004, "您的验证码请求频繁，请稍后再试")
 
-type Action struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
-}
-
-type Actions []Action
-
-func (x *Actions) Scan(value interface{}) error {
-	return sonic.Unmarshal(value.([]byte), &x)
-}
-
-func (x Actions) Value() (driver.Value, error) {
-	if len(x) == 0 {
-		return []byte(`[]`), nil
-	}
-	return sonic.Marshal(x)
-}
+type Fn func(do *gorm.DB) *gorm.DB
 
 type IAMUser struct {
-	ID       string        `json:"id"`
-	RoleID   string        `json:"role_id"`
-	OrgID    string        `json:"org_id"`
-	OrgType  int16         `json:"org_type"`
-	Status   bool          `json:"status"`
-	Strategy *RoleStrategy `json:"strategy"`
-	Ip       string        `json:"-"`
+	ID       string       `json:"id"`
+	RoleID   string       `json:"role_id" gorm:"-"`
+	OrgIDs   string       `json:"org_ids" gorm:"-"`
+	Status   bool         `json:"status"`
+	Strategy *IAMStrategy `json:"strategy" gorm:"-"`
+	Ip       string       `json:"-"`
 }
 
-type RoleStrategy struct {
-	Navs        []string `json:"navs" vd:"required"`
-	Routes      []string `json:"routes" vd:"required"`
-	Permissions []string `json:"permissions" vd:"required"`
-}
-
-func (x *RoleStrategy) Scan(value interface{}) error {
-	return sonic.Unmarshal(value.([]byte), &x)
-}
-
-func (x *RoleStrategy) Value() (driver.Value, error) {
-	if x == nil {
-		return sonic.Marshal(RoleStrategy{
-			Navs:        make([]string, 0),
-			Routes:      make([]string, 0),
-			Permissions: make([]string, 0),
-		})
-	}
-	return sonic.Marshal(*x)
-}
-
-type RouteStrategy map[string][]string
-
-func (x *RouteStrategy) Scan(value interface{}) error {
-	return sonic.Unmarshal(value.([]byte), &x)
-}
-
-func (x RouteStrategy) Value() (driver.Value, error) {
-	if x != nil {
-		return []byte(`{}`), nil
-	}
-	return sonic.Marshal(x)
-}
-
-// 能力标识常量，由同步工具写入数据库，常量名即数据库中的 key
-
-const (
-	WM = "最高权限，拥有系统所有权限"
-)
-
-// Can 验证用户是否具备定义能力
-func (x *IAMUser) Can(caps ...string) error {
+// Can 验证用户是否具备定义细粒化策略
+func (x *IAMUser) Can(permissions ...string) error {
 	exists := make(map[string]bool)
-	for _, v := range caps {
-		exists[v] = true
+	for _, permission := range permissions {
+		exists[permission] = true
 	}
-	for _, v := range x.Strategy.Permissions {
-		if exists[v] {
+	for _, permission := range x.Strategy.Permissions {
+		if exists[permission.(string)] {
 			return nil
 		}
 	}
-	return help.E(0, `操作失败，该团队成员不具备执行权限`)
+	return help.E(0, `操作失败，该用户不具备执行权限`)
 }
 
-func GetIAM(c *app.RequestContext) *IAMUser {
-	v, _ := c.Get("identity")
-	return v.(*IAMUser)
+type IAMStrategy struct {
+	Navs        A `json:"navs" vd:"required"`
+	Routes      A `json:"routes" vd:"required"`
+	Permissions A `json:"permissions" vd:"required"`
 }
 
-type Tracking struct {
-	RES  string
-	ACT  string
-	RIDS []string
-}
-
-// SetTracking 设置审计追踪
-// rid = 0 说明无资源关联，例如 sort，save 等
-// rid != 0 用于资源关联，例如产品中的 set_bids 每个 IDs 都是产品的关联，即对应 rids
-func SetTracking(c *app.RequestContext, res string, act string, rids ...string) {
-	c.Set("tracking", &Tracking{
-		RES:  res,
-		ACT:  act,
-		RIDS: rids,
-	})
-}
-
-func GetTracking(c *app.RequestContext) *Tracking {
-	v, ok := c.Get("tracking")
-	if !ok {
-		return nil
-	}
-	return v.(*Tracking)
-}
-
-type M = map[string]any
-
-type Object map[string]any
-
-func (x *Object) Scan(value interface{}) error {
+func (x *IAMStrategy) Scan(value any) error {
 	return sonic.Unmarshal(value.([]byte), &x)
 }
 
-func (x Object) Value() (driver.Value, error) {
-	if len(x) == 0 {
-		return []byte(`{}`), nil
-	}
+func (x *IAMStrategy) Value() (driver.Value, error) {
 	return sonic.Marshal(x)
 }
 
-type Array []any
-
-func (x *Array) Scan(value interface{}) error {
-	return sonic.Unmarshal(value.([]byte), &x)
+type IAMRoute struct {
+	ID       string `json:"id"`
+	Link     string `json:"link"`
+	Strategy M      `json:"strategy"`
 }
 
-func (x Array) Value() (driver.Value, error) {
-	if len(x) == 0 {
-		return []byte(`[]`), nil
-	}
-	return sonic.Marshal(x)
+type NzNode struct {
+	Label  string `json:"label"`
+	Value  string `json:"value"`
+	IsLeaf bool   `json:"isLeaf"`
 }
+
+type NzTreeNodes struct {
+	*NzNode
+	Children []*NzNode `json:"children"`
+}
+
+// IpClient 公网 IP 地理信息查询客户端
+// 匿名调用存在限额，生产环境可按需追加 token 查询参数
+var IpClient = resty.New().
+	SetBaseURL(`https://ipinfo.io`).
+	SetRetryCount(3)

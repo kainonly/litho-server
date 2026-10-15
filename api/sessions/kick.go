@@ -5,6 +5,7 @@ import (
 	"litho-api/common"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 )
 
 type KickDto struct {
@@ -23,11 +24,16 @@ func (x *Controller) Kick(ctx context.Context, c *app.RequestContext) {
 		c.Error(err)
 		return
 	}
-	c.JSON(200, common.M{
+	common.SetTracking(c, Key, "kick", dto.Id)
+	c.JSON(200, utils.H{
 		"count": n,
 	})
 }
 
 func (x *Service) Kick(ctx context.Context, user *common.IAMUser, id string) (n int64, err error) {
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
 	return x.RDb.Del(ctx, x.Key(id)).Result()
 }

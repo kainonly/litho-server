@@ -2,7 +2,6 @@ package routes
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -27,20 +26,28 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindByIdResult struct {
-	ID     string `json:"id"`
-	Nav    string `json:"nav"`
-	Sort   int16  `json:"sort"`
-	Status bool   `json:"status"`
-	Pid    string `json:"pid"`
-	Name   string `json:"name"`
-	Type   int16  `json:"type"`
-	Icon   string `json:"icon"`
-	Link   string `json:"link"`
+	ID       string    `json:"id"`
+	Nav      string    `json:"nav"`
+	Pid      string    `json:"pid"`
+	Type     int16     `json:"type"`
+	Name     string    `json:"name"`
+	Icon     string    `json:"icon"`
+	Link     string    `json:"link"`
+	Status   bool      `json:"status"`
+	Strategy *common.M `json:"strategy,omitempty"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
-	do := x.Db.Model(model.Route{}).WithContext(ctx)
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
+	fields := []string{"id", "nav", "pid", "type", "name", "icon", "link", "status"}
+	if dto.IsFull() {
+		fields = append(fields, "strategy")
+	}
+	do := x.Db.Model(&model.Route{}).WithContext(ctx)
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().
+		SkipTs().
+		Select(fields...).
+		FullSelect(fields...),
+	)
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return
 	}

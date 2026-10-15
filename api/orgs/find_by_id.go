@@ -2,7 +2,6 @@ package orgs
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -27,10 +26,14 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindByIdResult struct {
-	ID     string `json:"id"`
-	Status bool   `json:"status"`
-	Type   int16  `json:"type"`
-	Name   string `json:"name"`
+	ID        string `json:"id"`
+	Status    bool   `json:"status"`
+	PID       string `json:"pid"`
+	Code      string `json:"code"`
+	Name      string `json:"name"`
+	Type      int16  `json:"type"`
+	Company   bool   `json:"company"`
+	ContactID string `json:"contact_id"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {

@@ -12,7 +12,7 @@ import (
 func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 	ts := c.Cookie("TOKEN")
 	if ts == nil {
-		c.JSON(401, common.M{
+		c.JSON(401, M{
 			"code":    0,
 			"message": common.ErrAuthenticationExpired.Error(),
 		})
@@ -21,7 +21,7 @@ func (x *Controller) Verify(ctx context.Context, c *app.RequestContext) {
 
 	if _, err := x.IndexX.Verify(ctx, string(ts)); err != nil {
 		x.IndexX.ClearAccessToken(c)
-		c.JSON(401, common.M{
+		c.JSON(401, M{
 			"code":    0,
 			"message": common.ErrAuthenticationExpired.Error(),
 		})
@@ -37,10 +37,9 @@ func (x *Service) Verify(ctx context.Context, ts string) (claims passport.Claims
 	}
 	result := x.SessionsX.Verify(ctx, claims.ActiveId, claims.ID)
 	if !result {
-		err = help.E(0, `身份验证令牌不一致`)
+		err = help.E(0, `认证鉴权令牌不一致`)
 		return
 	}
-
 	x.SessionsX.Renew(ctx, claims.ActiveId)
 	return
 }

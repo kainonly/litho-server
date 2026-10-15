@@ -21,8 +21,6 @@ type RegroupUpdate struct {
 	Pid     string `json:"pid" vd:"required_if=Changed true"`
 }
 
-const IRegroup = "重新分组"
-
 func (x *Controller) Regroup(ctx context.Context, c *app.RequestContext) {
 	var dto RegroupDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -36,10 +34,15 @@ func (x *Controller) Regroup(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "regroup", "0")
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Regroup(ctx context.Context, user *common.IAMUser, dto RegroupDto) (err error) {
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
 	return x.Db.Transaction(func(tx *gorm.DB) (errX error) {
 		if *dto.Update.Changed {
 			if errX = tx.Model(model.Route{}).WithContext(ctx).
@@ -60,6 +63,7 @@ func (x *Service) Regroup(ctx context.Context, user *common.IAMUser, dto Regroup
 				}
 			}
 		}
-		return
+
+		return x.RefreshCache(ctx)
 	})
 }

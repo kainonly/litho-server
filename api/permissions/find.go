@@ -2,10 +2,8 @@ package permissions
 
 import (
 	"context"
-	"litho-api/model"
-	"strconv"
-
 	"litho-api/common"
+	"litho-api/model"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -22,13 +20,12 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 	}
 
 	user := common.GetIAM(c)
-	total, data, err := x.PermissionsX.Find(ctx, user, dto)
+	data, err := x.PermissionsX.Find(ctx, user, dto)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.Header("x-total", strconv.Itoa(int(total)))
 	c.JSON(200, data)
 }
 
@@ -38,17 +35,14 @@ type FindResult struct {
 	Description string `json:"description"`
 }
 
-func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (results []FindResult, err error) {
 	do := x.Db.Model(&model.Permission{}).WithContext(ctx)
 	if dto.Q != "" {
-		do = do.Where(`key like ?`, dto.GetKeyword())
+		keyword := dto.GetKeyword()
+		do = do.Where("description like ?", keyword)
 	}
 
-	if err = do.Count(&total).Error; err != nil {
-		return
-	}
-
-	results = make([]*FindResult, 0)
+	results = make([]FindResult, 0)
 	ctx = common.SetPipe(ctx, common.NewFindPipe().SkipTs())
 	if err = dto.Find(ctx, do.Order(`key`), &results); err != nil {
 		return

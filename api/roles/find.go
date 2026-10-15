@@ -2,10 +2,9 @@ package roles
 
 import (
 	"context"
-	"strconv"
-
 	"litho-api/common"
 	"litho-api/model"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -34,24 +33,25 @@ func (x *Controller) Find(ctx context.Context, c *app.RequestContext) {
 
 type FindResult struct {
 	ID          string `json:"id"`
-	Sort        int16  `json:"sort"`
-	Status      bool   `json:"status"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Status      *bool  `json:"status"`
 }
 
-func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []*FindResult, err error) {
-	do := x.Db.Model(&model.Role{}).WithContext(ctx)
+func (x *Service) Find(ctx context.Context, user *common.IAMUser, dto FindDto) (total int64, results []FindResult, err error) {
+	do := x.Db.Model(model.Role{}).WithContext(ctx)
 	if dto.Q != "" {
-		do = do.Where(`name like ?`, dto.GetKeyword())
+		keyword := dto.GetKeyword()
+		do = do.Where(`name like ?`, keyword)
 	}
 
 	if err = do.Count(&total).Error; err != nil {
 		return
 	}
 
-	results = make([]*FindResult, 0)
-	ctx = common.SetPipe(ctx, common.NewFindPipe())
+	results = make([]FindResult, 0)
+	ctx = common.SetPipe(ctx, common.NewFindPipe().
+		Select("id", "name", "description", "status"))
 	if err = dto.Find(ctx, do.Order(`sort`), &results); err != nil {
 		return
 	}

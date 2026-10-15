@@ -1,0 +1,29 @@
+# Only POST actions belong here. GET routes are read-only and have no action entry.
+actions:
+  create: 新增
+  update: 更新
+  delete: 删除
+
+modules:
+  - key: orgs
+    label: 组织
+    actions: [create, update, delete]
+  - key: permissions
+    label: 能力标识
+    actions: [create, update, delete]
+  - key: roles
+    label: 权限组
+    actions: [create, update, delete, set_strategy, sort]
+    labels: {set_strategy: 设置策略, sort: 排序}
+  - key: routes
+    label: 路由
+    actions: [create, update, delete, regroup, set_strategy]
+    labels: {regroup: 重新分组, set_strategy: 设置策略}
+  - key: sessions
+    label: 会话
+    actions: [kick, clear]
+    labels: {kick: 踢出, clear: 清除}
+  - key: users
+    label: 用户
+    actions: [create, update, delete, set_statuses, set_roles, set_orgs]
+    labels: {set_statuses: 批量启用/禁用, set_roles: 设置权限组, set_orgs: 切换组织}

@@ -2,10 +2,9 @@ package roles
 
 import (
 	"context"
-	"time"
-
 	"litho-api/common"
 	"litho-api/model"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/kainonly/go/help"
@@ -14,11 +13,9 @@ import (
 type UpdateDto struct {
 	ID          string `json:"id" vd:"required"`
 	Name        string `json:"name" vd:"required"`
-	Description string `json:"description" vd:"required"`
+	Description string `json:"description"`
 	Status      *bool  `json:"status" vd:"required"`
 }
-
-const IUpdate = "更新"
 
 func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 	var dto UpdateDto
@@ -33,19 +30,25 @@ func (x *Controller) Update(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "update", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Update(ctx context.Context, user *common.IAMUser, dto UpdateDto) (err error) {
-	if err = x.Db.Model(model.Role{}).WithContext(ctx).
-		Where(`id = ?`, dto.ID).
-		Updates(common.M{
-			`update_time`: time.Now(),
-			`status`:      *dto.Status,
-			`name`:        dto.Name,
-			`description`: dto.Description,
-		}).Error; err != nil {
+	if err = x.CheckAccess(ctx, user); err != nil {
 		return
 	}
-	return
+
+	updates := M{
+		"update_time": time.Now(),
+		"name":        dto.Name,
+		"description": dto.Description,
+		"status":      *dto.Status,
+	}
+	if err = x.Db.Model(model.Role{}).WithContext(ctx).
+		Where(`id = ?`, dto.ID).
+		Updates(updates).Error; err != nil {
+		return
+	}
+	return x.RefreshCache(ctx)
 }

@@ -2,7 +2,6 @@ package roles
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -27,25 +26,18 @@ func (x *Controller) FindById(ctx context.Context, c *app.RequestContext) {
 }
 
 type FindByIdResult struct {
-	ID          string               `json:"id"`
-	Status      bool                 `json:"status"`
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Strategy    *common.RoleStrategy `json:"strategy,omitempty"`
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Status      *bool               `json:"status"`
+	Strategy    *common.IAMStrategy `json:"strategy"`
 }
 
 func (x *Service) FindById(ctx context.Context, user *common.IAMUser, dto common.FindByIdDto) (result FindByIdResult, err error) {
 	do := x.Db.Model(model.Role{}).WithContext(ctx)
-
-	keys := []string{`id`, `status`, `name`, `description`}
-	if dto.IsFull() {
-		keys = []string{`id`, `status`, `name`, `description`, `strategy`}
-	}
-
-	ctx = common.SetPipe(ctx, common.NewFindByIdPipe().Select(keys...))
+	ctx = common.SetPipe(ctx, common.NewFindByIdPipe())
 	if err = dto.Take(ctx, do, &result); err != nil {
 		return
 	}
-
 	return
 }

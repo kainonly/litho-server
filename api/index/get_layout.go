@@ -1,12 +1,11 @@
 package index
 
 import (
+	"context"
 	"database/sql"
 	"litho-api/common"
 	"litho-api/model"
 	"maps"
-
-	"context"
 
 	"github.com/cloudwego/hertz/pkg/app"
 )
@@ -46,8 +45,12 @@ type Menu struct {
 
 func (x *Service) GetLayout(ctx context.Context, user *common.IAMUser) (result *LayoutResult, err error) {
 	result = &LayoutResult{
-		Navs:     user.Strategy.Navs,
+		Navs:     make([]string, 0),
 		NavMenus: make(map[string][]*Menu),
+	}
+	// 获取授权导航
+	if result.Navs, err = x.GetLayoutNavs(ctx, user.Strategy); err != nil {
+		return
 	}
 	// 获取授权子路由
 	if result.NavMenus, err = x.GetLayoutNavMenus(ctx, user.Strategy); err != nil {
@@ -56,12 +59,24 @@ func (x *Service) GetLayout(ctx context.Context, user *common.IAMUser) (result *
 	return
 }
 
-func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.RoleStrategy) (navMenus map[string][]*Menu, err error) {
+func (x *Service) GetLayoutNavs(ctx context.Context, strategy *common.IAMStrategy) (navs []string, err error) {
+	navs = make([]string, 0)
+	for _, nav := range strategy.Navs {
+		navs = append(navs, nav.(string))
+	}
+	return
+}
+
+func (x *Service) GetLayoutNavMenus(ctx context.Context, strategy *common.IAMStrategy) (navMenus map[string][]*Menu, err error) {
 	navMenus = make(map[string][]*Menu)
+	routes := make([]string, 0)
+	for _, id := range strategy.Routes {
+		routes = append(routes, id.(string))
+	}
 	var rows *sql.Rows
 	if rows, err = x.Db.Model(model.Route{}).WithContext(ctx).
 		Select(`id`, `status`, `nav`, `pid`, `name`, `icon`, `link`).
-		Where(`id in (?)`, strategy.Routes).
+		Where(`id in (?)`, routes).
 		Order(`type`).
 		Order(`sort`).
 		Rows(); err != nil {

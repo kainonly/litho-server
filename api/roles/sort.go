@@ -15,8 +15,6 @@ type SortDto struct {
 	IDs []string `json:"ids"`
 }
 
-const ISort = "排序"
-
 func (x *Controller) Sort(ctx context.Context, c *app.RequestContext) {
 	var dto SortDto
 	if err := c.BindAndValidate(&dto); err != nil {
@@ -30,15 +28,20 @@ func (x *Controller) Sort(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	common.SetTracking(c, Key, "sort", "0")
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Sort(ctx context.Context, user *common.IAMUser, dto SortDto) (err error) {
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
 	return x.Db.Transaction(func(tx *gorm.DB) (errX error) {
 		for i, id := range dto.IDs {
-			updates := common.M{
-				"updated_at": time.Now(),
-				"sort":       i,
+			updates := M{
+				"update_time": time.Now(),
+				"sort":        i,
 			}
 
 			if errX = tx.Model(model.Role{}).WithContext(ctx).

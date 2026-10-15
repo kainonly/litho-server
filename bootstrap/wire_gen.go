@@ -8,13 +8,15 @@ package bootstrap
 
 import (
 	"litho-api/api"
+	"litho-api/api/audits"
 	"litho-api/api/index"
+	"litho-api/api/login_audits"
 	"litho-api/api/orgs"
 	"litho-api/api/permissions"
-	"litho-api/api/resources"
 	"litho-api/api/roles"
 	"litho-api/api/routes"
 	"litho-api/api/sessions"
+	"litho-api/api/tencent"
 	"litho-api/api/users"
 	"litho-api/common"
 )
@@ -30,6 +32,11 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	if err != nil {
 		return nil, err
 	}
+	mongoClient, err := UseMongo(values)
+	if err != nil {
+		return nil, err
+	}
+	database := UseMongoDatabase(values, mongoClient)
 	conn, err := UseNats(values)
 	if err != nil {
 		return nil, err
@@ -44,84 +51,107 @@ func NewAPI(values *common.Values) (*api.API, error) {
 	}
 	captcha := UseCaptcha(client)
 	locker := UseLocker(client)
+	transfer, err := UseTransfer(values, conn)
+	if err != nil {
+		return nil, err
+	}
 	inject := &common.Inject{
-		V:       values,
-		Db:      db,
-		RDb:     client,
-		Nc:      conn,
-		Js:      jetStream,
-		Cipher:  cipher,
-		Captcha: captcha,
-		Locker:  locker,
+		V:        values,
+		Db:       db,
+		RDb:      client,
+		MGo:      mongoClient,
+		MDb:      database,
+		Nc:       conn,
+		Js:       jetStream,
+		Cipher:   cipher,
+		Captcha:  captcha,
+		Locker:   locker,
+		Transfer: transfer,
 	}
 	hertz, err := UseHertz(values)
 	if err != nil {
 		return nil, err
 	}
 	csrf := UseCsrf(values)
-	service := &permissions.Service{
+	passport := UsePassport(values)
+	service := &sessions.Service{
 		Inject: inject,
 	}
-	controller := &permissions.Controller{
-		PermissionsX: service,
-	}
-	passport := UsePassport(values)
-	sessionsService := &sessions.Service{
+	tencentService := &tencent.Service{
 		Inject: inject,
 	}
 	indexService := &index.Service{
 		Inject:    inject,
 		Passport:  passport,
-		SessionsX: sessionsService,
+		SessionsX: service,
+		TencentX:  tencentService,
 	}
-	indexController := &index.Controller{
+	controller := &index.Controller{
 		V:      values,
 		IndexX: indexService,
+	}
+	auditsService := &audits.Service{
+		Inject: inject,
+	}
+	auditsController := &audits.Controller{
+		AuditsX: auditsService,
+	}
+	login_auditsService := &login_audits.Service{
+		Inject: inject,
+	}
+	login_auditsController := &login_audits.Controller{
+		LoginAuditsX: login_auditsService,
 	}
 	orgsService := &orgs.Service{
 		Inject: inject,
 	}
 	orgsController := &orgs.Controller{
+		V:     values,
 		OrgsX: orgsService,
 	}
-	resourcesService := &resources.Service{
+	permissionsService := &permissions.Service{
 		Inject: inject,
 	}
-	resourcesController := &resources.Controller{
-		ResourcesX: resourcesService,
+	permissionsController := &permissions.Controller{
+		V:            values,
+		PermissionsX: permissionsService,
 	}
 	rolesService := &roles.Service{
 		Inject: inject,
 	}
 	rolesController := &roles.Controller{
+		V:      values,
 		RolesX: rolesService,
 	}
 	routesService := &routes.Service{
 		Inject: inject,
 	}
 	routesController := &routes.Controller{
+		V:       values,
 		RoutesX: routesService,
 	}
 	sessionsController := &sessions.Controller{
-		SessionsX: sessionsService,
+		V:         values,
+		SessionsX: service,
 	}
 	usersService := &users.Service{
 		Inject:    inject,
-		SessionsX: sessionsService,
-		OrgsX:     orgsService,
+		SessionsX: service,
 	}
 	usersController := &users.Controller{
+		V:      values,
 		UsersX: usersService,
 	}
 	apiAPI := &api.API{
 		Inject:      inject,
 		Hertz:       hertz,
 		Csrf:        csrf,
-		Permissions: controller,
-		Index:       indexController,
+		Index:       controller,
 		IndexX:      indexService,
+		Audits:      auditsController,
+		LoginAudits: login_auditsController,
 		Orgs:        orgsController,
-		Resources:   resourcesController,
+		Permissions: permissionsController,
 		Roles:       rolesController,
 		RolesX:      rolesService,
 		Routes:      routesController,

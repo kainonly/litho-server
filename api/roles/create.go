@@ -2,7 +2,6 @@ package roles
 
 import (
 	"context"
-
 	"litho-api/common"
 	"litho-api/model"
 
@@ -13,12 +12,8 @@ import (
 type CreateDto struct {
 	ID          string `json:"-"`
 	Name        string `json:"name" vd:"required"`
-	Description string `json:"description" vd:"required"`
-	Sort        int16  `json:"sort"`
-	Status      *bool  `json:"status" vd:"required"`
+	Description string `json:"description"`
 }
-
-const ICreate = "新增"
 
 func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 	var dto CreateDto
@@ -27,32 +22,34 @@ func (x *Controller) Create(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	user := common.GetIAM(c)
 	dto.ID = help.SID()
+	user := common.GetIAM(c)
 	if err := x.RolesX.Create(ctx, user, dto); err != nil {
 		c.Error(err)
 		return
 	}
 
+	common.SetTracking(c, Key, "create", dto.ID)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Create(ctx context.Context, user *common.IAMUser, dto CreateDto) (err error) {
-	data := model.Role{
+	if err = x.CheckAccess(ctx, user); err != nil {
+		return
+	}
+
+	data := &model.Role{
 		ID:          dto.ID,
-		Sort:        dto.Sort,
-		Status:      dto.Status,
 		Name:        dto.Name,
 		Description: dto.Description,
-		Strategy: common.RoleStrategy{
-			Navs:        make([]string, 0),
-			Routes:      make([]string, 0),
-			Permissions: make([]string, 0),
+		Strategy: common.M{
+			"routes":      []common.A{},
+			"permissions": []common.A{},
 		},
 	}
 	if err = x.Db.WithContext(ctx).
-		Create(&data).Error; err != nil {
+		Create(data).Error; err != nil {
 		return
 	}
-	return
+	return x.RefreshCache(ctx)
 }

@@ -13,8 +13,8 @@ import (
 )
 
 type LoginDto struct {
-	Email    string `json:"email" vd:"required,email"`
-	Password string `json:"password" vd:"required,min=8"`
+	Username string `json:"username" vd:"required"`
+	Password string `json:"password" vd:"min=8"`
 }
 
 func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
@@ -31,15 +31,21 @@ func (x *Controller) Login(ctx context.Context, c *app.RequestContext) {
 	}
 
 	x.IndexX.SetAccessToken(c, user.AccessToken)
+	x.LoginAudit(c, user, 1)
 	c.JSON(200, help.Ok())
 }
 
 func (x *Service) Login(ctx context.Context, dto LoginDto) (result *LoginResult, err error) {
 	result = new(LoginResult)
-	if result, err = x.QueryLoginUser(ctx, func(do *gorm.DB) *gorm.DB {
-		return do.Where(`email = ?`, dto.Email)
+	if result, err = x.QueryLogin(ctx, func(do *gorm.DB) *gorm.DB {
+		return do.Where("phone = ?", dto.Username)
 	}); err != nil {
 		err = common.ErrLoginNotExists
+		return
+	}
+
+	if result.Password == "" {
+		err = help.E(0, `登录账号需要初始化，请使用短信登录并重置个人密码`)
 		return
 	}
 
@@ -54,7 +60,7 @@ func (x *Service) Login(ctx context.Context, dto LoginDto) (result *LoginResult,
 		return
 	}
 
-	if err = x.UpdateLoginUser(ctx, result.ID); err != nil {
+	if err = x.UpdateLogin(ctx, result.ID); err != nil {
 		return
 	}
 	if result.AccessToken, err = x.CreateAccessToken(ctx, result.ID); err != nil {
